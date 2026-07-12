@@ -1,0 +1,212 @@
+<div class="flex flex-col gap-6 p-6">
+  <!-- Header Row -->
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-bold tracking-tight">Dashboard</h1>
+      <p class="text-muted-foreground">Here's what's happening with your coffee business today.</p>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <!-- Date Range Filter -->
+      <div class="flex items-center gap-2 rounded-md border bg-card p-1">
+        @for (option of filterOptions; track option.value) {
+          <button
+            hlmBtn
+            [variant]="selectedDays() === option.value ? 'default' : 'ghost'"
+            size="sm"
+            (click)="onFilterChange(option.value)"
+          >
+            {{ option.label }}
+          </button>
+        }
+      </div>
+
+      <button hlmBtn variant="outline" size="sm">
+        <ng-icon name="lucideCalendar" class="mr-2 size-4" />
+        Export Report
+      </button>
+    </div>
+  </div>
+
+  <!-- Stats Cards Row -->
+  <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+    @if (statsService.statsCards(); as stats) {
+      <!-- Total Revenue -->
+      <hlm-card class="p-0 flex justify-between h-full rounded-md">
+        <div hlmCardContent class="p-4 h-full flex flex-col justify-between">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm text-muted-foreground pb-1">Total Revenue</p>
+              <p class="text-2xl font-bold">$ {{ stats.totalRevenue | number }}</p>
+            </div>
+            <div
+              class="rounded-full self-start bg-primary/10 w-9 h-9 flex justify-center items-center p-2"
+            >
+              <ng-icon name="lucideDollarSign" class="size-5 text-primary" />
+            </div>
+          </div>
+          <div class="mt-2 flex flex-wrap items-center gap-1 text-sm text-green-600">
+            <div class="flex items-center gap-1">
+              <div class="flex justify-center items-center">
+                <ng-icon name="lucideTrendingUp" class="w-10" />
+              </div>
+              <span class="w-full">+12.5%</span>
+            </div>
+            <span class="text-muted-foreground w-full">vs previous period</span>
+          </div>
+        </div>
+      </hlm-card>
+
+      <!-- Orders -->
+      <hlm-card class="p-0 flex justify-between h-full rounded-md">
+        <div hlmCardContent class="p-4 h-full flex flex-col justify-between">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm text-muted-foreground">Orders</p>
+              <p class="text-2xl font-bold">{{ stats.totalOrders | number }}</p>
+            </div>
+            <div
+              class="rounded-full self-start bg-primary/10 w-9 h-9 flex justify-center items-center p-2"
+            >
+              <ng-icon name="lucideShoppingCart" class="size-5 text-primary" />
+            </div>
+          </div>
+          <div class="mt-2 flex flex-wrap items-center gap-1 text-sm text-green-600">
+            <div class="flex items-center w-full gap-1">
+              <div class="flex justify-center items-center">
+                <ng-icon name="lucideTrendingUp" class="w-10" />
+              </div>
+              <span class="w-full">+8.3%</span>
+            </div>
+            <span class="text-muted-foreground w-full">vs previous period</span>
+          </div>
+        </div>
+      </hlm-card>
+
+      <!-- New Customers -->
+      <hlm-card class="p-0 flex justify-between h-full rounded-md">
+        <div hlmCardContent class="p-4 h-full flex flex-col justify-between">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm text-muted-foreground">New Customers</p>
+              <p class="text-2xl font-bold">{{ stats.newCustomers | number }}</p>
+            </div>
+            <div
+              class="rounded-full self-start bg-primary/10 w-9 h-9 flex justify-center items-center p-2"
+            >
+              <ng-icon name="lucideUsers" class="size-5 text-primary" />
+            </div>
+          </div>
+          <div class="mt-2 flex flex-wrap items-center gap-1 text-sm text-green-600">
+            <div class="flex items-center gap-1">
+              <div class="flex justify-center items-center">
+                <ng-icon name="lucideTrendingUp" class="w-10" />
+              </div>
+              <span>+15.7%</span>
+            </div>
+            <span class="text-muted-foreground">vs previous period</span>
+          </div>
+        </div>
+      </hlm-card>
+
+      <!-- Coffee Sold -->
+      <hlm-card class="p-0 flex justify-between h-full rounded-md">
+        <div hlmCardContent class="p-4 h-full flex flex-col justify-between">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm text-muted-foreground">Coffee Sold</p>
+              <p class="text-2xl font-bold">{{ stats.coffeeSold | number }} kg</p>
+            </div>
+            <div
+              class="rounded-full self-start bg-primary/10 w-9 h-9 flex justify-center items-center p-2"
+            >
+              <ng-icon name="lucideCoffee" class="size-5 text-primary" />
+            </div>
+          </div>
+          <div class="mt-2 flex flex-wrap items-center gap-1 text-sm text-green-600">
+            <div class="flex items-center gap-1">
+              <div class="flex justify-center items-center">
+                <ng-icon name="lucideTrendingUp" class="size-4" />
+              </div>
+              <span class="w-full">+10.2%</span>
+            </div>
+            <span class="text-muted-foreground w-full">vs previous period</span>
+          </div>
+        </div>
+      </hlm-card>
+
+      <!-- AOV -->
+      <hlm-card class="p-0 flex justify-between h-full">
+        <div hlmCardContent class="p-4 h-full flex flex-col justify-between">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm text-muted-foreground">Average Order Value</p>
+              <p class="text-2xl font-bold">${{ stats.averageOrderValue | number }}</p>
+            </div>
+            <div
+              class="rounded-full self-start bg-primary/10 w-9 h-9 flex justify-center items-center p-2"
+            >
+              <ng-icon name="lucidePackage" class="size-5 text-primary" />
+            </div>
+          </div>
+          <div class="mt-2 flex flex-wrap items-center gap-1 text-sm text-green-600">
+            <div class="flex items-center gap-1">
+              <div class="flex justify-center items-center">
+                <ng-icon name="lucideTrendingUp" class="size-4" />
+              </div>
+              <span class="w-full">+6.1%</span>
+            </div>
+            <span class="text-muted-foreground w-full">vs previous period</span>
+          </div>
+        </div>
+      </hlm-card>
+    }
+  </div>
+
+  <!-- Charts Row -->
+  <div class="grid gap-4 lg:grid-cols-3">
+    <!-- Revenue Chart -->
+    <hlm-card class="lg:col-span-2">
+      <hlm-card-header>
+        <h3 hlmCardTitle>Revenue Overview</h3>
+        <app-online-users [count]="statsService.onlineUsers()" />
+      </hlm-card-header>
+      <div hlmCardContent>
+        <app-revenue-chart [data]="statsService.revenueChartData()" />
+      </div>
+    </hlm-card>
+
+    <!-- Category Chart -->
+    <hlm-card>
+      <hlm-card-header>
+        <h3 hlmCardTitle>Revenue by Category</h3>
+      </hlm-card-header>
+      <div hlmCardContent>
+        <app-category-chart [data]="statsService.categoryChartData()" />
+      </div>
+    </hlm-card>
+  </div>
+
+  <!-- Bottom Row -->
+  <div class="grid gap-4 lg:grid-cols-3">
+    <!-- Top Products -->
+    <hlm-card>
+      <hlm-card-header>
+        <h3 hlm-card-title>Top Selling Products</h3>
+      </hlm-card-header>
+      <div hlmCardContent>
+        <app-top-products [products]="statsService.topProducts()" />
+      </div>
+    </hlm-card>
+
+    <!-- Recent Orders (Live) -->
+    <hlm-card class="lg:col-span-2">
+      <hlm-card-header>
+        <h3 hlm-card-title>Recent Orders</h3>
+      </hlm-card-header>
+      <div hlmCardContent>
+        <app-recent-orders />
+      </div>
+    </hlm-card>
+  </div>
+</div>

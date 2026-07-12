@@ -1,0 +1,76 @@
+<div class="p-6">
+
+  <!-- Header -->
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-bold text-primary">Products</h1>
+    <button *hasPermission="'product:create'" (click)="goToCreate()"
+      class="px-4 py-2 bg-amber-600 text-white rounded-md hover:bg-amber-700">
+      + Add Product
+    </button>
+  </div>
+
+  <!-- Search + Filters -->
+  <div class="flex gap-4 mb-6">
+    <input type="text" [(ngModel)]="searchQuery" (input)="onSearch()"
+      placeholder="Search products..."
+      class="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 placeholder:text-muted"/>
+
+    <select [(ngModel)]="isActiveFilter" (change)="onFilterChange()"
+      class="px-4 py-2 border border-gray-300 rounded-md">
+      <option [ngValue]="undefined">All Status</option>
+      <option [ngValue]="true">Active</option>
+      <option [ngValue]="false">Inactive</option>
+    </select>
+
+    <select [(ngModel)]="featuredFilter" (change)="onFilterChange()"
+      class="px-4 py-2 border border-gray-300 rounded-md">
+      <option [ngValue]="undefined">All Products</option>
+      <option [ngValue]="true">Featured Only</option>
+      <option [ngValue]="false">Not Featured</option>
+    </select>
+  </div>
+
+  <!-- Table -->
+  <div class="bg-white rounded-md shadow overflow-x-auto">
+    <app-data-table [data]="items()" [columns]="columns" [loading]="loading()"
+      (edit)="goToEdit($event)" (delete)="confirmDelete($event)" (sortChange)="onSortChange($event)"/>
+  </div>
+
+  <!-- Pagination -->
+  @if (pageData()) {
+    <div class="flex justify-between items-center mt-4">
+      <span class="text-sm text-gray-500">
+        Showing {{ pageData()!.page * pageData()!.size + 1 }} -
+        {{ Math.min((pageData()!.page + 1) * pageData()!.size, pageData()!.totalElements) }}
+        of {{ pageData()!.totalElements }}
+      </span>
+      <div class="flex gap-2">
+        <button [disabled]="pageData()!.first" (click)="goToPage(currentPage() - 1)"
+          class="px-3 py-1 border rounded disabled:opacity-40">Previous</button>
+        <button [disabled]="pageData()!.last"  (click)="goToPage(currentPage() + 1)"
+          class="px-3 py-1 border rounded disabled:opacity-40">Next</button>
+      </div>
+    </div>
+  }
+</div>
+
+<!-- ══════ Delete Dialog (only dialog this page needs) ══════ -->
+@if (deleting()) {
+  <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm mx-4 p-6">
+      <h2 class="text-lg font-bold mb-2">Delete Product</h2>
+      <p class="text-gray-500 mb-6">
+        Are you sure you want to delete <strong>{{ deleting()!.slug }}</strong>?
+        This action cannot be undone.
+      </p>
+      <div class="flex gap-3">
+        <button (click)="deleting.set(null)"
+          class="flex-1 px-4 py-2 border rounded-md text-gray-700 hover:bg-gray-50">Cancel</button>
+        <button (click)="submitDelete()" [disabled]="submitting()"
+          class="flex-1 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">
+          {{ submitting() ? 'Deleting...' : 'Delete' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

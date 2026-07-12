@@ -1,0 +1,174 @@
+<div class="flex items-center gap-1">
+  <app-theme-toggle  />
+
+  <hlm-sheet [side]="language.current() === 'en' ? 'right' : 'left'">
+    <button hlmSheetTrigger hlmBtn variant="ghost" size="icon" class="rounded-md">
+      <ng-icon name="lucideSettings" size="20" class="text-primary" />
+    </button>
+
+    <hlm-sheet-content
+      *hlmSheetPortal="let ctx"
+      class="appearance-sheet-content w-[420px] max-w-full p-0"
+    >
+      <!-- Header -->
+      <div class="border-b px-6 py-5">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-xl font-semibold tracking-tight">Appearance</h2>
+
+            <p class="mt-1 text-sm text-muted-foreground">Customize your workspace</p>
+          </div>
+
+          <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-xl">
+            🎨
+          </div>
+        </div>
+      </div>
+
+      <div class="space-y-7 p-6">
+        <!-- Theme -->
+
+        <section class="space-y-3">
+          <h3 class="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+            Theme
+          </h3>
+
+          <div class="grid grid-cols-2 rounded-2xl bg-muted p-1">
+            <button
+              (click)="setTheme('light', $event)"
+              class="rounded-md py-2.5 text-sm font-medium transition-all duration-300"
+              [class]="
+                !theme.isDark()
+                  ? 'bg-background shadow text-foreground'
+                  : 'text-muted-foreground hover:text-foreground'
+              "
+            >
+              ☀ Light
+            </button>
+
+            <button
+              (click)="setTheme('dark', $event)"
+              class="rounded-md py-2.5 text-sm font-medium transition-all duration-300"
+              [class]="
+                theme.isDark()
+                  ? 'bg-background shadow text-foreground'
+                  : 'text-muted-foreground hover:text-foreground'
+              "
+            >
+              🌙 Dark
+            </button>
+          </div>
+        </section>
+
+        <hlm-separator />
+
+        <!-- Accent -->
+
+        <section class="space-y-3">
+          <h3 class="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+            Accent
+          </h3>
+
+          <div class="grid grid-cols-2 gap-4">
+            @for (accent of accents; track accent.id) {
+              <button
+                (click)="setAccent(accent.id)"
+                class="group rounded-2xl border-2 border-transparent bg-card p-3 text-left transition-all duration-200 ease-out hover:-translate-y-1 hover:shadow-xl active:scale-[0.97]"
+                [class.border-primary]="theme.color() === accent.id"
+                [class.shadow-lg]="theme.color() === accent.id"
+              >
+                <div class="mb-4 overflow-hidden rounded-md border bg-background">
+                  <div
+                    class="h-3 transition-colors duration-300"
+                    [style.background]="accent.color"
+                  ></div>
+
+                  <div class="space-y-2 p-3">
+                    <div class="h-2 w-2/3 rounded-full bg-muted"></div>
+
+                    <div class="h-2 w-full rounded-full bg-muted"></div>
+
+                    <div class="h-2 w-1/2 rounded-full bg-muted"></div>
+
+                    <div class="pt-2">
+                      <div
+                        class="h-8 rounded-md transition-colors duration-300"
+                        [style.background]="accent.color"
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="flex items-start justify-between">
+                  <div>
+                    <p class="font-medium">
+                      {{ accent.title }}
+                    </p>
+
+                    <p class="text-xs text-muted-foreground">
+                      {{ accent.subtitle }}
+                    </p>
+                  </div>
+
+                  @if (theme.color() === accent.id) {
+                    <div
+                      class="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground animate-in zoom-in duration-200"
+                    >
+                      ✓
+                    </div>
+                  }
+                </div>
+              </button>
+            }
+          </div>
+        </section>
+
+        <hlm-separator />
+
+        <!-- Language -->
+
+        <section class="space-y-3">
+          <h3 class="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+            Language
+          </h3>
+
+          <div class="grid grid-cols-2 rounded-2xl bg-muted p-1">
+            @for (lang of languages; track lang.id) {
+              <button
+                (click)="setLanguage(lang.id)"
+                class="rounded-md py-2.5 text-sm font-medium transition-all duration-300"
+                [class]="
+                  language.current() === lang.id ? 'bg-background shadow' : 'text-muted-foreground'
+                "
+              >
+                {{ lang.title }}
+              </button>
+            }
+          </div>
+        </section>
+
+        <hlm-separator />
+
+        <!-- Effects -->
+
+        <section class="space-y-5">
+          <h3 class="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+            Effects
+          </h3>
+
+          <div class="space-y-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="font-medium">Theme Transition</p>
+
+                <p class="text-xs text-muted-foreground">Circle Reveal Animation</p>
+              </div>
+
+              <hlm-switch [(checked)]="themeTransition" />
+            </div>
+          </div>
+        </section>
+      </div>
+    </hlm-sheet-content>
+  </hlm-sheet>
+</div>

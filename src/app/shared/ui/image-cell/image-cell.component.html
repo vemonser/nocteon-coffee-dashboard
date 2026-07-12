@@ -1,0 +1,7 @@
+@if (src()) {
+  <img [src]="src()" [alt]="alt()" class="w-10 h-10 rounded-md object-cover" />
+} @else {
+  <div class="w-10 h-10 rounded-md bg-gray-100 flex items-center justify-center">
+    <span class="text-gray-400 text-xs">No img</span>
+  </div>
+}

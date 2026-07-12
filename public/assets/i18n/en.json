@@ -1,0 +1,27 @@
+{
+  "loginPage": {
+    "title": "Welcome Back",
+    "subTitle": "Enter your email and password to access your account",
+    "form": {
+      "identifier": "Email or Username",
+      "identifierPlaceholder": "Enter your email or username",
+      "password": "Password",
+      "passwordPlaceholder": "Enter your Password",
+      "rememberMe": "Remember me",
+      "forgetPassword": "forget password?",
+      "signIn": "Sign In",
+      "signingIn": "Signing in.."
+    },
+    "or": "OR",
+    "signWithGoogle": "Sign in with google",
+    "notUser": "Don't have account?",
+    "signup": "Sign up"
+  },
+  "navigationBar": {
+    "accountMenu": {
+      "logout": "Log out",
+      "notifications": "Notifications",
+      "account": "Account"
+    }
+  }
+}

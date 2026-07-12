@@ -1,0 +1,82 @@
+<div hlmSidebarWrapper>
+  <hlm-sidebar  variant="inset" [side]="language.current() === 'ar' ? 'right' : 'left'">
+    <!-- Logo -->
+    <hlm-sidebar-header>
+      <ul hlmSidebarMenu>
+        <li hlmSidebarMenuItem>
+          <a hlmSidebarMenuButton size="lg" routerLink="/dashboard">
+            <div
+              class="text-sidebar-primary-foreground flex aspect-square size-10 items-center justify-center rounded-md"
+            >
+              <img src="/logo.svg" alt="nocteon logo icon"  />
+            </div>
+            <div class="grid flex-1 text-start text-sm leading-tight">
+              <span class="truncate font-medium">Nocteon </span>
+              <span class="truncate text-xs">Coffee</span>
+            </div>
+          </a>
+        </li>
+      </ul>
+    </hlm-sidebar-header>
+
+    <hlm-sidebar-content >
+      <!-- Main Menu -->
+      <div class="px-3 py-2 text-xs font-medium text-sidebar-foreground/60">
+        {{ language.current() === 'ar' ? 'القائمة الرئيسية' : 'Main Menu' }}
+      </div>
+      <ul hlmSidebarMenu class="ps-2">
+        @for (item of mainNav(); track item.route) {
+          @if (!item.permission || auth.hasPermission(item.permission)) {
+            <li hlmSidebarMenuItem class="py-1.5">
+              <a
+                hlmSidebarMenuButton
+                [routerLink]="item.route"
+                routerLinkActive="bg-sidebar-accent text-sidebar-accent-foreground [&_ng-icon]:text-sidebar-accent-foreground"
+                [routerLinkActiveOptions]="{ exact: item.route === '/dashboard' }"
+                class="group"
+              >
+                <ng-icon
+                  [name]="item.icon"
+                  class="size-4 shrink-0 text-sidebar-foreground/60 group-hover:text-sidebar-foreground transition-colors duration-200"
+                />
+                <span>{{ item.label }}</span>
+              </a>
+            </li>
+          }
+        }
+      </ul>
+
+      <!-- Catalog -->
+      <div class="px-3 py-3 text-xs font-medium text-sidebar-foreground/60 mt-4">
+        {{ language.current() === 'ar' ? 'الكتالوج' : 'Catalog' }}
+      </div>
+      <ul hlmSidebarMenu class="ps-2  ">
+        @for (item of catalogNav(); track item.route) {
+          @if (!item.permission || auth.hasPermission(item.permission)) {
+            <li hlmSidebarMenuItem class="py-1.5  ">
+              <a
+                hlmSidebarMenuButton
+                [routerLink]="item.route"
+                routerLinkActive="bg-sidebar-primary text-sidebar-primary-foreground [&_ng-icon]:text-sidebar-primary-foreground hover:text-sidebar-primary-foreground hover:bg-sidebar-primary"
+                class="group  rounded-sm!"
+              >
+                <ng-icon
+                  [name]="item.icon"
+                  class="size-4 shrink-0 text-sidebar-foreground/60 group-hover:text-sidebar-foreground transition-colors duration-200"
+                />
+                <span>{{ item.label }}</span>
+              </a>
+            </li>
+          }
+        }
+      </ul>
+    </hlm-sidebar-content>
+    <hlm-separator />
+    <!-- User Footer -->
+    <hlm-sidebar-footer>
+      <app-user-menu variant="sidebar" />
+    </hlm-sidebar-footer>
+  </hlm-sidebar>
+
+  <ng-content />
+</div>

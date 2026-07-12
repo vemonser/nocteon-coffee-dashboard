@@ -1,0 +1,8 @@
+  <div
+      [ngClass]="[
+        'rounded-3xl border p-6 transition-all duration-300',
+        variant() === 'glass' ? glassClasses : defaultClasses
+      ]"
+    >
+      <ng-content />
+    </div>

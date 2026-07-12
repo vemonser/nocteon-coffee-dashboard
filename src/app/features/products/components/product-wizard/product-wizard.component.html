@@ -1,0 +1,85 @@
+<!-- product-wizard.component.html -->
+<div class="p-6 max-w-3xl mx-auto">
+
+  @if (loadingDetail()) {
+    <div class="text-center py-20 text-gray-400">Loading product...</div>
+  } @else if (loadError()) {
+    <div class="text-center py-20 text-red-500">{{ loadError() }}</div>
+  } @else {
+
+    <!-- Header -->
+    <h1 class="text-2xl font-bold text-primary mb-2">
+      {{ state.isEditMode() ? 'Edit Product' : 'Add Product' }}
+    </h1>
+
+    <!-- Step Progress Bar -->
+    <div class="flex items-center mb-8">
+      @for (step of state.steps; track step; let i = $index; let last = $last) {
+        <div class="flex items-center" [class.flex-1]="!last">
+          <button
+            type="button"
+            (click)="state.goToStep(i)"
+            [disabled]="i > state.currentStep()"
+            class="flex items-center justify-center w-8 h-8 rounded-full text-sm font-semibold shrink-0"
+            [class]="i === state.currentStep()
+              ? 'bg-amber-600 text-white'
+              : i < state.currentStep()
+                ? 'bg-amber-100 text-amber-700'
+                : 'bg-gray-100 text-gray-400'"
+          >
+            {{ i + 1 }}
+          </button>
+          <span class="ml-2 text-sm whitespace-nowrap"
+            [class]="i === state.currentStep() ? 'font-semibold text-gray-900' : 'text-gray-400'">
+            {{ step }}
+          </span>
+          @if (!last) {
+            <div class="flex-1 h-px bg-gray-200 mx-3"></div>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- Step Content -->
+    <form [formGroup]="state.form" class="bg-white rounded-2xl shadow p-6 min-h-100">
+      @switch (state.currentStep()) {
+        @case (0) { <app-basic-info-step /> }
+        @case (1) { <app-variants-step /> }
+        @case (2) { <app-media-step /> }
+        @case (3) { <app-tasting-notes-step /> }
+        @case (4) { <app-pairings-step /> }
+      }
+    </form>
+
+    <!-- Navigation -->
+    <div class="flex justify-between mt-6">
+      <div>
+        @if (state.currentStep() > 0) {
+          <button type="button" (click)="state.goBack()"
+            class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
+            Back
+          </button>
+        } @else {
+          <button type="button" (click)="onCancel()"
+            class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
+            Cancel
+          </button>
+        }
+      </div>
+
+      <div>
+        @if (state.currentStep() < state.steps.length - 1) {
+          <button type="button" (click)="onNext()"
+            class="px-6 py-2 bg-amber-600 text-white rounded-md hover:bg-amber-700">
+            Next
+          </button>
+        } @else {
+          <button type="button" (click)="onSubmit()" [disabled]="submitting()"
+            class="px-6 py-2 bg-amber-600 text-white rounded-md hover:bg-amber-700 disabled:opacity-50">
+            {{ submitting() ? 'Saving...' : (state.isEditMode() ? 'Save Changes' : 'Create Product') }}
+          </button>
+        }
+      </div>
+    </div>
+  }
+</div>

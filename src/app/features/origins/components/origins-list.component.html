@@ -1,0 +1,322 @@
+<div class="flex flex-col gap-6 p-6">
+  <!-- Header -->
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-bold tracking-tight">Origins</h1>
+      <p class="text-muted-foreground">{{ items().length }} total</p>
+    </div>
+    <div class="flex items-center gap-3">
+      <div class="flex items-center rounded-md border bg-card p-1">
+        <button
+          hlmBtn
+          [variant]="viewMode() === 'list' ? 'default' : 'ghost'"
+          size="icon"
+          class="size-8"
+          (click)="toggleView('list')"
+        >
+          <ng-icon name="lucideList" class="size-4" />
+        </button>
+        <button
+          hlmBtn
+          [variant]="viewMode() === 'grid' ? 'default' : 'ghost'"
+          size="icon"
+          class="size-8"
+          (click)="toggleView('grid')"
+        >
+          <ng-icon name="lucideGrid3x3" class="size-4" />
+        </button>
+      </div>
+      <button
+        *hasPermission="'origin:create'"
+        hlmBtn
+        (click)="openCreateDialog()"
+      >
+        <ng-icon name="lucidePlus" class="me-2 size-4" />
+        Add Origin
+      </button>
+    </div>
+  </div>
+
+  <!-- Search -->
+  <div class="flex flex-col gap-4 sm:flex-row sm:items-center">
+    <div class="relative flex-1 max-w-md">
+      <ng-icon
+        name="lucideSearch"
+        class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground"
+      />
+      <input
+        hlmInput
+        type="text"
+        [(ngModel)]="searchQuery"
+        (input)="onSearch()"
+        placeholder="Search origins..."
+        class="pl-9 w-full"
+      />
+    </div>
+  </div>
+
+  <!-- Loading -->
+  @if (loading()) {
+    @if (viewMode() === 'list') {
+      <div class="rounded-md border">
+        <div class="h-12 border-b bg-muted/50 animate-pulse" *ngFor="let _ of [1,2,3,4,5]"></div>
+      </div>
+    } @else {
+      <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <hlm-card *ngFor="let _ of [1,2,3,4,5,6,7,8]" class="overflow-hidden">
+          <div class="aspect-video bg-muted animate-pulse"></div>
+          <div hlmCardContent class="p-4 space-y-2">
+            <div class="h-4 bg-muted animate-pulse rounded w-3/4"></div>
+            <div class="h-3 bg-muted animate-pulse rounded w-1/2"></div>
+          </div>
+        </hlm-card>
+      </div>
+    }
+  }
+
+  <!-- List View -->
+  @if (!loading() && viewMode() === 'list') {
+    <div class="rounded-md border bg-card">
+      <app-data-table
+        [data]="items()"
+        [columns]="columns"
+        [loading]="loading()"
+        (edit)="openEditDialog($event)"
+        (delete)="confirmDelete($event)"
+        (sortChange)="onSortChange($event)"
+      />
+    </div>
+  }
+
+  <!-- Grid View -->
+  @if (!loading() && viewMode() === 'grid') {
+    <div class="grid gap-4 grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
+      @for (item of items(); track item.slug) {
+        <hlm-card class="group overflow-hidden transition-all py-0 hover:shadow-lg">
+          <div class="relative aspect-video overflow-hidden bg-muted">
+            @if (item.imageUrl) {
+              <img
+                [src]="item.imageUrl"
+                [alt]="getTranslationName(item, 'en')"
+                class="h-full w-full object-cover transition-transform group-hover:scale-105"
+              />
+            } @else {
+              <div class="flex h-full items-center justify-center text-muted-foreground">
+                <ng-icon name="lucideImage" class="size-12 opacity-20" />
+              </div>
+            }
+          </div>
+          <div hlmCardContent class="p-4">
+            <div class="space-y-1 mb-3">
+              @for (lang of ['en', 'ar']; track lang) {
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-medium text-muted-foreground uppercase w-6">{{ lang }}</span>
+                  <p class="text-sm font-medium truncate" [dir]="lang === 'ar' ? 'rtl' : 'ltr'">
+                    {{ getTranslationName(item, lang) }}
+                  </p>
+                </div>
+              }
+            </div>
+            <p class="text-xs text-muted-foreground mb-1">Code: {{ item.code }}</p>
+            <p class="text-xs text-muted-foreground mb-3">/{{ item.slug }}</p>
+            <div class="flex items-center gap-2 pt-3 border-t">
+              <button hlmBtn variant="ghost" size="sm" class="flex-1" (click)="openEditDialog(item)">
+                <ng-icon name="lucidePencil" class="mr-1 size-3" />
+                Edit
+              </button>
+              <button
+                hlmBtn
+                variant="ghost"
+                size="sm"
+                class="flex-1 text-destructive hover:text-destructive"
+                (click)="confirmDelete(item)"
+              >
+                <ng-icon name="lucideTrash2" class="mr-1 size-3" />
+                Delete
+              </button>
+            </div>
+          </div>
+        </hlm-card>
+      } @empty {
+        <div class="col-span-full text-center py-12 text-muted-foreground">
+          <ng-icon name="lucideSearch" class="mx-auto size-12 opacity-20 mb-4" />
+          <p class="text-lg font-medium">No origins found</p>
+          <p class="text-sm">Try adjusting your search</p>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Pagination -->
+  @if (pageData() && !loading()) {
+    <div class="flex items-center justify-between">
+      <span class="text-sm text-muted-foreground">
+        Showing {{ pageData()!.page * pageData()!.size + 1 }} -
+        {{ Math.min((pageData()!.page + 1) * pageData()!.size, pageData()!.totalElements) }}
+        of {{ pageData()!.totalElements }}
+      </span>
+      <div class="flex items-center gap-2">
+        <button
+          hlmBtn
+          variant="outline"
+          size="sm"
+          [disabled]="pageData()!.first"
+          (click)="goToPage(currentPage() - 1)"
+        >
+          <ng-icon name="lucideChevronLeft" class="size-4" />
+        </button>
+        <span class="text-sm text-muted-foreground px-2">
+          Page {{ pageData()!.page + 1 }} of {{ pageData()!.totalPages }}
+        </span>
+        <button
+          hlmBtn
+          variant="outline"
+          size="sm"
+          [disabled]="pageData()!.last"
+          (click)="goToPage(currentPage() + 1)"
+        >
+          <ng-icon name="lucideChevronRight" class="size-4" />
+        </button>
+      </div>
+    </div>
+  }
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     Create / Edit Dialog
+══════════════════════════════════════════════════════════ -->
+@if (showDialog()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+    <div class="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl bg-card shadow-2xl border">
+      <div class="flex items-center justify-between p-6 border-b sticky top-0 bg-card">
+        <h2 class="text-lg font-bold">{{ editing() ? 'Edit Origin' : 'Add Origin' }}</h2>
+        <button hlmBtn variant="ghost" size="icon" class="size-8" (click)="closeDialog()">
+          <ng-icon name="lucideX" class="size-4" />
+        </button>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="p-6 space-y-5">
+        <!-- Code -->
+        <div class="space-y-1.5">
+          <label hlmLabel>ISO Code *</label>
+          <input
+            hlmInput
+            formControlName="code"
+            type="text"
+            placeholder="e.g. ET"
+            class="w-full uppercase"
+          />
+          @if (form.get('code')?.invalid && form.get('code')?.touched) {
+            <p class="text-xs text-destructive">Code is required</p>
+          }
+        </div>
+
+        <!-- Translations -->
+        <div formArrayName="translations">
+          @for (group of translationsArray.controls; track $index; let i = $index) {
+            <div [formGroupName]="i" class="rounded-md border p-4 mb-4">
+              <div class="flex items-center gap-2 mb-3">
+                <hlm-badge variant="outline">
+                  {{ translationHelper.getLangLabel(group.get('language')?.value) }}
+                </hlm-badge>
+              </div>
+              <div class="space-y-1.5 mb-3">
+                <label hlmLabel>Name *</label>
+                <input
+                  hlmInput
+                  formControlName="name"
+                  type="text"
+                  [dir]="translationHelper.getLangDir(group.get('language')?.value)"
+                  [placeholder]="group.get('language')?.value === 'ar' ? 'مثال: إثيوبيا' : 'e.g. Ethiopia'"
+                  class="w-full"
+                />
+                @if (group.get('name')?.invalid && group.get('name')?.touched) {
+                  <p class="text-xs text-destructive">Name is required</p>
+                }
+              </div>
+              <div class="space-y-1.5">
+                <label hlmLabel>Description</label>
+                <textarea
+                  hlmInput
+                  formControlName="description"
+                  rows="3"
+                  [dir]="translationHelper.getLangDir(group.get('language')?.value)"
+                  class="w-full resize-none h-fit rounded-md"
+                ></textarea>
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- Image Upload -->
+        <div class="space-y-1.5">
+          <label hlmLabel>Image</label>
+          <input
+            type="file"
+            accept="image/*"
+            (change)="onImageSelected($event)"
+            class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+          />
+          @if (imagePreview()) {
+            <div class="relative mt-2 w-20 h-20">
+              <img [src]="imagePreview()" class="w-full h-full object-cover rounded-md" />
+              <button
+                type="button"
+                class="absolute -top-2 -right-2 size-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center"
+                (click)="imagePreview.set(null); selectedImage.set(null)"
+              >
+                <ng-icon name="lucideX" class="size-3" />
+              </button>
+            </div>
+          }
+        </div>
+
+        <!-- Buttons -->
+        <div class="flex gap-3 pt-2">
+          <button type="button" hlmBtn variant="outline" class="flex-1" (click)="closeDialog()">
+            Cancel
+          </button>
+          <button type="submit" hlmBtn class="flex-1" [disabled]="form.invalid || submitting()">
+            @if (submitting()) {
+              <span class="animate-spin mr-2">⟳</span>
+            }
+            {{ submitting() ? 'Saving...' : 'Save' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+<!-- ══════════════════════════════════════════════════════════
+     Delete Confirm Dialog
+══════════════════════════════════════════════════════════ -->
+@if (deleting()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+    <div class="w-full max-w-sm rounded-2xl bg-card shadow-2xl border p-6">
+      <h2 class="text-lg font-bold mb-2">Delete Origin</h2>
+      <p class="text-muted-foreground mb-6">
+        Are you sure you want to delete
+        <strong class="text-foreground">{{ deleting()!.slug }}</strong>?
+        This action cannot be undone.
+      </p>
+      <div class="flex gap-3">
+        <button hlmBtn variant="outline" class="flex-1" (click)="deleting.set(null)">
+          Cancel
+        </button>
+        <button
+          hlmBtn
+          variant="destructive"
+          class="flex-1"
+          [disabled]="submitting()"
+          (click)="submitDelete()"
+        >
+          @if (submitting()) {
+            <span class="animate-spin mr-2">⟳</span>
+          }
+          {{ submitting() ? 'Deleting...' : 'Delete' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

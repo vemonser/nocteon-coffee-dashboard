@@ -1,0 +1,35 @@
+<div class="w-full">
+  <table class="w-full text-sm">
+    <thead>
+      <tr class="border-b text-muted-foreground">
+        <th class="text-left py-2 font-medium">Order ID</th>
+        <th class="text-left py-2 font-medium">Customer</th>
+        <th class="text-left py-2 font-medium">Date</th>
+        <th class="text-right py-2 font-medium">Amount</th>
+        <th class="text-right py-2 font-medium">Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (order of orders(); track order.id) {
+        <tr class="border-b last:border-0 hover:bg-accent/50 transition-colors">
+          <td class="py-3 font-medium">{{ order.id }}</td>
+          <td class="py-3">
+            <div class="flex items-center gap-2">
+              <hlm-avatar class="size-6 rounded-full">
+                <span class="bg-primary/10 text-primary text-xs" hlmAvatarFallback>
+                  {{ order.customer.charAt(0) }}
+                </span>
+              </hlm-avatar>
+              <span>{{ order.customer }}</span>
+            </div>
+          </td>
+          <td class="py-3 text-muted-foreground">{{ order.date }}</td>
+          <td class="py-3 text-right font-medium">${{ order.amount.toFixed(2) }}</td>
+          <td class="py-3 text-right">
+            <hlm-badge [variant]="getStatusVariant(order.status)">{{ order.status }}</hlm-badge>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

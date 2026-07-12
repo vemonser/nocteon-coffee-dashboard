@@ -1,0 +1,126 @@
+<div class="relative overflow-x-scroll">
+  <!-- Loading overlay -->
+  @if (loading()) {
+    <div class="absolute inset-0 bg-white/60 flex items-center justify-center z-10 rounded-md">
+      <div class="w-6 h-6 border-2 border-amber-600 border-t-transparent rounded-full animate-spin"></div>
+    </div>
+  }
+
+  <table hlmTable class="w-full table-auto">
+    <thead class="border-b border-gray-200">
+      @for (headerGroup of table().getHeaderGroups(); track headerGroup.id) {
+        <tr hlmTr>
+          @for (header of headerGroup.headers; track header.id) {
+            <th class="px-4 py-3 text-start  text-xs font-medium text-gray-500 uppercase tracking-wider">
+              @if (!header.isPlaceholder) {
+                @if (header.column.getCanSort()) {
+                  <button
+                    (click)="header.column.toggleSorting()"
+                    class="flex items-center min-w-max gap-1 hover:text-foreground transition-colors group"
+                  >
+                    <span class="min-w-max inline-block">{{ header.column.columnDef.header }}</span>
+                    <span class="text-gray-400 min-w-max inline-block group-hover:text-foreground">
+                      @if (header.column.getIsSorted() === 'asc') { ↑ }
+                      @else if (header.column.getIsSorted() === 'desc') { ↓ }
+                      @else { ↕ }
+                    </span>
+                  </button>
+                } @else {
+                  <span class="min-w-max inline-block">{{ header.column.columnDef.header }}</span>
+                }
+              }
+            </th>
+          }
+        </tr>
+      }
+    </thead>
+
+    <tbody class="divide-y divide-gray-100">
+      @if (data().length === 0 && !loading()) {
+        <tr hlmTr>
+          <td hlmTd [attr.colspan]="columns().length" class="text-center py-16 text-gray-400">
+            {{ emptyMessage() }}
+          </td>
+        </tr>
+      }
+
+      @for (row of table().getRowModel().rows; track row.id) {
+        <tr hlmTr class="hover:bg-accent transition-colors">
+          @for (cell of row.getVisibleCells(); track cell.id) {
+            <td class="px-4 py-3">
+              @switch (cell.column.id) {
+                @case ('image') {
+                  <app-image-cell [src]="$any(cell.getValue())" [alt]="row.original.slug ?? row.original.username" />
+                }
+
+                @case ('avatar') {
+                  @if (cell.getValue()) {
+                    <img [src]="$any(cell.getValue())" [alt]="row.original.username" class="h-8 w-8 rounded-full object-cover" />
+                  } @else {
+                    <div class="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-xs font-medium">
+                      {{ (row.original.firstName?.[0] || row.original.lastName?.[0] || row.original.username?.[0] || '').toUpperCase() }}
+                    </div>
+                  }
+                }
+
+                @case ('color') {
+                  <app-color-cell [color]="$any(cell.getValue())" />
+                }
+                @case ('createdAt') {
+                  <span class="block min-w-max">
+                  {{$any(cell.getValue()) | date:'short'}}
+                  </span>
+
+                }
+
+                @case ('isActive') {
+                  <app-status-cell [value]="$any(cell.getValue())" />
+                }
+
+                @case ('status') {
+                  @if ($any(cell.getValue()); as status) {
+                    <span
+                      class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
+                      [class.bg-green-100]="status.variant === 'default'"
+                      [class.text-green-800]="status.variant === 'default'"
+                      [class.bg-red-100]="status.variant === 'destructive'"
+                      [class.text-red-800]="status.variant === 'destructive'"
+                      [class.bg-yellow-100]="status.variant === 'warning'"
+                      [class.text-yellow-800]="status.variant === 'warning'"
+                      [class.bg-gray-100]="status.variant === 'secondary'"
+                      [class.text-gray-800]="status.variant === 'secondary'"
+                    >
+                      {{ status.label }}
+                    </span>
+                  }
+                }
+
+                @case ('actions') {
+                  <app-actions-cell
+                    [item]="row.original"
+                    [editPermission]="editPermission()"
+                    [deletePermission]="deletePermission()"
+                    [editLabel]="editLabel()"
+                    [deleteLabel]="deleteLabel()"
+                    (edit)="edit.emit($event)"
+                    (delete)="delete.emit($event)"
+                    (view)="rowClick.emit(row.original)"
+                  />
+                }
+
+                @default {
+                  <span class="flex min-w-max items-start"
+                    [class.arabic-text]="containsArabic(cell.getValue())"
+                    [dir]="getDir(cell.getValue())"
+                  >
+                    {{ cell.getValue() }}
+                  </span>
+                }
+              }
+            </td>
+          }
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

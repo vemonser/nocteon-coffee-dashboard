@@ -1,0 +1,180 @@
+:host {
+  display: block;
+}
+
+.appearance-sheet {
+  width: 360px;
+  max-width: 100vw;
+  padding: 0;
+  overflow: hidden;
+}
+
+.sheet-header {
+  padding: 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.sheet-title {
+  font-size: 1.6rem;
+  font-weight: 700;
+}
+
+.sheet-description {
+  margin-top: .35rem;
+  color: var(--muted);
+  font-size: .9rem;
+}
+
+.sheet-section {
+  padding: 28px;
+}
+
+.section-header {
+  margin-bottom: 18px;
+}
+
+.section-header h3 {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.section-header p {
+  color: var(--muted);
+  font-size: .875rem;
+  margin-top: 4px;
+}
+
+.segment {
+  display: grid;
+  grid-template-columns: repeat(2,1fr);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.segment button {
+  height: 48px;
+  border-radius: 0;
+}
+
+.segment .active {
+  background: var(--primary);
+  color: white;
+}
+
+.accent-grid {
+  display: grid;
+  gap: 18px;
+}
+
+.accent-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 12px;
+  transition: .25s;
+}
+
+.accent-card:hover {
+  transform: translateY(-2px);
+}
+
+.accent-card.selected {
+  border: 2px solid var(--primary);
+}
+
+.accent-preview {
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  height: 85px;
+  display: flex;
+  margin-bottom: 16px;
+}
+
+.preview-sidebar {
+  width: 26%;
+  background: var(--accent);
+}
+
+.preview-content {
+  flex: 1;
+  padding: 12px;
+}
+
+.preview-title {
+  width: 70%;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--accent);
+  margin-bottom: 10px;
+}
+
+.preview-line {
+  width: 90%;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--border);
+  margin-bottom: 20px;
+}
+
+.preview-button {
+  width: 90px;
+  height: 30px;
+  border-radius: 10px;
+  background: var(--accent);
+}
+
+.accent-preview{
+  --accent:#1F8A5B;
+}
+
+.accent-preview .preview-sidebar,
+.accent-preview .preview-title,
+.accent-preview .preview-button{
+  background:var(--accent);
+}
+
+.accent-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.accent-footer h4 {
+  font-size: .95rem;
+  font-weight: 600;
+}
+
+.accent-footer span {
+  color: var(--muted);
+  font-size: .8rem;
+}
+
+.check {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: var(--primary);
+  color: white;
+  display: grid;
+  place-items: center;
+  font-size: .8rem;
+}
+
+.switch-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+}
+
+.switch-row h4 {
+  font-size: .95rem;
+}
+
+.switch-row span {
+  font-size: .82rem;
+  color: var(--muted);
+}

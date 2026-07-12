@@ -1,0 +1,105 @@
+<div class="space-y-8">
+  <!-- Header -->
+
+  <div>
+    <h2 class="text-3xl font-heading">Appearance</h2>
+
+    <p class="text-muted mt-1">Customize your workspace</p>
+  </div>
+
+  <!-- Theme -->
+
+  <section class="space-y-3">
+    <h3 class="font-medium">Theme</h3>
+
+    <div class="grid grid-cols-2 rounded-md border overflow-hidden">
+      <button
+        (click)="theme.setTheme('light')"
+        class="py-3 transition"
+        [class]="!theme.isDark() ? 'bg-primary-500 text-white' : 'hover:bg-surface'"
+      >
+        ☀ Light
+      </button>
+
+      <button
+        (click)="theme.setTheme('dark')"
+        class="py-3 transition"
+        [class]="theme.isDark() ? 'bg-primary-500 text-white' : 'hover:bg-surface'"
+      >
+        🌙 Dark
+      </button>
+    </div>
+  </section>
+
+  <!-- Accent -->
+
+  <section class="space-y-4">
+    <h3 class="font-medium">Accent Color</h3>
+
+    <div class="grid grid-cols-2 gap-4">
+      <button
+        (click)="theme.setColor('emerald')"
+        class="rounded-2xl border p-4 text-left transition hover:scale-[1.02]"
+        [class.border-primary]="theme.color() === 'emerald'"
+      >
+        <div class="h-24 rounded-md mb-4 bg-[#1F8A5B]"></div>
+
+        <h4 class="font-semibold">Emerald</h4>
+
+        <p class="text-sm text-muted">Fresh & Balanced</p>
+      </button>
+
+      <button
+        (click)="theme.setColor('burgundy')"
+        class="rounded-2xl border p-4 text-left transition hover:scale-[1.02]"
+        [class.border-primary]="theme.color() === 'burgundy'"
+      >
+        <div class="h-24 rounded-md mb-4 bg-[#9D2335]"></div>
+
+        <h4 class="font-semibold">Burgundy</h4>
+
+        <p class="text-sm text-muted">Bold & Warm</p>
+      </button>
+    </div>
+  </section>
+
+  <!-- Radius -->
+
+  <section class="space-y-4">
+    <div class="flex justify-between">
+      <h3>Radius</h3>
+
+      <span class="text-muted"> 16px </span>
+    </div>
+
+    <input type="range" min="8" max="32" value="16" class="w-full" />
+  </section>
+
+  <!-- Animation -->
+
+  <section class="space-y-4">
+    <h3>Animations</h3>
+
+    <div class="rounded-md border divide-y">
+      <div class="flex items-center justify-between p-4">
+        <div>
+          <p>Theme Transition</p>
+
+          <p class="text-sm text-muted">Circle Reveal</p>
+        </div>
+
+        <input type="checkbox" checked />
+      </div>
+
+      <div class="flex items-center justify-between p-4">
+        <div>
+          <p>Ripple Effect</p>
+
+          <p class="text-sm text-muted">Accent Change</p>
+        </div>
+
+        <input type="checkbox" checked />
+      </div>
+    </div>
+  </section>
+</div>

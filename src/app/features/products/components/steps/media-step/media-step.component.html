@@ -1,0 +1,122 @@
+<div class="space-y-5">
+  <h2 class="text-lg font-bold">Media Gallery</h2>
+
+  <!-- Upload -->
+
+  <div>
+    <label class="block text-sm font-medium text-gray-700 mb-2"> Images & Videos </label>
+
+    <input
+      type="file"
+      accept="image/*,video/*"
+      multiple
+      (change)="onFilesSelected($event)"
+      class="w-full text-sm text-gray-500"
+    />
+  </div>
+
+  <!-- Existing Media -->
+
+  @if (state.existingMedia().length > 0) {
+    <div>
+      <p class="text-sm font-medium mb-3">Current Media</p>
+
+      <div class="grid grid-cols-4 gap-4">
+        @for (media of state.existingMedia(); track media.id; let i = $index) {
+          <div class="relative group">
+            @if (media.type === 'IMAGE') {
+              <img [src]="media.url" class="w-full aspect-square object-cover rounded-md border" />
+            } @else {
+              <video
+                [src]="media.url"
+                controls
+                class="w-full aspect-square rounded-md border"
+              ></video>
+            }
+
+            @if (media.isPrimary) {
+              <span class="absolute top-2 left-2 px-2 py-1 bg-amber-600 text-white text-xs rounded">
+                Primary
+              </span>
+            }
+
+            @if (media.type === 'IMAGE' && !media.isPrimary) {
+              <button
+                type="button"
+                (click)="setPrimary('existing', i)"
+                class="absolute bottom-2 left-2 px-2 py-1 bg-white/90 text-xs rounded opacity-0 group-hover:opacity-100 transition"
+              >
+                Set Primary
+              </button>
+            }
+
+            <button
+              type="button"
+              (click)="removeExisting(i)"
+              class="absolute top-2 right-2 w-6 h-6 rounded-full bg-red-500 text-white opacity-0 group-hover:opacity-100 transition"
+            >
+              ✕
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- Staged Media -->
+
+  @if (state.stagedMedia().length > 0) {
+    <div>
+      <p class="text-sm font-medium mb-3">New Media</p>
+
+      <div class="grid grid-cols-4 gap-4">
+        @for (media of state.stagedMedia(); track media.file.name; let i = $index) {
+          <div class="relative group">
+            @if (media.type === 'IMAGE') {
+              <img
+                [src]="media.previewUrl"
+                class="w-full aspect-square object-cover rounded-md border-2 border-amber-300"
+              />
+            } @else {
+              <video
+                [src]="media.previewUrl"
+                controls
+                class="w-full aspect-square rounded-md border-2 border-amber-300"
+              ></video>
+            }
+
+            @if (media.isPrimary) {
+              <span class="absolute top-2 left-2 px-2 py-1 bg-amber-600 text-white text-xs rounded">
+                Primary
+              </span>
+            }
+
+            @if (media.type === 'IMAGE' && !media.isPrimary) {
+              <button
+                type="button"
+                (click)="setPrimary('staged', i)"
+                class="absolute bottom-2 left-2 px-2 py-1 bg-white/90 text-xs rounded opacity-0 group-hover:opacity-100 transition"
+              >
+                Set Primary
+              </button>
+            }
+
+            <button
+              type="button"
+              (click)="removeStaged(i)"
+              class="absolute top-2 right-2 w-6 h-6 rounded-full bg-red-500 text-white opacity-0 group-hover:opacity-100 transition"
+            >
+              ✕
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  @if (state.existingMedia().length === 0 && state.stagedMedia().length === 0) {
+    <div class="text-center py-12 border-2 border-dashed rounded-md text-gray-400">
+      No media uploaded yet.
+    </div>
+  }
+</div>

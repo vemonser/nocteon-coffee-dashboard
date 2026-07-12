@@ -1,0 +1,51 @@
+<div class="relative">
+  <button (click)="toggleDropdown()" class="relative flex justify-center items-center p-2">
+    <ng-icon name="heroBell" size="20" class="text-foreground hover:" />
+
+    @if (notificationService.unreadCount() > 0) {
+      <span class="absolute -top-1 -inset-e-1 w-2 h-2 bg-red-500 rounded-full"></span>
+      <!-- <span class="badge">{{ notificationService.unreadCount() }}
+
+    </span> -->
+    }
+  </button>
+
+  @if (isOpen()) {
+    <div
+      class="absolute right-0 mt-2 w-80 bg-white shadow-lg rounded-md border max-h-96 overflow-y-auto z-50"
+    >
+      <div class="flex justify-between items-center p-3 border-b">
+        <span class="font-semibold">Notifications</span>
+        @if (notificationService.unreadCount() > 0) {
+          <button (click)="markAllAsRead()" class="text-sm text-blue-600">Mark all as read</button>
+        }
+      </div>
+
+      @if (loading()) {
+        <div class="p-4 text-center text-gray-400">Loading...</div>
+      } @else if (notifications().length === 0) {
+        <div class="p-4 text-center text-gray-400">No notifications</div>
+      } @else {
+        @for (n of notifications(); track n.id) {
+          <div
+            (click)="onNotificationClick(n)"
+            class="p-3 border-b cursor-pointer hover:bg-gray-50"
+            [class.bg-blue-50]="!n.isRead"
+          >
+            <div class="font-medium text-sm">{{ n.title }}</div>
+            <div class="text-xs text-gray-500">{{ n.message }}</div>
+            <div class="text-xs text-gray-400 mt-1">{{ n.createdAt | date: 'short' }}</div>
+          </div>
+        }
+      }
+      <div class="p-3 border-t">
+        <button
+          (click)="goToAllNotifications()"
+          class="w-full text-center text-blue-600 font-medium"
+        >
+          View All Notifications
+        </button>
+      </div>
+    </div>
+  }
+</div>

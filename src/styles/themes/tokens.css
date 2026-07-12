@@ -1,0 +1,11 @@
+@theme {
+
+    --font-sans: "Inter", sans-serif;
+    --font-heading: "Cormorant Garamond", serif;
+
+    --font-sans-ar: "Cairo", sans-serif;
+    --font-heading-ar: "Almarai", sans-serif;
+
+    --radius: 1rem;
+
+}

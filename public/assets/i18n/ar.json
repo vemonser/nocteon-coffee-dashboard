@@ -1,0 +1,27 @@
+{
+  "loginPage": {
+    "title": "مرحباً بعودتك",
+    "subTitle": "أدخل بريدك الإلكتروني وكلمة المرور للوصول إلى حسابك",
+    "form": {
+      "identifier": "البريد الإلكتروني أو إسم المستخدم",
+      "identifierPlaceholder": "البريد الإلكتروني أو إسم المستخدم",
+      "password": "كلمة المرور",
+      "passwordPlaceholder": "كلمة المرور",
+      "rememberMe": "تذكرني",
+      "forgetPassword": "نسيت كلمة المرور؟",
+      "signIn": "تسجيل الدخول",
+      "signingIn": "جارٍ تسجيل الدخول.."
+    },
+    "or": "او",
+    "signWithGoogle": "المواصلة بإستخدام جوجل",
+    "notUser": "ليس لديك حساب؟",
+    "signup": "إنشاء حساب"
+  },
+  "navigationBar": {
+    "accountMenu": {
+      "logout":"تسجيل الخروج",
+      "notifications":"الإشعارات",
+      "account":"الحساب الشخصي"
+    }
+  }
+}

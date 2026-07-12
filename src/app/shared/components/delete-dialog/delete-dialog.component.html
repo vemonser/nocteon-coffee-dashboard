@@ -1,0 +1,29 @@
+<div
+  class="fixed inset-0 bg-black/50 flex items-center justify-center">
+  <div
+    class="bg-white p-6 rounded-md w-96">
+    <h2 class="font-bold">
+      Delete
+    </h2>
+
+    <p>
+      Are you sure you want
+      to delete
+      {{ entity()?.slug }}
+      ?
+    </p>
+
+    <div
+      class="flex gap-3 mt-4">
+      <button
+        (click)="cancel.emit()">
+        Cancel
+      </button>
+
+      <button
+        (click)="confirm.emit()">
+        Delete
+      </button>
+    </div>
+  </div>
+</div>

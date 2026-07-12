@@ -1,0 +1,12 @@
+<input
+  type="file"
+  accept="image/*"
+  (change)="onSelect($event)"
+/>
+
+@if (preview()) {
+<img
+  [src]="preview()"
+  class="w-20 h-20 rounded-md object-cover"
+/>
+}

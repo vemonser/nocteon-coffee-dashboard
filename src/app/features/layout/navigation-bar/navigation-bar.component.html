@@ -1,0 +1,79 @@
+<header class="flex h-16 shrink-0 items-center rounded-se-md rounded-ss-md gap-2 border-b bg-background px-4">
+  <!-- Left -->
+  <div class="flex items-center gap-2">
+    <button hlmSidebarTrigger class="shrink-0">
+      <ng-icon name="lucideMenu" class="size-5" />
+    </button>
+    <hlm-separator orientation="vertical" class="h-4" />
+    <app-breadcrumb />
+  </div>
+
+  <!-- Right -->
+  <div class="flex items-center gap-2 lg:gap-3 ms-auto">
+    <!-- Search -->
+    <div class="relative hidden md:block shrink">
+      <hlm-autocomplete
+        [(search)]="searchQuery"
+        [value]="null"
+        (valueChange)="onResultSelect($event)"
+        class="w-64"
+      >
+        <hlm-autocomplete-input
+          [placeholder]="language.current() === 'ar' ? 'بحث...' : 'Search...'"
+          class="h-9 w-full rounded-md border border-input bg-transparent px-9 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+        />
+        <ng-icon
+          name="lucideSearch"
+          class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none"
+        />
+
+        <hlm-autocomplete-content *hlmAutocompletePortal class="w-96">
+          @if (isSearching()) {
+            <div class="p-4 text-center">
+              <ng-icon name="lucideLoader2" class="animate-spin size-5 text-muted-foreground mx-auto" />
+              <p class="text-sm text-muted-foreground mt-2">
+                {{ language.current() === 'ar' ? 'جاري البحث...' : 'Searching...' }}
+              </p>
+            </div>
+          } @else if (groupedResults().length === 0 && searchQuery().trim().length >= 2) {
+            <hlm-autocomplete-empty>
+              {{ language.current() === 'ar' ? 'لا توجد نتائج' : 'No results found.' }}
+            </hlm-autocomplete-empty>
+          } @else {
+            <div hlmAutocompleteList class="max-h-80 overflow-y-auto">
+              @for (group of groupedResults(); track group.type) {
+                <div hlmAutocompleteGroup>
+                  <div hlmAutocompleteLabel class="text-xs font-semibold uppercase tracking-wider text-muted-foreground px-2 py-1.5">
+                    {{ group.label }}
+                  </div>
+                  @for (result of group.items; track result.id) {
+                    <hlm-autocomplete-item
+                      [value]="result"
+                      class="cursor-pointer"
+                    >
+                      <div class="flex flex-col gap-0.5 py-1">
+                        <span class="text-sm font-medium">{{ result.title }}</span>
+                        <span class="text-xs text-muted-foreground">{{ result.subtitle }}</span>
+                      </div>
+                    </hlm-autocomplete-item>
+                  }
+                </div>
+              }
+            </div>
+          }
+        </hlm-autocomplete-content>
+      </hlm-autocomplete>
+    </div>
+
+    <app-appearance-sheet />
+    <button
+      (click)="language.toggle()"
+      class="inline-flex items-center sm:none justify-center rounded-md text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground h-9 w-9"
+      [title]="language.current() === 'ar' ? 'Switch to English' : 'Switch to Arabic'"
+    >
+      <ng-icon size="20" name="lucideGlobe" />
+    </button>
+    <app-notification />
+    <app-user-menu variant="navbar" />
+  </div>
+</header>

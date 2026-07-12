@@ -1,0 +1,88 @@
+<!-- shared/components/user-menu/user-menu.component.html -->
+@if (variant === 'sidebar') {
+  <ul hlmSidebarMenu>
+    <li hlmSidebarMenuItem>
+      <button
+        hlmSidebarMenuButton
+        size="lg"
+        [hlmDropdownMenuTrigger]="menu"
+        [side]="_menuSide()"
+        align="end"
+      >
+        <hlm-avatar class="rounded-md">
+          @if (auth.currentUser()?.avatarUrl) {
+            <img [src]="auth.currentUser()!.avatarUrl" alt="avatar" hlmAvatarImage />
+          }
+          <span class="rounded-md bg-[#FD005B] text-white" hlmAvatarFallback>
+            {{ getInitial() }}
+          </span>
+        </hlm-avatar>
+        <div class="grid flex-1 text-left text-sm leading-tight">
+          <span class="truncate font-medium">{{ auth.getFullName() }}</span>
+          <span class="truncate text-xs">{{ auth.currentUser()?.email }}</span>
+        </div>
+        <ng-icon name="lucideChevronsUpDown" class="ml-auto text-base" />
+      </button>
+    </li>
+  </ul>
+} @else {
+  <div class="relative">
+    <button
+      [hlmDropdownMenuTrigger]="menu"
+      class="flex items-center gap-2 rounded-md p-1 hover:bg-accent transition-colors"
+    >
+      <hlm-avatar class="size-8 rounded-full">
+        @if (auth.currentUser()?.avatarUrl) {
+          <img [src]="auth.currentUser()!.avatarUrl" alt="avatar" hlmAvatarImage />
+        }
+        <span class="bg-primary text-primary-foreground" hlmAvatarFallback>
+          {{ getInitial() }}
+        </span>
+      </hlm-avatar>
+      <!-- <div class="hidden sm:block text-left">
+        <p class="text-sm font-medium leading-none">{{ auth.getFullName() }}</p>
+        <p class="text-xs text-muted-foreground">{{ auth.currentUser()?.role }}</p>
+      </div> -->
+      <!-- <ng-icon name="lucideChevronsUpDown" class="size-4 text-muted-foreground hidden sm:block" /> -->
+    </button>
+  </div>
+}
+
+<ng-template #menu>
+  <hlm-dropdown-menu class="min-w-56 rounded-md">
+    <hlm-dropdown-menu-label>
+      <div class="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
+        <hlm-avatar class="size-8 rounded-full">
+          @if (auth.currentUser()?.avatarUrl) {
+            <img [src]="auth.currentUser()!.avatarUrl" alt="avatar" hlmAvatarImage />
+          }
+          <span class="bg-primary text-primary-foreground" hlmAvatarFallback>
+            {{ getInitial() }}
+          </span>
+        </hlm-avatar>
+        <div class="grid flex-1 text-left text-sm leading-tight">
+          <span class="truncate font-medium">{{ auth.getFullName() }}</span>
+          <span class="truncate text-xs">{{ auth.currentUser()?.email }}</span>
+        </div>
+      </div>
+    </hlm-dropdown-menu-label>
+
+    <hlm-dropdown-menu-separator />
+    <hlm-dropdown-menu-group [dir]="currentDir()">
+      <button hlmDropdownMenuItem class="flex">
+        <ng-icon name="lucideUser" class="me-2 size-4" />
+        {{ 'navigationBar.accountMenu.account' | transloco }}
+      </button>
+      <button hlmDropdownMenuItem class="flex">
+        <ng-icon name="lucideBell" class="me-2 size-4" />
+        {{ 'navigationBar.accountMenu.notifications' | transloco }}
+      </button>
+    </hlm-dropdown-menu-group>
+
+    <hlm-dropdown-menu-separator />
+    <button hlmDropdownMenuItem [dir]="currentDir()" (click)="onLogout()">
+      <ng-icon name="lucideLogOut" class="me-2 size-4" />
+      {{ 'navigationBar.accountMenu.logout' | transloco }}
+    </button>
+  </hlm-dropdown-menu>
+</ng-template>

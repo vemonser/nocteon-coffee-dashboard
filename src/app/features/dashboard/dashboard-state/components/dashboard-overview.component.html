@@ -1,0 +1,38 @@
+<!-- dashboard-overview.component.html -->
+<div class="p-6">
+  <!-- Range selector -->
+  <div class="flex gap-2 mb-6">
+    <button (click)="onRangeChange(7)" [class.bg-blue-600]="selectedRange() === 7"
+            class="px-4 py-2 rounded-md border">Last 7 days</button>
+    <button (click)="onRangeChange(30)" [class.bg-blue-600]="selectedRange() === 30"
+            class="px-4 py-2 rounded-md border">Last 30 days</button>
+    <button (click)="onRangeChange(90)" [class.bg-blue-600]="selectedRange() === 90"
+            class="px-4 py-2 rounded-md border">Last 90 days</button>
+  </div>
+
+  @if (loading()) {
+    <div class="text-center py-10">Loading...</div>
+  } @else if (stats()) {
+    <!-- KPI Cards -->
+    <div class="grid grid-cols-3 gap-4 mb-8">
+      <div class="bg-white rounded-md p-4 shadow">
+        <div class="text-gray-500 text-sm">Total Revenue</div>
+        <div class="text-2xl font-bold">{{ stats()!.totalRevenue | number:'1.2-2' }} EGP</div>
+      </div>
+      <div class="bg-white rounded-md p-4 shadow">
+        <div class="text-gray-500 text-sm">Total Orders</div>
+        <div class="text-2xl font-bold">{{ stats()!.totalOrders }}</div>
+      </div>
+      <div class="bg-white rounded-md p-4 shadow">
+        <div class="text-gray-500 text-sm">Avg Order Value</div>
+        <div class="text-2xl font-bold">{{ stats()!.averageOrderValue | number:'1.2-2' }} EGP</div>
+      </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="grid grid-cols-2 gap-6">
+      <app-revenue-chart [data]="stats()!.revenueByDay" />
+      <app-orders-status-chart [data]="stats()!.ordersByStatus" />
+    </div>
+  }
+</div>

@@ -1,0 +1,37 @@
+<nav hlmBreadcrumb class="hidden sm:inline-block">
+  <ol hlmBreadcrumbList>
+    <!-- Home -->
+    <li hlmBreadcrumbItem>
+      <a hlmBreadcrumbLink routerLink="/dashboard">
+        <ng-icon name="lucideHome" class="size-4" />
+      </a>
+    </li>
+
+    @if (breadcrumbs().length > 0) {
+      <li hlmBreadcrumbSeparator>
+        <ng-icon
+          [name]="languageService.current() === 'ar' ? 'lucideChevronLeft' : 'lucideChevronRight'"
+          class="size-4"
+        />
+      </li>
+    }
+
+    @for (item of breadcrumbs(); track item.url; let last = $last) {
+      <li hlmBreadcrumbItem>
+        @if (!last) {
+          <a hlmBreadcrumbLink [routerLink]="item.url">{{ item.label }}</a>
+        } @else {
+          <a hlmBreadcrumbPage>{{ item.label }}</a>
+        }
+      </li>
+      @if (!last) {
+        <li hlmBreadcrumbSeparator>
+          <ng-icon
+            [name]="languageService.current() === 'ar' ? 'lucideChevronLeft' : 'lucideChevronRight'"
+            class="size-4"
+          />
+        </li>
+      }
+    }
+  </ol>
+</nav>

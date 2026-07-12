@@ -1,0 +1,39 @@
+ 
+
+ <button  (click)="toggle($event)" 
+ /* (click)="toggle()" */
+  class="theme-btn flex items-center justify-center" [attr.aria-label]="theme.isDark() ? 'Switch to light' : 'Switch to dark'">
+      <svg  width="25" height="25" viewBox="0 0 44 44" fill="none">
+
+        <!-- Body — sun/moon -->
+        <circle
+          cx="22" cy="22"
+          [attr.r]="theme.isDark() ? 12 : 9"
+          [attr.fill]="theme.isDark() ? '#99a1af' : '#EF9F27'"
+          style="transition: r 0.4s ease, fill 0.4s ease"/>
+
+        <!-- Rays — بتختفي في الـ dark -->
+        <g [style.opacity]="theme.isDark() ? 0 : 1"
+           [style.transition]="'opacity 0.3s ease'" #knob>
+          <line x1="22" y1="4"  x2="22" y2="9"  stroke="#EF9F27" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="22" y1="35" x2="22" y2="40" stroke="#EF9F27" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="4"  y1="22" x2="9"  y2="22" stroke="#EF9F27" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="35" y1="22" x2="40" y2="22" stroke="#EF9F27" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="9"  y1="9"  x2="13" y2="13" stroke="#EF9F27" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="31" y1="31" x2="35" y2="35" stroke="#EF9F27" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="35" y1="9"  x2="31" y2="13" stroke="#EF9F27" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="9"  y1="35" x2="13" y2="31" stroke="#EF9F27" stroke-width="2.5" stroke-linecap="round"/>
+        </g>
+
+        <!-- Mask — بتنزلق وتعمل شكل الهلال -->
+        <circle
+         
+          [attr.cx]="28"
+          cy="16"
+          [attr.r]="theme.isDark() ? 8 : 0"
+          fill="#000"
+          [style.opacity]="theme.isDark() ? 1 :0"
+          style="transition: cx 0.4s ease, r 0.4s ease"/>
+
+      </svg>
+    </button>

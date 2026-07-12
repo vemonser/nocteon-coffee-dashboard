@@ -1,0 +1,60 @@
+@custom-variant dark (&:where(.dark, .dark *));
+
+@import './themes/tokens.css';
+@import './themes/emerald.css';
+@import './themes/burgundy.css';
+
+@import './typography.css';
+@import './radius.css';
+@import './shadows.css';
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+
+  /* ─── Default (English / LTR) ─── */
+  :root {
+    --font-body: var(--font-sans);
+    --font-display: var(--font-heading);
+  }
+
+  html {
+    font-family: var(--font-body);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+  }
+
+  /* ─── Arabic / RTL ─── */
+  /* أي element أو children ليه dir="rtl" */
+  [dir='rtl'],
+  [dir='rtl'] * {
+    --font-body: var(--font-sans-ar);
+    --font-display: var(--font-heading-ar);
+  }
+
+  /* Override مباشر للـ font-family */
+  [dir='rtl'] {
+    font-family: var(--font-sans-ar);
+  }
+
+  [dir='rtl'] h1,
+  [dir='rtl'] h2,
+  [dir='rtl'] h3,
+  [dir='rtl'] h4,
+  [dir='rtl'] h5,
+  [dir='rtl'] h6 {
+    font-family: var(--font-heading-ar);
+  }
+}
+td:lang(ar),
+span:lang(ar),
+[lang='ar'] {
+  font-family: 'Cairo', 'ArabicFallback', sans-serif !important;
+}

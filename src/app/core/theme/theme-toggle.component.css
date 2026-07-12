@@ -1,0 +1,13 @@
+:host {
+  display: block;
+}
+ .theme-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 50%;
+      display: flex;
+      transition: background 0.2s;
+    }
+    .theme-btn:hover { background: rgba(128,128,128,0.1); }

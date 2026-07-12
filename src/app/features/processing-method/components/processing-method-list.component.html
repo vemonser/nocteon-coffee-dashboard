@@ -1,0 +1,184 @@
+<div class="flex flex-col gap-6 p-6">
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-bold tracking-tight">Processing Methods</h1>
+      <p class="text-muted-foreground">{{ items().length }} total</p>
+    </div>
+    <div class="flex items-center gap-3">
+      <button
+        *hasPermission="'processing-method:create'"
+        hlmBtn
+        (click)="openCreateDialog()"
+      >
+        <ng-icon name="lucidePlus" class="me-2 size-4" />
+        Add Processing Method
+      </button>
+    </div>
+  </div>
+
+  <div class="flex flex-col gap-4 sm:flex-row sm:items-center">
+    <div class="relative flex-1 max-w-md">
+      <ng-icon
+        name="lucideSearch"
+        class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground"
+      />
+      <input
+        hlmInput
+        type="text"
+        [(ngModel)]="searchQuery"
+        (input)="onSearch()"
+        placeholder="Search processing methods..."
+        class="pl-9 w-full"
+      />
+    </div>
+  </div>
+
+  @if (loading()) {
+    <div class="rounded-md border">
+      <div class="h-12 border-b bg-muted/50 animate-pulse" *ngFor="let _ of [1,2,3,4,5]"></div>
+    </div>
+  }
+
+  @if (!loading()) {
+    <div class="rounded-md border bg-card">
+      <app-data-table
+        [data]="items()"
+        [columns]="columns"
+        [loading]="loading()"
+        (edit)="openEditDialog($event)"
+        (delete)="confirmDelete($event)"
+        (sortChange)="onSortChange($event)"
+      />
+    </div>
+  }
+
+  @if (pageData() && !loading()) {
+    <div class="flex items-center justify-between">
+      <span class="text-sm text-muted-foreground">
+        Showing {{ pageData()!.page * pageData()!.size + 1 }} -
+        {{ Math.min((pageData()!.page + 1) * pageData()!.size, pageData()!.totalElements) }}
+        of {{ pageData()!.totalElements }}
+      </span>
+      <div class="flex items-center gap-2">
+        <button
+          hlmBtn
+          variant="outline"
+          size="sm"
+          [disabled]="pageData()!.first"
+          (click)="goToPage(currentPage() - 1)"
+        >
+          <ng-icon name="lucideChevronLeft" class="size-4" />
+        </button>
+        <span class="text-sm text-muted-foreground px-2">
+          Page {{ pageData()!.page + 1 }} of {{ pageData()!.totalPages }}
+        </span>
+        <button
+          hlmBtn
+          variant="outline"
+          size="sm"
+          [disabled]="pageData()!.last"
+          (click)="goToPage(currentPage() + 1)"
+        >
+          <ng-icon name="lucideChevronRight" class="size-4" />
+        </button>
+      </div>
+    </div>
+  }
+</div>
+
+@if (showDialog()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+    <div class="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl bg-card shadow-2xl border">
+      <div class="flex items-center justify-between p-6 border-b sticky top-0 bg-card">
+        <h2 class="text-lg font-bold">
+          {{ editing() ? 'Edit Processing Method' : 'Add Processing Method' }}
+        </h2>
+        <button hlmBtn variant="ghost" size="icon" class="size-8" (click)="closeDialog()">
+          <ng-icon name="lucideX" class="size-4" />
+        </button>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="p-6 space-y-5">
+        <div formArrayName="translations">
+          @for (group of translationsArray.controls; track $index; let i = $index) {
+            <div [formGroupName]="i" class="rounded-md border p-4 mb-4">
+              <div class="flex items-center gap-2 mb-3">
+                <hlm-badge variant="outline">
+                  {{ translationHelper.getLangLabel(group.get('language')?.value) }}
+                </hlm-badge>
+              </div>
+
+              <div class="space-y-1.5 mb-3">
+                <label hlmLabel>Name *</label>
+                <input
+                  hlmInput
+                  formControlName="name"
+                  type="text"
+                  [dir]="translationHelper.getLangDir(group.get('language')?.value)"
+                  [placeholder]="group.get('language')?.value === 'ar' ? 'مثال: غسيل' : 'e.g. Washed'"
+                  class="w-full"
+                />
+                @if (group.get('name')?.invalid && group.get('name')?.touched) {
+                  <p class="text-xs text-destructive">Name is required</p>
+                }
+              </div>
+
+              <div class="space-y-1.5">
+                <label hlmLabel>Description</label>
+                <textarea
+                  hlmInput
+                  formControlName="description"
+                  rows="4"
+                  [dir]="translationHelper.getLangDir(group.get('language')?.value)"
+                  class="w-full resize-none h-fit rounded-md"
+                ></textarea>
+              </div>
+            </div>
+          }
+        </div>
+
+        <div class="flex gap-3 pt-2">
+          <button type="button" hlmBtn variant="outline" class="flex-1" (click)="closeDialog()">
+            Cancel
+          </button>
+          <button type="submit" hlmBtn class="flex-1" [disabled]="form.invalid || submitting()">
+            @if (submitting()) {
+              <span class="animate-spin mr-2">⟳</span>
+            }
+            {{ submitting() ? 'Saving...' : 'Save' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+@if (deleting()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+    <div class="w-full max-w-sm rounded-2xl bg-card shadow-2xl border p-6">
+      <h2 class="text-lg font-bold mb-2">Delete Processing Method</h2>
+      <p class="text-muted-foreground mb-6">
+        Are you sure you want to delete
+        <strong class="text-foreground">{{ deleting()!.slug }}</strong>?
+        This action cannot be undone.
+      </p>
+      <div class="flex gap-3">
+        <button hlmBtn variant="outline" class="flex-1" (click)="deleting.set(null)">
+          Cancel
+        </button>
+        <button
+          hlmBtn
+          variant="destructive"
+          class="flex-1"
+          [disabled]="submitting()"
+          (click)="submitDelete()"
+        >
+          @if (submitting()) {
+            <span class="animate-spin mr-2">⟳</span>
+          }
+          {{ submitting() ? 'Deleting...' : 'Delete' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

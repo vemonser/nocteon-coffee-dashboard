@@ -1,0 +1,8 @@
+<div class="flex gap-2 items-center">
+<span class="w-2 h-2 rounded-full block" [class]="value()? 'bg-green-800':'bg-red-800' "></span>
+  <span class="text-sm" [class]="value()
+      ? ' text-green-800'
+      : ' text-red-800'">
+      {{ value() ? 'Active' : 'Inactive' }}
+    </span>
+  </div>

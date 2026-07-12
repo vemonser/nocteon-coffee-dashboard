@@ -1,0 +1,287 @@
+<div class="flex flex-col gap-6 p-6">
+  <!-- Header -->
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-bold tracking-tight">Users</h1>
+      <p class="text-muted-foreground">
+        {{ totalUsers() }} total · {{ activeUsers() }} active · {{ blockedUsers() }} blocked ·
+        {{ unverifiedUsers() }} unverified
+      </p>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <button
+        *hasPermission="'user:create'"
+        hlmBtn
+        class="p-4 min-h-10"
+        (click)="openCreateDialog()"
+      >
+        <ng-icon name="lucidePlus" class="me-2 size-4" />
+        Add User
+      </button>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="flex flex-col gap-4 sm:flex-row sm:items-center">
+    <div class="relative flex-1 max-w-md">
+      <ng-icon
+        name="lucideSearch"
+        class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground"
+      />
+      <input
+        hlmInput
+        type="text"
+        [(ngModel)]="searchQuery"
+        (input)="onSearch()"
+        placeholder="Search by username or email..."
+        class="pl-9 w-full"
+      />
+    </div>
+
+    <select
+      [(ngModel)]="roleFilter"
+      (change)="onFilterChange()"
+      class="h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm"
+    >
+      <option value="ALL">All Roles</option>
+      <option value="ADMIN">Admin</option>
+      <option value="CUSTOMER">Customer</option>
+    </select>
+
+    <select
+      [(ngModel)]="isActiveFilter"
+      (change)="onFilterChange()"
+      class="h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm"
+    >
+      <option [ngValue]="undefined">All Status</option>
+      <option [ngValue]="true">Active</option>
+      <option [ngValue]="false">Blocked</option>
+    </select>
+
+    <select
+      [(ngModel)]="enabledFilter"
+      (change)="onFilterChange()"
+      class="h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm"
+    >
+      <option [ngValue]="undefined">All Verification</option>
+      <option [ngValue]="true">Verified</option>
+      <option [ngValue]="false">Unverified</option>
+    </select>
+  </div>
+
+  <!-- Loading -->
+  @if (loading()) {
+    <div class="rounded-md border">
+      <div class="h-12 border-b bg-muted/50 animate-pulse" *ngFor="let _ of [1, 2, 3, 4, 5]"></div>
+    </div>
+  }
+
+  <!-- List View -->
+  @if (!loading()) {
+    <div class="rounded-md border bg-card">
+      <app-data-table
+        [data]="items()"
+        [columns]="columns"
+        [loading]="loading()"
+        editPermission="user:update"
+        deletePermission="user:delete"
+        editLabel="Edit"
+        deleteLabel="Block"
+        (edit)="openEditDialog($event)"
+        (delete)="confirmDelete($event)"
+        (sortChange)="onSortChange($event)"
+      />
+    </div>
+  }
+
+  <!-- Pagination -->
+  @if (pageData() && !loading()) {
+    <div class="flex items-center justify-between">
+      <span class="text-sm text-muted-foreground">
+        Showing {{ pageData()!.page * pageData()!.size + 1 }} -
+        {{ Math.min((pageData()!.page + 1) * pageData()!.size, pageData()!.totalElements) }} of
+        {{ pageData()!.totalElements }}
+      </span>
+      <div class="flex items-center gap-2">
+        <button
+          hlmBtn
+          variant="outline"
+          size="sm"
+          [disabled]="pageData()!.first"
+          (click)="goToPage(currentPage() - 1)"
+        >
+          <ng-icon name="lucideChevronLeft" class="size-4" />
+        </button>
+        <span class="text-sm text-muted-foreground px-2"
+          >Page {{ pageData()!.page + 1 }} of {{ pageData()!.totalPages }}</span
+        >
+        <button
+          hlmBtn
+          variant="outline"
+          size="sm"
+          [disabled]="pageData()!.last"
+          (click)="goToPage(currentPage() + 1)"
+        >
+          <ng-icon name="lucideChevronRight" class="size-4" />
+        </button>
+      </div>
+    </div>
+  }
+</div>
+
+<!-- Create / Edit Dialog -->
+@if (showDialog()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+    <div class="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl bg-card shadow-2xl border">
+      <div class="flex items-center justify-between p-6 border-b sticky top-0 bg-card">
+        <h2 class="text-lg font-bold">{{ editing() ? 'Edit User' : 'Add User' }}</h2>
+        <button hlmBtn variant="ghost" size="icon" class="size-8" (click)="closeDialog()">
+          <ng-icon name="lucideX" class="size-4" />
+        </button>
+      </div>
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="p-6 space-y-5">
+        <div class="space-y-1.5">
+          <label hlmLabel>Username *</label>
+          <input
+            hlmInput
+            formControlName="username"
+            type="text"
+            placeholder="johndoe"
+            class="w-full"
+          />
+          @if (form.get('username')?.invalid && form.get('username')?.touched) {
+            <p class="text-xs text-destructive">Username is required (min 3 characters)</p>
+          }
+        </div>
+        <div class="space-y-1.5">
+          <label hlmLabel>Email *</label>
+          <input
+            hlmInput
+            formControlName="email"
+            type="email"
+            placeholder="john@example.com"
+            class="w-full"
+          />
+          @if (form.get('email')?.invalid && form.get('email')?.touched) {
+            <p class="text-xs text-destructive">Valid email is required</p>
+          }
+        </div>
+        @if (!editing()) {
+          <div class="space-y-1.5">
+            <label hlmLabel>Password *</label>
+            <input
+              hlmInput
+              formControlName="password"
+              type="password"
+              placeholder="Min 6 characters"
+              class="w-full"
+            />
+            @if (form.get('password')?.invalid && form.get('password')?.touched) {
+              <p class="text-xs text-destructive">Password is required (min 6 characters)</p>
+            }
+          </div>
+          <div class="space-y-1.5">
+            <label hlmLabel>Confirm Password *</label>
+            <input
+              hlmInput
+              formControlName="confirmPassword"
+              type="password"
+              placeholder="Repeat password"
+              class="w-full"
+            />
+          </div>
+        }
+        <div class="space-y-1.5">
+          <label hlmLabel>Phone *</label>
+          <input
+            hlmInput
+            formControlName="phone"
+            type="text"
+            placeholder="01234567890"
+            class="w-full"
+          />
+          @if (form.get('phone')?.invalid && form.get('phone')?.touched) {
+            <p class="text-xs text-destructive">Valid Phone is required</p>
+          }
+        </div>
+        <div class="space-y-1.5">
+          <label hlmLabel>Role *</label>
+          <select
+            formControlName="role"
+            class="h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm"
+          >
+            <option value="CUSTOMER">Customer</option>
+            <option value="ADMIN">Admin</option>
+          </select>
+        </div>
+        <div class="space-y-1.5">
+          <label hlmLabel>First Name</label>
+          <input
+            hlmInput
+            formControlName="firstName"
+            type="text"
+            placeholder="John"
+            class="w-full"
+          />
+        </div>
+        <div class="space-y-1.5">
+          <label hlmLabel>Last Name</label>
+          <input hlmInput formControlName="lastName" type="text" placeholder="Doe" class="w-full" />
+        </div>
+        <div class="flex items-center gap-3">
+          <input
+            type="checkbox"
+            formControlName="isActive"
+            id="isActive"
+            class="h-4 w-4 rounded border-primary text-primary focus:ring-primary"
+          />
+          <label for="isActive" class="text-sm font-medium">Account Active</label>
+        </div>
+        <div class="flex gap-3 pt-2">
+          <button type="button" hlmBtn variant="outline" class="flex-1" (click)="closeDialog()">
+            Cancel
+          </button>
+          <button type="submit" hlmBtn class="flex-1" [disabled]="form.invalid || submitting()">
+            @if (submitting()) {
+              <span class="animate-spin mr-2">⟳</span>
+            }
+            {{ submitting() ? 'Saving...' : 'Save' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+<!-- Block / Unblock Confirm Dialog -->
+@if (deleting()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+    <div class="w-full max-w-sm rounded-2xl bg-card shadow-2xl border p-6">
+      <h2 class="text-lg font-bold mb-2">
+        {{ deleting()!.active ? 'Block User' : 'Unblock User' }}
+      </h2>
+      <p class="text-muted-foreground mb-6">
+        Are you sure you want to
+        <strong class="text-foreground">{{ deleting()!.active ? 'block' : 'unblock' }}</strong>
+        <strong class="text-foreground">{{ deleting()!.username }}</strong
+        >?
+      </p>
+      <div class="flex gap-3">
+        <button hlmBtn variant="outline" class="flex-1" (click)="deleting.set(null)">Cancel</button>
+        <button
+          hlmBtn
+          [variant]="deleting()!.active ? 'destructive' : 'default'"
+          class="flex-1"
+          [disabled]="submitting()"
+          (click)="submitDelete()"
+        >
+          @if (submitting()) {
+            <span class="animate-spin mr-2">⟳</span>
+          }
+          {{ submitting() ? 'Processing...' : deleting()!.active ? 'Block' : 'Unblock' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
