@@ -14,8 +14,11 @@ export type NavKey =
   | 'farms'
   | 'roastLevels'
   | 'processing'
+  | 'processingDetail'
   | 'varieties'
+  | 'varietyDetail'
   | 'tastingNotes'
+  | 'tastingNoteDetail'
   | 'brewing'
   | 'pairings';
 
@@ -33,8 +36,11 @@ export const navI18n: Record<Language, Record<NavKey, string>> = {
     farms: 'Farms',
     roastLevels: 'Roast Levels',
     processing: 'Processing Methods',
+    processingDetail: 'Processing Method',
     varieties: 'Coffee Varieties',
+    varietyDetail: 'Coffee Variety',
     tastingNotes: 'Tasting Notes',
+    tastingNoteDetail: 'Tasting Note',
     brewing: 'Brewing',
     pairings: 'Pairings',
   },
@@ -51,8 +57,11 @@ export const navI18n: Record<Language, Record<NavKey, string>> = {
     farms: 'المزارع',
     roastLevels: 'مستويات التحميص',
     processing: 'المعالجة',
+    processingDetail: 'طريقة المعالجة',
     varieties: 'الأصناف',
+    varietyDetail: 'الصنف',
     tastingNotes: 'ملاحظات التذوق',
+    tastingNoteDetail: 'ملاحظة التذوق',
     brewing: 'التحضير',
     pairings: 'التوافقات',
   },

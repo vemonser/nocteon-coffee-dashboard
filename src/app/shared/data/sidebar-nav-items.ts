@@ -17,7 +17,10 @@ const icons: Record<NavKey, string> = {
   roastLevels: 'lucideFlame',
   processing: 'lucideSettings2',
   varieties: 'lucideGitBranch',
+  varietyDetail: 'lucideGitBranch',
+  processingDetail: 'lucideGitBranch',
   tastingNotes: 'lucideDroplets',
+  tastingNoteDetail: 'lucideDroplets',
   brewing: 'lucideFlaskConical',
   pairings: 'lucideUtensilsCrossed',
 };

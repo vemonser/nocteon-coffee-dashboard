@@ -21,8 +21,11 @@ export const icons: Record<NavKey, string> = {
   farms: 'lucideSprout',
   roastLevels: 'lucideFlame',
   processing: 'lucideSettings2',
+  processingDetail: 'lucideSettings2',
   varieties: 'lucideGitBranch',
+  varietyDetail: 'lucideGitBranch',
   tastingNotes: 'lucideDroplets',
+  tastingNoteDetail: 'lucideDroplets',
   brewing: 'lucideFlaskConical',
   pairings: 'lucideUtensilsCrossed',
 };

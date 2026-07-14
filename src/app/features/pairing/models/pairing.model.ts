@@ -8,8 +8,17 @@ export interface PairingResponse {
   id: string;
   slug: string;
   imageUrl: string | null;
+  createdAt?: string;
   translations: PairingTranslation[];
 }
 export interface PairingRequest {
+  translations: PairingTranslation[];
+}
+
+export interface DashboardPairingResponse {
+  id: string;
+  slug: string;
+  imageUrl: string | null;
+  isActive: boolean;
   translations: PairingTranslation[];
 }

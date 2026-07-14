@@ -1,22 +1,31 @@
-// BrewingMethod = Pour Over, French Press, AeroPress, Espresso…
+import { ProductCardResponse } from '../../categories/models/category.model';
 
-import { BaseListParams } from "../../../core/crud/base-crud.service";
-
-
-export interface BrewingMethodListParams extends BaseListParams {
-  // مفيش فلترز إضافية دلوقتي
-}
 export interface BrewingMethodTranslation {
   language: string;
   name: string;
   description?: string;
 }
+
 export interface BrewingMethodResponse {
-  id: number;
+  id: string;
   slug: string;
+  createdAt?: string;
   translations: BrewingMethodTranslation[];
+  
 }
+
 export interface BrewingMethodRequest {
   translations: BrewingMethodTranslation[];
 }
- 
+
+export interface DashboardBrewingMethodResponse {
+  id: string;
+  slug: string;
+  createdAt?: string;
+  translations: BrewingMethodTranslation[];
+}
+
+export interface ProductWithScoreResponse {
+  product: ProductCardResponse; 
+  score: number;
+}

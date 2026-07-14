@@ -1,38 +1,46 @@
-import { Component, inject } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule, FormGroup } from '@angular/forms';
-import { Observable, map } from 'rxjs';
-import { createColumnHelper, ColumnDef } from '@tanstack/angular-table';
+import { FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { HasPermissionDirective } from '../../../core/auth/permission.directive';
+import { BaseListComponent } from '../../../core/crud/base-list.component';
+import { CoffeeVarietyRequest, CoffeeVarietyResponse } from '../models/coffee-variety.model';
+import { CoffeeVarietyService } from '../services/coffee-variety.service';
+import { TranslationFormHelper } from '../../../shared/utils/translation.utils';
+import { ColumnDef, createColumnHelper } from '@tanstack/table-core';
+import { SUPPORTED_LANGUAGES } from '../../../core/i18n/language';
+import { map, Observable } from 'rxjs';
+import { PageResponse } from '../../../core/models/api-response.model';
 
-// Spartan UI
 import { HlmCardImports } from '@spartan-ng/helm/card';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmBadgeImports } from '@spartan-ng/helm/badge';
 import { HlmInputImports } from '@spartan-ng/helm/input';
+import { HlmSelectImports } from '@spartan-ng/helm/select';
 import { HlmDialogImports } from '@spartan-ng/helm/dialog';
 import { HlmTableImports } from '@spartan-ng/helm/table';
+import { HlmAvatarImports } from '@spartan-ng/helm/avatar';
+import { HlmSkeletonImports } from '@spartan-ng/helm/skeleton';
 import { HlmLabelImports } from '@spartan-ng/helm/label';
 
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
   lucidePlus,
   lucideSearch,
+  lucideGrid3x3,
+  lucideList,
   lucidePencil,
   lucideTrash2,
   lucideX,
+  lucideCheck,
+  lucideImage,
   lucideChevronLeft,
   lucideChevronRight,
 } from '@ng-icons/lucide';
-import { HasPermissionDirective } from '../../../core/auth/permission.directive';
+
 import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
-import { BaseListComponent } from '../../../core/crud/base-list.component';
-import { CoffeeVarietyRequest, CoffeeVarietyResponse } from '../models/coffee-variety.model';
-import { CoffeeVarietyService } from '../services/coffee-variety.service';
-import { TranslationFormHelper } from '../../../shared/utils/translation.utils';
-import { SUPPORTED_LANGUAGES } from '../../../core/i18n/language';
-import { PageResponse } from '../../../core/models/api-response.model';
+import { Router } from '@angular/router';
 
-
+type ViewMode = 'list' | 'grid';
 
 @Component({
   selector: 'app-coffee-variety-list',
@@ -47,8 +55,11 @@ import { PageResponse } from '../../../core/models/api-response.model';
     HlmButtonImports,
     HlmBadgeImports,
     HlmInputImports,
+    HlmSelectImports,
     HlmDialogImports,
     HlmTableImports,
+    HlmAvatarImports,
+    HlmSkeletonImports,
     HlmLabelImports,
     NgIcon,
   ],
@@ -56,25 +67,51 @@ import { PageResponse } from '../../../core/models/api-response.model';
     provideIcons({
       lucidePlus,
       lucideSearch,
+      lucideGrid3x3,
+      lucideList,
       lucidePencil,
       lucideTrash2,
       lucideX,
+      lucideCheck,
+      lucideImage,
       lucideChevronLeft,
       lucideChevronRight,
     }),
   ],
   templateUrl: './coffee-variety-list.component.html',
 })
-export class CoffeeVarietyListComponent extends BaseListComponent<CoffeeVarietyResponse, CoffeeVarietyRequest, string> {
+export class CoffeeVarietyListComponent extends BaseListComponent<CoffeeVarietyResponse, CoffeeVarietyRequest> {
   private coffeeVarietyService = inject(CoffeeVarietyService);
   protected translationHelper = inject(TranslationFormHelper);
+  protected router = inject(Router);
 
   protected override getId(item: CoffeeVarietyResponse): string {
     return item.slug;
   }
 
+  viewMode = signal<ViewMode>('list');
+
+  isActiveFilter: boolean | undefined = undefined;
+
+  onStatusFilterValueChange(value: string | null | undefined): void {
+    this.isActiveFilter = value === 'active' ? true : value === 'inactive' ? false : undefined;
+    this.currentPage.set(0);
+    this.load();
+  }
+
+  itemToString = (value: string) => {
+    const labels: Record<string, string> = { all: 'All Status', active: 'Active', inactive: 'Inactive' };
+    return labels[value] ?? value;
+  };
+
   private columnHelper = createColumnHelper<CoffeeVarietyResponse>();
   columns: ColumnDef<CoffeeVarietyResponse, any>[] = [
+    this.columnHelper.accessor((row) => row.id, {
+      id: 'id',
+      header: 'ID',
+      enableSorting: true,
+    }),
+
     this.columnHelper.accessor('slug', {
       header: 'Slug',
       enableSorting: true,
@@ -85,9 +122,15 @@ export class CoffeeVarietyListComponent extends BaseListComponent<CoffeeVarietyR
         {
           id: `name_${lang.code}`,
           header: `Name (${lang.label})`,
+          enableSorting: false,
         },
       ),
     ),
+
+    this.columnHelper.accessor('createdAt', {
+      header: 'Created At',
+      enableSorting: true,
+    }),
     this.columnHelper.display({
       id: 'actions',
       header: 'Actions',
@@ -107,12 +150,13 @@ export class CoffeeVarietyListComponent extends BaseListComponent<CoffeeVarietyR
 
   protected override buildForm(): FormGroup {
     return this.fb.group({
+      isActive: [true],
       translations: this.translationHelper.buildArray([], ['description']),
     });
   }
 
-  protected override onEditOpen(item: CoffeeVarietyResponse): void {
-    this.translationHelper.patchArray(this.translationsArray, item.translations, ['description']);
+  protected override onEditOpen(variety: CoffeeVarietyResponse): void {
+    this.translationHelper.patchArray(this.translationsArray, variety.translations, ['description']);
   }
 
   protected override toRequest(): CoffeeVarietyRequest {
@@ -137,7 +181,16 @@ export class CoffeeVarietyListComponent extends BaseListComponent<CoffeeVarietyR
     return this.coffeeVarietyService.delete(slug);
   }
 
+  goToDetail(item: CoffeeVarietyResponse): void {
+    this.router.navigate(['/dashboard/coffee-varieties', item.slug]);
+  }
+
   getTranslationName(item: CoffeeVarietyResponse, langCode: string): string {
     return item.translations.find((t) => t.language === langCode)?.name ?? '—';
+  }
+
+
+  toggleView(mode: ViewMode): void {
+    this.viewMode.set(mode);
   }
 }

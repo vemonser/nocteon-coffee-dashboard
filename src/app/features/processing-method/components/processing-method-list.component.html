@@ -1,12 +1,17 @@
 <div class="flex flex-col gap-6 p-6">
+  <!-- Header -->
   <div class="flex items-center justify-between">
     <div>
       <h1 class="text-2xl font-bold tracking-tight">Processing Methods</h1>
       <p class="text-muted-foreground">{{ items().length }} total</p>
     </div>
+
     <div class="flex items-center gap-3">
+   
+      <!-- Add Button -->
       <button
-        *hasPermission="'processing-method:create'"
+        class="p-4 min-h-10"
+        *hasPermission="'processing_method:create'"
         hlmBtn
         (click)="openCreateDialog()"
       >
@@ -16,7 +21,8 @@
     </div>
   </div>
 
-  <div class="flex flex-col gap-4 sm:flex-row sm:items-center">
+  <!-- Search -->
+  <div class="flex flex-col gap-4 sm:flex-row sm:items-center items-stretch">
     <div class="relative flex-1 max-w-md">
       <ng-icon
         name="lucideSearch"
@@ -28,30 +34,115 @@
         [(ngModel)]="searchQuery"
         (input)="onSearch()"
         placeholder="Search processing methods..."
-        class="pl-9 w-full"
+        class="pl-9 w-full pb-1.25 pt-1.25"
       />
     </div>
   </div>
 
+  <!-- Loading State -->
   @if (loading()) {
-    <div class="rounded-md border">
-      <div class="h-12 border-b bg-muted/50 animate-pulse" *ngFor="let _ of [1,2,3,4,5]"></div>
-    </div>
+    @if (viewMode() === 'list') {
+      <div class="rounded-md border">
+        <div
+          class="h-12 border-b bg-muted/50 animate-pulse"
+          *ngFor="let _ of [1, 2, 3, 4, 5]"
+        ></div>
+      </div>
+    } @else {
+      <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <hlm-card *ngFor="let _ of [1, 2, 3, 4, 5, 6, 7, 8]" class="overflow-hidden">
+          <div class="aspect-video bg-muted animate-pulse"></div>
+          <div hlmCardContent class="p-4 space-y-2">
+            <div class="h-4 bg-muted animate-pulse rounded w-3/4"></div>
+            <div class="h-3 bg-muted animate-pulse rounded w-1/2"></div>
+          </div>
+        </hlm-card>
+      </div>
+    }
   }
 
-  @if (!loading()) {
+  <!-- List View -->
+  @if (viewMode() === 'list') {
     <div class="rounded-md border bg-card">
       <app-data-table
         [data]="items()"
         [columns]="columns"
         [loading]="loading()"
+        [initialSort]="{ column: currentSort, direction: currentDirection }"
         (edit)="openEditDialog($event)"
         (delete)="confirmDelete($event)"
         (sortChange)="onSortChange($event)"
+        (rowClick)="goToDetail($event)"
       />
     </div>
   }
 
+  <!-- Grid View -->
+  @if (!loading() && viewMode() === 'grid') {
+    <div class="grid gap-4 grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
+      @for (item of items(); track item.slug) {
+        <hlm-card class="group overflow-hidden transition-all py-0 hover:shadow-lg">
+          <div class="p-4">
+            <!-- Names -->
+            <div class="space-y-1 mb-3">
+              @for (lang of ['en', 'ar']; track lang) {
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-medium text-muted-foreground uppercase w-6">{{
+                    lang
+                  }}</span>
+                  <p class="text-sm font-medium truncate" [dir]="lang === 'ar' ? 'rtl' : 'ltr'">
+                    {{ getTranslationName(item, lang) }}
+                  </p>
+                </div>
+              }
+            </div>
+
+            <!-- Slug -->
+            <p class="text-xs text-muted-foreground mb-3">/{{ item.slug }}</p>
+
+            <!-- Created At -->
+            @if (item.createdAt) {
+              <p class="text-xs text-muted-foreground mb-3">
+                {{ item.createdAt | date:'mediumDate' }}
+              </p>
+            }
+
+            <!-- Actions -->
+            <div class="flex items-center gap-2 pt-3 border-t">
+              <button
+                hlmBtn
+                variant="ghost"
+                size="sm"
+                class="flex-1"
+                (click)="openEditDialog(item)"
+              >
+                <ng-icon name="lucidePencil" class="mr-1 size-3" />
+                Edit
+              </button>
+              <button
+                hlmBtn
+                variant="ghost"
+                size="sm"
+                class="flex-1 text-destructive hover:text-destructive"
+                (click)="confirmDelete(item)"
+              >
+                <ng-icon name="lucideTrash2" class="mr-1 size-3" />
+                Delete
+              </button>
+            </div>
+          </div>
+        </hlm-card>
+      } @empty {
+        <div class="col-span-full text-center py-12 text-muted-foreground">
+          <ng-icon name="lucideSearch" class="mx-auto size-12 opacity-20 mb-4" />
+          <p class="text-lg font-medium">No processing methods found</p>
+          <p class="text-sm">Try adjusting your search or filters</p>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Pagination -->
   @if (pageData() && !loading()) {
     <div class="flex items-center justify-between">
       <span class="text-sm text-muted-foreground">
@@ -69,9 +160,11 @@
         >
           <ng-icon name="lucideChevronLeft" class="size-4" />
         </button>
+
         <span class="text-sm text-muted-foreground px-2">
           Page {{ pageData()!.page + 1 }} of {{ pageData()!.totalPages }}
         </span>
+
         <button
           hlmBtn
           variant="outline"
@@ -86,9 +179,13 @@
   }
 </div>
 
+<!-- ══════════════════════════════════════════════════════════
+     Create / Edit Dialog
+══════════════════════════════════════════════════════════ -->
 @if (showDialog()) {
   <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
     <div class="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl bg-card shadow-2xl border">
+      <!-- Dialog Header -->
       <div class="flex items-center justify-between p-6 border-b sticky top-0 bg-card">
         <h2 class="text-lg font-bold">
           {{ editing() ? 'Edit Processing Method' : 'Add Processing Method' }}
@@ -99,15 +196,18 @@
       </div>
 
       <form [formGroup]="form" (ngSubmit)="onSubmit()" class="p-6 space-y-5">
+        <!-- Translations -->
         <div formArrayName="translations">
           @for (group of translationsArray.controls; track $index; let i = $index) {
             <div [formGroupName]="i" class="rounded-md border p-4 mb-4">
+              <!-- Language Badge -->
               <div class="flex items-center gap-2 mb-3">
                 <hlm-badge variant="outline">
                   {{ translationHelper.getLangLabel(group.get('language')?.value) }}
                 </hlm-badge>
               </div>
 
+              <!-- Name -->
               <div class="space-y-1.5 mb-3">
                 <label hlmLabel>Name *</label>
                 <input
@@ -115,7 +215,9 @@
                   formControlName="name"
                   type="text"
                   [dir]="translationHelper.getLangDir(group.get('language')?.value)"
-                  [placeholder]="group.get('language')?.value === 'ar' ? 'مثال: غسيل' : 'e.g. Washed'"
+                  [placeholder]="
+                    group.get('language')?.value === 'ar' ? 'مثال: غسيل' : 'e.g. Washed'
+                  "
                   class="w-full"
                 />
                 @if (group.get('name')?.invalid && group.get('name')?.touched) {
@@ -123,6 +225,7 @@
                 }
               </div>
 
+              <!-- Description -->
               <div class="space-y-1.5">
                 <label hlmLabel>Description</label>
                 <textarea
@@ -137,6 +240,7 @@
           }
         </div>
 
+        <!-- Buttons -->
         <div class="flex gap-3 pt-2">
           <button type="button" hlmBtn variant="outline" class="flex-1" (click)="closeDialog()">
             Cancel
@@ -153,6 +257,9 @@
   </div>
 }
 
+<!-- ══════════════════════════════════════════════════════════
+     Delete Confirm Dialog
+══════════════════════════════════════════════════════════ -->
 @if (deleting()) {
   <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
     <div class="w-full max-w-sm rounded-2xl bg-card shadow-2xl border p-6">
@@ -163,9 +270,7 @@
         This action cannot be undone.
       </p>
       <div class="flex gap-3">
-        <button hlmBtn variant="outline" class="flex-1" (click)="deleting.set(null)">
-          Cancel
-        </button>
+        <button hlmBtn variant="outline" class="flex-1" (click)="deleting.set(null)">Cancel</button>
         <button
           hlmBtn
           variant="destructive"

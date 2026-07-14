@@ -1,10 +1,16 @@
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule, FormGroup, Validators } from '@angular/forms';
-import { ColumnDef, createColumnHelper } from '@tanstack/angular-table';
+import { FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { HasPermissionDirective } from '../../../core/auth/permission.directive';
+import { BaseListComponent } from '../../../core/crud/base-list.component';
+import { OriginRequest, OriginResponse } from '../models/origin.model';
+import { OriginService } from '../services/origin.service';
+import { TranslationFormHelper } from '../../../shared/utils/translation.utils';
+import { ColumnDef, createColumnHelper } from '@tanstack/table-core';
+import { SUPPORTED_LANGUAGES } from '../../../core/i18n/language';
 import { map, Observable } from 'rxjs';
+import { PageResponse } from '../../../core/models/api-response.model';
 
-// Spartan UI
 import { HlmCardImports } from '@spartan-ng/helm/card';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmBadgeImports } from '@spartan-ng/helm/badge';
@@ -17,27 +23,12 @@ import { HlmLabelImports } from '@spartan-ng/helm/label';
 
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
-  lucidePlus,
-  lucideSearch,
-  lucideGrid3x3,
-  lucideList,
-  lucidePencil,
-  lucideTrash2,
-  lucideX,
-  lucideImage,
-  lucideChevronLeft,
-  lucideChevronRight,
+  lucidePlus, lucideSearch, lucideGrid3x3, lucideList, lucidePencil,
+  lucideTrash2, lucideX, lucideCheck, lucideImage, lucideChevronLeft, lucideChevronRight,
 } from '@ng-icons/lucide';
 
-import { BaseListComponent } from '../../../core/crud/base-list.component';
 import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
-import { HasPermissionDirective } from '../../../core/auth/permission.directive';
-import { TranslationFormHelper } from '../../../shared/utils/translation.utils';
-import { SUPPORTED_LANGUAGES } from '../../../core/i18n/language';
-import { PageResponse } from '../../../core/models/api-response.model';
-
-import { OriginService } from '../services/origin.service';
-import { OriginRequest, OriginResponse } from '../models/origin.model';
+import { Router } from '@angular/router';
 
 type ViewMode = 'list' | 'grid';
 
@@ -45,41 +36,22 @@ type ViewMode = 'list' | 'grid';
   selector: 'app-origins-list',
   standalone: true,
   imports: [
-    CommonModule,
-    FormsModule,
-    ReactiveFormsModule,
-    HasPermissionDirective,
-    DataTableComponent,
-    HlmCardImports,
-    HlmButtonImports,
-    HlmBadgeImports,
-    HlmInputImports,
-    HlmDialogImports,
-    HlmTableImports,
-    HlmAvatarImports,
-    HlmSkeletonImports,
-    HlmLabelImports,
-    NgIcon,
+    CommonModule, FormsModule, ReactiveFormsModule, HasPermissionDirective, DataTableComponent,
+    HlmCardImports, HlmButtonImports, HlmBadgeImports, HlmInputImports,
+    HlmDialogImports, HlmTableImports, HlmAvatarImports, HlmSkeletonImports, HlmLabelImports, NgIcon,
   ],
   providers: [
     provideIcons({
-      lucidePlus,
-      lucideSearch,
-      lucideGrid3x3,
-      lucideList,
-      lucidePencil,
-      lucideTrash2,
-      lucideX,
-      lucideImage,
-      lucideChevronLeft,
-      lucideChevronRight,
+      lucidePlus, lucideSearch, lucideGrid3x3, lucideList, lucidePencil,
+      lucideTrash2, lucideX, lucideCheck, lucideImage, lucideChevronLeft, lucideChevronRight,
     }),
   ],
   templateUrl: './origins-list.component.html',
 })
-export class OriginsListComponent extends BaseListComponent<OriginResponse, OriginRequest, string> {
+export class OriginsListComponent extends BaseListComponent<OriginResponse, OriginRequest> {
   private originService = inject(OriginService);
   protected translationHelper = inject(TranslationFormHelper);
+  protected router = inject(Router);
 
   protected override getId(item: OriginResponse): string {
     return item.slug;
@@ -89,6 +61,11 @@ export class OriginsListComponent extends BaseListComponent<OriginResponse, Orig
 
   private columnHelper = createColumnHelper<OriginResponse>();
   columns: ColumnDef<OriginResponse, any>[] = [
+    this.columnHelper.accessor((row) => row.id, {
+      id: 'id',
+      header: 'ID',
+      enableSorting: true,
+    }),
     this.columnHelper.accessor((row) => row.imageUrl, {
       id: 'image',
       header: 'Image',
@@ -112,25 +89,15 @@ export class OriginsListComponent extends BaseListComponent<OriginResponse, Orig
         },
       ),
     ),
-    ...SUPPORTED_LANGUAGES.map((lang) =>
-      this.columnHelper.accessor(
-        (row): string => row.translations.find((t) => t.language === lang.code)?.description ?? '—',
-        {
-          id: `desc_${lang.code}`,
-          header: `Desc (${lang.label})`,
-          enableSorting: false,
-        },
-      ),
-    ),
+    this.columnHelper.accessor('createdAt', {
+      header: 'created at',
+      enableSorting: true,
+    }),
     this.columnHelper.display({
       id: 'actions',
       header: 'Actions',
     }),
   ];
-
-  toggleView(mode: ViewMode): void {
-    this.viewMode.set(mode);
-  }
 
   protected override loadPage(): Observable<PageResponse<OriginResponse>> {
     return this.originService
@@ -145,7 +112,7 @@ export class OriginsListComponent extends BaseListComponent<OriginResponse, Orig
 
   protected override buildForm(): FormGroup {
     return this.fb.group({
-      code: ['', [Validators.required, Validators.maxLength(10)]],
+      code: [''],
       translations: this.translationHelper.buildArray([], ['description']),
     });
   }
@@ -158,7 +125,7 @@ export class OriginsListComponent extends BaseListComponent<OriginResponse, Orig
 
   protected override toRequest(): OriginRequest {
     return {
-      code: this.form.value.code!,
+      code: this.form.value.code,
       translations: this.translationsArray.value.map((t: any) => ({
         language: t.language,
         name: t.name,
@@ -168,18 +135,26 @@ export class OriginsListComponent extends BaseListComponent<OriginResponse, Orig
   }
 
   protected override callCreate(req: OriginRequest, image?: File) {
-    return this.originService.create(req, image);
+    return this.originService.create(req, image, 'multipart');
   }
 
   protected override callUpdate(slug: string, req: OriginRequest, image?: File) {
-    return this.originService.update(slug, req, image);
+    return this.originService.update(slug, req, image, 'multipart');
   }
 
   protected override callDelete(slug: string) {
     return this.originService.delete(slug);
   }
 
+  goToDetail(item: OriginResponse): void {
+    this.router.navigate(['/dashboard/origins', item.slug]);
+  }
+
   getTranslationName(item: OriginResponse, langCode: string): string {
     return item.translations.find((t) => t.language === langCode)?.name ?? '—';
+  }
+
+  toggleView(mode: ViewMode): void {
+    this.viewMode.set(mode);
   }
 }

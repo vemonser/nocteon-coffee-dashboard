@@ -1,15 +1,20 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule, FormGroup, Validators } from '@angular/forms';
-import { ColumnDef, createColumnHelper } from '@tanstack/angular-table';
+import { FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { HasPermissionDirective } from '../../../core/auth/permission.directive';
+import { BaseListComponent } from '../../../core/crud/base-list.component';
+import { FarmRequest, FarmResponse } from '../models/farm.model';
+import { FarmService } from '../services/farm.service';
+import { TranslationFormHelper } from '../../../shared/utils/translation.utils';
+import { ColumnDef, createColumnHelper } from '@tanstack/table-core';
+import { SUPPORTED_LANGUAGES } from '../../../core/i18n/language';
 import { map, Observable } from 'rxjs';
+import { PageResponse } from '../../../core/models/api-response.model';
 
-// Spartan UI
 import { HlmCardImports } from '@spartan-ng/helm/card';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmBadgeImports } from '@spartan-ng/helm/badge';
 import { HlmInputImports } from '@spartan-ng/helm/input';
-import { HlmSelectImports } from '@spartan-ng/helm/select';
 import { HlmDialogImports } from '@spartan-ng/helm/dialog';
 import { HlmTableImports } from '@spartan-ng/helm/table';
 import { HlmAvatarImports } from '@spartan-ng/helm/avatar';
@@ -29,19 +34,11 @@ import {
   lucideImage,
   lucideChevronLeft,
   lucideChevronRight,
+  lucideMapPin,
 } from '@ng-icons/lucide';
 
-import { BaseListComponent } from '../../../core/crud/base-list.component';
 import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
-import { HasPermissionDirective } from '../../../core/auth/permission.directive';
-import { TranslationFormHelper } from '../../../shared/utils/translation.utils';
-import { SUPPORTED_LANGUAGES } from '../../../core/i18n/language';
-import { PageResponse } from '../../../core/models/api-response.model';
-
-import { FarmService } from '../services/farm.service';
-import { OriginService } from '../../origins/services/origin.service';
-import { FarmRequest, FarmResponse } from '../models/farm.model';
-import { OriginResponse } from '../../origins/models/origin.model';
+import { Router } from '@angular/router';
 
 type ViewMode = 'list' | 'grid';
 
@@ -54,12 +51,10 @@ type ViewMode = 'list' | 'grid';
     ReactiveFormsModule,
     HasPermissionDirective,
     DataTableComponent,
-    // Spartan
     HlmCardImports,
     HlmButtonImports,
     HlmBadgeImports,
     HlmInputImports,
-    HlmSelectImports,
     HlmDialogImports,
     HlmTableImports,
     HlmAvatarImports,
@@ -80,29 +75,29 @@ type ViewMode = 'list' | 'grid';
       lucideImage,
       lucideChevronLeft,
       lucideChevronRight,
+      lucideMapPin,
     }),
   ],
   templateUrl: './farms-list.component.html',
 })
-export class FarmsListComponent extends BaseListComponent<FarmResponse, FarmRequest, string> {
+export class FarmsListComponent extends BaseListComponent<FarmResponse, FarmRequest> {
   private farmService = inject(FarmService);
-  private originService = inject(OriginService);
   protected translationHelper = inject(TranslationFormHelper);
+  protected router = inject(Router);
 
   protected override getId(item: FarmResponse): string {
     return item.slug;
   }
 
-  // View mode toggle
   viewMode = signal<ViewMode>('list');
 
-  // Farm-specific state
-  origins = signal<OriginResponse[]>([]);
-  originSlugFilter = '';
-
-  // Columns
   private columnHelper = createColumnHelper<FarmResponse>();
   columns: ColumnDef<FarmResponse, any>[] = [
+    this.columnHelper.accessor((row) => row.id, {
+      id: 'id',
+      header: 'ID',
+      enableSorting: true,
+    }),
     this.columnHelper.accessor((row) => row.imageUrl, {
       id: 'image',
       header: 'Image',
@@ -114,7 +109,7 @@ export class FarmsListComponent extends BaseListComponent<FarmResponse, FarmRequ
     }),
     this.columnHelper.accessor('originSlug', {
       header: 'Origin',
-      enableSorting: false,
+      enableSorting: true,
     }),
     ...SUPPORTED_LANGUAGES.map((lang) =>
       this.columnHelper.accessor(
@@ -122,64 +117,26 @@ export class FarmsListComponent extends BaseListComponent<FarmResponse, FarmRequ
         {
           id: `name_${lang.code}`,
           header: `Name (${lang.label})`,
-          enableSorting: false,
+          enableSorting: false, // نفس القيد اللي طبقناه على الكاتيجوري لحد ما يتحل server-side
         },
       ),
     ),
-    ...SUPPORTED_LANGUAGES.map((lang) =>
-      this.columnHelper.accessor(
-        (row): string => row.translations.find((t) => t.language === lang.code)?.country ?? '—',
-        {
-          id: `country_${lang.code}`,
-          header: `Country (${lang.label})`,
-          enableSorting: false,
-        },
-      ),
-    ),
+
+    this.columnHelper.accessor('createdAt', {
+      header: 'created at',
+      enableSorting: true,
+    }),
     this.columnHelper.display({
       id: 'actions',
       header: 'Actions',
     }),
   ];
 
-  // ─── Lifecycle ─────────────────────────────────────────────────────────────
-
-  override ngOnInit(): void {
-    super.ngOnInit();
-    this.loadOrigins();
-  }
-
-  loadOrigins(): void {
-    this.originService.getAllOptions().subscribe({
-      next: (res) => this.origins.set(res.data.content),
-    });
-  }
-
-  // ─── Filters ───────────────────────────────────────────────────────────────
-
-  onOriginFilterChange(): void {
-    this.currentPage.set(0);
-    this.load();
-  }
-
-  toggleView(mode: ViewMode): void {
-    this.viewMode.set(mode);
-  }
-
-  // Helper
-  getOriginName(slug: string): string {
-    const o = this.origins().find((o) => o.slug === slug);
-    return o?.translations.find((t) => t.language === 'en')?.name ?? slug;
-  }
-
-  // ─── Base contract ─────────────────────────────────────────────────────────
-
   protected override loadPage(): Observable<PageResponse<FarmResponse>> {
     return this.farmService
       .getAll({
         page: this.currentPage(),
         search: this.searchQuery || undefined,
-        originSlug: this.originSlugFilter || undefined,
         sort: this.currentSort,
         direction: this.currentDirection,
       })
@@ -188,23 +145,23 @@ export class FarmsListComponent extends BaseListComponent<FarmResponse, FarmRequ
 
   protected override buildForm(): FormGroup {
     return this.fb.group({
-      originSlug: ['', Validators.required],
-      translations: this.translationHelper.buildArray([], ['country', 'description']),
+      originSlug: [''],
+      translations: this.translationHelper.buildArray([], ['description', 'country']),
     });
   }
 
   protected override onEditOpen(farm: FarmResponse): void {
     this.form.patchValue({ originSlug: farm.originSlug });
     this.translationHelper.patchArray(this.translationsArray, farm.translations, [
-      'country',
       'description',
+      'country',
     ]);
     this.imagePreview.set(farm.imageUrl);
   }
 
   protected override toRequest(): FarmRequest {
     return {
-      originSlug: this.form.value.originSlug!,
+      originSlug: this.form.value.originSlug,
       translations: this.translationsArray.value.map((t: any) => ({
         language: t.language,
         name: t.name,
@@ -215,15 +172,19 @@ export class FarmsListComponent extends BaseListComponent<FarmResponse, FarmRequ
   }
 
   protected override callCreate(req: FarmRequest, image?: File) {
-    return this.farmService.create(req, image);
+    return this.farmService.create(req, image, 'multipart');
   }
 
   protected override callUpdate(slug: string, req: FarmRequest, image?: File) {
-    return this.farmService.update(slug, req, image);
+    return this.farmService.update(slug, req, image, 'multipart');
   }
 
   protected override callDelete(slug: string) {
     return this.farmService.delete(slug);
+  }
+
+  goToDetail(item: FarmResponse): void {
+    this.router.navigate(['/dashboard/farms', item.slug]);
   }
 
   getTranslationName(item: FarmResponse, langCode: string): string {
@@ -232,5 +193,9 @@ export class FarmsListComponent extends BaseListComponent<FarmResponse, FarmRequ
 
   getTranslationCountry(item: FarmResponse, langCode: string): string {
     return item.translations.find((t) => t.language === langCode)?.country ?? '—';
+  }
+
+  toggleView(mode: ViewMode): void {
+    this.viewMode.set(mode);
   }
 }

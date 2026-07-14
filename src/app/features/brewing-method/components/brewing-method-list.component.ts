@@ -24,84 +24,70 @@ import {
   lucideX,
   lucideChevronLeft,
   lucideChevronRight,
+  lucideCheck,
 } from '@ng-icons/lucide';
 import { HasPermissionDirective } from '../../../core/auth/permission.directive';
 import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
 import { BaseListComponent } from '../../../core/crud/base-list.component';
-import { BrewingMethodRequest, BrewingMethodResponse } from '../models/brewing-method.model';
+import { BrewingMethodRequest, BrewingMethodResponse, DashboardBrewingMethodResponse } from '../models/brewing-method.model';
 import { BrewingMethodService } from '../services/brewing-method.service';
 import { TranslationFormHelper } from '../../../shared/utils/translation.utils';
 import { SUPPORTED_LANGUAGES } from '../../../core/i18n/language';
 import { PageResponse } from '../../../core/models/api-response.model';
-
+import { HlmSkeletonImports } from '@spartan-ng/helm/skeleton';
+import { Router } from '@angular/router';
 
 
 
 @Component({
-  selector: 'app-brewing-method-list',
+  selector: 'app-brewing-methods-list',
   standalone: true,
   imports: [
-    CommonModule,
-    FormsModule,
-    ReactiveFormsModule,
-    HasPermissionDirective,
-    DataTableComponent,
-    // Spartan
-    HlmCardImports,
-    HlmButtonImports,
-    HlmBadgeImports,
-    HlmInputImports,
-    HlmDialogImports,
-    HlmTableImports,
-    HlmLabelImports,
+    CommonModule, FormsModule, ReactiveFormsModule,
+    HasPermissionDirective, DataTableComponent,
+    HlmCardImports, HlmButtonImports, HlmBadgeImports,
+    HlmInputImports, HlmSkeletonImports, HlmLabelImports,
     NgIcon,
   ],
   providers: [
     provideIcons({
-      lucidePlus,
-      lucideSearch,
-      lucidePencil,
-      lucideTrash2,
-      lucideX,
-      lucideChevronLeft,
-      lucideChevronRight,
+      lucidePlus, lucideSearch, lucidePencil, lucideTrash2,
+      lucideX, lucideCheck, lucideChevronLeft, lucideChevronRight,
     }),
   ],
-  templateUrl: './brewing-method-list.component.html',
+  templateUrl: './brewing-methods-list.component.html',
 })
-export class BrewingMethodListComponent extends BaseListComponent<BrewingMethodResponse, BrewingMethodRequest, string> {
+export class BrewingMethodsListComponent extends BaseListComponent<
+  DashboardBrewingMethodResponse,
+  BrewingMethodRequest
+> {
   private brewingMethodService = inject(BrewingMethodService);
   protected translationHelper = inject(TranslationFormHelper);
+  protected router = inject(Router);
 
-  protected override getId(item: BrewingMethodResponse): string {
+  protected override getId(item: DashboardBrewingMethodResponse): string {
     return item.slug;
   }
 
-  // Columns for list view only
-  private columnHelper = createColumnHelper<BrewingMethodResponse>();
-  columns: ColumnDef<BrewingMethodResponse, any>[] = [
-    this.columnHelper.accessor('slug', {
-      header: 'Slug',
-      enableSorting: true,
-    }),
+  private columnHelper = createColumnHelper<DashboardBrewingMethodResponse>();
+  columns: ColumnDef<DashboardBrewingMethodResponse, any>[] = [
+    this.columnHelper.accessor('id', { header: 'ID', enableSorting: true }),
+    this.columnHelper.accessor('slug', { header: 'Slug', enableSorting: true }),
     ...SUPPORTED_LANGUAGES.map((lang) =>
       this.columnHelper.accessor(
         (row): string => row.translations.find((t) => t.language === lang.code)?.name ?? '—',
         {
           id: `name_${lang.code}`,
           header: `Name (${lang.label})`,
+          enableSorting: false, // زي ما اتفقنا: مش عمود DB حقيقي
         },
       ),
     ),
-    this.columnHelper.display({
-      id: 'actions',
-      header: 'Actions',
-    }),
+    this.columnHelper.accessor('createdAt', { header: 'created at', enableSorting: true }),
+    this.columnHelper.display({ id: 'actions', header: 'Actions' }),
   ];
 
-  // ─── Base contract ─────────────────────────────────────────────────────────
-
-  protected override loadPage(): Observable<PageResponse<BrewingMethodResponse>> {
+  protected override loadPage(): Observable<PageResponse<DashboardBrewingMethodResponse>> {
     return this.brewingMethodService
       .getAll({
         page: this.currentPage(),
@@ -118,7 +104,7 @@ export class BrewingMethodListComponent extends BaseListComponent<BrewingMethodR
     });
   }
 
-  protected override onEditOpen(item: BrewingMethodResponse): void {
+  protected override onEditOpen(item: DashboardBrewingMethodResponse): void {
     this.translationHelper.patchArray(this.translationsArray, item.translations, ['description']);
   }
 
@@ -133,21 +119,20 @@ export class BrewingMethodListComponent extends BaseListComponent<BrewingMethodR
   }
 
   protected override callCreate(req: BrewingMethodRequest) {
-    // مفيش image، فـ بنادي الـ base method عادي
-    return this.brewingMethodService.create(req);
+    return this.brewingMethodService.create(req, undefined, 'json');
   }
 
   protected override callUpdate(slug: string, req: BrewingMethodRequest) {
-    return this.brewingMethodService.update(slug, req);
+    return this.brewingMethodService.update(slug, req, undefined, 'json');
   }
 
   protected override callDelete(slug: string) {
     return this.brewingMethodService.delete(slug);
   }
 
-  // ─── UI helpers ────────────────────────────────────────────────────────────
-
-  getTranslationName(item: BrewingMethodResponse, langCode: string): string {
-    return item.translations.find((t) => t.language === langCode)?.name ?? '—';
+  goToDetail(item: DashboardBrewingMethodResponse): void {
+    this.router.navigate(['/dashboard/brewing-methods', item.slug]);
   }
+
+
 }

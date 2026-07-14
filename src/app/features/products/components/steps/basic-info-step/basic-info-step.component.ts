@@ -10,7 +10,7 @@ import { TranslationFormHelper } from '../../../../../shared/utils/translation.u
 import { CategoryService } from '../../../../categories/services/category.service';
 import { OriginService } from '../../../../origins/services/origin.service';
 import { CategoryResponse } from '../../../../categories/models/category.model';
-import { OriginResponse } from '../../../../origins/models/origin.model';
+import { OriginOption, OriginResponse } from '../../../../origins/models/origin.model';
 import { FarmResponse } from '../../../../farms/models/farm.model';
 import { RoastLevelRequest,RoastLevelResponse } from '../../../../roast-level/models/roast-level.model';
 import { ProcessingMethodResponse } from '../../../../processing-method/models/processing-method.model';
@@ -44,7 +44,7 @@ export class BasicInfoStepComponent {
 
   // ─── Dropdown data ────────────────────────────────────────────────────────────
   categories        = signal<CategoryResponse[]>([]);
-  origins           = signal<OriginResponse[]>([]);
+  origins           = signal<OriginOption[]>([]);
   farms             = signal<FarmResponse[]>([]);
   roastLevels       = signal<RoastLevelResponse[]>([]);
   processingMethods = signal<ProcessingMethodResponse[]>([]);
@@ -59,7 +59,7 @@ export class BasicInfoStepComponent {
       .subscribe({ next: (r) => this.categories.set(r.data.content) });
 
     this.originService.getAllOptions()
-      .subscribe({ next: (r) => this.origins.set(r.data.content) });
+      .subscribe({ next: (r) => this.origins.set(r.data) });
 
     this.farmService.getAll({ size: 200 })
       .subscribe({ next: (r) => this.farms.set(r.data.content) });
@@ -95,7 +95,7 @@ export class BasicInfoStepComponent {
 
   getOriginName(slug: string): string {
     const o = this.origins().find((o) => o.slug === slug);
-    return o ? this.enName(o.translations, slug) : slug;
+  return o?.name ?? slug;  
   }
 
   getFarmName(slug: string): string {

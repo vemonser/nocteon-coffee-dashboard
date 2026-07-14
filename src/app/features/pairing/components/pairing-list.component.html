@@ -3,9 +3,10 @@
   <div class="flex items-center justify-between">
     <div>
       <h1 class="text-2xl font-bold tracking-tight">Pairings</h1>
-      <p class="text-muted-foreground">{{ items().length }} total</p>
     </div>
+
     <div class="flex items-center gap-3">
+      <!-- View Toggle -->
       <div class="flex items-center rounded-md border bg-card p-1">
         <button
           hlmBtn
@@ -26,20 +27,24 @@
           <ng-icon name="lucideGrid3x3" class="size-4" />
         </button>
       </div>
+
+      <!-- Add Button -->
       <button
-        *hasPermission="'pairings:create'"
+        class="p-4 min-h-10"
+        *hasPermission="'pairing:create'"
         hlmBtn
         (click)="openCreateDialog()"
       >
         <ng-icon name="lucidePlus" class="me-2 size-4" />
-        Add Pairing
+        Add new Pairing
       </button>
     </div>
   </div>
 
-  <!-- Search -->
-  <div class="flex flex-col gap-4 sm:flex-row sm:items-center">
-    <div class="relative flex-1 max-w-md">
+  <!-- Filters -->
+  <div class="flex flex-col gap-4 sm:flex-row sm:items-center items-stretch">
+    <!-- Search -->
+    <div class="relative flex-1  max-w-md">
       <ng-icon
         name="lucideSearch"
         class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground"
@@ -49,21 +54,26 @@
         type="text"
         [(ngModel)]="searchQuery"
         (input)="onSearch()"
-        placeholder="Search pairings..."
-        class="pl-9 w-full"
+        placeholder="Search pairing..."
+        class="pl-9 w-full pb-1.25 pt-1.25"
       />
     </div>
+
+
   </div>
 
-  <!-- Loading -->
+  <!-- Loading State -->
   @if (loading()) {
     @if (viewMode() === 'list') {
       <div class="rounded-md border">
-        <div class="h-12 border-b bg-muted/50 animate-pulse" *ngFor="let _ of [1,2,3,4,5]"></div>
+        <div
+          class="h-12 border-b bg-muted/50 animate-pulse"
+          *ngFor="let _ of [1, 2, 3, 4, 5]"
+        ></div>
       </div>
     } @else {
       <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        <hlm-card *ngFor="let _ of [1,2,3,4,5,6,7,8]" class="overflow-hidden">
+        <hlm-card *ngFor="let _ of [1, 2, 3, 4, 5, 6, 7, 8]" class="overflow-hidden">
           <div class="aspect-video bg-muted animate-pulse"></div>
           <div hlmCardContent class="p-4 space-y-2">
             <div class="h-4 bg-muted animate-pulse rounded w-3/4"></div>
@@ -75,15 +85,17 @@
   }
 
   <!-- List View -->
-  @if (!loading() && viewMode() === 'list') {
+  @if (viewMode() === 'list') {
     <div class="rounded-md border bg-card">
       <app-data-table
         [data]="items()"
         [columns]="columns"
         [loading]="loading()"
+        [initialSort]="{ column: currentSort, direction: currentDirection }"
         (edit)="openEditDialog($event)"
         (delete)="confirmDelete($event)"
         (sortChange)="onSortChange($event)"
+        (rowClick)="goToDetail($event)"
       />
     </div>
   }
@@ -93,6 +105,7 @@
     <div class="grid gap-4 grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
       @for (item of items(); track item.slug) {
         <hlm-card class="group overflow-hidden transition-all py-0 hover:shadow-lg">
+          <!-- Image -->
           <div class="relative aspect-video overflow-hidden bg-muted">
             @if (item.imageUrl) {
               <img
@@ -106,20 +119,34 @@
               </div>
             }
           </div>
+
           <div hlmCardContent class="p-4">
+            <!-- Names -->
             <div class="space-y-1 mb-3">
               @for (lang of ['en', 'ar']; track lang) {
                 <div class="flex items-center gap-2">
-                  <span class="text-xs font-medium text-muted-foreground uppercase w-6">{{ lang }}</span>
+                  <span class="text-xs font-medium text-muted-foreground uppercase w-6">{{
+                    lang
+                  }}</span>
                   <p class="text-sm font-medium truncate" [dir]="lang === 'ar' ? 'rtl' : 'ltr'">
                     {{ getTranslationName(item, lang) }}
                   </p>
                 </div>
               }
             </div>
+
+            <!-- Slug -->
             <p class="text-xs text-muted-foreground mb-3">/{{ item.slug }}</p>
+
+            <!-- Actions -->
             <div class="flex items-center gap-2 pt-3 border-t">
-              <button hlmBtn variant="ghost" size="sm" class="flex-1" (click)="openEditDialog(item)">
+              <button
+                hlmBtn
+                variant="ghost"
+                size="sm"
+                class="flex-1"
+                (click)="openEditDialog(item)"
+              >
                 <ng-icon name="lucidePencil" class="mr-1 size-3" />
                 Edit
               </button>
@@ -139,8 +166,8 @@
       } @empty {
         <div class="col-span-full text-center py-12 text-muted-foreground">
           <ng-icon name="lucideSearch" class="mx-auto size-12 opacity-20 mb-4" />
-          <p class="text-lg font-medium">No pairings found</p>
-          <p class="text-sm">Try adjusting your search</p>
+          <p class="text-lg font-medium">No Pairing found</p>
+          <p class="text-sm">Try adjusting your search or filters</p>
         </div>
       }
     </div>
@@ -154,6 +181,7 @@
         {{ Math.min((pageData()!.page + 1) * pageData()!.size, pageData()!.totalElements) }}
         of {{ pageData()!.totalElements }}
       </span>
+
       <div class="flex items-center gap-2">
         <button
           hlmBtn
@@ -164,9 +192,11 @@
         >
           <ng-icon name="lucideChevronLeft" class="size-4" />
         </button>
+
         <span class="text-sm text-muted-foreground px-2">
           Page {{ pageData()!.page + 1 }} of {{ pageData()!.totalPages }}
         </span>
+
         <button
           hlmBtn
           variant="outline"
@@ -187,8 +217,11 @@
 @if (showDialog()) {
   <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
     <div class="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl bg-card shadow-2xl border">
+      <!-- Dialog Header -->
       <div class="flex items-center justify-between p-6 border-b sticky top-0 bg-card">
-        <h2 class="text-lg font-bold">{{ editing() ? 'Edit Pairing' : 'Add Pairing' }}</h2>
+        <h2 class="text-lg font-bold">
+          {{ editing() ? 'Edit Pairing' : 'Add Pairing' }}
+        </h2>
         <button hlmBtn variant="ghost" size="icon" class="size-8" (click)="closeDialog()">
           <ng-icon name="lucideX" class="size-4" />
         </button>
@@ -199,11 +232,14 @@
         <div formArrayName="translations">
           @for (group of translationsArray.controls; track $index; let i = $index) {
             <div [formGroupName]="i" class="rounded-md border p-4 mb-4">
+              <!-- Language Badge -->
               <div class="flex items-center gap-2 mb-3">
                 <hlm-badge variant="outline">
                   {{ translationHelper.getLangLabel(group.get('language')?.value) }}
                 </hlm-badge>
               </div>
+
+              <!-- Name -->
               <div class="space-y-1.5 mb-3">
                 <label hlmLabel>Name *</label>
                 <input
@@ -211,19 +247,23 @@
                   formControlName="name"
                   type="text"
                   [dir]="translationHelper.getLangDir(group.get('language')?.value)"
-                  [placeholder]="group.get('language')?.value === 'ar' ? 'مثال: شوكولاتة داكنة' : 'e.g. Dark Chocolate'"
+                  [placeholder]="
+                    group.get('language')?.value === 'ar' ? 'مثال: قهوة مثلجة' : 'e.g. Ice Coffee'
+                  "
                   class="w-full"
                 />
                 @if (group.get('name')?.invalid && group.get('name')?.touched) {
                   <p class="text-xs text-destructive">Name is required</p>
                 }
               </div>
+
+              <!-- Description -->
               <div class="space-y-1.5">
                 <label hlmLabel>Description</label>
                 <textarea
                   hlmInput
                   formControlName="description"
-                  rows="3"
+                  rows="4"
                   [dir]="translationHelper.getLangDir(group.get('language')?.value)"
                   class="w-full resize-none h-fit rounded-md"
                 ></textarea>
@@ -255,6 +295,8 @@
           }
         </div>
 
+ 
+
         <!-- Buttons -->
         <div class="flex gap-3 pt-2">
           <button type="button" hlmBtn variant="outline" class="flex-1" (click)="closeDialog()">
@@ -281,13 +323,11 @@
       <h2 class="text-lg font-bold mb-2">Delete Pairing</h2>
       <p class="text-muted-foreground mb-6">
         Are you sure you want to delete
-        <strong class="text-foreground">{{ deleting()!.slug }}</strong>?
-        This action cannot be undone.
+        <strong class="text-foreground">{{ deleting()!.slug }}</strong
+        >? This action cannot be undone.
       </p>
       <div class="flex gap-3">
-        <button hlmBtn variant="outline" class="flex-1" (click)="deleting.set(null)">
-          Cancel
-        </button>
+        <button hlmBtn variant="outline" class="flex-1" (click)="deleting.set(null)">Cancel</button>
         <button
           hlmBtn
           variant="destructive"

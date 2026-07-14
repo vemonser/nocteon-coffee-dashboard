@@ -65,46 +65,112 @@ export const routes: Routes = [
         path: 'origins',
         data: { breadcrumb: 'origins' },
         canActivate: [permissionGuard('origins:read')],
-        loadComponent: () =>
-          import('./features/origins/components/origins-list.component').then(
-            (m) => m.OriginsListComponent,
-          ),
+        children: [
+          {
+            path: '',
+            loadComponent: () =>
+              import('./features/origins/components/origins-list.component').then(
+                (m) => m.OriginsListComponent,
+              ),
+          },
+          {
+            path: ':slug',
+            data: { breadcrumb: 'originDetail' },
+            loadComponent: () =>
+              import('./features/origins/origin-detail/components/origin-detail.component').then(
+                (m) => m.OriginDetailComponent,
+              ),
+          },
+        ],
       },
       {
         path: 'farms',
         data: { breadcrumb: 'farms' },
         canActivate: [permissionGuard('farms:read')],
-        loadComponent: () =>
-          import('./features/farms/components/farms-list.component').then(
-            (m) => m.FarmsListComponent,
-          ),
+        children: [
+          {
+            path: '',
+            loadComponent: () =>
+              import('./features/farms/components/farms-list.component').then(
+                (m) => m.FarmsListComponent,
+              ),
+          },
+          {
+            path: ':slug',
+            data: { breadcrumb: 'farmDetail' },
+            loadComponent: () =>
+              import('./features/farms/farm-detail/components/farm-detail.component').then(
+                (m) => m.FarmDetailComponent,
+              ),
+          },
+        ],
       },
+
       {
         path: 'processing-methods',
         data: { breadcrumb: 'processing' },
         canActivate: [permissionGuard('processing_method:read')],
-        loadComponent: () =>
-          import('./features/processing-method/components/processing-method-list.component').then(
-            (m) => m.ProcessingMethodListComponent,
-          ),
+        children: [
+          {
+            path: '',
+            loadComponent: () =>
+              import('./features/processing-method/components/processing-method-list.component').then(
+                (m) => m.ProcessingMethodListComponent,
+              ),
+          },
+          {
+            path: ':slug',
+            data: { breadcrumb: 'processingDetail' },
+            loadComponent: () =>
+              import('./features/processing-method/processing-method-detail/components/processing-method-detail.component').then(
+                (m) => m.ProcessingMethodDetailComponent,
+              ),
+          },
+        ],
       },
       {
         path: 'coffee-varieties',
         data: { breadcrumb: 'varieties' },
         canActivate: [permissionGuard('coffee_variety:read')],
-        loadComponent: () =>
-          import('./features/coffee-variety/components/coffee-variety-list.component').then(
-            (m) => m.CoffeeVarietyListComponent,
-          ),
+        children: [
+          {
+            path: '',
+            loadComponent: () =>
+              import('./features/coffee-variety/components/coffee-variety-list.component').then(
+                (m) => m.CoffeeVarietyListComponent,
+              ),
+          },
+          {
+            path: ':slug',
+            data: { breadcrumb: 'varietyDetail' },
+            loadComponent: () =>
+              import('./features/coffee-variety/coffee-variety-detail/components/coffee-variety-detail.component').then(
+                (m) => m.CoffeeVarietyDetailComponent,
+              ),
+          },
+        ],
       },
       {
         path: 'tasting-notes',
         data: { breadcrumb: 'tastingNotes' },
         canActivate: [permissionGuard('tasting_note:read')],
-        loadComponent: () =>
-          import('./features/tasting-note/components/tasting-note-list.component').then(
-            (m) => m.TastingNoteListComponent,
-          ),
+        children: [
+          {
+            path: '',
+            loadComponent: () =>
+              import('./features/tasting-note/components/tasting-note-list.component').then(
+                (m) => m.TastingNoteListComponent,
+              ),
+          },
+          {
+            path: ':slug',
+            data: { breadcrumb: 'tastingNoteDetail' },
+            loadComponent: () =>
+              import('./features/tasting-note/tasting-note-detail/components/tasting-note-detail.component').then(
+                (m) => m.TastingNoteDetailComponent,
+              ),
+          },
+        ],
       },
       {
         path: 'reviews',
@@ -113,23 +179,50 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/reviews/components/review.component').then((m) => m.ReviewComponent),
       },
+   
       {
         path: 'brewing-methods',
         data: { breadcrumb: 'brewing' },
         canActivate: [permissionGuard('brewing_method:read')],
-        loadComponent: () =>
+        children: [
+          {
+            path: '',
+            loadComponent: () =>
           import('./features/brewing-method/components/brewing-method-list.component').then(
-            (m) => m.BrewingMethodListComponent,
-          ),
+            (m) => m.BrewingMethodsListComponent,
+              ),
+          },
+          {
+            path: ':slug',
+            data: { breadcrumb: 'brewingMethodDetail' },
+            loadComponent: () =>
+              import('./features/brewing-method/brewing-method-detail/components/brewing-method-detail.component').then(
+                (m) => m.BrewingMethodDetailComponent,
+              ),
+          },
+        ],
       },
       {
         path: 'pairings',
         data: { breadcrumb: 'pairings' },
         canActivate: [permissionGuard('pairing:read')],
-        loadComponent: () =>
-          import('./features/pairing/components/pairing-list.component').then(
-            (m) => m.PairingListComponent,
-          ),
+        children: [
+          {
+            path: '',
+            loadComponent: () =>
+              import('./features/pairing/components/pairing-list.component').then(
+                (m) => m.PairingListComponent,
+              ),
+          },
+          {
+            path: ':slug',
+            data: { breadcrumb: 'pairingDetail' },
+            loadComponent: () =>
+              import('./features/pairing/pairing-detail/components/pairing-detail.component').then(
+                (m) => m.PairingDetailComponent,
+              ),
+          },
+        ],
       },
       {
         path: 'products',
