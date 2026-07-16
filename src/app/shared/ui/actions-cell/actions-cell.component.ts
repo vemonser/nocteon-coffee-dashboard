@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-actions-cell',
-  imports: [CommonModule,HasPermissionDirective],
+  imports: [CommonModule, HasPermissionDirective],
   templateUrl: './actions-cell.component.html',
   styleUrl: './actions-cell.component.css',
 })
@@ -16,6 +16,11 @@ export class ActionsCellComponent {
   deleteLabel = input<string>('Delete');
   viewLabel = input<string>('View');
 
+  // Per-page visibility toggles (combined with the permission check).
+  showView = input<boolean>(true);
+  showEdit = input<boolean>(true);
+  showDelete = input<boolean>(true);
+  hasView = input<boolean>(true);
   view = output<any>();
   edit = output<any>();
   delete = output<any>();
@@ -26,5 +31,4 @@ export class ActionsCellComponent {
   onDelete() {
     this.delete.emit(this.item());
   }
-  
 }

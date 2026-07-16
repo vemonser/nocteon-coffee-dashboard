@@ -39,7 +39,6 @@ import {
 import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
 import { Router } from '@angular/router';
 
-type ViewMode = 'list' | 'grid';
 
 @Component({
   selector: 'app-processing-method-list',
@@ -87,7 +86,6 @@ export class ProcessingMethodListComponent extends BaseListComponent<ProcessingM
     return item.slug;
   }
 
-  viewMode = signal<ViewMode>('list');
 
   isActiveFilter: boolean | undefined = undefined;
 
@@ -188,7 +186,5 @@ export class ProcessingMethodListComponent extends BaseListComponent<ProcessingM
   }
 
 
-  toggleView(mode: ViewMode): void {
-    this.viewMode.set(mode);
-  }
+
 }

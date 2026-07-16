@@ -13,7 +13,7 @@ export interface BaseListParams {
   direction?: 'asc' | 'desc';
 }
 
-export abstract class BaseCrudService<TResponse, TRequest> {
+export abstract class BaseCrudService<TResponse, TRequest, TId = string> {
   protected readonly http = inject(HttpClient);
   protected abstract basePath: string;
 
@@ -26,9 +26,7 @@ export abstract class BaseCrudService<TResponse, TRequest> {
   // ---------------------------------------------------------------------------
 
   protected buildBaseParams(params: BaseListParams): HttpParams {
-    let httpParams = new HttpParams()
-      .set('page', params.page ?? 0)
-      .set('size', params.size ?? 20);
+    let httpParams = new HttpParams().set('page', params.page ?? 0).set('size', params.size ?? 20);
 
     if (params.search?.trim()) {
       httpParams = httpParams.set('search', params.search.trim());
@@ -45,10 +43,7 @@ export abstract class BaseCrudService<TResponse, TRequest> {
 
   protected buildFormData(data: TRequest, image?: File): FormData {
     const formData = new FormData();
-    formData.append(
-      'data',
-      new Blob([JSON.stringify(data)], { type: 'application/json' })
-    );
+    formData.append('data', new Blob([JSON.stringify(data)], { type: 'application/json' }));
     if (image) {
       formData.append('image', image);
     }
@@ -64,7 +59,7 @@ export abstract class BaseCrudService<TResponse, TRequest> {
   protected buildRequestBody(
     data: TRequest,
     image?: File,
-    format: 'auto' | 'json' | 'multipart' = 'auto'
+    format: 'auto' | 'json' | 'multipart' = 'auto',
   ): TRequest | FormData {
     switch (format) {
       case 'json':
@@ -84,27 +79,27 @@ export abstract class BaseCrudService<TResponse, TRequest> {
   create(
     data: TRequest,
     image?: File,
-    format: 'auto' | 'json' | 'multipart' = 'auto'
+    format: 'auto' | 'json' | 'multipart' = 'auto',
   ): Observable<ApiResponse<TResponse>> {
     return this.http.post<ApiResponse<TResponse>>(
       this.fullUrl,
-      this.buildRequestBody(data, image, format)
+      this.buildRequestBody(data, image, format),
     );
   }
 
   update(
-    slug: string,
+    id: TId,
     data: TRequest,
     image?: File,
-    format: 'auto' | 'json' | 'multipart' = 'auto'
+    format: 'auto' | 'json' | 'multipart' = 'auto',
   ): Observable<ApiResponse<TResponse>> {
     return this.http.put<ApiResponse<TResponse>>(
-      `${this.fullUrl}/${slug}`,
-      this.buildRequestBody(data, image, format)
+      `${this.fullUrl}/${id}`,
+      this.buildRequestBody(data, image, format),
     );
   }
 
-  delete(slug: string): Observable<ApiResponse<void>> {
-    return this.http.delete<ApiResponse<void>>(`${this.fullUrl}/${slug}`);
+  delete(id: TId): Observable<ApiResponse<void>> {
+    return this.http.delete<ApiResponse<void>>(`${this.fullUrl}/${id}`);
   }
 }

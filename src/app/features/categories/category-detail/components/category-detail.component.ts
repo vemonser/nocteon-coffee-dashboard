@@ -35,7 +35,6 @@ import { CategoryService } from '../../services/category.service';
 import { TranslationFormHelper } from '../../../../shared/utils/translation.utils';
 import {
   CategoryRequest,
-  CategoryResponse,
   DashboardCategoryResponse,
   ProductCardResponse,
 } from '../../models/category.model';

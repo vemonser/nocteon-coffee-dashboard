@@ -2,7 +2,9 @@
   <!-- Loading overlay -->
   @if (loading()) {
     <div class="absolute inset-0 bg-white/60 flex items-center justify-center z-10 rounded-md">
-      <div class="w-6 h-6 border-2 border-amber-600 border-t-transparent rounded-full animate-spin"></div>
+      <div
+        class="w-6 h-6 border-2 border-amber-600 border-t-transparent rounded-full animate-spin"
+      ></div>
     </div>
   }
 
@@ -11,7 +13,9 @@
       @for (headerGroup of table().getHeaderGroups(); track headerGroup.id) {
         <tr hlmTr>
           @for (header of headerGroup.headers; track header.id) {
-            <th class="px-4 py-3 text-start  text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th
+              class="px-4 py-3 text-start text-xs font-medium text-gray-500 uppercase tracking-wider"
+            >
               @if (!header.isPlaceholder) {
                 @if (header.column.getCanSort()) {
                   <button
@@ -20,9 +24,13 @@
                   >
                     <span class="min-w-max inline-block">{{ header.column.columnDef.header }}</span>
                     <span class="text-gray-400 min-w-max inline-block group-hover:text-foreground">
-                      @if (header.column.getIsSorted() === 'asc') { ↑ }
-                      @else if (header.column.getIsSorted() === 'desc') { ↓ }
-                      @else { ↕ }
+                      @if (header.column.getIsSorted() === 'asc') {
+                        ↑
+                      } @else if (header.column.getIsSorted() === 'desc') {
+                        ↓
+                      } @else {
+                        ↕
+                      }
                     </span>
                   </button>
                 } @else {
@@ -50,15 +58,37 @@
             <td class="px-4 py-3">
               @switch (cell.column.id) {
                 @case ('image') {
-                  <app-image-cell [src]="$any(cell.getValue())" [alt]="row.original.slug ?? row.original.username" />
+                  <app-image-cell
+                    [src]="$any(cell.getValue())"
+                    [alt]="row.original.slug ?? row.original.username"
+                  />
+                }
+                @case ('primaryImageUrl') {
+                  <app-image-cell
+                    [src]="$any(cell.getValue())"
+                    [alt]="row.original.slug ?? row.original.id"
+                  />
                 }
 
                 @case ('avatar') {
                   @if (cell.getValue()) {
-                    <img [src]="$any(cell.getValue())" [alt]="row.original.username" class="h-8 w-8 rounded-full object-cover" />
+                    <img
+                      [src]="$any(cell.getValue())"
+                      [alt]="row.original.username"
+                      class="h-8 w-8 rounded-full object-cover"
+                    />
                   } @else {
-                    <div class="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-xs font-medium">
-                      {{ (row.original.firstName?.[0] || row.original.lastName?.[0] || row.original.username?.[0] || '').toUpperCase() }}
+                    <div
+                      class="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-xs font-medium"
+                    >
+                      {{
+                        (
+                          row.original.firstName?.[0] ||
+                          row.original.lastName?.[0] ||
+                          row.original.username?.[0] ||
+                          ''
+                        ).toUpperCase()
+                      }}
                     </div>
                   }
                 }
@@ -70,10 +100,23 @@
                   <span class="block min-w-max">
                   {{$any(cell.getValue()) | date:'short'}}
                   </span>
+                }
 
+                @case ('updatedAt') {
+                  <span class="block min-w-max text-sm">
+                  {{$any(cell.getValue()) | date:'short'}}
+                  </span>
+                }
+                @case ('updatedAt') {
+                  <span class="block min-w-max  text-sm">
+                    {{ $any(cell.getValue()) | date: 'short' }}
+                  </span>
                 }
 
                 @case ('isActive') {
+                  <app-status-cell [value]="$any(cell.getValue())" />
+                }
+                @case ('active') {
                   <app-status-cell [value]="$any(cell.getValue())" />
                 }
 
@@ -102,6 +145,9 @@
                     [deletePermission]="deletePermission()"
                     [editLabel]="editLabel()"
                     [deleteLabel]="deleteLabel()"
+                    [showEdit]="showEdit()"
+                    [showView]="showView()"
+                    [showDelete]="showDelete()"
                     (edit)="edit.emit($event)"
                     (delete)="delete.emit($event)"
                     (view)="rowClick.emit(row.original)"
@@ -109,7 +155,8 @@
                 }
 
                 @default {
-                  <span class="flex min-w-max items-start"
+                  <span
+                    class="flex min-w-max items-start"
                     [class.arabic-text]="containsArabic(cell.getValue())"
                     [dir]="getDir(cell.getValue())"
                   >

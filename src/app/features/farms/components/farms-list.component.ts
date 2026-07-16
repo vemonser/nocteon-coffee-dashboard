@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HasPermissionDirective } from '../../../core/auth/permission.directive';
@@ -40,7 +40,6 @@ import {
 import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
 import { Router } from '@angular/router';
 
-type ViewMode = 'list' | 'grid';
 
 @Component({
   selector: 'app-farms-list',
@@ -89,7 +88,6 @@ export class FarmsListComponent extends BaseListComponent<FarmResponse, FarmRequ
     return item.slug;
   }
 
-  viewMode = signal<ViewMode>('list');
 
   private columnHelper = createColumnHelper<FarmResponse>();
   columns: ColumnDef<FarmResponse, any>[] = [
@@ -195,7 +193,4 @@ export class FarmsListComponent extends BaseListComponent<FarmResponse, FarmRequ
     return item.translations.find((t) => t.language === langCode)?.country ?? '—';
   }
 
-  toggleView(mode: ViewMode): void {
-    this.viewMode.set(mode);
-  }
 }

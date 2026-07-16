@@ -6,6 +6,7 @@ export type NavKey =
   | 'orders'
   | 'users'
   | 'reviews'
+  | 'storeSettings'
   | 'journal'
   | 'products'
   | 'categories'
@@ -13,6 +14,10 @@ export type NavKey =
   | 'origins'
   | 'farms'
   | 'roastLevels'
+  | 'promoCodes'
+  | 'roastLevelDetail'
+  | 'shippingZones'
+  | 'shippingZoneDetail'
   | 'processing'
   | 'processingDetail'
   | 'varieties'
@@ -28,6 +33,8 @@ export const navI18n: Record<Language, Record<NavKey, string>> = {
     orders: 'Orders',
     users: 'Users',
     reviews: 'Reviews',
+    storeSettings: 'Store Settings',
+    promoCodes: 'Promo Codes',
     journal: 'Journal',
     products: 'Products',
     categories: 'Categories',
@@ -35,6 +42,9 @@ export const navI18n: Record<Language, Record<NavKey, string>> = {
     origins: 'Origins',
     farms: 'Farms',
     roastLevels: 'Roast Levels',
+    roastLevelDetail: 'Roast Level',
+    shippingZones: 'Shipping Zones',
+    shippingZoneDetail: 'Shipping Zone',
     processing: 'Processing Methods',
     processingDetail: 'Processing Method',
     varieties: 'Coffee Varieties',
@@ -49,6 +59,8 @@ export const navI18n: Record<Language, Record<NavKey, string>> = {
     orders: 'الطلبات',
     users: 'المستخدمين',
     reviews: 'التقييمات',
+    storeSettings: 'إعدادات الموقع',
+    promoCodes: 'رموز ترويجية',
     journal: 'المجلة',
     products: 'المنتجات',
     categories: 'الفئات',
@@ -56,6 +68,9 @@ export const navI18n: Record<Language, Record<NavKey, string>> = {
     origins: 'الأصول',
     farms: 'المزارع',
     roastLevels: 'مستويات التحميص',
+    roastLevelDetail: 'مستوى التحميص',
+    shippingZones: 'مناطق الشحن',
+    shippingZoneDetail: 'منطقة شحن',
     processing: 'المعالجة',
     processingDetail: 'طريقة المعالجة',
     varieties: 'الأصناف',

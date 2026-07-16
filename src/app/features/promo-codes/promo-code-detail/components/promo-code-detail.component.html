@@ -1,0 +1,298 @@
+<div class="flex flex-col gap-6 p-6 max-w-4xl mx-auto">
+  @if (loading()) {
+    <div class="space-y-6">
+      <div class="h-9 w-24 bg-muted animate-pulse rounded-md"></div>
+      <div class="h-64 bg-muted animate-pulse rounded-2xl"></div>
+    </div>
+  }
+
+  @if (error() && !loading()) {
+    <div class="flex flex-col items-center justify-center py-20 text-center">
+      <ng-icon name="lucideTag" class="size-16 text-muted-foreground opacity-20 mb-4" />
+      <h2 class="text-xl font-semibold text-destructive">{{ error() }}</h2>
+      <button hlmBtn variant="outline" class="mt-4" (click)="goBack()">
+        <ng-icon name="lucideArrowLeft" class="mr-2 size-4" />
+        Back to Promo Codes
+      </button>
+    </div>
+  }
+
+  @if (promoCode() && !loading() && form) {
+    <!-- Top Bar -->
+    <div class="flex items-center justify-between">
+      <button hlmBtn variant="ghost" size="sm" (click)="goBack()">
+        <ng-icon name="lucideArrowLeft" class="mr-2 size-4" />
+        Back
+      </button>
+
+      <div class="flex items-center gap-2">
+        @if (isEditing()) {
+          <button hlmBtn variant="outline" size="sm" (click)="cancelEdit()" [disabled]="saving()">
+            <ng-icon name="lucideX" class="mr-2 size-4" />
+            Cancel
+          </button>
+          <button
+            hlmBtn
+            size="sm"
+            (click)="saveChanges()"
+            [disabled]="!isDirty() || form.invalid || saving()"
+          >
+            @if (saving()) {
+              <ng-icon name="lucideLoader2" class="mr-2 size-4 animate-spin" />
+            } @else {
+              <ng-icon name="lucideCheck" class="mr-2 size-4" />
+            }
+            {{ saving() ? 'Saving...' : 'Save' }}
+          </button>
+        } @else {
+          <button hlmBtn variant="outline" size="sm" (click)="startEdit()">
+            <ng-icon name="lucidePencil" class="mr-2 size-4" />
+            Edit
+          </button>
+          <button hlmBtn variant="destructive" size="sm" (click)="deletePromoCode()">
+            <ng-icon name="lucideTrash2" class="mr-2 size-4" />
+            Delete
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- Main Card -->
+    <hlm-card>
+      <form [formGroup]="form">
+        <div hlmCardHeader>
+          <div class="flex items-center justify-between pb-4">
+            <hlm-badge variant="outline">
+              <ng-icon name="lucideTag" class="mr-1 size-3" />
+              {{ promoCode()!.code }}
+            </hlm-badge>
+            @if (!isEditing()) {
+              @if (promoCode()!.active) {
+                <hlm-badge variant="default">Active</hlm-badge>
+              } @else {
+                <hlm-badge variant="secondary">Inactive</hlm-badge>
+              }
+            }
+          </div>
+        </div>
+
+        <div hlmCardContent class="space-y-6">
+          <!-- Code -->
+          <div class="space-y-1.5">
+            <label hlmLabel>Code</label>
+            @if (isEditing()) {
+              <input hlmInput formControlName="code" type="text" class="w-full uppercase" />
+            } @else {
+              <div class="text-lg font-medium px-3 py-2 rounded-md bg-muted/50">
+                {{ promoCode()!.code }}
+              </div>
+            }
+          </div>
+
+          <hlm-separator />
+
+          <!-- Discount -->
+          <div class="grid grid-cols-2 gap-4">
+            <div class="space-y-1.5">
+              <label hlmLabel>Discount Type</label>
+              @if (isEditing()) {
+                <hlm-select formControlName="discountType" class="rounded-sm! w-full">
+                  <hlm-select-trigger class="rounded-sm w-full">
+                    <hlm-select-value />
+                  </hlm-select-trigger>
+                  <hlm-select-content *hlmSelectPortal>
+                    <hlm-select-group>
+                      <hlm-select-item value="PERCENTAGE">Percentage</hlm-select-item>
+                      <hlm-select-item value="FIXED_AMOUNT">Fixed Amount</hlm-select-item>
+                      <hlm-select-item value="FREE_SHIPPING">Free Shipping</hlm-select-item>
+                    </hlm-select-group>
+                  </hlm-select-content>
+                </hlm-select>
+              } @else {
+                <div class="px-3 py-2 rounded-md bg-muted/50">{{ promoCode()!.discountType }}</div>
+              }
+            </div>
+
+            @if (!isFreeShipping()) {
+              <div class="space-y-1.5">
+                <label hlmLabel>Value</label>
+                @if (isEditing()) {
+                  <input
+                    hlmInput
+                    formControlName="discountValue"
+                    type="number"
+                    min="0"
+                    class="w-full"
+                  />
+                } @else {
+                  <div class="px-3 py-2 rounded-md bg-muted/50">
+                    {{ promoCode()!.discountValue }}
+                  </div>
+                }
+              </div>
+            }
+          </div>
+
+          <!-- Min Order -->
+          <div class="space-y-1.5">
+            <label hlmLabel>Minimum Order Amount</label>
+            @if (isEditing()) {
+              <input
+                hlmInput
+                formControlName="minOrderAmount"
+                type="number"
+                min="0"
+                class="w-full"
+              />
+            } @else {
+              <div class="px-3 py-2 rounded-md bg-muted/50">
+                {{ promoCode()!.minOrderAmount ?? '—' }}
+              </div>
+            }
+          </div>
+
+          <hlm-separator />
+
+          <!-- Scope -->
+          <div class="space-y-1.5">
+            <label hlmLabel>Scope</label>
+            @if (isEditing()) {
+              <hlm-select formControlName="scopeType" class="rounded-sm! w-full">
+                <hlm-select-trigger class="rounded-sm w-full">
+                  <hlm-select-value />
+                </hlm-select-trigger>
+                <hlm-select-content *hlmSelectPortal>
+                  <hlm-select-group>
+                    <hlm-select-item value="GLOBAL">All Products</hlm-select-item>
+                    <hlm-select-item value="CATEGORY">Specific Categories</hlm-select-item>
+                  </hlm-select-group>
+                </hlm-select-content>
+              </hlm-select>
+            } @else {
+              <div class="px-3 py-2 rounded-md bg-muted/50">{{ promoCode()!.scopeType }}</div>
+            }
+          </div>
+
+          @if (isCategoryScope()) {
+            <div class="space-y-1.5">
+              <label hlmLabel>Categories</label>
+              @if (isEditing()) {
+                <div class="max-h-40 overflow-y-auto rounded-md border p-3 space-y-2">
+                  @for (cat of categoryOptions(); track cat.slug) {
+                    <label class="flex items-center gap-2 text-sm cursor-pointer">
+                      <input
+                        type="checkbox"
+                        class="h-4 w-4 rounded border-primary"
+                        [checked]="form.value.categoryIds.includes(cat.slug)"
+                        (change)="toggleCategory(cat.slug)"
+                      />
+                      {{ getTranslationName(cat) }}
+                    </label>
+                  }
+                </div>
+              } @else {
+                <div class="flex flex-wrap gap-2">
+                  @for (cat of promoCode()!.categorySlugs; track cat) {
+                    <hlm-badge variant="outline">{{ cat }}</hlm-badge>
+                  } @empty {
+                    <span class="text-sm text-muted-foreground">—</span>
+                  }
+                </div>
+              }
+            </div>
+          }
+
+          <hlm-separator />
+
+          <!-- Redemption Limits -->
+          <div class="grid grid-cols-2 gap-4">
+            <div class="space-y-1.5">
+              <label hlmLabel>Max Total Redemptions</label>
+              @if (isEditing()) {
+                <input
+                  hlmInput
+                  formControlName="maxTotalRedemptions"
+                  type="number"
+                  min="1"
+                  placeholder="Unlimited"
+                  class="w-full"
+                />
+              } @else {
+                <div class="px-3 py-2 rounded-md bg-muted/50">
+                  {{ promoCode()!.maxTotalRedemptions ?? 'Unlimited' }}
+                </div>
+              }
+            </div>
+            <div class="space-y-1.5">
+              <label hlmLabel>Max Per User</label>
+              @if (isEditing()) {
+                <input
+                  hlmInput
+                  formControlName="maxRedemptionsPerUser"
+                  type="number"
+                  min="1"
+                  class="w-full"
+                />
+              } @else {
+                <div class="px-3 py-2 rounded-md bg-muted/50">
+                  {{ promoCode()!.maxRedemptionsPerUser }}
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Validity -->
+          <div class="grid grid-cols-2 gap-4">
+            <div class="space-y-1.5">
+              <label hlmLabel>Valid From</label>
+              @if (isEditing()) {
+                <div class="flex gap-2">
+                  <hlm-date-picker formControlName="validFromDate" class="flex-1">
+                    <hlm-date-picker-trigger buttonId="validFromDate" class="w-full"
+                      >Pick a date</hlm-date-picker-trigger
+                    >
+                  </hlm-date-picker>
+                  <input hlmInput formControlName="validFromTime" type="time" class="w-28" />
+                </div>
+              } @else {
+                <div class="px-3 py-2 rounded-md bg-muted/50">
+                  {{ promoCode()!.validFrom | date: 'medium' }}
+                </div>
+              }
+            </div>
+            <div class="space-y-1.5">
+              <label hlmLabel>Valid Until</label>
+              @if (isEditing()) {
+                <div class="flex gap-2">
+                  <hlm-date-picker formControlName="validUntilDate" class="flex-1">
+                    <hlm-date-picker-trigger buttonId="validUntilDate" class="w-full"
+                      >Pick a date</hlm-date-picker-trigger
+                    >
+                  </hlm-date-picker>
+                  <input hlmInput formControlName="validUntilTime" type="time" class="w-28" />
+                </div>
+              } @else {
+                <div class="px-3 py-2 rounded-md bg-muted/50">
+                  {{ promoCode()!.validUntil | date: 'medium' }}
+                </div>
+              }
+            </div>
+          </div>
+
+          @if (isEditing()) {
+            <hlm-separator />
+            <div class="flex items-center gap-3">
+              <input
+                type="checkbox"
+                formControlName="isActive"
+                id="isActive"
+                class="h-4 w-4 rounded border-primary"
+              />
+              <label for="isActive" class="text-sm font-medium">Active</label>
+            </div>
+          }
+        </div>
+      </form>
+    </hlm-card>
+  }
+</div>

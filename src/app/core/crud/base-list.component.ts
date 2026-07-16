@@ -5,6 +5,8 @@ import { signal } from '@angular/core';
 import { PageResponse } from '../models/api-response.model';
 import { TableSortEvent } from '../../shared/components/data-table/data-table.component';
 
+export type ViewMode = 'list' | 'grid';
+
 @Directive()
 export abstract class BaseListComponent<TResponse, TRequest, TId = string>
   implements OnInit
@@ -23,6 +25,7 @@ export abstract class BaseListComponent<TResponse, TRequest, TId = string>
   imagePreview  = signal<string | null>(null);
   selectedImage = signal<File | null>(null);
   currentPage   = signal(0);
+  viewMode = signal<ViewMode>('list');
 
   // ─── Sort state ───────────────────────────────────────────────────────────────
   currentSort      = 'createdAt';
@@ -179,5 +182,9 @@ export abstract class BaseListComponent<TResponse, TRequest, TId = string>
       },
       error: () => this.submitting.set(false),
     });
+  }
+  
+  toggleView(mode: ViewMode): void {
+    this.viewMode.set(mode);
   }
 }

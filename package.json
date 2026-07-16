@@ -21,7 +21,7 @@
     "@angular/router": "^22.0.0",
     "@jsverse/transloco": "^8.4.0",
     "@ng-icons/core": "^33.3.0",
-    "@ng-icons/heroicons": "^33.3.0",
+    "@ng-icons/heroicons": "^33.4.0",
     "@ng-icons/lucide": "^33.4.0",
     "@ng-icons/material-file-icons": "^33.4.0",
     "@ng-icons/material-symbols": "^33.4.0",

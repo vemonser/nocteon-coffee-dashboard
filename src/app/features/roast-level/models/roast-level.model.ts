@@ -5,14 +5,17 @@ export interface RoastLevelTranslation {
   name: string;
   description?: string;
 }
+
 export interface RoastLevelResponse {
-  id: string;
+  id: number;
   slug: string;
-  color:string;
+  color: string;
+  createdAt?: string;
+  updatedAt?: string;
   translations: RoastLevelTranslation[];
 }
+
 export interface RoastLevelRequest {
-  color:string;
+  color: string;
   translations: RoastLevelTranslation[];
 }
- 

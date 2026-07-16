@@ -1,6 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 import { ColumnDef, createColumnHelper } from '@tanstack/angular-table';
 import { map, Observable } from 'rxjs';
 
@@ -73,9 +74,14 @@ export class RoastLevelListComponent extends BaseListComponent<
 > {
   private roastLevelService = inject(RoastLevelService);
   protected translationHelper = inject(TranslationFormHelper);
+  protected router = inject(Router);
 
   protected override getId(item: RoastLevelResponse): string {
     return item.slug;
+  }
+
+  goToDetail(item: RoastLevelResponse): void {
+    this.router.navigate(['/dashboard/roast-levels', item.slug]);
   }
 
   // ─── Columns ──────────────────────────────────────────────────────────────
@@ -104,16 +110,14 @@ export class RoastLevelListComponent extends BaseListComponent<
         },
       ),
     ),
-    ...SUPPORTED_LANGUAGES.map((lang) =>
-      this.columnHelper.accessor(
-        (row): string => row.translations.find((t) => t.language === lang.code)?.description ?? '—',
-        {
-          id: `desc_${lang.code}`,
-          header: `Desc (${lang.label})`,
-          enableSorting: false,
-        },
-      ),
-    ),
+    this.columnHelper.accessor('createdAt', {
+      header: 'Created At',
+      enableSorting: true,
+    }),
+    this.columnHelper.accessor('updatedAt', {
+      header: 'Updated At',
+      enableSorting: true,
+    }),
     this.columnHelper.display({
       id: 'actions',
       header: 'Actions',

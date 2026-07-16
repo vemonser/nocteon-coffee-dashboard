@@ -40,7 +40,6 @@ import {
 import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
 import { Router } from '@angular/router';
 
-type ViewMode = 'list' | 'grid';
 
 @Component({
   selector: 'app-coffee-variety-list',
@@ -89,7 +88,6 @@ export class CoffeeVarietyListComponent extends BaseListComponent<CoffeeVarietyR
     return item.slug;
   }
 
-  viewMode = signal<ViewMode>('list');
 
   isActiveFilter: boolean | undefined = undefined;
 
@@ -189,8 +187,4 @@ export class CoffeeVarietyListComponent extends BaseListComponent<CoffeeVarietyR
     return item.translations.find((t) => t.language === langCode)?.name ?? '—';
   }
 
-
-  toggleView(mode: ViewMode): void {
-    this.viewMode.set(mode);
-  }
 }

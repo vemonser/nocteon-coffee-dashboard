@@ -49,9 +49,11 @@
         [data]="items()"
         [columns]="columns"
         [loading]="loading()"
+        [initialSort]="{ column: currentSort, direction: currentDirection }"
         (edit)="openEditDialog($event)"
         (delete)="confirmDelete($event)"
         (sortChange)="onSortChange($event)"
+        (rowClick)="goToDetail($event)"
       />
     </div>
   }

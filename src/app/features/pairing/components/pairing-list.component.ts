@@ -43,7 +43,6 @@ import { TranslationFormHelper } from '../../../shared/utils/translation.utils';
 import { SUPPORTED_LANGUAGES } from '../../../core/i18n/language';
 import { PageResponse } from '../../../core/models/api-response.model';
 
-type ViewMode = 'list' | 'grid';
 
 @Component({
   selector: 'app-pairings-list',
@@ -95,7 +94,6 @@ export class PairingListComponent extends BaseListComponent<PairingResponse, Pai
   }
 
   // View mode toggle
-  viewMode = signal<ViewMode>('list');
 
 
   
@@ -207,7 +205,4 @@ export class PairingListComponent extends BaseListComponent<PairingResponse, Pai
     this.load();
   }
 
-  toggleView(mode: ViewMode): void {
-    this.viewMode.set(mode);
-  }
 }

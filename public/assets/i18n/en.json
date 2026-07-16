@@ -23,5 +23,8 @@
       "notifications": "Notifications",
       "account": "Account"
     }
+  },
+  "StoreSettingPage": {
+    "title": "Store Setting"
   }
 }

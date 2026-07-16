@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HasPermissionDirective } from '../../../core/auth/permission.directive';
@@ -43,7 +43,6 @@ import {
 import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
 import { Router } from '@angular/router';
 
-type ViewMode = 'list' | 'grid';
 
 @Component({
   selector: 'app-categories-list',
@@ -109,7 +108,6 @@ itemToString = (value: string) => {
   }
 
   // View mode toggle
-  viewMode = signal<ViewMode>('list');
 
   // Category-specific filter
   isActiveFilter: boolean | undefined = undefined;
@@ -171,7 +169,7 @@ itemToString = (value: string) => {
         sort: this.currentSort,
         direction: this.currentDirection,
       })
-      .pipe(map((res) => {console.log(res.data); return res.data}));
+      .pipe(map((res) => res.data));
   }
 
   protected override buildForm(): FormGroup {
@@ -230,7 +228,5 @@ itemToString = (value: string) => {
     this.load();
   }
 
-  toggleView(mode: ViewMode): void {
-    this.viewMode.set(mode);
-  }
+
 }

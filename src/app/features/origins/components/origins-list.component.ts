@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HasPermissionDirective } from '../../../core/auth/permission.directive';
@@ -30,7 +30,6 @@ import {
 import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
 import { Router } from '@angular/router';
 
-type ViewMode = 'list' | 'grid';
 
 @Component({
   selector: 'app-origins-list',
@@ -57,7 +56,6 @@ export class OriginsListComponent extends BaseListComponent<OriginResponse, Orig
     return item.slug;
   }
 
-  viewMode = signal<ViewMode>('list');
 
   private columnHelper = createColumnHelper<OriginResponse>();
   columns: ColumnDef<OriginResponse, any>[] = [
@@ -154,7 +152,4 @@ export class OriginsListComponent extends BaseListComponent<OriginResponse, Orig
     return item.translations.find((t) => t.language === langCode)?.name ?? '—';
   }
 
-  toggleView(mode: ViewMode): void {
-    this.viewMode.set(mode);
-  }
 }

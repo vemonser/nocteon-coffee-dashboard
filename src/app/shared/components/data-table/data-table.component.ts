@@ -33,7 +33,7 @@ export class DataTableComponent {
   edit = output<any>();
   delete = output<any>();
   rowClick = output<any>();
-
+  hasView = output<boolean>();
   initialSort = input<TableSortEvent | null>(null);
 
   // NEW: Generic action permissions & labels
@@ -41,6 +41,11 @@ export class DataTableComponent {
   deletePermission = input<string>('category:delete');
   editLabel = input<string>('Edit');
   deleteLabel = input<string>('Delete');
+
+  // Per-page action visibility toggles
+  showEdit = input<boolean>(true);
+  showView = input<boolean>(true);
+  showDelete = input<boolean>(true);
 
   sorting = signal<SortingState>([]);
   constructor() {

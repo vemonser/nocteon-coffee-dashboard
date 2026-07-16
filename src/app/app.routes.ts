@@ -30,6 +30,15 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'store-settings',
+        data: { breadcrumb: 'storeSettings' },
+        canActivate: [permissionGuard('settings:read')],
+        loadComponent: () =>
+          import('./features/store-settings/components/store-settings-list.component').then(
+            (m) => m.StoreSettingsListComponent,
+          ),
+      },
+      {
         path: 'categories',
         data: { breadcrumb: 'categories' },
         canActivate: [permissionGuard('category:read')],
@@ -53,14 +62,28 @@ export const routes: Routes = [
       },
 
       {
-        path: 'roast-levels',
-        data: { breadcrumb: 'roastLevels' },
-        canActivate: [permissionGuard('roast_level:read')],
-        loadComponent: () =>
-          import('./features/roast-level/components/roast-level-list.component').then(
-            (m) => m.RoastLevelListComponent,
-          ),
+        path: 'shipping-zones',
+        data: { breadcrumb: 'shippingZones' },
+        canActivate: [permissionGuard('shipping:read')],
+        children: [
+          {
+            path: '',
+            loadComponent: () =>
+              import('./features/shipping-zone/components/shipping-zone-list.component').then(
+                (m) => m.ShippingZoneListComponent,
+              ),
+          },
+          {
+            path: ':id',
+            data: { breadcrumb: 'shippingZoneDetail' },
+            loadComponent: () =>
+              import('./features/shipping-zone/shipping-zone-detail/components/shipping-zone-detail.component').then(
+                (m) => m.ShippingZoneDetailComponent,
+              ),
+          },
+        ],
       },
+
       {
         path: 'origins',
         data: { breadcrumb: 'origins' },
@@ -176,10 +199,24 @@ export const routes: Routes = [
         path: 'reviews',
         data: { breadcrumb: 'reviews' },
         canActivate: [permissionGuard('review:read')],
-        loadComponent: () =>
-          import('./features/reviews/components/review.component').then((m) => m.ReviewComponent),
+        children: [
+          {
+            path: '',
+            loadComponent: () =>
+              import('./features/reviews/components/review.component').then(
+                (m) => m.ReviewListComponent,
+              ),
+          },
+          {
+            path: ':id',
+            loadComponent: () =>
+              import('./features/reviews/components/review.component').then(
+                (m) => m.ReviewListComponent,
+              ),
+          },
+        ],
       },
-   
+
       {
         path: 'brewing-methods',
         data: { breadcrumb: 'brewing' },
@@ -188,8 +225,8 @@ export const routes: Routes = [
           {
             path: '',
             loadComponent: () =>
-          import('./features/brewing-method/components/brewing-method-list.component').then(
-            (m) => m.BrewingMethodsListComponent,
+              import('./features/brewing-method/components/brewing-method-list.component').then(
+                (m) => m.BrewingMethodsListComponent,
               ),
           },
           {
@@ -198,6 +235,28 @@ export const routes: Routes = [
             loadComponent: () =>
               import('./features/brewing-method/brewing-method-detail/components/brewing-method-detail.component').then(
                 (m) => m.BrewingMethodDetailComponent,
+              ),
+          },
+        ],
+      },
+      {
+        path: 'promo-codes',
+        data: { breadcrumb: 'promoCodes' },
+        canActivate: [permissionGuard('promo:read')],
+        children: [
+          {
+            path: '',
+            loadComponent: () =>
+              import('./features/promo-codes/components/promo-codes-list.component').then(
+                (m) => m.PromoCodesListComponent,
+              ),
+          },
+          {
+            path: ':slug',
+            data: { breadcrumb: 'promoDetails' },
+            loadComponent: () =>
+              import('./features/promo-codes/promo-code-detail/components/promo-code-detail.component').then(
+                (m) => m.PromoCodeDetailComponent,
               ),
           },
         ],

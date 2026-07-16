@@ -4,7 +4,7 @@ export interface GlobalSearchResponse {
 }
 
 export interface SearchResultDto {
-  type: string;           // 'CATEGORY' | 'FARM' | 'ORIGIN' | 'PRODUCT' | 'USER' | ...
+  type: string;          
   id: number;
   title: string;
   subtitle: string;

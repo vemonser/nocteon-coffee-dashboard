@@ -5,6 +5,7 @@ import { heroBell } from '@ng-icons/heroicons/outline';
 import { NotificationDto } from '../models/notification.model';
 import { Router } from '@angular/router';
 import { DatePipe } from '@angular/common';
+import { lucideChevronLeft } from '@ng-icons/lucide';
 
 @Component({
   selector: 'app-notification',
@@ -13,6 +14,7 @@ import { DatePipe } from '@angular/common';
   providers: [
     provideIcons({
       heroBell,
+      lucideChevronLeft
     }),
   ],
 })
