@@ -91,6 +91,7 @@
         (edit)="openEditDialog($event)"
         (delete)="confirmDelete($event)"
         (sortChange)="onSortChange($event)"
+        (rowClick)="goToDetail($event)"
       />
     </div>
   }
@@ -133,9 +134,11 @@
 <!-- Create / Edit Dialog -->
 @if (showDialog()) {
   <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-    <div class="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl bg-card shadow-2xl border">
+    <div
+      class="w-full max-w-lg max-h-[90vh] snap-y snap-mandatory scrollbar-hide gap-4 overflow-y-auto rounded-2xl bg-card shadow-2xl border"
+    >
       <div class="flex items-center justify-between p-6 border-b sticky top-0 bg-card">
-        <h2 class="text-lg font-bold">{{ editing() ? 'Edit User' : 'Add User' }}</h2>
+        <h2 class="text-2xl font-bold">{{ editing() ? 'Edit User' : 'Add User' }}</h2>
         <button hlmBtn variant="ghost" size="icon" class="size-8" (click)="closeDialog()">
           <ng-icon name="lucideX" class="size-4" />
         </button>
@@ -206,14 +209,23 @@
           }
         </div>
         <div class="space-y-1.5">
-          <label hlmLabel>Role *</label>
-          <select
-            formControlName="role"
-            class="h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm"
-          >
-            <option value="CUSTOMER">Customer</option>
-            <option value="ADMIN">Admin</option>
-          </select>
+          <hlm-field>
+            <label hlmFieldLabel for="role">Role</label>
+            <hlm-select formControlName="role" class="w-full h-fit">
+              <hlm-select-trigger buttonId="role" size="default" class="w-full flex h-fit!">
+                <hlm-select-value class="px-1" placeholder="Select a fruit" />
+              </hlm-select-trigger>
+              <hlm-select-content class="p-1" *hlmSelectPortal>
+                <hlm-select-group>
+                  <hlm-select-label>Roles</hlm-select-label>
+                  @for (item of permission; track item.value) {
+                    <hlm-select-item [value]="item.value">{{ item.label }}</hlm-select-item>
+                  }
+                </hlm-select-group>
+              </hlm-select-content>
+            </hlm-select>
+            <hlm-field-error>Please select a fruit.</hlm-field-error>
+          </hlm-field>
         </div>
         <div class="space-y-1.5">
           <label hlmLabel>First Name</label>

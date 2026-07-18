@@ -13,6 +13,7 @@ const icons: Record<NavKey, string> = {
   journal: 'lucideBookOpen',
   products: 'lucideCoffee',
   categories: 'lucideTags',
+  notifications: 'lucideBellRing',
   categoryDetail: 'lucideTags',
   origins: 'lucideGlobe',
   farms: 'lucideSprout',
@@ -55,6 +56,12 @@ export function getNavItems(lang: Language) {
         icon: icons.storeSettings,
         route: '/dashboard/store-settings',
         permission: 'settings:read',
+      },
+      {
+        label: t.notifications,
+        icon: icons.notifications,
+        route: '/dashboard/notifications',
+        permission: 'notification:read',
       },
     ] satisfies NavItem[],
 

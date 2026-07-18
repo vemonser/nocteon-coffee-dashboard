@@ -29,4 +29,7 @@ export class UserService extends BaseCrudService<UserResponse, UserRequest> {
       {}
     );
   }
+  getById(id: string): Observable<ApiResponse<UserResponse>> {
+     return this.http.get<ApiResponse<UserResponse>>(`${this.fullUrl}/${id}`);
+   }
 }

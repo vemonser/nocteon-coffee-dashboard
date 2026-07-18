@@ -1,0 +1,175 @@
+<div class="flex flex-col gap-6 p-6">
+  <!-- Header -->
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-bold tracking-tight">Notifications</h1>
+      <p class="text-muted-foreground">
+        {{ pageData()?.totalElements ?? 0 }} total · {{ unreadCount() }} unread
+      </p>
+    </div>
+
+    @if (unreadCount() > 0) {
+      <button hlmBtn variant="outline" (click)="markAllAsRead()">
+        <ng-icon name="lucideCheck" class="me-2 size-4" />
+        Mark all as read
+      </button>
+    }
+  </div>
+
+  <!-- Filters -->
+  <div class="flex flex-col gap-4 sm:flex-row sm:items-center items-stretch">
+    <hlm-select
+      [value]="statusFilterString()"
+      [itemToString]="itemToString"
+      (valueChange)="onStatusFilterValueChange($event)"
+      class="rounded-sm!"
+    >
+      <hlm-select-trigger class="rounded-sm h-full">
+        <hlm-select-value placeholder="All Notifications" />
+      </hlm-select-trigger>
+      <hlm-select-content *hlmSelectPortal>
+        <hlm-select-group>
+          <hlm-select-label>Status</hlm-select-label>
+          <hlm-select-item value="all">All Notifications</hlm-select-item>
+          <hlm-select-item value="unread">Unread Only</hlm-select-item>
+        </hlm-select-group>
+      </hlm-select-content>
+    </hlm-select>
+  </div>
+
+  <!-- List -->
+  <div class="rounded-md border bg-card divide-y">
+    @if (loading()) {
+      <div class="p-4 text-center text-muted-foreground" *ngFor="let _ of [1, 2, 3, 4, 5]">
+        <div class="h-12 bg-muted animate-pulse rounded-md"></div>
+      </div>
+    } @else if (items().length === 0) {
+      <div class="p-10 text-center text-muted-foreground">
+        <ng-icon name="lucideBell" class="mx-auto size-12 opacity-20 mb-4" />
+        <p class="text-lg font-medium">No notifications</p>
+        <p class="text-sm">You're all caught up</p>
+      </div>
+    } @else {
+      @for (n of items(); track n.id) {
+        <div
+          class="flex items-start gap-3 p-4 cursor-pointer hover:bg-muted/50 transition-colors"
+          [class.bg-muted-50]="!n.read"
+          (click)="openNotification(n)"
+        >
+          <div
+            class="flex size-9 shrink-0 items-center justify-center rounded-full"
+            [class]="n.read ? 'bg-muted text-muted-foreground' : 'bg-primary/10 text-primary'"
+          >
+            <ng-icon [name]="iconFor(n.type)" class="size-4" />
+          </div>
+
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2">
+              <p class="font-medium truncate" [class.font-semibold]="!n.read">{{ n.title }}</p>
+              @if (!n.read) {
+                <span class="size-2 rounded-full bg-red-500 shrink-0"></span>
+              }
+            </div>
+            <p class="text-sm text-muted-foreground truncate">{{ n.message }}</p>
+            <p class="text-xs text-muted-foreground mt-1">{{ n.createdAt | date: 'short' }}</p>
+          </div>
+
+          @if (!n.read) {
+            <button
+              hlmBtn
+              variant="ghost"
+              size="sm"
+              (click)="$event.stopPropagation(); markAsRead(n)"
+            >
+              Mark as read
+            </button>
+          }
+        </div>
+      }
+    }
+  </div>
+
+  <!-- Pagination -->
+  @if (pageData() && !loading()) {
+    <div class="flex items-center justify-between">
+      <span class="text-sm text-muted-foreground">
+        Showing {{ pageData()!.page * pageData()!.size + 1 }} -
+        {{ Math.min((pageData()!.page + 1) * pageData()!.size, pageData()!.totalElements) }}
+        of {{ pageData()!.totalElements }}
+      </span>
+
+      <div class="flex items-center gap-2">
+        <button
+          hlmBtn
+          variant="outline"
+          size="sm"
+          [disabled]="pageData()!.first"
+          (click)="goToPage(currentPage() - 1)"
+        >
+          <ng-icon name="lucideChevronLeft" class="size-4" />
+        </button>
+
+        <span class="text-sm text-muted-foreground px-2">
+          Page {{ pageData()!.page + 1 }} of {{ pageData()!.totalPages }}
+        </span>
+
+        <button
+          hlmBtn
+          variant="outline"
+          size="sm"
+          [disabled]="pageData()!.last"
+          (click)="goToPage(currentPage() + 1)"
+        >
+          <ng-icon name="lucideChevronRight" class="size-4" />
+        </button>
+      </div>
+    </div>
+  }
+</div>
+
+<!-- ══════ View Notification Dialog ══════ -->
+@if (viewing()) {
+  <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center p-6 border-b sticky top-0 bg-white">
+        <h2 class="text-lg font-bold">Notification</h2>
+        <button (click)="closeView()" class="text-gray-400 hover:text-gray-600 text-xl">✕</button>
+      </div>
+
+      <div class="p-6 space-y-4">
+        <div class="flex items-center gap-3">
+          <div
+            class="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary"
+          >
+            <ng-icon [name]="iconFor(viewing()!.type)" class="size-5" />
+          </div>
+          <div>
+            <p class="font-semibold">{{ viewing()!.title }}</p>
+            <p class="text-xs text-gray-500">{{ viewing()!.createdAt | date: 'medium' }}</p>
+          </div>
+        </div>
+
+        <div class="border border-gray-200 rounded-md p-4">
+          <p class="text-sm whitespace-pre-wrap">{{ viewing()!.message }}</p>
+        </div>
+      </div>
+
+      <div class="flex gap-3 p-6 border-t">
+        <button
+          (click)="closeView()"
+          class="flex-1 px-4 py-2 border rounded-md text-gray-700 hover:bg-gray-50"
+        >
+          Close
+        </button>
+        @if (viewing()!.link) {
+          <button
+            (click)="router.navigateByUrl(viewing()!.link!)"
+            class="flex-1 px-4 py-2 bg-primary text-white rounded-md hover:opacity-90"
+          >
+            View details
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+}

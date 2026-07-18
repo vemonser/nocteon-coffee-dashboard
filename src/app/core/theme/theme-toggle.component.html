@@ -2,8 +2,8 @@
 
  <button  (click)="toggle($event)" 
  /* (click)="toggle()" */
-  class="theme-btn flex items-center justify-center" [attr.aria-label]="theme.isDark() ? 'Switch to light' : 'Switch to dark'">
-      <svg  width="25" height="25" viewBox="0 0 44 44" fill="none">
+  class="theme-btn sm:flex hidden items-center justify-center" [attr.aria-label]="theme.isDark() ? 'Switch to light' : 'Switch to dark'">
+      <svg  width="24" height="24" viewBox="0 0 44 44" fill="none">
 
         <!-- Body — sun/moon -->
         <circle

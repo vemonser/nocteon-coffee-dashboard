@@ -8,5 +8,5 @@ export interface SearchResultDto {
   id: number;
   title: string;
   subtitle: string;
-  identifier: string;       // usually the slug
+  identifier: string;       
 }

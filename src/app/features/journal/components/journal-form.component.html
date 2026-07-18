@@ -1,0 +1,160 @@
+<div class="flex flex-col gap-6 p-6 max-w-4xl mx-auto">
+  <!-- Top Bar -->
+  <div class="flex items-center justify-between">
+    <button hlmBtn variant="ghost" size="sm" (click)="goBack()">
+      <ng-icon name="lucideArrowLeft" class="mr-2 size-4" />
+      Back
+    </button>
+
+    <button hlmBtn size="sm" (click)="save()" [disabled]="saving()">
+      @if (saving()) {
+        <ng-icon name="lucideLoader2" class="mr-2 size-4 animate-spin" />
+      } @else {
+        <ng-icon name="lucideCheck" class="mr-2 size-4" />
+      }
+      {{ saving() ? 'Saving...' : 'Save Post' }}
+    </button>
+  </div>
+
+  @if (loading()) {
+    <div class="h-96 bg-muted animate-pulse rounded-2xl"></div>
+  }
+
+  @if (error() && !loading()) {
+    <p class="text-sm text-destructive">{{ error() }}</p>
+  }
+
+  @if (!loading() && form) {
+    <hlm-card>
+      <form [formGroup]="form">
+        <hlm-tabs [tab]="activeTab()"  class="w-full">
+          <hlm-tabs-list class="w-full grid grid-cols-3" aria-label="Journal post sections">
+            <button hlmTabsTrigger="basic">Basic Info</button>
+            <button hlmTabsTrigger="translations">Content</button>
+            <button hlmTabsTrigger="products">Related Products</button>
+          </hlm-tabs-list>
+
+          <!-- ══════ Tab 1: Basic Info ══════ -->
+          <div hlmTabsContent="basic" class="p-6 space-y-5">
+            <div class="space-y-1.5">
+              <label hlmLabel>Category *</label>
+              <hlm-select formControlName="categorySlug" class="rounded-sm! w-full">
+                <hlm-select-trigger class="rounded-sm w-full">
+                  <hlm-select-value placeholder="Select category" />
+                </hlm-select-trigger>
+                <hlm-select-content *hlmSelectPortal>
+                  <hlm-select-group>
+                    @for (cat of categories(); track cat.slug) {
+                      <hlm-select-item [value]="cat.slug">{{ cat.slug }}</hlm-select-item>
+                    }
+                  </hlm-select-group>
+                </hlm-select-content>
+              </hlm-select>
+              @if (form.get('categorySlug')?.invalid && form.get('categorySlug')?.touched) {
+                <p class="text-xs text-destructive">Category is required</p>
+              }
+            </div>
+
+            <div class="space-y-1.5">
+              <label hlmLabel>Cover Image</label>
+              <input
+                type="file"
+                accept="image/*"
+                (change)="onCoverSelected($event)"
+                class="text-sm"
+              />
+              @if (coverPreviewUrl() || existingCoverUrl()) {
+                <img
+                  [src]="coverPreviewUrl() || existingCoverUrl()"
+                  class="mt-2 h-40 w-full object-cover rounded-md border"
+                />
+              }
+            </div>
+
+            <div class="space-y-1.5">
+              <label hlmLabel>Published At</label>
+              <input hlmInput formControlName="publishedAt" type="datetime-local" class="w-full" />
+            </div>
+
+            <div class="flex items-center gap-3">
+              <input
+                type="checkbox"
+                formControlName="featured"
+                id="featured"
+                class="h-4 w-4 rounded border-primary"
+              />
+              <label for="featured" class="text-sm font-medium">Featured Post</label>
+            </div>
+          </div>
+
+          <!-- ══════ Tab 2: Translations ══════ -->
+          <div hlmTabsContent="translations" class="p-6 space-y-8" formArrayName="translations">
+            @for (t of translationsArray.controls; track $index) {
+              <div [formGroupName]="$index" class="space-y-4 pb-6 border-b last:border-0 last:pb-0">
+                <h3 class="font-semibold uppercase text-sm text-muted-foreground">
+                  {{ t.value.language === 'en' ? 'English' : 'Arabic' }}
+                </h3>
+
+                <div class="space-y-1.5">
+                  <label hlmLabel>Title {{ t.value.language === 'en' ? '*' : '' }}</label>
+                  <input hlmInput formControlName="title" type="text" class="w-full" />
+                  @if (t.get('title')?.invalid && t.get('title')?.touched) {
+                    <p class="text-xs text-destructive">Title is required</p>
+                  }
+                </div>
+
+                <div class="space-y-1.5">
+                  <label hlmLabel>Excerpt</label>
+                  <textarea hlmInput formControlName="excerpt" rows="2" class="w-full"></textarea>
+                </div>
+
+                <div class="space-y-1.5">
+                  <label hlmLabel>Content {{ t.value.language === 'en' ? '*' : '' }}</label>
+                  <quill-editor formControlName="content" class="block h-56" />
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                  <div class="space-y-1.5">
+                    <label hlmLabel>Meta Title</label>
+                    <input hlmInput formControlName="metaTitle" type="text" class="w-full" />
+                  </div>
+                  <div class="space-y-1.5">
+                    <label hlmLabel>Meta Description</label>
+                    <input hlmInput formControlName="metaDescription" type="text" class="w-full" />
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+
+          <!-- ══════ Tab 3: Related Products ══════ -->
+          <div hlmTabsContent="products" class="p-6">
+            <div class="max-h-96 overflow-y-auto rounded-md border p-3 space-y-2">
+              @for (p of products(); track p.slug) {
+                <label class="flex items-center gap-2 text-sm cursor-pointer">
+                  <input
+                    type="checkbox"
+                    class="h-4 w-4 rounded border-primary"
+                    [checked]="form.value.productSlugs.includes(p.slug)"
+                    (change)="toggleProduct(p.slug)"
+                  />
+                  {{ p.name }}
+                </label>
+              } @empty {
+                <p class="text-xs text-muted-foreground">No products available</p>
+              }
+            </div>
+
+            @if (form.value.productSlugs.length > 0) {
+              <div class="flex flex-wrap gap-1.5 mt-3">
+                @for (slug of form.value.productSlugs; track slug) {
+                  <hlm-badge variant="outline">{{ slug }}</hlm-badge>
+                }
+              </div>
+            }
+          </div>
+        </hlm-tabs>
+      </form>
+    </hlm-card>
+  }
+</div>

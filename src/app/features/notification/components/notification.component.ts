@@ -3,18 +3,30 @@ import { NotificationService } from '../services/notification.service';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { heroBell } from '@ng-icons/heroicons/outline';
 import { NotificationDto } from '../models/notification.model';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { lucideChevronLeft } from '@ng-icons/lucide';
+import { HlmButtonImports } from '@spartan-ng/helm/button';
+import { HlmPopoverImports } from '@spartan-ng/helm/popover';
+import { SmoothScroll } from 'ngx-scrollbar/smooth-scroll';
+import { HlmSeparator } from '@spartan-ng/helm/separator';
 
 @Component({
   selector: 'app-notification',
   templateUrl: './notification.component.html',
-  imports: [NgIcon, DatePipe],
+  imports: [
+    NgIcon,
+    DatePipe,
+    HlmPopoverImports,
+    HlmButtonImports,
+    SmoothScroll,
+    HlmSeparator,
+    RouterLink,
+  ],
   providers: [
     provideIcons({
       heroBell,
-      lucideChevronLeft
+      lucideChevronLeft,
     }),
   ],
 })
@@ -25,22 +37,25 @@ export class NotificationComponent {
   isOpen = signal(false);
   notifications = signal<NotificationDto[]>([]);
   loading = signal(false);
-  
+
+  ngOnInit() {
+    console.log(this.notifications());
+  }
   toggleDropdown() {
     this.isOpen.update((v) => !v);
     if (this.isOpen()) {
       this.loadNotifications();
     }
   }
-  
+
   goToAllNotifications() {
-    this.router.navigateByUrl("/dashboard/notifications")
+    this.router.navigateByUrl('/dashboard/notifications');
   }
   loadNotifications() {
     this.loading.set(true);
-    this.notificationService.getNotifications(false, 0).subscribe({
+    this.notificationService.getNotifications(true, 0, 10).subscribe({
       next: (res) => {
-        this.notifications.set(res.data.content);
+        this.notifications.set(res.data?.content ?? []);
         this.loading.set(false);
       },
       error: () => this.loading.set(false),
@@ -48,7 +63,7 @@ export class NotificationComponent {
   }
 
   onNotificationClick(notification: NotificationDto) {
-    if (!notification.isRead) {
+    if (!notification.read) {
       this.notificationService.markAsRead(notification.id).subscribe(() => {
         // نقلل العداد فورًا محليًا من غير ما نستنى الـ polling
         this.notificationService.unreadCount.update((c) => Math.max(0, c - 1));

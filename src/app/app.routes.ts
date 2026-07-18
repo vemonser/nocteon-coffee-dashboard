@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/auth/auth.guard';
 import { permissionGuard } from './core/auth/permission.guard';
+import { NotificationListComponent } from './features/notifications-list/components/notification-list.component';
 
 // app.routes.ts
 export const routes: Routes = [
@@ -24,10 +25,53 @@ export const routes: Routes = [
         path: 'users',
         data: { breadcrumb: 'users' },
         canActivate: [permissionGuard('user:read')],
-        loadComponent: () =>
-          import('./features/users/components/users-list.component').then(
-            (m) => m.UsersListComponent,
-          ),
+        children: [
+          {
+            path: '',
+            loadComponent: () =>
+              import('./features/users/components/users-list.component').then(
+                (m) => m.UsersListComponent,
+              ),
+          },
+          {
+            path: ':id',
+            data: { breadcrumb: 'userDetails' },
+            loadComponent: () =>
+              import('./features/users/user-detail/components/user-detail.component').then(
+                (m) => m.UserDetailComponent,
+              ),
+          },
+        ],
+      },
+      {
+        path: 'journal',
+        data: { breadcrumb: 'journal' },
+        canActivate: [permissionGuard('journal:read')],
+        children: [
+          // {
+          //   path: '',
+          //   loadComponent: () =>
+          //     import('./features/journal/components/journal').then(
+          //       (m) => m.JournalListComponent,
+          //     ),
+          // },
+          {
+            path: 'new',
+            data: { breadcrumb: 'newJournalPost' },
+            loadComponent: () =>
+              import('./features/journal/components/journal-form.component').then(
+                (m) => m.JournalFormComponent,
+              ),
+          },
+          {
+            path: ':slug/edit',
+            data: { breadcrumb: 'editJournalPost' },
+            loadComponent: () =>
+              import('./features/journal/components/journal-form.component').then(
+                (m) => m.JournalFormComponent,
+              ),
+          },
+        ],
       },
       {
         path: 'store-settings',
@@ -235,6 +279,28 @@ export const routes: Routes = [
             loadComponent: () =>
               import('./features/brewing-method/brewing-method-detail/components/brewing-method-detail.component').then(
                 (m) => m.BrewingMethodDetailComponent,
+              ),
+          },
+        ],
+      },
+      {
+        path: 'notifications',
+        data: { breadcrumb: 'notification' },
+        canActivate: [permissionGuard('notification:read')],
+        children: [
+          {
+            path: '',
+            loadComponent: () =>
+              import('./features/notifications-list/components/notification-list.component').then(
+                (m) => m.NotificationListComponent,
+              ),
+          },
+          {
+            path: ':id',
+            data: { breadcrumb: 'notificationDetails' },
+            loadComponent: () =>
+              import('./features/notifications-list/components/notification-list.component').then(
+                (m) => m.NotificationListComponent,
               ),
           },
         ],

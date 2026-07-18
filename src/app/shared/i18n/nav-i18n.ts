@@ -10,6 +10,7 @@ export type NavKey =
   | 'journal'
   | 'products'
   | 'categories'
+  | 'notifications'
   | 'categoryDetail'
   | 'origins'
   | 'farms'
@@ -37,6 +38,7 @@ export const navI18n: Record<Language, Record<NavKey, string>> = {
     promoCodes: 'Promo Codes',
     journal: 'Journal',
     products: 'Products',
+    notifications: 'Notifications',
     categories: 'Categories',
     categoryDetail: 'Category',
     origins: 'Origins',
@@ -59,6 +61,7 @@ export const navI18n: Record<Language, Record<NavKey, string>> = {
     orders: 'الطلبات',
     users: 'المستخدمين',
     reviews: 'التقييمات',
+    notifications: 'الإشعارات',
     storeSettings: 'إعدادات الموقع',
     promoCodes: 'رموز ترويجية',
     journal: 'المجلة',

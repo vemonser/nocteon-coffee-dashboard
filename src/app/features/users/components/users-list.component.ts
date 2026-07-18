@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormGroup, Validators } from '@angular/forms';
 import { Observable, throwError } from 'rxjs';
 import { map } from 'rxjs/operators';
-
+import { Router } from '@angular/router';
 // Icons
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
@@ -41,6 +41,7 @@ import { UserService } from '../services/user.service';
 import { UserListParams, UserRequest, UserResponse } from '../model/user.model';
 import { ApiResponse, PageResponse } from '../../../core/models/api-response.model';
 import { createColumnHelper, ColumnDef } from '@tanstack/angular-table';
+import { HlmField, HlmFieldImports, HlmFieldLabel } from '@spartan-ng/helm/field';
 
 type RoleFilter = 'ALL' | 'ADMIN' | 'CUSTOMER';
 
@@ -59,6 +60,7 @@ type RoleFilter = 'ALL' | 'ADMIN' | 'CUSTOMER';
     HlmInputImports,
     HlmSelectImports,
     HlmDialogImports,
+    HlmFieldImports,
     HlmTableImports,
     HlmAvatarImports,
     HlmSkeletonImports,
@@ -85,12 +87,23 @@ type RoleFilter = 'ALL' | 'ADMIN' | 'CUSTOMER';
 })
 export class UsersListComponent extends BaseListComponent<UserResponse, UserRequest, string> {
   private userService = inject(UserService);
+  private router = inject(Router); // ← جديد
+  permission = [
+    { label: 'Customer', value: 'CUSTOMER' },
+    { label: 'Admin', value: 'ADMIN' },
+  ];
+
+  itemToString = (value: string) =>
+    this.permission.find((item) => item.value === value)?.label || '';
 
   // Filters
   roleFilter: RoleFilter = 'ALL';
   isActiveFilter: boolean | undefined = undefined;
   enabledFilter: boolean | undefined = undefined;
-
+  
+  goToDetail(user: UserResponse): void {
+    this.router.navigate(['/dashboard/users', user.id]);
+  }
   // Columns
   private columnHelper = createColumnHelper<UserResponse>();
   columns: ColumnDef<UserResponse, any>[] = [
@@ -116,13 +129,16 @@ export class UsersListComponent extends BaseListComponent<UserResponse, UserRequ
       header: 'Role',
       enableSorting: true,
     }),
-    this.columnHelper.accessor((row) => {
-      console.log(this.getStatus(row))
-    return  this.getStatus(row)}, {
-      id: 'status',
-      header: 'Status',
-      enableSorting: false,
-    }),
+    this.columnHelper.accessor(
+      (row) => {
+        return this.getStatus(row);
+      },
+      {
+        id: 'status',
+        header: 'Status',
+        enableSorting: false,
+      },
+    ),
     this.columnHelper.accessor((row) => this.formatDate(row.createdAt), {
       id: 'joined',
       header: 'Joined',
@@ -252,7 +268,10 @@ export class UsersListComponent extends BaseListComponent<UserResponse, UserRequ
     return (first + ' ' + last).trim() || '—';
   }
 
-  getStatus(user: UserResponse): { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' | 'warning' } {
+  getStatus(user: UserResponse): {
+    label: string;
+    variant: 'default' | 'secondary' | 'destructive' | 'outline' | 'warning';
+  } {
     if (!user.enabled) return { label: 'Unverified', variant: 'warning' };
     if (!user.active) return { label: 'Blocked', variant: 'destructive' };
     return { label: 'Active', variant: 'default' };

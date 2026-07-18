@@ -1,14 +1,14 @@
-<div class="flex items-center gap-1">
+<div class="flex items-center gap-2">
   <app-theme-toggle  />
 
   <hlm-sheet [side]="language.current() === 'en' ? 'right' : 'left'">
-    <button hlmSheetTrigger hlmBtn variant="ghost" size="icon" class="rounded-md">
-      <ng-icon name="lucideSettings" size="20" class="text-primary" />
+    <button hlmSheetTrigger hlmBtn variant="ghost" size="icon" class="rounded-md flex hover:text-primary transition-colors h-6 w-6">
+      <ng-icon name="lucideSettings" size="20" class="text-primary " />
     </button>
 
     <hlm-sheet-content
       *hlmSheetPortal="let ctx"
-      class="appearance-sheet-content w-[420px] max-w-full p-0"
+      class="appearance-sheet-content w-105 max-w-full p-0"
     >
       <!-- Header -->
       <div class="border-b px-6 py-5">

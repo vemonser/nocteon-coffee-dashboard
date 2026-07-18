@@ -1,0 +1,223 @@
+<div class="flex flex-col gap-6 p-6 max-w-4xl mx-auto">
+  @if (loading()) {
+    <div class="space-y-6">
+      <div class="h-9 w-24 bg-muted animate-pulse rounded-md"></div>
+      <div class="h-64 bg-muted animate-pulse rounded-2xl"></div>
+    </div>
+  }
+
+  @if (error() && !loading()) {
+    <div class="flex flex-col items-center justify-center py-20 text-center">
+      <ng-icon name="lucideUser" class="size-16 text-muted-foreground opacity-20 mb-4" />
+      <h2 class="text-xl font-semibold text-destructive">{{ error() }}</h2>
+      <button hlmBtn variant="outline" class="mt-4" (click)="goBack()">
+        <ng-icon name="lucideArrowLeft" class="mr-2 size-4" />
+        Back to Users
+      </button>
+    </div>
+  }
+
+  @if (user() && !loading() && form) {
+    <!-- Top Bar -->
+    <div class="flex items-center justify-between">
+      <button hlmBtn variant="ghost" size="sm" (click)="goBack()">
+        <ng-icon name="lucideArrowLeft" class="mr-2 size-4" />
+        Back
+      </button>
+
+      <div class="flex items-center gap-2">
+        @if (isEditing()) {
+          <button hlmBtn variant="outline" size="sm" (click)="cancelEdit()" [disabled]="saving()">
+            <ng-icon name="lucideX" class="mr-2 size-4" />
+            Cancel
+          </button>
+          <button
+            hlmBtn
+            size="sm"
+            (click)="saveChanges()"
+            [disabled]="!isDirty() || form.invalid || saving()"
+          >
+            @if (saving()) {
+              <ng-icon name="lucideLoader2" class="mr-2 size-4 animate-spin" />
+            } @else {
+              <ng-icon name="lucideCheck" class="mr-2 size-4" />
+            }
+            {{ saving() ? 'Saving...' : 'Save' }}
+          </button>
+        } @else {
+          <button
+            *hasPermission="'user:update'"
+            hlmBtn
+            [variant]="user()!.active ? 'destructive' : 'default'"
+            size="sm"
+            (click)="toggleActive()"
+            [disabled]="togglingActive()"
+          >
+            @if (togglingActive()) {
+              <ng-icon name="lucideLoader2" class="mr-2 size-4 animate-spin" />
+            } @else if (user()!.active) {
+              <ng-icon name="lucideLock" class="mr-2 size-4" />
+            } @else {
+              <ng-icon name="lucideUnlock" class="mr-2 size-4" />
+            }
+            {{ user()!.active ? 'Block' : 'Unblock' }}
+          </button>
+          <button
+            *hasPermission="'user:update'"
+            hlmBtn
+            variant="outline"
+            size="sm"
+            (click)="startEdit()"
+          >
+            <ng-icon name="lucidePencil" class="mr-2 size-4" />
+            Edit
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- Main Card -->
+    <hlm-card>
+      <form [formGroup]="form">
+        <div hlmCardHeader>
+          <div class="flex items-center gap-4 pb-4">
+            <div
+              class="h-16 w-16 rounded-full border flex justify-center items-center overflow-hidden bg-muted"
+            >
+              @if (user()!.avatarUrl) {
+                <img
+                  [src]="user()!.avatarUrl"
+                  [alt]="user()!.username"
+                  class="h-full w-full object-cover"
+                />
+              } @else {
+                <span class="text-lg font-semibold text-muted-foreground">{{
+                  getInitials(user()!)
+                }}</span>
+              }
+            </div>
+            <div class="flex-1">
+              <div class="flex items-center gap-2">
+                <h2 class="text-lg font-bold">{{ user()!.username }}</h2>
+                @let status = getStatus(user()!);
+                <hlm-badge [variant]="status.variant" [class]="status.class">{{
+                  status.label
+                }}</hlm-badge>
+              </div>
+              <p class="text-sm text-muted-foreground flex items-center gap-1">
+                <ng-icon name="lucideMail" class="size-3.5" />
+                {{ user()!.email }}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div hlmCardContent class="space-y-6">
+          <!-- Username -->
+          <div class="space-y-1.5">
+            <label hlmLabel>Username</label>
+            @if (isEditing()) {
+              <input hlmInput formControlName="username" type="text" class="w-full" />
+            } @else {
+              <div class="px-3 py-2 rounded-md bg-muted/50">{{ user()!.username }}</div>
+            }
+          </div>
+
+          <!-- Email -->
+          <div class="space-y-1.5">
+            <label hlmLabel>Email</label>
+            @if (isEditing()) {
+              <input hlmInput formControlName="email" type="email" class="w-full" />
+            } @else {
+              <div class="px-3 py-2 rounded-md bg-muted/50">{{ user()!.email }}</div>
+            }
+          </div>
+
+          <hlm-separator />
+
+          <!-- Names -->
+          <div class="grid grid-cols-2 gap-4">
+            <div class="space-y-1.5">
+              <label hlmLabel>First Name</label>
+              @if (isEditing()) {
+                <input hlmInput formControlName="firstName" type="text" class="w-full" />
+              } @else {
+                <div class="px-3 py-2 rounded-md bg-muted/50">{{ user()!.firstName || '—' }}</div>
+              }
+            </div>
+            <div class="space-y-1.5">
+              <label hlmLabel>Last Name</label>
+              @if (isEditing()) {
+                <input hlmInput formControlName="lastName" type="text" class="w-full" />
+              } @else {
+                <div class="px-3 py-2 rounded-md bg-muted/50">{{ user()!.lastName || '—' }}</div>
+              }
+            </div>
+          </div>
+
+          @if (isEditing()) {
+            <div class="space-y-1.5">
+              <label hlmLabel>Phone</label>
+              <input hlmInput formControlName="phone" type="text" class="w-full" />
+            </div>
+          }
+
+          <hlm-separator />
+
+          <!-- Role -->
+          <div class="space-y-1.5">
+            <label hlmLabel>Role</label>
+            @if (isEditing()) {
+              <hlm-select formControlName="role" class="rounded-sm! w-full">
+                <hlm-select-trigger class="rounded-sm w-full">
+                  <hlm-select-value />
+                </hlm-select-trigger>
+                <hlm-select-content *hlmSelectPortal>
+                  <hlm-select-group>
+                    @for (opt of roleOptions; track opt.value) {
+                      <hlm-select-item [value]="opt.value">{{ opt.label }}</hlm-select-item>
+                    }
+                  </hlm-select-group>
+                </hlm-select-content>
+              </hlm-select>
+            } @else {
+              <div class="px-3 py-2 rounded-md bg-muted/50 flex items-center gap-2">
+                <ng-icon name="lucideShield" class="size-4 text-muted-foreground" />
+                {{ user()!.role }}
+              </div>
+            }
+          </div>
+
+          @if (!isEditing() && user()!.permissions?.length) {
+            <div class="space-y-1.5">
+              <label hlmLabel>Permissions</label>
+              <div class="flex flex-wrap gap-1.5">
+                @for (perm of user()!.permissions; track perm) {
+                  <hlm-badge variant="outline">{{ perm }}</hlm-badge>
+                }
+              </div>
+            </div>
+          }
+
+          <hlm-separator />
+
+          <!-- Meta -->
+          <div class="grid grid-cols-2 gap-4 text-sm">
+            <div class="space-y-1.5">
+              <label hlmLabel>Joined</label>
+              <div class="px-3 py-2 rounded-md bg-muted/50">
+                {{ user()!.createdAt | date: 'medium' }}
+              </div>
+            </div>
+            <div class="space-y-1.5">
+              <label hlmLabel>Last Active</label>
+              <div class="px-3 py-2 rounded-md bg-muted/50">
+                {{ user()!.lastActiveAt ? (user()!.lastActiveAt | date: 'medium') : '—' }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+    </hlm-card>
+  }
+</div>

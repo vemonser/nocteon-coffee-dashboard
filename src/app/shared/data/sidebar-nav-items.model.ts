@@ -18,6 +18,7 @@ export const icons: Record<NavKey, string> = {
   journal: 'lucideBookOpen',
   products: 'lucideCoffee',
   categories: 'lucideTags',
+  notifications: 'lucideBellRing',
   categoryDetail: 'lucideTags',
   origins: 'lucideGlobe',
   farms: 'lucideSprout',

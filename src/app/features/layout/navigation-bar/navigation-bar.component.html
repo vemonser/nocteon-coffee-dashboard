@@ -11,7 +11,7 @@
   <!-- Right -->
   <div class="flex items-center gap-2 lg:gap-3 ms-auto">
     <!-- Search -->
-    <div class="relative hidden md:block shrink">
+    <div class="relative hidden sm:block shrink">
       <hlm-autocomplete
         [(search)]="searchQuery"
         [value]="null"
@@ -64,16 +64,16 @@
         </hlm-autocomplete-content>
       </hlm-autocomplete>
     </div>
+    <app-notification />
 
     <app-appearance-sheet />
     <button
       (click)="language.toggle()"
-      class="inline-flex items-center sm:none justify-center rounded-md text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground h-9 w-9"
+      class="sm:inline-flex hidden items-center  justify-center rounded-md text-sm font-medium transition-colors  hover:text-primary h-6 w-6"
       [title]="language.current() === 'ar' ? 'Switch to English' : 'Switch to Arabic'"
     >
       <ng-icon size="20" name="lucideGlobe" />
     </button>
-    <app-notification />
     <app-user-menu variant="navbar" />
   </div>
 </header>

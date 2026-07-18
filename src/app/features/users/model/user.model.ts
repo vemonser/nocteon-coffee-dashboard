@@ -1,5 +1,4 @@
-import { BaseListParams } from "../../../core/crud/base-crud.service";
-
+import { BaseListParams } from '../../../core/crud/base-crud.service';
 
 export interface UserResponse {
   id: string;
@@ -13,6 +12,7 @@ export interface UserResponse {
   avatarUrl: string | null;
   createdAt: string;
   lastActiveAt: string | null;
+  permissions?: string[];
 }
 
 export interface UserRequest {

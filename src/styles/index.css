@@ -27,7 +27,12 @@
     font-family: var(--font-body);
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     font-family: var(--font-display);
   }
 
@@ -57,4 +62,18 @@ td:lang(ar),
 span:lang(ar),
 [lang='ar'] {
   font-family: 'Cairo', 'ArabicFallback', sans-serif !important;
+}
+@layer utilities {
+  .scrollbar-hide {
+    /* Chrome, Safari, Edge */
+    -ms-overflow-style: none; /* IE و Edge القديم */
+    scrollbar-width: none; /* Firefox */
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Edge */
+  }
+}
+quill-editor .ql-container {
+  min-height: 200px;
 }
