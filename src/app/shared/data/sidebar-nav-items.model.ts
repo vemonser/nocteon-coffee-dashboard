@@ -34,4 +34,5 @@ export const icons: Record<NavKey, string> = {
   tastingNoteDetail: 'lucideDroplets',
   brewing: 'lucideFlaskConical',
   pairings: 'lucideUtensilsCrossed',
+  carts: 'lucideShoppingCart',
 };

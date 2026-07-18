@@ -1,0 +1,174 @@
+<div class="flex flex-col gap-6 p-6">
+  <!-- Header -->
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-bold tracking-tight">Carts</h1>
+      <p class="text-muted-foreground">{{ totalItems() }} total</p>
+    </div>
+  </div>
+
+  <!-- Search -->
+  <div class="relative flex-1 max-w-md">
+    <ng-icon
+      name="lucideSearch"
+      class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground"
+    />
+    <input
+      hlmInput
+      type="text"
+      [(ngModel)]="searchQuery"
+      (input)="onSearch()"
+      placeholder="Search by email..."
+      class="pl-9 w-full pb-1.25 pt-1.25"
+    />
+  </div>
+
+  <!-- Loading State -->
+  @if (loading()) {
+    <div class="rounded-md border">
+      <div class="h-12 border-b bg-muted/50 animate-pulse" *ngFor="let _ of [1, 2, 3, 4, 5]"></div>
+    </div>
+  }
+
+  <!-- Table -->
+  <div class="rounded-md border bg-card">
+    <app-data-table
+      [data]="items()"
+      [columns]="columns"
+      [loading]="loading()"
+      [initialSort]="{ column: currentSort, direction: currentDirection }"
+      (sortChange)="onSortChange($event)"
+      (rowClick)="openView($event)"
+      [showEdit]="false"
+      [showDelete]="false"
+    />
+  </div>
+
+  <!-- Pagination -->
+  @if (pageData() && !loading() && items().length > 0) {
+    <div class="flex items-center justify-between">
+      <span class="text-sm text-muted-foreground">
+        Showing {{ pageData()!.page * pageData()!.size + 1 }} -
+        {{ Math.min((pageData()!.page + 1) * pageData()!.size, pageData()!.totalElements) }}
+        of {{ pageData()!.totalElements }}
+      </span>
+
+      <div class="flex items-center gap-2">
+        <button
+          hlmBtn
+          variant="outline"
+          size="sm"
+          [disabled]="pageData()!.first"
+          (click)="goToPage(currentPage() - 1)"
+        >
+          <ng-icon name="lucideChevronLeft" class="size-4" />
+        </button>
+        <span class="text-sm text-muted-foreground px-2">
+          Page {{ pageData()!.page + 1 }} of {{ pageData()!.totalPages }}
+        </span>
+        <button
+          hlmBtn
+          variant="outline"
+          size="sm"
+          [disabled]="pageData()!.last"
+          (click)="goToPage(currentPage() + 1)"
+        >
+          <ng-icon name="lucideChevronRight" class="size-4" />
+        </button>
+      </div>
+    </div>
+  }
+</div>
+
+<!-- ══════ View Cart Detail Dialog ══════ -->
+@if (viewing()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+    <div class="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl bg-card shadow-2xl border">
+      <div class="flex items-center justify-between p-6 border-b sticky top-0 bg-card">
+        <h2 class="text-lg font-bold">Cart #{{ viewing()!.id }}</h2>
+        <button hlmBtn variant="ghost" size="icon" class="size-8" (click)="closeView()">
+          <ng-icon name="lucideX" class="size-4" />
+        </button>
+      </div>
+
+      <div class="p-6 space-y-5">
+        <!-- Customer Info -->
+        <div class="rounded-md border p-4">
+          <p class="text-sm font-medium text-muted-foreground mb-1">Customer</p>
+          <p class="text-sm font-medium">{{ viewing()!.userFullName }}</p>
+          <p class="text-sm text-muted-foreground">{{ viewing()!.userEmail }}</p>
+        </div>
+
+        <!-- Summary -->
+        <div class="grid grid-cols-2 gap-4">
+          <div class="rounded-md border p-4">
+            <p class="text-sm font-medium text-muted-foreground mb-1">Total</p>
+            <p class="text-lg font-bold">{{ viewing()!.total | number:'1.2-2' }}</p>
+          </div>
+          <div class="rounded-md border p-4">
+            <p class="text-sm font-medium text-muted-foreground mb-1">Items</p>
+            <p class="text-lg font-bold">{{ viewing()!.itemCount }}</p>
+          </div>
+        </div>
+
+        <!-- Dates -->
+        <div class="grid grid-cols-2 gap-4">
+          <div class="rounded-md border p-4">
+            <p class="text-sm font-medium text-muted-foreground mb-1">Created</p>
+            <p class="text-sm">{{ viewing()!.createdAt | date:'medium' }}</p>
+          </div>
+          <div class="rounded-md border p-4">
+            <p class="text-sm font-medium text-muted-foreground mb-1">Last Updated</p>
+            <p class="text-sm">{{ viewing()!.updatedAt | date:'medium' }}</p>
+          </div>
+        </div>
+
+        <!-- Cart Items -->
+        <div>
+          <p class="text-sm font-medium text-muted-foreground mb-3">Cart Items</p>
+          @if (viewing()!.items.length === 0) {
+            <div class="text-center py-6 text-muted-foreground">
+              <ng-icon name="lucidePackage" class="mx-auto size-8 opacity-20 mb-2" />
+              <p class="text-sm">No items in this cart</p>
+            </div>
+          } @else {
+            <div class="space-y-3">
+              @for (item of viewing()!.items; track item.id) {
+                <div class="flex gap-3 rounded-md border p-3">
+                  <div class="h-16 w-16 flex-shrink-0 rounded-md bg-muted overflow-hidden">
+                    @if (item.primaryImageUrl) {
+                      <img
+                        [src]="item.primaryImageUrl"
+                        [alt]="item.productName"
+                        class="h-full w-full object-cover"
+                      />
+                    } @else {
+                      <div class="flex h-full items-center justify-center">
+                        <ng-icon name="lucidePackage" class="size-6 text-muted-foreground opacity-30" />
+                      </div>
+                    }
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium truncate">{{ item.productName }}</p>
+                    <p class="text-xs text-muted-foreground">SKU: {{ item.sku }} · {{ item.grindType }}</p>
+                    <div class="flex items-center gap-2 mt-1">
+                      <span class="text-sm font-medium">{{ item.price | number:'1.2-2' }}</span>
+                      @if (item.discountPercentage > 0) {
+                        <hlm-badge variant="destructive" class="text-xs">-{{ item.discountPercentage }}%</hlm-badge>
+                      }
+                    </div>
+                  </div>
+                  <div class="text-right flex-shrink-0">
+                    <p class="text-sm font-medium">x{{ item.quantity }}</p>
+                    <p class="text-xs text-muted-foreground">{{ item.subtotal | number:'1.2-2' }}</p>
+                    <p class="text-xs text-muted-foreground">Stock: {{ item.stockQuantity }}</p>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+}

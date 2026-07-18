@@ -29,6 +29,7 @@ const icons: Record<NavKey, string> = {
   tastingNoteDetail: 'lucideDroplets',
   brewing: 'lucideFlaskConical',
   pairings: 'lucideUtensilsCrossed',
+  carts: 'lucideShoppingCart',
 };
 
 export function getNavItems(lang: Language) {
@@ -38,6 +39,7 @@ export function getNavItems(lang: Language) {
     main: [
       { label: t.dashboard, icon: icons.dashboard, route: '/dashboard' },
       { label: t.orders, icon: icons.orders, route: '/dashboard/orders', permission: 'order:read' },
+      { label: t.carts, icon: icons.carts, route: '/dashboard/carts', permission: 'cart:manage' },
       { label: t.users, icon: icons.users, route: '/dashboard/users', permission: 'user:read' },
       {
         label: t.reviews,

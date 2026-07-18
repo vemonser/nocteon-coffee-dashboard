@@ -383,6 +383,15 @@ export const routes: Routes = [
             (m) => m.OrdersListComponent,
           ),
       },
+      {
+        path: 'carts',
+        data: { breadcrumb: 'carts' },
+        canActivate: [permissionGuard('cart:manage')],
+        loadComponent: () =>
+          import('./features/carts/components/carts-list.component').then(
+            (m) => m.CartsListComponent,
+          ),
+      },
     ],
   },
   { path: '', redirectTo: 'dashboard', pathMatch: 'full' },

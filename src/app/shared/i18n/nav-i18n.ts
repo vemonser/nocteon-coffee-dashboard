@@ -26,7 +26,8 @@ export type NavKey =
   | 'tastingNotes'
   | 'tastingNoteDetail'
   | 'brewing'
-  | 'pairings';
+  | 'pairings'
+  | 'carts';
 
 export const navI18n: Record<Language, Record<NavKey, string>> = {
   en: {
@@ -55,6 +56,7 @@ export const navI18n: Record<Language, Record<NavKey, string>> = {
     tastingNoteDetail: 'Tasting Note',
     brewing: 'Brewing',
     pairings: 'Pairings',
+    carts: 'Carts',
   },
   ar: {
     dashboard: 'لوحة التحكم',
@@ -82,5 +84,6 @@ export const navI18n: Record<Language, Record<NavKey, string>> = {
     tastingNoteDetail: 'ملاحظة التذوق',
     brewing: 'التحضير',
     pairings: 'التوافقات',
+    carts: 'السلة',
   },
 };
