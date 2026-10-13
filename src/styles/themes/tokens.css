@@ -1,12 +1,20 @@
+/**
+ * Single source of truth for global design tokens.
+ * Every token is defined here and nowhere else — no duplicates.
+ */
 @theme {
 
+    /* ─── Typography ─── */
     --font-sans: "Inter", sans-serif;
     --font-heading: "Playfair Display", serif;
+    --font-body: "Inter", sans-serif;
 
     --font-sans-ar: "Cairo", sans-serif;
     --font-heading-ar: "Almarai", sans-serif;
 
-    /* Base radius that bare `rounded` resolves against. */
+    /* ─── Radius ─── */
+    /* Base radius that bare `rounded` resolves against.
+       The full scale lives in ../radius.css */
     --radius: 0.25rem;
 
 }
