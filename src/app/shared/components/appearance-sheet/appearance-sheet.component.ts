@@ -5,6 +5,7 @@ import { HlmSheetImports } from '@spartan-ng/helm/sheet';
 import { HlmSwitchImports } from '@spartan-ng/helm/switch';
 import { ThemeService } from '../../../core/theme/theme.service';
 import { LanguageService } from '../../../core/i18n/language.service';
+import { TranslocoPipe } from '@jsverse/transloco';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideSettings } from '@ng-icons/lucide';
 import { ThemeToggleComponent } from "../../../core/theme/theme-toggle.component";
@@ -13,7 +14,7 @@ import { ThemeToggleComponent } from "../../../core/theme/theme-toggle.component
   selector: 'app-appearance-sheet',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [HlmSheetImports, HlmButtonImports, HlmSwitchImports, HlmSeparatorImports, NgIcon, ThemeToggleComponent],
+  imports: [HlmSheetImports, HlmButtonImports, HlmSwitchImports, HlmSeparatorImports, NgIcon, ThemeToggleComponent, TranslocoPipe],
   providers: [
     provideIcons({
       lucideSettings,

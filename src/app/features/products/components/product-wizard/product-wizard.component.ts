@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { ProductRequest, ProductTranslation } from '../../models/product.models';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -11,9 +11,23 @@ import { MediaStepComponent } from '../steps/media-step/media-step.component';
 import { TastingNotesStepComponent } from '../steps/tasting-notes-step/tasting-notes-step.component';
 import { PairingsStepComponent } from '../steps/pairings-step/pairings-step.component';
 import { ProductWizardStateService } from './product-wizard-state.service';
+import { HlmTabsImports } from '@spartan-ng/helm/tabs';
+import { HlmButtonImports } from '@spartan-ng/helm/button';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { TranslocoPipe } from '@jsverse/transloco';
+import {
+  lucideArrowLeft,
+  lucideArrowRight,
+  lucideCheck,
+  lucideChevronLeft,
+  lucideChevronRight,
+  lucideSearch,
+  lucideX,
+} from '@ng-icons/lucide';
 
 @Component({
   selector: 'app-product-wizard',
+  standalone: true,
   imports: [
     CommonModule,
     ReactiveFormsModule,
@@ -22,12 +36,25 @@ import { ProductWizardStateService } from './product-wizard-state.service';
     MediaStepComponent,
     TastingNotesStepComponent,
     PairingsStepComponent,
+    HlmTabsImports,
+    HlmButtonImports,
+    NgIcon,
+    TranslocoPipe,
   ],
-  providers: [ProductWizardStateService],
+    providers: [
+      ProductWizardStateService,
+    provideIcons({
+      lucideSearch,
+      lucideChevronLeft,
+      lucideChevronRight,
+      lucideArrowRight,
+      lucideArrowLeft,
+      lucideX
+    }),
+  ],
   templateUrl: './product-wizard.component.html',
-  styleUrl: './product-wizard.component.css',
 })
-export class ProductWizardComponent implements OnInit {
+export class ProductWizardComponent {
   protected state = inject(ProductWizardStateService);
   private productService = inject(ProductService);
   private translationHelper = inject(TranslationFormHelper);
@@ -38,11 +65,20 @@ export class ProductWizardComponent implements OnInit {
   submitting = signal(false);
   loadError = signal<string | null>(null);
 
+  readonly stepTabs = [
+    { id: 'basic', label: 'Basic Info' },
+    { id: 'variants', label: 'Variants' },
+    { id: 'media', label: 'Media' },
+    { id: 'tasting-notes', label: 'Tasting Notes' },
+    { id: 'pairings', label: 'Pairings' },
+  ] as const;
+
+  readonly activeTab = signal<string>('basic');
+
   ngOnInit(): void {
     const slug = this.route.snapshot.paramMap.get('slug');
 
     if (slug) {
-      // Edit mode — fetch full detail ONCE, then populate every step's form.
       this.loadingDetail.set(true);
       this.productService.getBySlug(slug).subscribe({
         next: (res) => {
@@ -57,8 +93,6 @@ export class ProductWizardComponent implements OnInit {
         },
       });
     } else {
-      // Create mode — fresh form, translations array still needs building
-      // (state service doesn't know about TranslationFormHelper to avoid coupling).
       this.state.form.setControl(
         'translations',
         this.translationHelper.buildArray([], ['description', 'shortDescription']),
@@ -66,14 +100,40 @@ export class ProductWizardComponent implements OnInit {
     }
   }
 
-  // ─── Step navigation guards ───────────────────────────────────────────────────
+  onTabChange(tabId: string): void {
+    const targetIndex = this.stepTabs.findIndex((t) => t.id === tabId);
+    if (targetIndex === -1) return;
+
+    if (targetIndex > this.state.currentStep()) {
+      if (this.state.isCurrentStepValid()) {
+        while (this.state.currentStep() < targetIndex) {
+          this.state.goNext();
+        }
+        this.activeTab.set(tabId);
+      } else {
+        this.markCurrentStepTouched();
+      }
+    } else {
+      while (this.state.currentStep() > targetIndex) {
+        this.state.goBack();
+      }
+      this.activeTab.set(tabId);
+    }
+  }
 
   onNext(): void {
     if (this.state.isCurrentStepValid()) {
       this.state.goNext();
+      this.activeTab.set(this.stepTabs[this.state.currentStep()].id);
     } else {
-      // Surface validation errors for the current step
       this.markCurrentStepTouched();
+    }
+  }
+
+  onBack(): void {
+    if (this.state.currentStep() > 0) {
+      this.state.goBack();
+      this.activeTab.set(this.stepTabs[this.state.currentStep()].id);
     }
   }
 
@@ -86,8 +146,6 @@ export class ProductWizardComponent implements OnInit {
       this.state.variantsArray.markAllAsTouched();
     }
   }
-
-  // ─── Final submit — only available on the last step ──────────────────────────
 
   onSubmit(): void {
     if (!this.state.isCurrentStepValid()) {
@@ -122,7 +180,7 @@ export class ProductWizardComponent implements OnInit {
     return {
       categorySlug: v.categorySlug,
       originSlug: v.originSlug || undefined,
-      farmSlug: v.farmSlug || undefined, // NEW
+      farmSlug: v.farmSlug || undefined,
       productType: v.productType,
       isActive: v.isActive,
       featured: v.featured,
@@ -134,9 +192,6 @@ export class ProductWizardComponent implements OnInit {
         shortDescription: t.shortDescription || undefined,
       })),
 
-      // NEW — only send coffeeDetails when productType is COFFEE.
-      // Sending it for EQUIPMENT is harmless (backend ignores it) but
-      // omitting it makes the payload cleaner and the intent clearer.
       coffeeDetails: isCoffee
         ? {
             altitude: v.altitude || undefined,
@@ -150,16 +205,16 @@ export class ProductWizardComponent implements OnInit {
 
       variants: this.state.variantsArray.value.map((v: any) => ({
         sku: v.sku,
-        weightGrams: v.weightGrams,
-        grindType: v.grindType,
         price: v.price,
         compareAtPrice: v.compareAtPrice || undefined,
         stockQuantity: v.stockQuantity,
         isActive: v.isActive,
+        optionValueIds: (v.optionPicks ?? [])
+          .map((p: any) => (p.valueId != null ? Number(p.valueId) : null))
+          .filter((id: number | null): id is number => id != null),
       })),
 
       tastingNoteSlugs: this.state.tastingNotesArray.value,
-
       pairingSlugs: this.state.pairingsArray.value,
 
       media: [
@@ -171,14 +226,14 @@ export class ProductWizardComponent implements OnInit {
           isPrimary: m.isPrimary,
         })),
         ...this.state.stagedMedia().map((m, index) => ({
-          id: undefined, 
+          id: undefined,
           type: m.type,
           altText: m.altText || undefined,
           sortOrder: this.state.existingMedia().length + index,
           isPrimary: m.isPrimary,
         })),
       ],
-      // NEW — brewing methods with optional notes per method
+
       brewingMethods: this.state.brewingMethodsArray.value.map((bm: any) => ({
         brewingMethodSlug: bm.brewingMethodSlug,
         notes: bm.notes || undefined,

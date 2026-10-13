@@ -19,7 +19,11 @@ import {
   lucideGitBranch,
   lucideDroplets,
   lucideFlaskConical,
+  lucideShoppingCart,
   lucideUtensilsCrossed,
+  lucideSlidersHorizontal,
+  lucideMegaphone,
+  lucideMail,
 } from '@ng-icons/lucide';
 import { HlmSidebarImports, HlmSidebarService } from '@spartan-ng/helm/sidebar';
 import { TranslocoPipe } from '@jsverse/transloco';
@@ -40,6 +44,7 @@ import { UserMenuComponent } from '../../../shared/ui/user-menu/user-menu.compon
     NgIcon,
     HlmSeparator,
     UserMenuComponent,
+    TranslocoPipe,
   ],
   providers: [
     provideIcons({
@@ -59,7 +64,11 @@ import { UserMenuComponent } from '../../../shared/ui/user-menu/user-menu.compon
       lucideGitBranch,
       lucideDroplets,
       lucideFlaskConical,
+      lucideShoppingCart,
       lucideUtensilsCrossed,
+      lucideSlidersHorizontal,
+      lucideMegaphone,
+      lucideMail,
     }),
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,

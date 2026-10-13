@@ -1,14 +1,16 @@
-import { Component,  signal } from '@angular/core';
+﻿import { Component,  signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 import { HlmAvatarImports } from '@spartan-ng/helm/avatar';
 
 import { HlmBadgeImports } from '@spartan-ng/helm/badge';
 
+import { TranslocoPipe } from '@jsverse/transloco';
 @Component({
   selector: 'app-recent-orders',
   standalone: true,
-  imports: [CommonModule, HlmBadgeImports, HlmAvatarImports],
+  imports: [CommonModule, HlmBadgeImports, HlmAvatarImports, TranslocoPipe,
+  ],
   templateUrl: './recent-orders.component.html',
 })
 export class RecentOrdersComponent {

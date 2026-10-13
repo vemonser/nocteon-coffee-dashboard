@@ -19,7 +19,7 @@
         class="w-64"
       >
         <hlm-autocomplete-input
-          [placeholder]="language.current() === 'ar' ? 'بحث...' : 'Search...'"
+          [placeholder]="'nav.search' | transloco"
           class="h-9 w-full rounded-md border border-input bg-transparent px-9 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
         />
         <ng-icon
@@ -32,12 +32,12 @@
             <div class="p-4 text-center">
               <ng-icon name="lucideLoader2" class="animate-spin size-5 text-muted-foreground mx-auto" />
               <p class="text-sm text-muted-foreground mt-2">
-                {{ language.current() === 'ar' ? 'جاري البحث...' : 'Searching...' }}
+                {{ 'nav.searching' | transloco }}
               </p>
             </div>
           } @else if (groupedResults().length === 0 && searchQuery().trim().length >= 2) {
             <hlm-autocomplete-empty>
-              {{ language.current() === 'ar' ? 'لا توجد نتائج' : 'No results found.' }}
+              {{ 'nav.noResults' | transloco }}
             </hlm-autocomplete-empty>
           } @else {
             <div hlmAutocompleteList class="max-h-80 overflow-y-auto">

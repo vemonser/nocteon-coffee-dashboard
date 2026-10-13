@@ -2,9 +2,9 @@
   <!-- Header -->
   <div class="flex items-center justify-between">
     <div>
-      <h1 class="text-2xl font-bold tracking-tight">Categories</h1>
+      <h1 class="text-2xl font-bold tracking-tight">{{ 'reviews.title' | transloco }}</h1>
       <p class="text-muted-foreground">
-        {{ items().length }} total · {{ activeCount() }} active · {{ inactiveCount() }} inactive
+        {{ items().length }} {{ 'common.of' | transloco }} · {{ activeCount() }} {{ 'common.active' | transloco }} · {{ inactiveCount() }} {{ 'common.inactive' | transloco }}
       </p>
     </div>
 
@@ -46,7 +46,7 @@
         type="text"
         [(ngModel)]="searchQuery"
         (input)="onSearch()"
-        placeholder="Search categories..."
+        [placeholder]="'reviews.search' | transloco"
         class="pl-9 w-full pb-1.25 pt-1.25"
       />
     </div>
@@ -58,14 +58,14 @@
       class="rounded-sm!"
     >
       <hlm-select-trigger class="rounded-sm h-full">
-        <hlm-select-value placeholder="All Status" />
+        <hlm-select-value [placeholder]="'common.all' | transloco" />
       </hlm-select-trigger>
       <hlm-select-content *hlmSelectPortal>
         <hlm-select-group>
-          <hlm-select-label>All Status</hlm-select-label>
-          <hlm-select-item value="all">All Status</hlm-select-item>
-          <hlm-select-item value="approved">Approved</hlm-select-item>
-          <hlm-select-item value="unapproved">Un Approved</hlm-select-item>
+          <hlm-select-label>{{ 'common.all' | transloco }}</hlm-select-label>
+          <hlm-select-item value="all">{{ 'common.all' | transloco }}</hlm-select-item>
+          <hlm-select-item value="approved">{{ 'reviews.approved' | transloco }}</hlm-select-item>
+          <hlm-select-item value="unapproved">{{ 'reviews.unapproved' | transloco }}</hlm-select-item>
         </hlm-select-group>
       </hlm-select-content>
     </hlm-select>
@@ -75,23 +75,23 @@
   (valueChange)="onVerifiedFilterValueChange($event)"
 >
   <hlm-select-trigger class="rounded-sm h-full">
-    <hlm-select-value placeholder="Verification" />
+    <hlm-select-value [placeholder]="'reviews.verification' | transloco" />
   </hlm-select-trigger>
 
   <hlm-select-content *hlmSelectPortal>
     <hlm-select-group>
-      <hlm-select-label>Verification</hlm-select-label>
+      <hlm-select-label>{{ 'reviews.verification' | transloco }}</hlm-select-label>
 
       <hlm-select-item value="all">
-        All
+        {{ 'common.all' | transloco }}
       </hlm-select-item>
 
       <hlm-select-item value="verified">
-        Verified
+        {{ 'reviews.verified' | transloco }}
       </hlm-select-item>
 
       <hlm-select-item value="unverified">
-        Not Verified
+        {{ 'reviews.notVerified' | transloco }}
       </hlm-select-item>
 
     </hlm-select-group>
@@ -103,18 +103,18 @@
   (valueChange)="onMinRatingValueChange($event)"
 >
   <hlm-select-trigger class="rounded-sm h-full">
-    <hlm-select-value placeholder="Rating" />
+    <hlm-select-value [placeholder]="'reviews.rating' | transloco" />
   </hlm-select-trigger>
 
   <hlm-select-content *hlmSelectPortal>
     <hlm-select-group>
 
       <hlm-select-label>
-        Minimum Rating
+        {{ 'reviews.minRating' | transloco }}
       </hlm-select-label>
 
       <hlm-select-item value="all">
-        All
+        {{ 'common.all' | transloco }}
       </hlm-select-item>
 
       <hlm-select-item value="1">
@@ -172,24 +172,24 @@
           <thead>
             <tr class="border-b bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase">
               <th class="px-4 py-3 text-center">ID</th>
-              <th class="px-4 py-3 text-center">Product Slug</th>
-              <th class="px-4 py-3 text-center">Username</th>
-              <th class="px-4 py-3 text-center">Rating</th>
-              <th class="px-4 py-3 text-center">Comment</th>
-              <th class="px-4 py-3 text-center">Verified</th>
-              <th class="px-4 py-3 text-center">Approved</th>
-              <th class="px-4 py-3 text-center">Created</th>
-              <th class="px-4 py-3 text-center">Actions</th>
+              <th class="px-4 py-3 text-center">{{ 'reviews.productSlug' | transloco }}</th>
+              <th class="px-4 py-3 text-center">{{ 'reviews.username' | transloco }}</th>
+              <th class="px-4 py-3 text-center">{{ 'reviews.rating' | transloco }}</th>
+              <th class="px-4 py-3 text-center">{{ 'reviews.comment' | transloco }}</th>
+              <th class="px-4 py-3 text-center">{{ 'reviews.verified' | transloco }}</th>
+              <th class="px-4 py-3 text-center">{{ 'reviews.approved' | transloco }}</th>
+              <th class="px-4 py-3 text-center">{{ 'reviews.created' | transloco }}</th>
+              <th class="px-4 py-3 text-center">{{ 'common.actions' | transloco }}</th>
             </tr>
           </thead>
           <tbody>
             @if (loading()) {
               <tr>
-                <td colspan="8" class="px-4 py-8 text-center text-gray-400">Loading...</td>
+                <td colspan="8" class="px-4 py-8 text-center text-gray-400">{{ 'common.loading' | transloco }}</td>
               </tr>
             } @else if (items().length === 0) {
               <tr>
-                <td colspan="8" class="px-4 py-8 text-center text-gray-400">No reviews found</td>
+                <td colspan="8" class="px-4 py-8 text-center text-gray-400">{{ 'reviews.noData' | transloco }}</td>
               </tr>
             } @else {
               @for (review of items(); track review.id) {
@@ -217,7 +217,7 @@
                           : 'bg-gray-100 text-gray-500'
                       "
                     >
-                      {{ review.verified ? 'Verified' : 'Not Verified' }}
+                      {{ review.verified ? ('reviews.verified' | transloco) : ('reviews.notVerified' | transloco) }}
                     </span>
                   </td>
                   <td class="px-4 py-3 text-center">
@@ -229,7 +229,7 @@
                           : 'bg-amber-100 text-amber-700'
                       "
                     >
-                      {{ review.approved ? 'Approved' : 'Pending' }}
+                      {{ review.approved ? ('reviews.approved' | transloco) : ('reviews.pending' | transloco) }}
                     </span>
                   </td>
                   <td class="px-4 py-3 text-gray-500 text-center">
@@ -241,7 +241,7 @@
                         (click)="openView(review)"
                         class="px-3 py-1 text-sm text-gray-600 border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
                       >
-                        View
+                        {{ 'reviews.view' | transloco }}
                       </button>
 
                       <button
@@ -254,14 +254,14 @@
                             : 'text-green-600 border-green-200 hover:bg-green-50'
                         "
                       >
-                        {{ review.approved ? 'Unapprove' : 'Approve' }}
+                        {{ review.approved ? ('reviews.unapprove' | transloco) : ('reviews.approve' | transloco) }}
                       </button>
                       <button
                         *hasPermission="'review:delete'"
                         (click)="confirmDelete(review)"
                         class="px-3 py-1 text-sm text-red-600 border border-red-200 rounded-md hover:bg-red-50 transition-colors"
                       >
-                        Delete
+                        {{ 'common.delete' | transloco }}
                       </button>
                     </div>
                   </td>
@@ -294,16 +294,16 @@
 
             <div class="absolute top-10 inset-e-2">
               @if (item.approved) {
-                <hlm-badge variant="default">Approved</hlm-badge>
+                <hlm-badge variant="default">{{ 'reviews.approved' | transloco }}</hlm-badge>
               } @else {
-                <hlm-badge variant="secondary">Un Approved</hlm-badge>
+                <hlm-badge variant="secondary">{{ 'reviews.unapproved' | transloco }}</hlm-badge>
               }
             </div>
             <div class="absolute top-2 inset-e-2">
               @if (item.verified) {
-                <hlm-badge variant="default">Verified</hlm-badge>
+                <hlm-badge variant="default">{{ 'reviews.verified' | transloco }}</hlm-badge>
               } @else {
-                <hlm-badge variant="secondary">Not Verified</hlm-badge>
+                <hlm-badge variant="secondary">{{ 'reviews.notVerified' | transloco }}</hlm-badge>
               }
             </div>
           </div>
@@ -343,7 +343,7 @@
                 (click)="openView(item)"
                 class="px-3 py-1 text-sm text-gray-600 border flex-1 border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
               >
-                View
+                {{ 'reviews.view' | transloco }}
               </button>
 
               <button
@@ -356,14 +356,14 @@
                     : 'text-green-600 border-green-200 hover:bg-green-50'
                 "
               >
-                {{ item.approved ? 'Unapprove' : 'Approve' }}
+                {{ item.approved ? ('reviews.unapprove' | transloco) : ('reviews.approve' | transloco) }}
               </button>
               <button
                 *hasPermission="'review:delete'"
                 (click)="confirmDelete(item)"
                 class="px-3 py-1 text-sm text-red-600 border flex-1 border-red-200 rounded-md hover:bg-red-50 transition-colors"
               >
-                Delete
+                {{ 'common.delete' | transloco }}
               </button>
             </div>
           </div>
@@ -371,8 +371,8 @@
       } @empty {
         <div class="col-span-full text-center py-12 text-muted-foreground">
           <ng-icon name="lucideSearch" class="mx-auto size-12 opacity-20 mb-4" />
-          <p class="text-lg font-medium">No Review found</p>
-          <p class="text-sm">Try adjusting your search or filters</p>
+          <p class="text-lg font-medium">{{ 'reviews.noData' | transloco }}</p>
+          <p class="text-sm">{{ 'reviews.adjustSearch' | transloco }}</p>
         </div>
       }
     </div>
@@ -382,9 +382,9 @@
   @if (pageData() && !loading()) {
     <div class="flex items-center justify-between">
       <span class="text-sm text-muted-foreground">
-        Showing {{ pageData()!.page * pageData()!.size + 1 }} -
+        {{ 'common.showing' | transloco }} {{ pageData()!.page * pageData()!.size + 1 }} -
         {{ Math.min((pageData()!.page + 1) * pageData()!.size, pageData()!.totalElements) }}
-        of {{ pageData()!.totalElements }}
+        {{ 'common.of' | transloco }} {{ pageData()!.totalElements }}
       </span>
 
       <div class="flex items-center gap-2">
@@ -399,7 +399,7 @@
         </button>
 
         <span class="text-sm text-muted-foreground px-2">
-          Page {{ pageData()!.page + 1 }} of {{ pageData()!.totalPages }}
+          {{ 'common.page' | transloco }} {{ pageData()!.page + 1 }} {{ 'common.of' | transloco }} {{ pageData()!.totalPages }}
         </span>
 
         <button
@@ -421,7 +421,7 @@
   <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-center p-6 border-b sticky top-0 bg-white">
-        <h2 class="text-lg font-bold">Review Details</h2>
+        <h2 class="text-lg font-bold">{{ 'reviews.details' | transloco }}</h2>
         <button (click)="closeView()" class="text-gray-400 hover:text-gray-600 text-xl">✕</button>
       </div>
 
@@ -443,17 +443,17 @@
         </div>
 
         <div class="border border-gray-200 rounded-md p-4">
-          <p class="text-sm font-medium text-gray-700 mb-1">Product</p>
+          <p class="text-sm font-medium text-gray-700 mb-1">{{ 'reviews.product' | transloco }}</p>
           <p class="text-sm">{{ viewing()!.productSlug }}</p>
         </div>
 
         <div class="border border-gray-200 rounded-md p-4">
-          <p class="text-sm font-medium text-gray-700 mb-1">Rating</p>
+          <p class="text-sm font-medium text-gray-700 mb-1">{{ 'reviews.rating' | transloco }}</p>
           <p class="text-sm">{{ viewing()!.rating }} / 5</p>
         </div>
 
         <div class="border border-gray-200 rounded-md p-4">
-          <p class="text-sm font-medium text-gray-700 mb-1">Comment</p>
+          <p class="text-sm font-medium text-gray-700 mb-1">{{ 'reviews.comment' | transloco }}</p>
           <p class="text-sm whitespace-pre-wrap">{{ viewing()!.comment }}</p>
         </div>
 
@@ -464,7 +464,7 @@
               viewing()!.verified ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
             "
           >
-            {{ viewing()!.verified ? 'Verified Purchase' : 'Not Verified' }}
+            {{ viewing()!.verified ? ('reviews.verifiedPurchase' | transloco) : ('reviews.notVerified' | transloco) }}
           </span>
           <span
             class="px-2 py-0.5 rounded text-xs font-medium"
@@ -472,7 +472,7 @@
               viewing()!.approved ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'
             "
           >
-            {{ viewing()!.approved ? 'Approved' : 'Pending' }}
+            {{ viewing()!.approved ? ('reviews.approved' | transloco) : ('reviews.pending' | transloco) }}
           </span>
         </div>
       </div>
@@ -483,7 +483,7 @@
           (click)="confirmDelete(viewing()!)"
           class="flex-1 px-4 py-2 border border-red-200 text-red-600 rounded-md hover:bg-red-50"
         >
-          Delete
+          {{ 'common.delete' | transloco }}
         </button>
         <button
           *hasPermission="'review:moderate'"
@@ -495,7 +495,7 @@
               : 'bg-green-600 hover:bg-green-700'
           "
         >
-          {{ viewing()!.approved ? 'Unapprove' : 'Approve' }}
+          {{ viewing()!.approved ? ('reviews.unapprove' | transloco) : ('reviews.approve' | transloco) }}
         </button>
       </div>
     </div>
@@ -506,24 +506,25 @@
 @if (deleting()) {
   <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm mx-4 p-6">
-      <h2 class="text-lg font-bold mb-2">Delete Review</h2>
+      <h2 class="text-lg font-bold mb-2">{{ 'reviews.deleteTitle' | transloco }}</h2>
       <p class="text-gray-500 mb-6">
-        Delete this review by <strong>{{ deleting()!.username }}</strong
-        >? This action cannot be undone.
+        {{ 'reviews.deleteConfirm' | transloco }}
+        <strong>{{ deleting()!.username }}</strong
+        >?
       </p>
       <div class="flex gap-3">
         <button
           (click)="deleting.set(null)"
           class="flex-1 px-4 py-2 border rounded-md text-gray-700 hover:bg-gray-50"
         >
-          Cancel
+          {{ 'common.cancel' | transloco }}
         </button>
         <button
           (click)="submitDelete()"
           [disabled]="submitting()"
           class="flex-1 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
         >
-          {{ submitting() ? 'Deleting...' : 'Delete' }}
+          {{ submitting() ? ('common.deleting' | transloco) : ('common.delete' | transloco) }}
         </button>
       </div>
     </div>

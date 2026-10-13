@@ -4,15 +4,21 @@
 // tastingNotes/pairings). Keep this in sync with whatever DTO your
 // `findAllDashboard` query maps to.
 // ════════════════════════════════════════════════════════════════════════════
+import { ProductOptionValueSummary } from '../../product-options/models/product-option.model';
+
 export interface ProductListItem {
   id: number;
   slug: string;
-  primaryImageUrl: string | null;
+  categorySlug: string;
+  productType: ProductType;
+  featured: boolean;
+  isActive: boolean;
   name: string;
+  shortDescription?: string | null;
+  primaryImageUrl: string | null;
   minPrice: number;
   maxPrice: number;
-  isActive: boolean;
-  featured: boolean;
+  discountPercentage?: number | null;
 }
 
 // export type ProductType = 'WHOLE_BEAN' | 'GROUND' | 'CAPSULE' | 'INSTANT'; // adjust to your enum
@@ -23,41 +29,26 @@ export interface ProductListParams {
   size?: number;
   search?: string;
   categorySlug?: string;
+  originSlug?: string;
+  farmSlug?: string;
   productType?: ProductType;
-  isActive?: boolean;
+  minRating?: number;
   featured?: boolean;
+  isActive?: boolean;
+  minPrice?: number;
+  maxPrice?: number;
+  brewingMethodSlug?: string;
+  optionValueIds?: number[];
+  inStockOnly?: boolean;
+  onSaleOnly?: boolean;
   sort?: string;
   direction?: 'asc' | 'desc';
 }
 
-export enum GrindType {
-  WHOLE_BEAN = 'WHOLE_BEAN',
-  ESPRESSO = 'ESPRESSO',
-  V60 = 'V60',
-  POUR_OVER = 'POUR_OVER',
-  CHEMEX = 'CHEMEX',
-  FRENCH_PRESS = 'FRENCH_PRESS',
-  AEROPRESS = 'AEROPRESS',
-  MOKA_POT = 'MOKA_POT',
-  COLD_BREW = 'COLD_BREW',
-  TURKISH = 'TURKISH',
+export interface ProductBrewingMethod {
+  brewingMethodSlug: string;
+  notes?: string; // e.g. "Best at 92°C, 4 min steep"
 }
-export const GRIND_TYPE_LABELS: Record<GrindType, string> = {
-  [GrindType.WHOLE_BEAN]: 'Whole Bean',
-  [GrindType.ESPRESSO]: 'Espresso',
-  [GrindType.V60]: 'V60',
-  [GrindType.POUR_OVER]: 'Pour Over',
-  [GrindType.CHEMEX]: 'Chemex',
-  [GrindType.FRENCH_PRESS]: 'French Press',
-  [GrindType.AEROPRESS]: 'AeroPress',
-  [GrindType.MOKA_POT]: 'Moka Pot',
-  [GrindType.COLD_BREW]: 'Cold Brew',
-  [GrindType.TURKISH]: 'Turkish',
-};
-
-// ─── Coffee-specific details ──────────────────────────────────────────────────
-// Only relevant when productType === 'COFFEE'. Rendered conditionally
-// in BasicInfoStep (or its own step if you want to separate it).
 
 export interface CoffeeDetails {
   processingMethodSlug?: string; // FK → ProcessingMethod
@@ -80,21 +71,28 @@ export interface ProductTranslation {
   shortDescription?: string;
 }
 
+/** Backend ProductVariantResponse — includes resolved option summaries. */
 export interface ProductVariant {
-  id?: number; // absent for new variants not yet saved
+  id?: number;
   sku: string;
-  weightGrams: number;
+  price: number;
+  compareAtPrice?: number | null;
+  stockQuantity: number;
+  discountPercentage?: number;
+  isActive: boolean;
+  optionValues: ProductOptionValueSummary[];
+}
+
+/** Backend ProductVariantRequest — references option value IDs. */
+export interface ProductVariantRequest {
+  sku: string;
   price: number;
   compareAtPrice?: number | null;
   stockQuantity: number;
   isActive: boolean;
-  grindType: GrindType;
+  optionValueIds: number[];
 }
 
-export interface ProductBrewingMethod {
-  brewingMethodSlug: string;
-  notes?: string; // e.g. "Best at 92°C, 4 min steep"
-}
 export interface TastingNoteTranslation {
   language: string;
   name: string;
@@ -140,7 +138,7 @@ export interface ProductRequest {
   translations: ProductTranslation[];
   coffeeDetails?: CoffeeDetails;
   media: ProductMediaRequest[];
-  variants: ProductVariant[];
+  variants: ProductVariantRequest[];
   tastingNoteSlugs: string[];
   pairingSlugs: string[];
   brewingMethods: ProductBrewingMethod[];

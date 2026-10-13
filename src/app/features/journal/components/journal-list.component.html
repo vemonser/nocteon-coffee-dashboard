@@ -1,0 +1,159 @@
+<div class="flex flex-col gap-6 p-6">
+  <!-- Header -->
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-bold tracking-tight">{{ 'journal.title' | transloco }}</h1>
+      <p class="text-muted-foreground">{{ items().length }} {{ 'common.of' | transloco }}</p>
+    </div>
+    <div class="flex items-center gap-3">
+      <button *hasPermission="'journal:create'" hlmBtn (click)="goToNew()">
+        <ng-icon name="lucidePlus" class="me-2 size-4" />
+        {{ 'journal.newPost' | transloco }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Search -->
+  <div class="relative flex-1 max-w-md">
+    <ng-icon
+      name="lucideSearch"
+      class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground"
+    />
+    <input
+      hlmInput
+      type="text"
+      [(ngModel)]="searchQuery"
+      (input)="onSearch()"
+      [placeholder]="'journal.search' | transloco"
+      class="pl-9 w-full"
+    />
+  </div>
+
+  <!-- Loading -->
+  @if (loading()) {
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      @for (_ of [1, 2, 3, 4, 5, 6]; track $index) {
+        <div class="h-52 rounded-md border bg-muted/50 animate-pulse"></div>
+      }
+    </div>
+  }
+
+  <!-- Empty -->
+  @if (!loading() && items().length === 0) {
+    <div class="py-16 text-center text-muted-foreground border-2 border-dashed rounded-md">
+      <ng-icon name="lucideNewspaper" class="mx-auto mb-2 size-8 opacity-50" />
+      {{ 'journal.empty' | transloco }}
+    </div>
+  }
+
+  <!-- Cards -->
+  @if (!loading() && items().length > 0) {
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      @for (item of items(); track item.slug) {
+        <div class="rounded-md border bg-card overflow-hidden flex flex-col">
+          <a
+            [routerLink]="['/dashboard/journal', item.slug, 'edit']"
+            class="block relative h-32 bg-muted"
+            *ngIf="item.coverImageUrl"
+          >
+            <img [src]="item.coverImageUrl" [alt]="titleOf(item)" class="h-full w-full object-cover" />
+          </a>
+          <div class="p-4 flex flex-col gap-2 flex-1">
+            <div class="flex items-center justify-between gap-2">
+              <hlm-badge [variant]="item.status === 'PUBLISHED' ? 'default' : item.status === 'ARCHIVED' ? 'outline' : 'secondary'">
+                {{ item.status }}
+              </hlm-badge>
+              <span class="text-xs text-muted-foreground">{{ item.authorUsername }}</span>
+            </div>
+            <h3 class="font-semibold line-clamp-2">
+              <a [routerLink]="['/dashboard/journal', item.slug, 'edit']" class="hover:underline">
+                {{ titleOf(item) }}
+              </a>
+            </h3>
+            @if (item.excerpt) {
+              <p class="text-sm text-muted-foreground line-clamp-2">{{ item.excerpt }}</p>
+            }
+            <div class="mt-auto pt-2 flex items-center justify-between gap-2">
+              <span class="text-xs text-muted-foreground">
+                {{ item.publishedAt ? (item.publishedAt | date:'short') : ('journal.draft' | transloco) }}
+              </span>
+              <div class="flex items-center gap-1">
+                <button hlmBtn variant="ghost" size="icon" class="size-8" (click)="goToEdit(item)">
+                  <ng-icon name="lucidePencil" class="size-4" />
+                </button>
+                <button hlmBtn variant="ghost" size="icon" class="size-8 text-destructive" (click)="confirmDelete(item)">
+                  <ng-icon name="lucideTrash2" class="size-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Pagination -->
+  @if (pageData() && !loading()) {
+    <div class="flex items-center justify-between">
+      <span class="text-sm text-muted-foreground">
+        {{ 'common.showing' | transloco }} {{ pageData()!.page * pageData()!.size + 1 }} -
+        {{ Math.min((pageData()!.page + 1) * pageData()!.size, pageData()!.totalElements) }}
+        {{ 'common.of' | transloco }} {{ pageData()!.totalElements }}
+      </span>
+      <div class="flex items-center gap-2">
+        <button
+          hlmBtn
+          variant="outline"
+          size="sm"
+          [disabled]="pageData()!.first"
+          (click)="goToPage(currentPage() - 1)"
+        >
+          <ng-icon name="lucideChevronLeft" class="size-4" />
+        </button>
+        <span class="text-sm text-muted-foreground px-2">
+          {{ 'common.page' | transloco }} {{ pageData()!.page + 1 }} {{ 'common.of' | transloco }}
+          {{ pageData()!.totalPages }}
+        </span>
+        <button
+          hlmBtn
+          variant="outline"
+          size="sm"
+          [disabled]="pageData()!.last"
+          (click)="goToPage(currentPage() + 1)"
+        >
+          <ng-icon name="lucideChevronRight" class="size-4" />
+        </button>
+      </div>
+    </div>
+  }
+</div>
+
+<!-- Delete Confirm Dialog -->
+@if (deleting()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+    <div class="w-full max-w-sm rounded-2xl bg-card shadow-2xl border p-6">
+      <h2 class="text-lg font-bold mb-2">{{ 'journal.deleteTitle' | transloco }}</h2>
+      <p class="text-muted-foreground mb-6">
+        {{ 'journal.deleteConfirm' | transloco }}
+        <strong class="text-foreground">{{ titleOf(deleting()!) }}</strong>?
+      </p>
+      <div class="flex gap-3">
+        <button hlmBtn variant="outline" class="flex-1" (click)="deleting.set(null)">
+          {{ 'common.cancel' | transloco }}
+        </button>
+        <button
+          hlmBtn
+          variant="destructive"
+          class="flex-1"
+          [disabled]="submitting()"
+          (click)="submitDelete()"
+        >
+          @if (submitting()) {
+            <ng-icon name="lucideLoader2" class="me-2 size-4 animate-spin" />
+          }
+          {{ submitting() ? ('common.deleting' | transloco) : ('common.delete' | transloco) }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

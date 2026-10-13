@@ -1,4 +1,4 @@
-// features/dashboard/components/status-chart/status-chart.component.ts
+﻿// features/dashboard/components/status-chart/status-chart.component.ts
 import { Component, Input, ViewChild, inject, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NgApexchartsModule, ChartComponent } from 'ng-apexcharts';
@@ -11,11 +11,11 @@ import {
 } from 'ng-apexcharts';
 import { ThemeService } from '../../../../core/theme/theme.service';
 
-
 @Component({
   selector: 'app-status-chart',
   standalone: true,
-  imports: [CommonModule, NgApexchartsModule],
+  imports: [CommonModule, NgApexchartsModule,
+  ],
   templateUrl: './status-chart.component.html',
 })
 export class StatusChartComponent {

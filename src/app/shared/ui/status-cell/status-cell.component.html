@@ -3,6 +3,6 @@
   <span class="text-sm" [class]="value()
       ? ' text-green-800'
       : ' text-red-800'">
-      {{ value() ? 'Active' : 'Inactive' }}
+      {{ value() ? ('common.active' | transloco) : ('common.inactive' | transloco) }}
     </span>
   </div>

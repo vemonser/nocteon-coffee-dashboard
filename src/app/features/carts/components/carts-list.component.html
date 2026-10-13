@@ -2,8 +2,8 @@
   <!-- Header -->
   <div class="flex items-center justify-between">
     <div>
-      <h1 class="text-2xl font-bold tracking-tight">Carts</h1>
-      <p class="text-muted-foreground">{{ totalItems() }} total</p>
+      <h1 class="text-2xl font-bold tracking-tight">{{ 'carts.title' | transloco }}</h1>
+      <p class="text-muted-foreground">{{ totalItems() }} {{ 'common.of' | transloco }}</p>
     </div>
   </div>
 
@@ -18,7 +18,7 @@
       type="text"
       [(ngModel)]="searchQuery"
       (input)="onSearch()"
-      placeholder="Search by email..."
+      [placeholder]="'carts.search' | transloco"
       class="pl-9 w-full pb-1.25 pt-1.25"
     />
   </div>
@@ -48,9 +48,9 @@
   @if (pageData() && !loading() && items().length > 0) {
     <div class="flex items-center justify-between">
       <span class="text-sm text-muted-foreground">
-        Showing {{ pageData()!.page * pageData()!.size + 1 }} -
+        {{ 'common.showing' | transloco }} {{ pageData()!.page * pageData()!.size + 1 }} -
         {{ Math.min((pageData()!.page + 1) * pageData()!.size, pageData()!.totalElements) }}
-        of {{ pageData()!.totalElements }}
+        {{ 'common.of' | transloco }} {{ pageData()!.totalElements }}
       </span>
 
       <div class="flex items-center gap-2">
@@ -64,7 +64,7 @@
           <ng-icon name="lucideChevronLeft" class="size-4" />
         </button>
         <span class="text-sm text-muted-foreground px-2">
-          Page {{ pageData()!.page + 1 }} of {{ pageData()!.totalPages }}
+          {{ 'common.page' | transloco }} {{ pageData()!.page + 1 }} {{ 'common.of' | transloco }} {{ pageData()!.totalPages }}
         </span>
         <button
           hlmBtn
@@ -85,7 +85,7 @@
   <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
     <div class="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl bg-card shadow-2xl border">
       <div class="flex items-center justify-between p-6 border-b sticky top-0 bg-card">
-        <h2 class="text-lg font-bold">Cart #{{ viewing()!.id }}</h2>
+        <h2 class="text-lg font-bold">{{ 'carts.cartNumber' | transloco }} {{ viewing()!.id }}</h2>
         <button hlmBtn variant="ghost" size="icon" class="size-8" (click)="closeView()">
           <ng-icon name="lucideX" class="size-4" />
         </button>
@@ -94,7 +94,7 @@
       <div class="p-6 space-y-5">
         <!-- Customer Info -->
         <div class="rounded-md border p-4">
-          <p class="text-sm font-medium text-muted-foreground mb-1">Customer</p>
+          <p class="text-sm font-medium text-muted-foreground mb-1">{{ 'carts.customer' | transloco }}</p>
           <p class="text-sm font-medium">{{ viewing()!.userFullName }}</p>
           <p class="text-sm text-muted-foreground">{{ viewing()!.userEmail }}</p>
         </div>
@@ -102,11 +102,11 @@
         <!-- Summary -->
         <div class="grid grid-cols-2 gap-4">
           <div class="rounded-md border p-4">
-            <p class="text-sm font-medium text-muted-foreground mb-1">Total</p>
+            <p class="text-sm font-medium text-muted-foreground mb-1">{{ 'carts.total' | transloco }}</p>
             <p class="text-lg font-bold">{{ viewing()!.total | number:'1.2-2' }}</p>
           </div>
           <div class="rounded-md border p-4">
-            <p class="text-sm font-medium text-muted-foreground mb-1">Items</p>
+            <p class="text-sm font-medium text-muted-foreground mb-1">{{ 'carts.items' | transloco }}</p>
             <p class="text-lg font-bold">{{ viewing()!.itemCount }}</p>
           </div>
         </div>
@@ -114,22 +114,22 @@
         <!-- Dates -->
         <div class="grid grid-cols-2 gap-4">
           <div class="rounded-md border p-4">
-            <p class="text-sm font-medium text-muted-foreground mb-1">Created</p>
+            <p class="text-sm font-medium text-muted-foreground mb-1">{{ 'carts.created' | transloco }}</p>
             <p class="text-sm">{{ viewing()!.createdAt | date:'medium' }}</p>
           </div>
           <div class="rounded-md border p-4">
-            <p class="text-sm font-medium text-muted-foreground mb-1">Last Updated</p>
+            <p class="text-sm font-medium text-muted-foreground mb-1">{{ 'carts.lastUpdated' | transloco }}</p>
             <p class="text-sm">{{ viewing()!.updatedAt | date:'medium' }}</p>
           </div>
         </div>
 
         <!-- Cart Items -->
         <div>
-          <p class="text-sm font-medium text-muted-foreground mb-3">Cart Items</p>
+          <p class="text-sm font-medium text-muted-foreground mb-3">{{ 'carts.cartItems' | transloco }}</p>
           @if (viewing()!.items.length === 0) {
             <div class="text-center py-6 text-muted-foreground">
               <ng-icon name="lucidePackage" class="mx-auto size-8 opacity-20 mb-2" />
-              <p class="text-sm">No items in this cart</p>
+              <p class="text-sm">{{ 'carts.noItems' | transloco }}</p>
             </div>
           } @else {
             <div class="space-y-3">
@@ -150,7 +150,8 @@
                   </div>
                   <div class="flex-1 min-w-0">
                     <p class="text-sm font-medium truncate">{{ item.productName }}</p>
-                    <p class="text-xs text-muted-foreground">SKU: {{ item.sku }} · {{ item.grindType }}</p>
+                    <p class="text-xs text-muted-foreground">SKU: {{ item.sku }}<span *ngIf="item.optionValues?.length"> ·
+                      {{ item.optionValues.map(o => o.value).join(' · ') }}</span></p>
                     <div class="flex items-center gap-2 mt-1">
                       <span class="text-sm font-medium">{{ item.price | number:'1.2-2' }}</span>
                       @if (item.discountPercentage > 0) {
@@ -161,7 +162,7 @@
                   <div class="text-right flex-shrink-0">
                     <p class="text-sm font-medium">x{{ item.quantity }}</p>
                     <p class="text-xs text-muted-foreground">{{ item.subtotal | number:'1.2-2' }}</p>
-                    <p class="text-xs text-muted-foreground">Stock: {{ item.stockQuantity }}</p>
+                    <p class="text-xs text-muted-foreground">{{ 'carts.stock' | transloco }}: {{ item.stockQuantity }}</p>
                   </div>
                 </div>
               }

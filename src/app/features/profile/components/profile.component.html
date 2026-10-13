@@ -1,0 +1,141 @@
+<div class="space-y-6 p-6">
+  <h1 class="text-2xl font-semibold">{{ 'profile.title' | transloco }}</h1>
+
+  @if (successMessage()) {
+    <div class="rounded-md bg-green-50 p-4 text-green-800 dark:bg-green-900/20 dark:text-green-200">
+      {{ successMessage() }}
+    </div>
+  }
+
+  <div class="grid gap-6 md:grid-cols-3">
+    <!-- Avatar Card -->
+    <div hlmCard class="flex flex-col items-center gap-4 p-6">
+      <div hlm-card-header class="w-full">
+        <h3 hlm-card-title>{{ 'profile.avatar' | transloco }}</h3>
+      </div>
+      <div hlm-card-content class="flex flex-col items-center gap-4">
+        <hlm-avatar class="size-24 rounded-full">
+          @if (auth.currentUser()?.avatarUrl) {
+            <img [src]="auth.currentUser()!.avatarUrl" alt="avatar" hlmAvatarImage />
+          }
+          <span class="bg-primary text-primary-foreground" hlmAvatarFallback>
+            {{ auth.getFullName().charAt(0) }}
+          </span>
+        </hlm-avatar>
+        <button
+          hlmBtn
+          variant="outline"
+          size="sm"
+          (click)="onAvatarUpload()"
+          [disabled]="saving()"
+        >
+          <ng-icon name="lucideCamera" class="me-2 size-4" />
+          {{ 'profile.changeAvatar' | transloco }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Profile Info Card -->
+    <div hlmCard class="p-6 md:col-span-2">
+      <div hlm-card-header>
+        <h3 hlm-card-title>{{ 'profile.information' | transloco }}</h3>
+      </div>
+      <div hlm-card-content>
+        <form [formGroup]="profileForm" (ngSubmit)="onSaveProfile()" class="space-y-4">
+          <div class="grid gap-4 sm:grid-cols-2">
+            <div class="space-y-2">
+              <label hlmLabel for="firstName">{{ 'profile.firstName' | transloco }}</label>
+              <input
+                hlmInput
+                id="firstName"
+                formControlName="firstName"
+                type="text"
+                class="w-full"
+              />
+            </div>
+            <div class="space-y-2">
+              <label hlmLabel for="lastName">{{ 'profile.lastName' | transloco }}</label>
+              <input
+                hlmInput
+                id="lastName"
+                formControlName="lastName"
+                type="text"
+                class="w-full"
+              />
+            </div>
+          </div>
+          <div class="space-y-2">
+            <label hlmLabel for="email">{{ 'profile.email' | transloco }}</label>
+            <input
+              hlmInput
+              id="email"
+              formControlName="email"
+              type="email"
+              class="w-full"
+            />
+          </div>
+          <button
+            hlmBtn
+            type="submit"
+            [disabled]="saving() || profileForm.invalid"
+          >
+            <ng-icon name="lucideSave" class="me-2 size-4" />
+            {{ 'profile.save' | transloco }}
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Password Card -->
+  <div hlmCard class="p-6">
+    <div hlm-card-header>
+      <h3 hlm-card-title>{{ 'profile.changePassword' | transloco }}</h3>
+    </div>
+    <div hlm-card-content>
+      <form [formGroup]="passwordForm" (ngSubmit)="onChangePassword()" class="space-y-4">
+        <div class="space-y-2">
+          <label hlmLabel for="currentPassword">{{ 'profile.currentPassword' | transloco }}</label>
+          <input
+            hlmInput
+            id="currentPassword"
+            formControlName="currentPassword"
+            type="password"
+            class="w-full"
+          />
+        </div>
+        <div class="grid gap-4 sm:grid-cols-2">
+          <div class="space-y-2">
+            <label hlmLabel for="newPassword">{{ 'profile.newPassword' | transloco }}</label>
+            <input
+              hlmInput
+              id="newPassword"
+              formControlName="newPassword"
+              type="password"
+              class="w-full"
+            />
+          </div>
+          <div class="space-y-2">
+            <label hlmLabel for="confirmPassword">{{ 'profile.confirmPassword' | transloco }}</label>
+            <input
+              hlmInput
+              id="confirmPassword"
+              formControlName="confirmPassword"
+              type="password"
+              class="w-full"
+            />
+          </div>
+        </div>
+        <button
+          hlmBtn
+          type="submit"
+          variant="secondary"
+          [disabled]="saving() || passwordForm.invalid"
+        >
+          <ng-icon name="lucideKey" class="me-2 size-4" />
+          {{ 'profile.changePassword' | transloco }}
+        </button>
+      </form>
+    </div>
+  </div>
+</div>

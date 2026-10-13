@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+﻿import { CommonModule } from '@angular/common';
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -28,6 +28,7 @@ import {
 import { toSignal } from '@angular/core/rxjs-interop';
 import { map } from 'rxjs';
 
+import { TranslocoPipe } from '@jsverse/transloco';
 type StatusFilter = 'all' | 'unread';
 
 @Component({
@@ -41,6 +42,7 @@ type StatusFilter = 'all' | 'unread';
     HlmBadgeImports,
     HlmSelectImports,
     NgIcon,
+    TranslocoPipe,
   ],
   providers: [
     provideIcons({

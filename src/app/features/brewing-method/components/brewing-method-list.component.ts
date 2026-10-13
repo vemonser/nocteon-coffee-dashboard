@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+﻿import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 
@@ -37,6 +37,7 @@ import { PageResponse } from '../../../core/models/api-response.model';
 import { HlmSkeletonImports } from '@spartan-ng/helm/skeleton';
 import { Router } from '@angular/router';
 
+import { TranslocoPipe } from '@jsverse/transloco';
 
 
 @Component({
@@ -48,6 +49,7 @@ import { Router } from '@angular/router';
     HlmCardImports, HlmButtonImports, HlmBadgeImports,
     HlmInputImports, HlmSkeletonImports, HlmLabelImports,
     NgIcon,
+    TranslocoPipe,
   ],
   providers: [
     provideIcons({

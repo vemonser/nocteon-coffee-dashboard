@@ -1,74 +1,140 @@
-<div class="p-6">
-
+<div class="flex flex-col gap-6 p-6">
   <!-- Header -->
-  <div class="flex justify-between items-center mb-6">
-    <h1 class="text-2xl font-bold text-primary">Products</h1>
-    <button *hasPermission="'product:create'" (click)="goToCreate()"
-      class="px-4 py-2 bg-amber-600 text-white rounded-md hover:bg-amber-700">
-      + Add Product
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-bold tracking-tight">{{ 'products.title' | transloco }}</h1>
+      <p class="text-muted-foreground">{{ totalItems() }} {{ 'products.total' | transloco }}</p>
+    </div>
+    <button *hasPermission="'product:create'" hlmBtn (click)="goToCreate()">
+      <ng-icon name="lucidePlus" class="mr-2 size-4" />
+      {{ 'products.add' | transloco }}
     </button>
   </div>
 
   <!-- Search + Filters -->
-  <div class="flex gap-4 mb-6">
-    <input type="text" [(ngModel)]="searchQuery" (input)="onSearch()"
-      placeholder="Search products..."
-      class="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 placeholder:text-muted"/>
+  <form [formGroup]="filters" class="flex gap-4 items-center">
+    <div class="relative flex-1 max-w-md">
+      <ng-icon
+        name="lucideSearch"
+        class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground"
+      />
+      <input
+        hlmInput
+        type="text"
+        formControlName="search"
+        [placeholder]="'products.search' | transloco"
+        class="pl-9 w-full pb-1.25 pt-1.25"
+      />
+    </div>
 
-    <select [(ngModel)]="isActiveFilter" (change)="onFilterChange()"
-      class="px-4 py-2 border border-gray-300 rounded-md">
-      <option [ngValue]="undefined">All Status</option>
-      <option [ngValue]="true">Active</option>
-      <option [ngValue]="false">Inactive</option>
-    </select>
+    <hlm-select formControlName="status" class="w-40">
+      <hlm-select-trigger class="w-40">
+        <hlm-select-value [placeholder]="'products.filterByStatus' | transloco" />
+      </hlm-select-trigger>
+      <hlm-select-content *hlmSelectPortal>
+        <hlm-select-group>
+          <hlm-select-label>{{ 'products.status.all' | transloco }}</hlm-select-label>
+          <hlm-select-item value="all">{{ 'products.status.all' | transloco }}</hlm-select-item>
+          <hlm-select-item value="active">{{ 'products.status.active' | transloco }}</hlm-select-item>
+          <hlm-select-item value="inactive">{{ 'products.status.inactive' | transloco }}</hlm-select-item>
+        </hlm-select-group>
+      </hlm-select-content>
+    </hlm-select>
 
-    <select [(ngModel)]="featuredFilter" (change)="onFilterChange()"
-      class="px-4 py-2 border border-gray-300 rounded-md">
-      <option [ngValue]="undefined">All Products</option>
-      <option [ngValue]="true">Featured Only</option>
-      <option [ngValue]="false">Not Featured</option>
-    </select>
-  </div>
+    <hlm-select formControlName="featured" class="w-44">
+      <hlm-select-trigger class="w-44">
+        <hlm-select-value [placeholder]="'products.filterByFeatured' | transloco" />
+      </hlm-select-trigger>
+      <hlm-select-content *hlmSelectPortal>
+        <hlm-select-group>
+          <hlm-select-label>{{ 'products.featured.all' | transloco }}</hlm-select-label>
+          <hlm-select-item value="all">{{ 'products.featured.all' | transloco }}</hlm-select-item>
+          <hlm-select-item value="featured">{{ 'products.featured.featuredOnly' | transloco }}</hlm-select-item>
+          <hlm-select-item value="notFeatured">{{ 'products.featured.notFeatured' | transloco }}</hlm-select-item>
+        </hlm-select-group>
+      </hlm-select-content>
+    </hlm-select>
+  </form>
+
+  <!-- Loading State -->
+  @if (loading()) {
+    <div class="rounded-md border">
+      <div class="h-12 border-b bg-muted/50 animate-pulse" *ngFor="let _ of [1, 2, 3, 4, 5]"></div>
+    </div>
+  }
 
   <!-- Table -->
-  <div class="bg-white rounded-md shadow overflow-x-auto">
-    <app-data-table [data]="items()" [columns]="columns" [loading]="loading()"
-      (edit)="goToEdit($event)" (delete)="confirmDelete($event)" (sortChange)="onSortChange($event)"/>
+  <div class="rounded-md border bg-card">
+    <app-data-table
+      [data]="items()"
+      [columns]="columns"
+      [loading]="loading()"
+      [initialSort]="{ column: currentSort, direction: currentDirection }"
+      (sortChange)="onSortChange($event)"
+      (edit)="goToEdit($event)"
+      (delete)="confirmDelete($event)"
+      (rowClick)="goToEdit($event)"
+      [showView]="false"
+      (hasView)="(false)"
+    />
   </div>
 
   <!-- Pagination -->
-  @if (pageData()) {
-    <div class="flex justify-between items-center mt-4">
-      <span class="text-sm text-gray-500">
-        Showing {{ pageData()!.page * pageData()!.size + 1 }} -
+  @if (pageData() && !loading() && items().length > 0) {
+    <div class="flex items-center justify-between">
+      <span class="text-sm text-muted-foreground">
+        {{ 'products.showing' | transloco }}
+        {{ pageData()!.page * pageData()!.size + 1 }} -
         {{ Math.min((pageData()!.page + 1) * pageData()!.size, pageData()!.totalElements) }}
-        of {{ pageData()!.totalElements }}
+        {{ 'products.of' | transloco }} {{ pageData()!.totalElements }}
       </span>
-      <div class="flex gap-2">
-        <button [disabled]="pageData()!.first" (click)="goToPage(currentPage() - 1)"
-          class="px-3 py-1 border rounded disabled:opacity-40">Previous</button>
-        <button [disabled]="pageData()!.last"  (click)="goToPage(currentPage() + 1)"
-          class="px-3 py-1 border rounded disabled:opacity-40">Next</button>
+
+      <div class="flex items-center gap-2">
+        <button
+          hlmBtn
+          variant="outline"
+          size="sm"
+          [disabled]="pageData()!.first"
+          (click)="goToPage(currentPage() - 1)"
+        >
+          <ng-icon name="lucideChevronLeft" class="size-4" />
+        </button>
+        <span class="text-sm text-muted-foreground px-2">
+          {{ 'products.page' | transloco }} {{ pageData()!.page + 1 }} {{ 'products.of' | transloco }} {{ pageData()!.totalPages }}
+        </span>
+        <button
+          hlmBtn
+          variant="outline"
+          size="sm"
+          [disabled]="pageData()!.last"
+          (click)="goToPage(currentPage() + 1)"
+        >
+          <ng-icon name="lucideChevronRight" class="size-4" />
+        </button>
       </div>
     </div>
   }
 </div>
 
-<!-- ══════ Delete Dialog (only dialog this page needs) ══════ -->
+<!-- Delete Dialog -->
 @if (deleting()) {
-  <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm mx-4 p-6">
-      <h2 class="text-lg font-bold mb-2">Delete Product</h2>
-      <p class="text-gray-500 mb-6">
-        Are you sure you want to delete <strong>{{ deleting()!.slug }}</strong>?
-        This action cannot be undone.
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+    <div class="w-full max-w-sm rounded-2xl bg-card shadow-2xl border p-6">
+      <h2 class="text-lg font-bold mb-2">{{ 'products.deleteTitle' | transloco }}</h2>
+      <p class="text-muted-foreground mb-6">
+        {{ 'products.deleteConfirm' | transloco }} <strong>{{ deleting()!.slug }}</strong
+        >? {{ 'products.deleteWarning' | transloco }}
       </p>
       <div class="flex gap-3">
-        <button (click)="deleting.set(null)"
-          class="flex-1 px-4 py-2 border rounded-md text-gray-700 hover:bg-gray-50">Cancel</button>
-        <button (click)="submitDelete()" [disabled]="submitting()"
-          class="flex-1 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">
-          {{ submitting() ? 'Deleting...' : 'Delete' }}
+        <button hlmBtn variant="outline" class="flex-1" (click)="deleting.set(null)">{{ 'products.cancel' | transloco }}</button>
+        <button
+          hlmBtn
+          variant="destructive"
+          class="flex-1"
+          (click)="submitDelete()"
+          [disabled]="submitting()"
+        >
+          {{ submitting() ? ('products.deleting' | transloco) : ('products.delete' | transloco) }}
         </button>
       </div>
     </div>

@@ -22,6 +22,7 @@ import { HlmAvatarImports } from '@spartan-ng/helm/avatar';
 import { HlmSkeletonImports } from '@spartan-ng/helm/skeleton';
 import { HlmLabelImports } from '@spartan-ng/helm/label';
 
+import { TranslocoPipe } from '@jsverse/transloco';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
   lucidePlus,
@@ -60,6 +61,7 @@ import { Router } from '@angular/router';
     HlmSkeletonImports,
     HlmLabelImports,
     NgIcon,
+    TranslocoPipe,
   ],
   providers: [
     provideIcons({

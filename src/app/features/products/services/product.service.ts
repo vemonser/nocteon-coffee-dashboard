@@ -5,6 +5,7 @@ import {
   ProductDetail,
   ProductListItem,
   ProductListParams,
+  ProductMediaRequest,
   ProductRequest,
 } from '../models/product.models';
 import { Observable } from 'rxjs';
@@ -20,9 +21,20 @@ export class ProductService {
 
     if (params.search) p = p.set('search', params.search);
     if (params.categorySlug) p = p.set('categorySlug', params.categorySlug);
+    if (params.originSlug) p = p.set('originSlug', params.originSlug);
+    if (params.farmSlug) p = p.set('farmSlug', params.farmSlug);
     if (params.productType) p = p.set('productType', params.productType);
     if (params.isActive !== undefined) p = p.set('isActive', params.isActive);
     if (params.featured !== undefined) p = p.set('featured', params.featured);
+    if (params.inStockOnly) p = p.set('inStockOnly', 'true');
+    if (params.onSaleOnly) p = p.set('onSaleOnly', 'true');
+    if (params.minPrice !== undefined) p = p.set('minPrice', params.minPrice);
+    if (params.maxPrice !== undefined) p = p.set('maxPrice', params.maxPrice);
+    if (params.minRating !== undefined) p = p.set('minRating', params.minRating);
+    if (params.brewingMethodSlug) p = p.set('brewingMethodSlug', params.brewingMethodSlug);
+    if (params.optionValueIds?.length) {
+      params.optionValueIds.forEach((id) => p = p.append('optionValueIds', id));
+    }
     if (params.sort) p = p.set('sort', params.sort);
     if (params.direction) p = p.set('direction', params.direction);
 
@@ -51,11 +63,30 @@ export class ProductService {
     return this.http.delete<ApiResponse<void>>(`${this.base}/${slug}`);
   }
   toggleActive(slug: string, isActive: boolean): Observable<ApiResponse<void>> {
-    return this.http.patch<ApiResponse<void>>(`${this.base}/${slug}/active`, { isActive });
+    const params = new HttpParams().set('value', isActive);
+    return this.http.patch<ApiResponse<void>>(`${this.base}/${slug}/active`, null, { params });
   }
 
   toggleFeatured(slug: string, featured: boolean): Observable<ApiResponse<void>> {
-    return this.http.patch<ApiResponse<void>>(`${this.base}/${slug}/featured`, { featured });
+    const params = new HttpParams().set('value', featured);
+    return this.http.patch<ApiResponse<void>>(`${this.base}/${slug}/featured`, null, { params });
+  }
+
+  /** POST /media — attach new media files to an existing product. */
+  addMedia(
+    slug: string,
+    media: ProductMediaRequest[],
+    files: File[],
+  ): Observable<ApiResponse<void>> {
+    const fd = new FormData();
+    fd.append('media', new Blob([JSON.stringify(media)], { type: 'application/json' }));
+    files.forEach((file) => fd.append('files', file));
+    return this.http.post<ApiResponse<void>>(`${this.base}/${slug}/media`, fd);
+  }
+
+  /** DELETE /media/{mediaId} — remove a product media record. */
+  deleteMedia(mediaId: number): Observable<ApiResponse<void>> {
+    return this.http.delete<ApiResponse<void>>(`${this.base}/media/${mediaId}`);
   }
 
   private buildFormData(data: ProductRequest, mediaFiles: File[]): FormData {

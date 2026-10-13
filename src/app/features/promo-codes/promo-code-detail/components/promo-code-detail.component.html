@@ -1,4 +1,4 @@
-<div class="flex flex-col gap-6 p-6 max-w-4xl mx-auto">
+﻿<div class="flex flex-col gap-6 p-6 max-w-4xl mx-auto">
   @if (loading()) {
     <div class="space-y-6">
       <div class="h-9 w-24 bg-muted animate-pulse rounded-md"></div>
@@ -12,7 +12,7 @@
       <h2 class="text-xl font-semibold text-destructive">{{ error() }}</h2>
       <button hlmBtn variant="outline" class="mt-4" (click)="goBack()">
         <ng-icon name="lucideArrowLeft" class="mr-2 size-4" />
-        Back to Promo Codes
+        {{ 'common.backTo' | transloco }} {{ 'promoCodes.title' | transloco }}
       </button>
     </div>
   }
@@ -42,7 +42,7 @@
             } @else {
               <ng-icon name="lucideCheck" class="mr-2 size-4" />
             }
-            {{ saving() ? 'Saving...' : 'Save' }}
+            {{ saving() ? ('common.saving' | transloco) : ('common.save' | transloco) }}
           </button>
         } @else {
           <button hlmBtn variant="outline" size="sm" (click)="startEdit()">
@@ -68,9 +68,9 @@
             </hlm-badge>
             @if (!isEditing()) {
               @if (promoCode()!.active) {
-                <hlm-badge variant="default">Active</hlm-badge>
+                <hlm-badge variant="default">{{ 'common.active' | transloco }}</hlm-badge>
               } @else {
-                <hlm-badge variant="secondary">Inactive</hlm-badge>
+                <hlm-badge variant="secondary">{{ 'common.inactive' | transloco }}</hlm-badge>
               }
             }
           </div>
@@ -79,7 +79,7 @@
         <div hlmCardContent class="space-y-6">
           <!-- Code -->
           <div class="space-y-1.5">
-            <label hlmLabel>Code</label>
+            <label hlmLabel>{{ 'common.code' | transloco }}</label>
             @if (isEditing()) {
               <input hlmInput formControlName="code" type="text" class="w-full uppercase" />
             } @else {
@@ -94,7 +94,7 @@
           <!-- Discount -->
           <div class="grid grid-cols-2 gap-4">
             <div class="space-y-1.5">
-              <label hlmLabel>Discount Type</label>
+              <label hlmLabel>{{ 'common.discountType' | transloco }}</label>
               @if (isEditing()) {
                 <hlm-select formControlName="discountType" class="rounded-sm! w-full">
                   <hlm-select-trigger class="rounded-sm w-full">
@@ -102,9 +102,9 @@
                   </hlm-select-trigger>
                   <hlm-select-content *hlmSelectPortal>
                     <hlm-select-group>
-                      <hlm-select-item value="PERCENTAGE">Percentage</hlm-select-item>
-                      <hlm-select-item value="FIXED_AMOUNT">Fixed Amount</hlm-select-item>
-                      <hlm-select-item value="FREE_SHIPPING">Free Shipping</hlm-select-item>
+                      <hlm-select-item value="PERCENTAGE">{{ 'common.percentage' | transloco }}</hlm-select-item>
+                      <hlm-select-item value="FIXED_AMOUNT">{{ 'common.fixedAmount' | transloco }}</hlm-select-item>
+                      <hlm-select-item value="FREE_SHIPPING">{{ 'common.freeShipping' | transloco }}</hlm-select-item>
                     </hlm-select-group>
                   </hlm-select-content>
                 </hlm-select>
@@ -115,7 +115,7 @@
 
             @if (!isFreeShipping()) {
               <div class="space-y-1.5">
-                <label hlmLabel>Value</label>
+                <label hlmLabel>{{ 'common.value' | transloco }}</label>
                 @if (isEditing()) {
                   <input
                     hlmInput
@@ -135,7 +135,7 @@
 
           <!-- Min Order -->
           <div class="space-y-1.5">
-            <label hlmLabel>Minimum Order Amount</label>
+            <label hlmLabel>{{ 'common.minOrderAmount' | transloco }}</label>
             @if (isEditing()) {
               <input
                 hlmInput
@@ -155,7 +155,7 @@
 
           <!-- Scope -->
           <div class="space-y-1.5">
-            <label hlmLabel>Scope</label>
+            <label hlmLabel>{{ 'common.scope' | transloco }}</label>
             @if (isEditing()) {
               <hlm-select formControlName="scopeType" class="rounded-sm! w-full">
                 <hlm-select-trigger class="rounded-sm w-full">
@@ -163,8 +163,8 @@
                 </hlm-select-trigger>
                 <hlm-select-content *hlmSelectPortal>
                   <hlm-select-group>
-                    <hlm-select-item value="GLOBAL">All Products</hlm-select-item>
-                    <hlm-select-item value="CATEGORY">Specific Categories</hlm-select-item>
+                    <hlm-select-item value="GLOBAL">{{ 'common.allProducts' | transloco }}</hlm-select-item>
+                    <hlm-select-item value="CATEGORY">{{ 'common.specificCategories' | transloco }}</hlm-select-item>
                   </hlm-select-group>
                 </hlm-select-content>
               </hlm-select>
@@ -175,7 +175,7 @@
 
           @if (isCategoryScope()) {
             <div class="space-y-1.5">
-              <label hlmLabel>Categories</label>
+              <label hlmLabel>{{ 'common.categories' | transloco }}</label>
               @if (isEditing()) {
                 <div class="max-h-40 overflow-y-auto rounded-md border p-3 space-y-2">
                   @for (cat of categoryOptions(); track cat.slug) {
@@ -207,7 +207,7 @@
           <!-- Redemption Limits -->
           <div class="grid grid-cols-2 gap-4">
             <div class="space-y-1.5">
-              <label hlmLabel>Max Total Redemptions</label>
+              <label hlmLabel>{{ 'common.maxTotalRedemptions' | transloco }}</label>
               @if (isEditing()) {
                 <input
                   hlmInput
@@ -224,7 +224,7 @@
               }
             </div>
             <div class="space-y-1.5">
-              <label hlmLabel>Max Per User</label>
+              <label hlmLabel>{{ 'common.maxPerUser' | transloco }}</label>
               @if (isEditing()) {
                 <input
                   hlmInput
@@ -244,12 +244,12 @@
           <!-- Validity -->
           <div class="grid grid-cols-2 gap-4">
             <div class="space-y-1.5">
-              <label hlmLabel>Valid From</label>
+              <label hlmLabel>{{ 'common.validFrom' | transloco }}</label>
               @if (isEditing()) {
                 <div class="flex gap-2">
                   <hlm-date-picker formControlName="validFromDate" class="flex-1">
                     <hlm-date-picker-trigger buttonId="validFromDate" class="w-full"
-                      >Pick a date</hlm-date-picker-trigger
+                      >{{ 'common.pickADate' | transloco }}</hlm-date-picker-trigger
                     >
                   </hlm-date-picker>
                   <input hlmInput formControlName="validFromTime" type="time" class="w-28" />
@@ -261,12 +261,12 @@
               }
             </div>
             <div class="space-y-1.5">
-              <label hlmLabel>Valid Until</label>
+              <label hlmLabel>{{ 'common.validUntil' | transloco }}</label>
               @if (isEditing()) {
                 <div class="flex gap-2">
                   <hlm-date-picker formControlName="validUntilDate" class="flex-1">
                     <hlm-date-picker-trigger buttonId="validUntilDate" class="w-full"
-                      >Pick a date</hlm-date-picker-trigger
+                      >{{ 'common.pickADate' | transloco }}</hlm-date-picker-trigger
                     >
                   </hlm-date-picker>
                   <input hlmInput formControlName="validUntilTime" type="time" class="w-28" />
@@ -288,7 +288,7 @@
                 id="isActive"
                 class="h-4 w-4 rounded border-primary"
               />
-              <label for="isActive" class="text-sm font-medium">Active</label>
+              <label for="isActive" class="text-sm font-medium">{{ 'common.active' | transloco }}</label>
             </div>
           }
         </div>

@@ -30,6 +30,9 @@ const icons: Record<NavKey, string> = {
   brewing: 'lucideFlaskConical',
   pairings: 'lucideUtensilsCrossed',
   carts: 'lucideShoppingCart',
+  productOptions: 'lucideSlidersHorizontal',
+  broadcasts: 'lucideMegaphone',
+  contactMessages: 'lucideMail',
 };
 
 export function getNavItems(lang: Language) {
@@ -45,7 +48,7 @@ export function getNavItems(lang: Language) {
         label: t.reviews,
         icon: icons.reviews,
         route: '/dashboard/reviews',
-        permission: 'review:read',
+        permission: 'review:moderate',
       },
       {
         label: t.journal,
@@ -57,13 +60,25 @@ export function getNavItems(lang: Language) {
         label: t.storeSettings,
         icon: icons.storeSettings,
         route: '/dashboard/store-settings',
-        permission: 'settings:read',
+        permission: 'settings:update',
       },
       {
         label: t.notifications,
         icon: icons.notifications,
         route: '/dashboard/notifications',
         permission: 'notification:read',
+      },
+      {
+        label: t.broadcasts,
+        icon: icons.broadcasts,
+        route: '/dashboard/broadcasts',
+        permission: 'broadcast:read',
+      },
+      {
+        label: t.contactMessages,
+        icon: icons.contactMessages,
+        route: '/dashboard/contact-messages',
+        permission: 'contact:read',
       },
     ] satisfies NavItem[],
 
@@ -73,6 +88,12 @@ export function getNavItems(lang: Language) {
         icon: icons.products,
         route: '/dashboard/products',
         permission: 'product:read',
+      },
+      {
+        label: t.productOptions,
+        icon: icons.productOptions,
+        route: '/dashboard/product-options',
+        permission: 'product_option:read',
       },
       {
         label: t.categories,
@@ -98,7 +119,7 @@ export function getNavItems(lang: Language) {
         label: t.roastLevels,
         icon: icons.roastLevels,
         route: '/dashboard/roast-levels',
-        permission: 'roast_levels:read',
+        permission: 'roast_level:read',
       },
       {
         label: t.processing,
@@ -141,13 +162,7 @@ export function getNavItems(lang: Language) {
         icon: icons.pairings,
         route: '/dashboard/pairings',
         permission: 'pairing:read',
-      },
-      {
-        label: t.reviews,
-        icon: icons.reviews,
-        route: '/dashboard/reviews',
-        permission: 'review:read',
-      },
+      }
     ] satisfies NavItem[],
   };
 }

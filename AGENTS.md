@@ -19,9 +19,19 @@
 npm start              # ng serve (dev server on :4200)
 npm run build          # ng build (production)
 npm run build -- --configuration development  # dev build
-npm test               # ng test (Vitest)
+npm test               # Playwright E2E (auth suite) — needs dev server + backend + .env.local
+npm run test:e2e       # same as npm test
+npm run test:unit      # ng test (Vitest)
+npm run test:e2e:headed # E2E with a visible browser
+npm run test:report    # open the last HTML report
 ng generate component <name>  # scaffold component
 ```
+
+**Testing:** `npm test` runs **Playwright E2E**, not Vitest. Unit tests moved to
+`npm run test:unit`. The E2E suite hits a live stack (dev server `:4200` +
+backend `:8080`) and reads credentials from a gitignored `.env.local`
+(`cp .env.example .env.local`). See `e2e/README.md` for the requirement map,
+known app defects, and the credential-in-traces warning.
 
 **No linter or formatter command is configured** — Prettier is installed but has no npm script. Use `npx prettier --write <file>` if needed.
 
@@ -120,7 +130,8 @@ Products use a multi-step wizard (`product-wizard.component.ts`) with a shared s
 
 - `angular.json` includes `apexcharts.min.js` as a global script — ApexCharts must be loaded this way, not as an ES import
 - `tsconfig.json` has ~60 path aliases for `@spartan-ng/helm/*` pointing to `libs/ui/*/src/index.ts` — the actual Spartan source lives in `libs/ui/`
-- No `.spec.ts` files exist yet — the test infrastructure is set up (Vitest) but no tests are written
+- No unit `.spec.ts` files exist yet — the test infrastructure is set up (Vitest) but no unit tests are written
+- **No admin gate on `/dashboard`.** `authGuard` checks only `!!currentUser()`, never the role, and the `profile` child route has no guard. The backend authenticates *any* valid account (a `CUSTOMER` gets `200` + a valid JWT), so the dashboard is currently un-gated in the UI. `e2e/auth.spec.ts::AC-2a` fails on purpose to prove this — see `e2e/README.md`. Do not "fix" the guard and assume authorization is then correct; `/api/dashboard/*` authorization is server-side and untested.
 - The dev server has `allowedHosts: ["account-unpopular-parakeet.ngrok-free.dev"]` for external tunnel access
 - `ProductService` does NOT extend `BaseCrudService` — it has its own `buildFormData` for multi-file uploads
 - `CategoryService` overrides `update()` because the dashboard endpoint returns a different response type than the base CRUD

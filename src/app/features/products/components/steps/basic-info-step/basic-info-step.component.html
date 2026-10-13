@@ -1,146 +1,176 @@
-<!-- basic-info-step.component.html -->
-<div [formGroup]="state.form" class="space-y-5">
-  <h2 class="text-lg font-bold mb-4">Basic Information</h2>
+﻿<div [formGroup]="state.form" class="space-y-5">
+  <h2 class="text-lg font-bold mb-4">{{ 'products.basicInfo' | transloco }}</h2>
 
-  <!-- Product Type — first, because it controls which coffee fields appear -->
-  <div>
-    <label class="block text-sm font-medium text-gray-700 mb-1">Product Type *</label>
-    <select
-      formControlName="productType"
-      class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500"
-    >
-      <option value="">Select Type</option>
-      @for (type of productTypes; track type) {
-        <option [value]="type">{{ type }}</option>
-      }
-    </select>
+  <!-- Product Type -->
+  <div class="space-y-1.5">
+    <label hlmLabel>{{ 'products.form.productType' | transloco }} *</label>
+    <hlm-select formControlName="productType" class="w-full">
+      <hlm-select-trigger class="w-full">
+        <hlm-select-value [placeholder]="'products.form.selectType' | transloco" />
+      </hlm-select-trigger>
+      <hlm-select-content *hlmSelectPortal>
+        <hlm-select-group>
+          <hlm-select-label>{{ 'products.form.type' | transloco }}</hlm-select-label>
+          @for (type of productTypes; track type.value) {
+            <hlm-select-item [value]="type.value">{{ type.label }}</hlm-select-item>
+          }
+        </hlm-select-group>
+      </hlm-select-content>
+    </hlm-select>
     @if (state.form.get('productType')?.invalid && state.form.get('productType')?.touched) {
-      <p class="text-red-500 text-xs mt-1">Product type is required</p>
+      <p class="text-destructive text-xs">{{ 'products.form.productTypeRequired' | transloco }}</p>
     }
   </div>
 
   <!-- Category -->
-  <div>
-    <label class="block text-sm font-medium text-gray-700 mb-1">Category *</label>
-    <select
-      formControlName="categorySlug"
-      class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500"
-    >
-      <option value="">Select Category</option>
-      @for (cat of categories(); track cat.slug) {
-        <option [value]="cat.slug">{{ getCategoryName(cat.slug) }}</option>
-      }
-    </select>
+  <div class="space-y-1.5">
+    <label hlmLabel>{{ 'products.form.category' | transloco }} *</label>
+    <hlm-select formControlName="categorySlug" class="w-full">
+      <hlm-select-trigger class="w-full">
+        <hlm-select-value [placeholder]="'products.form.selectCategory' | transloco" />
+      </hlm-select-trigger>
+      <hlm-select-content *hlmSelectPortal>
+        <hlm-select-group>
+          <hlm-select-label>{{ 'products.form.categories' | transloco }}</hlm-select-label>
+          @for (cat of categories(); track cat.slug) {
+            <hlm-select-item [value]="cat.slug">{{ getCategoryName(cat.slug) }}</hlm-select-item>
+          }
+        </hlm-select-group>
+      </hlm-select-content>
+    </hlm-select>
     @if (state.form.get('categorySlug')?.invalid && state.form.get('categorySlug')?.touched) {
-      <p class="text-red-500 text-xs mt-1">Category is required</p>
+      <p class="text-destructive text-xs">{{ 'products.form.categoryRequired' | transloco }}</p>
     }
   </div>
 
   <!-- Origin -->
-  <div>
-    <label class="block text-sm font-medium text-gray-700 mb-1">Origin</label>
-    <select
-      formControlName="originSlug"
-      class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500"
-    >
-      <option value="">No Origin</option>
-      @for (origin of origins(); track origin.slug) {
-        <option [value]="origin.slug">{{ getOriginName(origin.slug) }}</option>
-      }
-    </select>
+  <div class="space-y-1.5">
+    <label hlmLabel>{{ 'products.form.origin' | transloco }}</label>
+    <hlm-select formControlName="originSlug" class="w-full">
+      <hlm-select-trigger class="w-full">
+        <hlm-select-value [placeholder]="'products.form.noOrigin' | transloco" />
+      </hlm-select-trigger>
+      <hlm-select-content *hlmSelectPortal>
+        <hlm-select-group>
+          <hlm-select-label>{{ 'products.form.origins' | transloco }}</hlm-select-label>
+          <hlm-select-item value="">{{ 'products.form.noOrigin' | transloco }}</hlm-select-item>
+          @for (origin of origins(); track origin.slug) {
+            <hlm-select-item [value]="origin.slug">{{ getOriginName(origin.slug) }}</hlm-select-item>
+          }
+        </hlm-select-group>
+      </hlm-select-content>
+    </hlm-select>
   </div>
 
-  <!-- Farm — NEW -->
-  <div>
-    <label class="block text-sm font-medium text-gray-700 mb-1">Farm</label>
-    <select
-      formControlName="farmSlug"
-      class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500"
-    >
-      <option value="">No Farm</option>
-      @for (farm of farms(); track farm.slug) {
-        <option [value]="farm.slug">{{ getFarmName(farm.slug) }}</option>
-      }
-    </select>
+  <!-- Farm -->
+  <div class="space-y-1.5">
+    <label hlmLabel>{{ 'products.form.farm' | transloco }}</label>
+    <hlm-select formControlName="farmSlug" class="w-full">
+      <hlm-select-trigger class="w-full">
+        <hlm-select-value [placeholder]="'products.form.noFarm' | transloco" />
+      </hlm-select-trigger>
+      <hlm-select-content *hlmSelectPortal>
+        <hlm-select-group>
+          <hlm-select-label>{{ 'products.form.farms' | transloco }}</hlm-select-label>
+          <hlm-select-item value="">{{ 'products.form.noFarm' | transloco }}</hlm-select-item>
+          @for (farm of farms(); track farm.slug) {
+            <hlm-select-item [value]="farm.slug">{{ getFarmName(farm.slug) }}</hlm-select-item>
+          }
+        </hlm-select-group>
+      </hlm-select-content>
+    </hlm-select>
   </div>
 
-  <!-- ══════ Coffee Details — only shown for COFFEE products ══════ -->
+  <!-- Coffee Details -->
   @if (isCoffee) {
-    <div class="border border-amber-200 rounded-md p-4 bg-amber-50 space-y-4">
-      <h3 class="text-sm font-semibold text-amber-800 uppercase tracking-wide">Coffee Details</h3>
+    <div class="border border-amber-200 rounded-md p-4 bg-amber-50/50 space-y-4">
+      <h3 class="text-sm font-semibold text-amber-800 uppercase tracking-wide">{{ 'products.coffeeDetails' | transloco }}</h3>
 
       <div class="grid grid-cols-2 gap-3">
-        <!-- Altitude -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Altitude (m)</label>
+        <div class="space-y-1.5">
+          <label hlmLabel>{{ 'products.form.altitude' | transloco }}</label>
           <input
+            hlmInput
             formControlName="altitude"
             type="number"
-            class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500"
-            placeholder="e.g. 1800"
+            class="w-full"
+            [placeholder]="'products.form.altitudePlaceholder' | transloco"
           />
         </div>
-
-        <!-- Harvest Season -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Harvest Year</label>
+        <div class="space-y-1.5">
+          <label hlmLabel>{{ 'products.form.harvestYear' | transloco }}</label>
           <input
+            hlmInput
             formControlName="harvestYear"
             type="text"
-            class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500"
-            placeholder="e.g. October - December"
+            class="w-full"
+            [placeholder]="'products.form.harvestYearPlaceholder' | transloco"
           />
         </div>
       </div>
 
       <!-- Processing Method -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Processing Method</label>
-        <select
-          formControlName="processingMethodSlug"
-          class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500"
-        >
-          <option value="">Select Method</option>
-          @for (pm of processingMethods(); track pm.slug) {
-            <option [value]="pm.slug">{{ getProcessingMethodName(pm.slug) }}</option>
-          }
-        </select>
+      <div class="space-y-1.5">
+        <label hlmLabel>{{ 'products.form.processingMethod' | transloco }}</label>
+        <hlm-select formControlName="processingMethodSlug" class="w-full">
+          <hlm-select-trigger class="w-full">
+            <hlm-select-value [placeholder]="'products.form.selectMethod' | transloco" />
+          </hlm-select-trigger>
+          <hlm-select-content *hlmSelectPortal>
+            <hlm-select-group>
+              <hlm-select-label>{{ 'products.form.methods' | transloco }}</hlm-select-label>
+              @for (pm of processingMethods(); track pm.slug) {
+                <hlm-select-item [value]="pm.slug">{{ getProcessingMethodName(pm.slug) }}</hlm-select-item>
+              }
+            </hlm-select-group>
+          </hlm-select-content>
+        </hlm-select>
       </div>
 
       <!-- Roast Level -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Roast Level</label>
-        <select
-          formControlName="roastLevelSlug"
-          class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500"
-        >
-          <option value="">Select Roast Level</option>
-          @for (rl of roastLevels(); track rl.slug) {
-            <option [value]="rl.slug">{{ getRoastLevelName(rl.slug) }}</option>
-          }
-        </select>
+      <div class="space-y-1.5">
+        <label hlmLabel>{{ 'products.form.roastLevel' | transloco }}</label>
+        <hlm-select formControlName="roastLevelSlug" class="w-full">
+          <hlm-select-trigger class="w-full">
+            <hlm-select-value [placeholder]="'products.form.selectRoastLevel' | transloco" />
+          </hlm-select-trigger>
+          <hlm-select-content *hlmSelectPortal>
+            <hlm-select-group>
+              <hlm-select-label>{{ 'products.form.roastLevels' | transloco }}</hlm-select-label>
+              @for (rl of roastLevels(); track rl.slug) {
+                <hlm-select-item [value]="rl.slug">{{ getRoastLevelName(rl.slug) }}</hlm-select-item>
+              }
+            </hlm-select-group>
+          </hlm-select-content>
+        </hlm-select>
       </div>
 
       <!-- Coffee Variety -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Coffee Variety</label>
-        <select
-          formControlName="coffeeVarietySlug"
-          class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500"
-        >
-          <option value="">Select Variety</option>
-          @for (cv of coffeeVarieties(); track cv.slug) {
-            <option [value]="cv.slug">{{ getCoffeeVarietyName(cv.slug) }}</option>
-          }
-        </select>
+      <div class="space-y-1.5">
+        <label hlmLabel>{{ 'products.form.coffeeVariety' | transloco }}</label>
+        <hlm-select formControlName="coffeeVarietySlug" class="w-full">
+          <hlm-select-trigger class="w-full">
+            <hlm-select-value [placeholder]="'products.form.selectVariety' | transloco" />
+          </hlm-select-trigger>
+          <hlm-select-content *hlmSelectPortal>
+            <hlm-select-group>
+              <hlm-select-label>{{ 'products.form.varieties' | transloco }}</hlm-select-label>
+              @for (cv of coffeeVarieties(); track cv.slug) {
+                <hlm-select-item [value]="cv.slug">{{ getCoffeeVarietyName(cv.slug) }}</hlm-select-item>
+              }
+            </hlm-select-group>
+          </hlm-select-content>
+        </hlm-select>
       </div>
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Story</label>
+
+      <div class="space-y-1.5">
+        <label hlmLabel>{{ 'products.form.story' | transloco }}</label>
         <input
+          hlmInput
           formControlName="story"
           type="text"
-          class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500"
-          placeholder="product story..."
+          class="w-full"
+          [placeholder]="'products.form.storyPlaceholder' | transloco"
         />
       </div>
     </div>
@@ -149,44 +179,47 @@
   <!-- Translations -->
   <div formArrayName="translations">
     @for (group of state.translationsArray.controls; track $index; let i = $index) {
-      <div [formGroupName]="i" class="border border-gray-200 rounded-md p-4 mb-4">
+      <div [formGroupName]="i" class="border rounded-md p-4 mb-4">
         <div class="flex items-center gap-2 mb-3">
-          <span class="px-2 py-0.5 bg-amber-100 text-amber-700 rounded text-xs font-bold uppercase">
+          <span class="px-2 py-0.5 bg-primary/10 text-primary rounded text-xs font-bold uppercase">
             {{ translationHelper.getLangLabel(group.get('language')?.value) }}
           </span>
         </div>
 
-        <div class="mb-3">
-          <label class="block text-sm font-medium text-gray-700 mb-1">Name *</label>
+        <div class="mb-3 space-y-1.5">
+          <label hlmLabel>{{ 'products.form.name' | transloco }} *</label>
           <input
+            hlmInput
             formControlName="name"
             type="text"
             [dir]="translationHelper.getLangDir(group.get('language')?.value)"
-            class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500"
+            class="w-full"
           />
           @if (group.get('name')?.invalid && group.get('name')?.touched) {
-            <p class="text-red-500 text-xs mt-1">Name is required</p>
+            <p class="text-destructive text-xs">{{ 'products.form.nameRequired' | transloco }}</p>
           }
         </div>
 
-        <div class="mb-3">
-          <label class="block text-sm font-medium text-gray-700 mb-1">Short Description</label>
+        <div class="mb-3 space-y-1.5">
+          <label hlmLabel>{{ 'products.form.shortDescription' | transloco }}</label>
           <input
+            hlmInput
             formControlName="shortDescription"
             type="text"
             [dir]="translationHelper.getLangDir(group.get('language')?.value)"
-            class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500"
-            placeholder="One-line summary shown in product cards"
+            class="w-full"
+            [placeholder]="'products.form.shortDescriptionPlaceholder' | transloco"
           />
         </div>
 
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+        <div class="space-y-1.5">
+          <label hlmLabel>{{ 'products.form.description' | transloco }}</label>
           <textarea
+            hlmInput
             formControlName="description"
             rows="3"
             [dir]="translationHelper.getLangDir(group.get('language')?.value)"
-            class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500"
+            class="w-full"
           ></textarea>
         </div>
       </div>
@@ -195,23 +228,13 @@
 
   <!-- Status toggles -->
   <div class="flex gap-6">
-    <div class="flex items-center gap-2">
-      <input
-        type="checkbox"
-        formControlName="isActive"
-        id="isActive"
-        class="w-4 h-4 rounded accent-amber-600"
-      />
-      <label for="isActive" class="text-sm font-medium text-gray-700">Active</label>
-    </div>
-    <div class="flex items-center gap-2">
-      <input
-        type="checkbox"
-        formControlName="featured"
-        id="featured"
-        class="w-4 h-4 rounded accent-amber-600"
-      />
-      <label for="featured" class="text-sm font-medium text-gray-700">Featured</label>
-    </div>
+    <label class="flex items-center gap-2 cursor-pointer">
+      <input type="checkbox" formControlName="isActive" hlmCheckbox />
+      <span class="text-sm font-medium">{{ 'products.form.active' | transloco }}</span>
+    </label>
+    <label class="flex items-center gap-2 cursor-pointer">
+      <input type="checkbox" formControlName="featured" hlmCheckbox />
+      <span class="text-sm font-medium">{{ 'products.form.featured' | transloco }}</span>
+    </label>
   </div>
 </div>

@@ -2,7 +2,7 @@
   <!-- Header -->
   <div class="flex items-center justify-between">
     <div>
-      <h1 class="text-2xl font-bold tracking-tight">Shipping Zones</h1>
+      <h1 class="text-2xl font-bold tracking-tight">{{ 'shippingZones.title' | transloco }}</h1>
     </div>
 
     <div class="flex items-center gap-3">
@@ -13,7 +13,7 @@
         (click)="openCreateDialog()"
       >
         <ng-icon name="lucidePlus" class="me-2 size-4" />
-        Add Shipping Zone
+        {{ 'shippingZones.add' | transloco }}
       </button>
     </div>
   </div>
@@ -31,7 +31,7 @@
         type="text"
         [(ngModel)]="searchQuery"
         (input)="onSearch()"
-        placeholder="Search shipping zones..."
+        [placeholder]="'shippingZones.search' | transloco"
         class="pl-9 w-full pb-1.25 pt-1.25"
       />
     </div>
@@ -67,9 +67,9 @@
   @if (pageData() && !loading()) {
     <div class="flex items-center justify-between">
       <span class="text-sm text-muted-foreground">
-        Showing {{ pageData()!.page * pageData()!.size + 1 }} -
+        {{ 'common.showing' | transloco }} {{ pageData()!.page * pageData()!.size + 1 }} -
         {{ Math.min((pageData()!.page + 1) * pageData()!.size, pageData()!.totalElements) }}
-        of {{ pageData()!.totalElements }}
+        {{ 'common.of' | transloco }} {{ pageData()!.totalElements }}
       </span>
       <div class="flex items-center gap-2">
         <button
@@ -83,7 +83,7 @@
         </button>
 
         <span class="text-sm text-muted-foreground px-2">
-          Page {{ pageData()!.page + 1 }} of {{ pageData()!.totalPages }}
+          {{ 'common.page' | transloco }} {{ pageData()!.page + 1 }} {{ 'common.of' | transloco }} {{ pageData()!.totalPages }}
         </span>
 
         <button
@@ -109,7 +109,7 @@
       <!-- Dialog Header -->
       <div class="flex items-center justify-between p-6 border-b sticky top-0 bg-card">
         <h2 class="text-lg font-bold">
-          {{ editing() ? 'Edit Shipping Zone' : 'Add Shipping Zone' }}
+          {{ (editing() ? 'shippingZones.editTitle' : 'shippingZones.addTitle') | transloco }}
         </h2>
         <button hlmBtn variant="ghost" size="icon" class="size-8" (click)="closeDialog()">
           <ng-icon name="lucideX" class="size-4" />
@@ -119,16 +119,16 @@
       <form [formGroup]="form" (ngSubmit)="onSubmit()" class="p-6 space-y-5">
         <!-- Name -->
         <div class="space-y-1.5">
-          <label hlmLabel>Name *</label>
+          <label hlmLabel>{{ 'shippingZones.name' | transloco }} *</label>
           <input hlmInput formControlName="name" type="text" class="w-full" />
           @if (form.get('name')?.invalid && form.get('name')?.touched) {
-            <p class="text-xs text-destructive">Name is required</p>
+            <p class="text-xs text-destructive">{{ 'shippingZones.nameRequired' | transloco }}</p>
           }
         </div>
 
         <!-- Shipping Cost -->
         <div class="space-y-1.5">
-          <label hlmLabel>Shipping Cost *</label>
+          <label hlmLabel>{{ 'shippingZones.shippingCost' | transloco }} *</label>
           <input
             hlmInput
             formControlName="shippingCost"
@@ -138,13 +138,13 @@
             class="w-full"
           />
           @if (form.get('shippingCost')?.invalid && form.get('shippingCost')?.touched) {
-            <p class="text-xs text-destructive">Shipping cost is required</p>
+            <p class="text-xs text-destructive">{{ 'shippingZones.shippingCostRequired' | transloco }}</p>
           }
         </div>
 
         <!-- Cities -->
         <div class="space-y-1.5">
-          <label hlmLabel>Cities * (comma-separated)</label>
+          <label hlmLabel>{{ 'shippingZones.cities' | transloco }} * (comma-separated)</label>
           <textarea
             hlmInput
             formControlName="cities"
@@ -153,7 +153,7 @@
             placeholder="Cairo, Alex, Giza"
           ></textarea>
           @if (form.get('cities')?.invalid && form.get('cities')?.touched) {
-            <p class="text-xs text-destructive">At least one city is required</p>
+            <p class="text-xs text-destructive">{{ 'shippingZones.citiesRequired' | transloco }}</p>
           }
         </div>
 
@@ -165,19 +165,19 @@
             id="active"
             class="h-4 w-4 rounded border-primary"
           />
-          <label for="active" class="text-sm font-medium">Active</label>
+          <label for="active" class="text-sm font-medium">{{ 'common.active' | transloco }}</label>
         </div>
 
         <!-- Buttons -->
         <div class="flex gap-3 pt-2">
           <button type="button" hlmBtn variant="outline" class="flex-1" (click)="closeDialog()">
-            Cancel
+            {{ 'common.cancel' | transloco }}
           </button>
           <button type="submit" hlmBtn class="flex-1" [disabled]="form.invalid || submitting()">
             @if (submitting()) {
               <span class="animate-spin mr-2">⟳</span>
             }
-            {{ submitting() ? 'Saving...' : 'Save' }}
+            {{ submitting() ? ('common.saving' | transloco) : ('common.save' | transloco) }}
           </button>
         </div>
       </form>
@@ -191,14 +191,14 @@
 @if (deleting()) {
   <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
     <div class="w-full max-w-sm rounded-2xl bg-card shadow-2xl border p-6">
-      <h2 class="text-lg font-bold mb-2">Delete Shipping Zone</h2>
+      <h2 class="text-lg font-bold mb-2">{{ 'shippingZones.deleteTitle' | transloco }}</h2>
       <p class="text-muted-foreground mb-6">
-        Are you sure you want to delete
+        {{ 'shippingZones.deleteConfirm' | transloco }}
         <strong class="text-foreground">{{ deleting()!.name }}</strong
-        >? This action cannot be undone.
+        >?
       </p>
       <div class="flex gap-3">
-        <button hlmBtn variant="outline" class="flex-1" (click)="deleting.set(null)">Cancel</button>
+        <button hlmBtn variant="outline" class="flex-1" (click)="deleting.set(null)">{{ 'common.cancel' | transloco }}</button>
         <button
           hlmBtn
           variant="destructive"
@@ -209,7 +209,7 @@
           @if (submitting()) {
             <span class="animate-spin mr-2">⟳</span>
           }
-          {{ submitting() ? 'Deleting...' : 'Delete' }}
+          {{ submitting() ? ('common.deleting' | transloco) : ('common.delete' | transloco) }}
         </button>
       </div>
     </div>

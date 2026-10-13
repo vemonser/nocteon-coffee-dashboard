@@ -1,12 +1,14 @@
-import { Component, Input, OnChanges, effect, inject, ViewChild } from '@angular/core';
+﻿import { Component, Input, OnChanges, effect, inject, ViewChild } from '@angular/core';
 import { NgApexchartsModule, ChartComponent, ApexNonAxisChartSeries, ApexChart } from 'ng-apexcharts';
 import { ThemeService } from '../../../../core/theme/theme.service';
 import { getCssVarColor } from '../../../../shared/utils/utils';
 
+import { TranslocoPipe } from '@jsverse/transloco';
 @Component({
   selector: 'app-orders-status-chart',
   standalone: true,
-  imports: [NgApexchartsModule],
+  imports: [NgApexchartsModule, TranslocoPipe,
+  ],
   templateUrl: "./orders-status-chart.component.html",
 })
 export class OrdersStatusChartComponent implements OnChanges {

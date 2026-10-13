@@ -1,0 +1,345 @@
+<div class="flex flex-col gap-6 p-6">
+  <!-- Header -->
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-bold tracking-tight">{{ 'productOptions.title' | transloco }}</h1>
+      <p class="text-muted-foreground">{{ items().length }} {{ 'common.total' | transloco }}</p>
+    </div>
+    <button *hasPermission="'product_option:create'" hlmBtn (click)="openCreateDialog()">
+      <ng-icon name="lucidePlus" class="me-2 size-4" />
+      {{ 'productOptions.add' | transloco }}
+    </button>
+  </div>
+
+  <!-- Search -->
+  <div class="relative flex-1 max-w-md">
+    <ng-icon
+      name="lucideSearch"
+      class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground"
+    />
+    <input
+      hlmInput
+      type="text"
+      [(ngModel)]="searchQuery"
+      (input)="onSearch()"
+      [placeholder]="'productOptions.search' | transloco"
+      class="pl-9 w-full"
+    />
+  </div>
+
+  <!-- Loading -->
+  @if (loading()) {
+    <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      @for (_ of [1, 2, 3, 4, 5, 6]; track $index) {
+        <div class="rounded-xl border bg-card p-5 space-y-3 animate-pulse">
+          <div class="h-5 w-2/3 rounded bg-muted"></div>
+          <div class="h-4 w-1/2 rounded bg-muted"></div>
+          <div class="h-8 w-full rounded bg-muted"></div>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Options grid -->
+  @if (!loading() && items().length === 0) {
+    <div class="rounded-xl border border-dashed py-16 text-center text-muted-foreground">
+      <ng-icon name="lucideSlidersHorizontal" class="mx-auto mb-3 size-10 opacity-50" />
+      {{ 'productOptions.empty' | transloco }}
+    </div>
+  }
+
+  @if (!loading() && items().length > 0) {
+    <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      @for (option of items(); track option.id) {
+        <div class="rounded-xl border bg-card p-5 flex flex-col gap-4">
+          <div class="flex items-start justify-between gap-2">
+            <div class="space-y-1 min-w-0">
+              @for (lang of SUPPORTED_LANGUAGES; track lang.code) {
+                <p class="truncate" [dir]="translationHelper.getLangDir(lang.code)">
+                  <span class="text-xs text-muted-foreground me-1">[{{ lang.label }}]</span>
+                  <span class="font-medium">{{ getOptionName(option, lang.code) }}</span>
+                </p>
+              }
+              <div class="flex items-center gap-2 pt-1">
+                <hlm-badge variant="secondary" class="font-mono text-xs">#{{ option.id }}</hlm-badge>
+                <span class="font-mono text-xs text-muted-foreground">{{ option.slug }}</span>
+                @if (option.sortOrder != null) {
+                  <hlm-badge variant="outline" class="text-xs">
+                    {{ 'productOptions.sortOrder' | transloco }}: {{ option.sortOrder }}
+                  </hlm-badge>
+                }
+              </div>
+            </div>
+            <div class="flex items-center gap-1 shrink-0">
+              <button hlmBtn variant="ghost" size="icon" class="size-8" (click)="openEditDialog(option)">
+                <ng-icon name="lucidePencil" class="size-4" />
+              </button>
+              <button
+                hlmBtn
+                variant="ghost"
+                size="icon"
+                class="size-8 text-muted-foreground hover:text-destructive"
+                (click)="confirmDelete(option)"
+              >
+                <ng-icon name="lucideTrash2" class="size-4" />
+              </button>
+            </div>
+          </div>
+
+          <!-- Values -->
+          <div class="flex flex-wrap gap-2">
+            @if (option.values.length === 0) {
+              <span class="text-sm text-muted-foreground">{{ 'productOptions.noValues' | transloco }}</span>
+            }
+            @for (value of option.values; track value.id) {
+              <span
+                class="inline-flex items-center gap-1 rounded-full bg-secondary px-3 py-1 text-sm"
+              >
+                <span [dir]="translationHelper.getLangDir('en')">
+                  {{ getValueName(value, 'en') }}
+                </span>
+                @if (getValueName(value, 'ar')) {
+                  <span class="text-muted-foreground" [dir]="'rtl'">
+                    · {{ getValueName(value, 'ar') }}
+                  </span>
+                }
+                @if (value.numericValue != null) {
+                  <span class="font-mono text-xs text-muted-foreground">
+                    {{ value.numericValue }}
+                  </span>
+                }
+                <button
+                  *hasPermission="'product_option:update'"
+                  class="ms-1 text-muted-foreground hover:text-destructive"
+                  (click)="confirmDeleteValue(option, value)"
+                >
+                  <ng-icon name="lucideX" class="size-3" />
+                </button>
+              </span>
+            }
+          </div>
+
+          <!-- Add value inline -->
+          @if (addingValueFor()?.id === option.id) {
+            <form
+              [formGroup]="valueForm"
+              (ngSubmit)="submitValue()"
+              class="space-y-3 border-t pt-3"
+            >
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                @for (lang of SUPPORTED_LANGUAGES; track lang.code) {
+                  <div class="space-y-1.5">
+                    <label hlmLabel>{{ 'productOptions.valueIn' | transloco }} {{ lang.label }}</label>
+                    <input
+                      hlmInput
+                      [formControlName]="lang.code"
+                      type="text"
+                      [dir]="translationHelper.getLangDir(lang.code)"
+                      class="w-full"
+                    />
+                  </div>
+                }
+              </div>
+              <div class="space-y-1.5">
+                <label hlmLabel>{{ 'productOptions.numericValue' | transloco }}</label>
+                <input hlmInput formControlName="numericValue" type="number" step="0.01" class="w-full" />
+              </div>
+              <div class="flex gap-2">
+                <button type="button" hlmBtn variant="outline" size="sm" class="flex-1" (click)="closeAddValue()">
+                  {{ 'common.cancel' | transloco }}
+                </button>
+                <button
+                  type="submit"
+                  hlmBtn
+                  size="sm"
+                  class="flex-1"
+                  [disabled]="valueForm.invalid || valueSubmitting()"
+                >
+                  @if (valueSubmitting()) {
+                    <span class="animate-spin me-2">⟳</span>
+                  }
+                  {{ valueSubmitting() ? ('common.saving' | transloco) : ('productOptions.addValue' | transloco) }}
+                </button>
+              </div>
+            </form>
+          } @else {
+            <button
+              *hasPermission="'product_option:update'"
+              hlmBtn
+              variant="outline"
+              size="sm"
+              class="self-start"
+              (click)="openAddValue(option)"
+            >
+              <ng-icon name="lucideCirclePlus" class="me-1.5 size-4" />
+              {{ 'productOptions.addValue' | transloco }}
+            </button>
+          }
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Pagination -->
+  @if (pageData() && !loading()) {
+    <div class="flex items-center justify-between">
+      <span class="text-sm text-muted-foreground">
+        {{ 'common.showing' | transloco }} {{ pageData()!.page * pageData()!.size + 1 }} -
+        {{ Math.min((pageData()!.page + 1) * pageData()!.size, pageData()!.totalElements) }}
+        {{ 'common.of' | transloco }} {{ pageData()!.totalElements }}
+      </span>
+      <div class="flex items-center gap-2">
+        <button
+          hlmBtn
+          variant="outline"
+          size="sm"
+          [disabled]="pageData()!.first"
+          (click)="goToPage(currentPage() - 1)"
+        >
+          <ng-icon name="lucideChevronLeft" class="size-4" />
+        </button>
+        <span class="text-sm text-muted-foreground px-2">
+          {{ 'common.page' | transloco }} {{ pageData()!.page + 1 }} {{ 'common.of' | transloco }} {{ pageData()!.totalPages }}
+        </span>
+        <button
+          hlmBtn
+          variant="outline"
+          size="sm"
+          [disabled]="pageData()!.last"
+          (click)="goToPage(currentPage() + 1)"
+        >
+          <ng-icon name="lucideChevronRight" class="size-4" />
+        </button>
+      </div>
+    </div>
+  }
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     Create / Edit Option Dialog
+═════════════════════════════════════════════════════════════ -->
+@if (showDialog()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+    <div class="w-full max-w-md max-h-[90vh] overflow-y-auto rounded-2xl bg-card shadow-2xl border">
+      <div class="flex items-center justify-between p-6 border-b sticky top-0 bg-card">
+        <h2 class="text-lg font-bold">
+          {{ (editing() ? 'productOptions.editTitle' : 'productOptions.addTitle') | transloco }}
+        </h2>
+        <button hlmBtn variant="ghost" size="icon" class="size-8" (click)="closeDialog()">
+          <ng-icon name="lucideX" class="size-4" />
+        </button>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="p-6 space-y-5">
+        <div formArrayName="translations">
+          @for (group of translationsArray.controls; track $index; let i = $index) {
+            <div [formGroupName]="i" class="rounded-md border p-4 mb-4">
+              <div class="flex items-center gap-2 mb-3">
+                <hlm-badge variant="outline">
+                  {{ translationHelper.getLangLabel(group.get('language')?.value) }}
+                </hlm-badge>
+              </div>
+              <div class="space-y-1.5">
+                <label hlmLabel>{{ 'productOptions.name' | transloco }} *</label>
+                <input
+                  hlmInput
+                  formControlName="name"
+                  type="text"
+                  [dir]="translationHelper.getLangDir(group.get('language')?.value)"
+                  [placeholder]="group.get('language')?.value === 'ar' ? 'مثال: الحجم' : 'e.g. Weight'"
+                  class="w-full"
+                />
+                @if (group.get('name')?.invalid && group.get('name')?.touched) {
+                  <p class="text-xs text-destructive">{{ 'common.nameRequired' | transloco }}</p>
+                }
+              </div>
+            </div>
+          }
+        </div>
+
+        <div class="space-y-2">
+          <label hlmLabel>{{ 'productOptions.sortOrder' | transloco }}</label>
+          <input hlmInput formControlName="sortOrder" type="number" class="w-full" />
+        </div>
+
+        <div class="flex gap-3 pt-2">
+          <button type="button" hlmBtn variant="outline" class="flex-1" (click)="closeDialog()">
+            {{ 'common.cancel' | transloco }}
+          </button>
+          <button type="submit" hlmBtn class="flex-1" [disabled]="form.invalid || submitting()">
+            @if (submitting()) {
+              <span class="animate-spin me-2">⟳</span>
+            }
+            {{ submitting() ? ('common.saving' | transloco) : ('common.save' | transloco) }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+<!-- ══════════════════════════════════════════════════════════
+     Delete Option Confirm
+═════════════════════════════════════════════════════════════ -->
+@if (deleting()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+    <div class="w-full max-w-sm rounded-2xl bg-card shadow-2xl border p-6">
+      <h2 class="text-lg font-bold mb-2">{{ 'productOptions.deleteTitle' | transloco }}</h2>
+      <p class="text-muted-foreground mb-6">
+        {{ 'common.confirmDelete' | transloco }}
+        <strong class="text-foreground">{{ deleting()!.slug }}</strong>?
+      </p>
+      <div class="flex gap-3">
+        <button hlmBtn variant="outline" class="flex-1" (click)="deleting.set(null)">
+          {{ 'common.cancel' | transloco }}
+        </button>
+        <button
+          hlmBtn
+          variant="destructive"
+          class="flex-1"
+          [disabled]="submitting()"
+          (click)="submitDelete()"
+        >
+          @if (submitting()) {
+            <span class="animate-spin me-2">⟳</span>
+          }
+          {{ submitting() ? ('common.deleting' | transloco) : ('common.delete' | transloco) }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ══════════════════════════════════════════════════════════
+     Delete Value Confirm
+═════════════════════════════════════════════════════════════ -->
+@if (deletingValue()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+    <div class="w-full max-w-sm rounded-2xl bg-card shadow-2xl border p-6">
+      <h2 class="text-lg font-bold mb-2">{{ 'productOptions.deleteValueTitle' | transloco }}</h2>
+      <p class="text-muted-foreground mb-6">
+        {{ 'productOptions.deleteValueConfirm' | transloco }}
+        <strong class="text-foreground">
+          {{ getValueName(deletingValue()!.value, 'en') }}
+        </strong>?
+      </p>
+      <div class="flex gap-3">
+        <button hlmBtn variant="outline" class="flex-1" (click)="deletingValue.set(null)">
+          {{ 'common.cancel' | transloco }}
+        </button>
+        <button
+          hlmBtn
+          variant="destructive"
+          class="flex-1"
+          [disabled]="valueSubmitting()"
+          (click)="submitDeleteValue()"
+        >
+          @if (valueSubmitting()) {
+            <span class="animate-spin me-2">⟳</span>
+          }
+          {{ valueSubmitting() ? ('common.deleting' | transloco) : ('common.delete' | transloco) }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

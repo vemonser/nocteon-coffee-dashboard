@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal, computed } from '@angular/core';
+﻿import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -32,6 +32,7 @@ import {
 } from '../../models/coffee-variety.model';
 import { BreadcrumbService } from '../../../../shared/components/breadcrumb/service/breadcrumb.service';
 
+import { TranslocoPipe } from '@jsverse/transloco';
 type EditMode = 'view' | 'edit';
 
 @Component({
@@ -49,6 +50,7 @@ type EditMode = 'view' | 'edit';
     HlmInputImports,
     HlmLabelImports,
     NgIcon,
+    TranslocoPipe,
   ],
   providers: [
     provideIcons({

@@ -14,6 +14,7 @@ import { HlmDialogImports } from '@spartan-ng/helm/dialog';
 import { HlmTableImports } from '@spartan-ng/helm/table';
 import { HlmLabelImports } from '@spartan-ng/helm/label';
 
+import { TranslocoPipe } from '@jsverse/transloco';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
   lucidePlus,
@@ -53,6 +54,7 @@ import { RoastLevelService } from '../services/roast-level.service';
     HlmTableImports,
     HlmLabelImports,
     NgIcon,
+    TranslocoPipe,
   ],
   providers: [
     provideIcons({

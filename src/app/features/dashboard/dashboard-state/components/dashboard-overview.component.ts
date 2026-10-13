@@ -1,48 +1,21 @@
-import { Component, OnInit, signal, inject } from '@angular/core';
+﻿import { Component, inject } from '@angular/core';
 import { DashboardStatsService } from '../../services/dashboard-stats.service';
-import { DashboardOverviewDto } from '../models/dashboard-stats.model';
-
-
 import { DecimalPipe } from '@angular/common';
 import { RevenueChartComponent } from '../../../../shared/components/dashboard/revenue-chart/revenue-chart.component';
 import { OrdersStatusChartComponent } from '../../../../shared/components/dashboard/components/orders-status-chart.component';
 
-
-
+import { TranslocoPipe } from '@jsverse/transloco';
 @Component({
   selector: 'app-dashboard-overview',
   standalone: true,
   templateUrl: './dashboard-overview.component.html',
-  imports: [RevenueChartComponent, DecimalPipe,OrdersStatusChartComponent],
+  imports: [RevenueChartComponent, DecimalPipe, OrdersStatusChartComponent, TranslocoPipe,
+  ],
 })
-
-export class DashboardOverviewComponent implements OnInit {
-  private statsService = inject(DashboardStatsService);
-
-  selectedRange = signal(30); // default شهر
-  stats = signal<DashboardOverviewDto | null>(null);
-  loading = signal(false);
-
-  ngOnInit() {
-    this.loadStats();
-  }
+export class DashboardOverviewComponent {
+  protected readonly statsService = inject(DashboardStatsService);
 
   onRangeChange(days: number) {
-    this.selectedRange.set(days);
-    this.loadStats();
+    this.statsService.setDays(days);
   }
-
-  private loadStats() {
-  this.loading.set(true);
-  this.statsService.getOverview(this.selectedRange()).subscribe({
-    next: (res) => {
-      this.stats.set(res.data);
-      this.loading.set(false);
-    },
-    error: () => this.loading.set(false),
-  });
-}
-
-
-
 }

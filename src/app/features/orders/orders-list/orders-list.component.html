@@ -1,1 +1,188 @@
-<p>orders-list.component works!</p>
+<div class="flex flex-col gap-6 p-6">
+  <!-- Header -->
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-bold tracking-tight">{{ 'orders.title' | transloco }}</h1>
+      <p class="text-muted-foreground">{{ totalItems() }} {{ 'common.total' | transloco }}</p>
+    </div>
+  </div>
+
+  <!-- Search + Filter -->
+  <div class="flex gap-4 items-center">
+    <div class="relative flex-1 max-w-md">
+      <ng-icon
+        name="lucideSearch"
+        class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground"
+      />
+      <input
+        hlmInput
+        type="text"
+        [(ngModel)]="searchQuery"
+        (input)="onSearch()"
+        [placeholder]="'orders.searchPlaceholder' | transloco"
+        class="pl-9 w-full pb-1.25 pt-1.25"
+      />
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  @if (loading()) {
+    <div class="rounded-md border">
+      <div class="h-12 border-b bg-muted/50 animate-pulse" *ngFor="let _ of [1, 2, 3, 4, 5]"></div>
+    </div>
+  }
+
+  <!-- Table -->
+  <div class="rounded-md border bg-card">
+    <app-data-table
+      [data]="items()"
+      [columns]="columns"
+      [loading]="loading()"
+      [initialSort]="{ column: currentSort, direction: currentDirection }"
+      [showEdit]="false"
+      [showDelete]="false"
+      (sortChange)="onSortChange($event)"
+      (rowClick)="openView($event)"
+    />
+  </div>
+
+  <!-- Pagination -->
+  @if (pageData() && !loading() && items().length > 0) {
+    <div class="flex items-center justify-between">
+      <span class="text-sm text-muted-foreground">
+        {{ 'common.showing' | transloco }}
+        {{ pageData()!.page * pageData()!.size + 1 }} -
+        {{ Math.min((pageData()!.page + 1) * pageData()!.size, pageData()!.totalElements) }}
+        {{ 'common.of' | transloco }} {{ pageData()!.totalElements }}
+      </span>
+
+      <div class="flex items-center gap-2">
+        <button
+          hlmBtn
+          variant="outline"
+          size="sm"
+          [disabled]="pageData()!.first"
+          (click)="goToPage(currentPage() - 1)"
+        >
+          <ng-icon name="lucideChevronLeft" class="size-4" />
+        </button>
+        <span class="text-sm text-muted-foreground px-2">
+          {{ 'common.page' | transloco }} {{ pageData()!.page + 1 }} {{ 'common.of' | transloco }} {{ pageData()!.totalPages }}
+        </span>
+        <button
+          hlmBtn
+          variant="outline"
+          size="sm"
+          [disabled]="pageData()!.last"
+          (click)="goToPage(currentPage() + 1)"
+        >
+          <ng-icon name="lucideChevronRight" class="size-4" />
+        </button>
+      </div>
+    </div>
+  }
+</div>
+
+<!-- Order Detail Dialog -->
+@if (viewing()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+    <div class="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl bg-card shadow-2xl border">
+      <div class="flex items-center justify-between p-6 border-b sticky top-0 bg-card">
+        <h2 class="text-lg font-bold">{{ 'orders.orderDetail' | transloco }} #{{ viewing()!.id }}</h2>
+        <button hlmBtn variant="ghost" size="icon" class="size-8" (click)="closeView()">
+          <ng-icon name="lucideX" class="size-4" />
+        </button>
+      </div>
+
+      <div class="p-6 space-y-5">
+        <!-- Status + Payment -->
+        <div class="grid grid-cols-2 gap-4">
+          <div class="rounded-md border p-4">
+            <p class="text-sm font-medium text-muted-foreground mb-1">{{ 'orders.status' | transloco }}</p>
+            <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
+              [class]="statusColors[viewing()!.status]">
+              {{ viewing()!.status }}
+            </span>
+          </div>
+          <div class="rounded-md border p-4">
+            <p class="text-sm font-medium text-muted-foreground mb-1">{{ 'orders.paymentStatus' | transloco }}</p>
+            <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
+              [class]="paymentStatusColors[viewing()!.paymentStatus]">
+              {{ viewing()!.paymentStatus }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Amounts -->
+        <div class="grid grid-cols-3 gap-4">
+          <div class="rounded-md border p-4">
+            <p class="text-sm font-medium text-muted-foreground mb-1">{{ 'orders.total' | transloco }}</p>
+            <p class="text-lg font-bold">{{ viewing()!.totalAmount | number:'1.2-2' }}</p>
+          </div>
+          <div class="rounded-md border p-4">
+            <p class="text-sm font-medium text-muted-foreground mb-1">{{ 'orders.shipping' | transloco }}</p>
+            <p class="text-lg font-bold">{{ viewing()!.shippingCost | number:'1.2-2' }}</p>
+          </div>
+          <div class="rounded-md border p-4">
+            <p class="text-sm font-medium text-muted-foreground mb-1">{{ 'orders.discount' | transloco }}</p>
+            <p class="text-lg font-bold">{{ viewing()!.discountAmount | number:'1.2-2' }}</p>
+          </div>
+        </div>
+
+        <!-- Payment Method + Date -->
+        <div class="grid grid-cols-2 gap-4">
+          <div class="rounded-md border p-4">
+            <p class="text-sm font-medium text-muted-foreground mb-1">{{ 'orders.paymentMethod' | transloco }}</p>
+            <p class="text-sm font-medium">{{ viewing()!.paymentMethod }}</p>
+          </div>
+          <div class="rounded-md border p-4">
+            <p class="text-sm font-medium text-muted-foreground mb-1">{{ 'orders.createdAt' | transloco }}</p>
+            <p class="text-sm">{{ viewing()!.createdAt | date:'medium' }}</p>
+          </div>
+        </div>
+
+        <!-- Notes -->
+        @if (viewing()!.notes) {
+          <div class="rounded-md border p-4">
+            <p class="text-sm font-medium text-muted-foreground mb-1">{{ 'orders.notes' | transloco }}</p>
+            <p class="text-sm">{{ viewing()!.notes }}</p>
+          </div>
+        }
+
+        <!-- Order Items -->
+        <div>
+          <p class="text-sm font-medium text-muted-foreground mb-3">{{ 'orders.items' | transloco }}</p>
+          <div class="space-y-2">
+            @for (item of viewing()!.items; track item.id) {
+              <div class="flex items-center justify-between rounded-md border p-3">
+                <div class="flex-1">
+                  <p class="text-sm font-medium">{{ item.sku }}</p>
+                  <p class="text-xs text-muted-foreground">{{ 'orders.quantity' | transloco }}: {{ item.quantity }}</p>
+                </div>
+                <div class="text-right">
+                  <p class="text-sm font-medium">{{ item.unitPrice | number:'1.2-2' }}</p>
+                  <p class="text-xs text-muted-foreground">{{ item.totalPrice | number:'1.2-2' }}</p>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Status Update Buttons -->
+        <div class="flex gap-2 flex-wrap pt-2 border-t">
+          @for (status of statuses; track status.value) {
+            <button
+              hlmBtn
+              [variant]="viewing()!.status === status.value ? 'default' : 'outline'"
+              size="sm"
+              [disabled]="updatingStatus() || viewing()!.status === status.value"
+              (click)="updateStatus(viewing()!, status.value)"
+            >
+              {{ 'orders.statuses.' + status.value | transloco }}
+            </button>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+}

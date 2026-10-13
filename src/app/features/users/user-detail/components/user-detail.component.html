@@ -1,4 +1,4 @@
-<div class="flex flex-col gap-6 p-6 max-w-4xl mx-auto">
+﻿<div class="flex flex-col gap-6 p-6 max-w-4xl mx-auto">
   @if (loading()) {
     <div class="space-y-6">
       <div class="h-9 w-24 bg-muted animate-pulse rounded-md"></div>
@@ -12,7 +12,7 @@
       <h2 class="text-xl font-semibold text-destructive">{{ error() }}</h2>
       <button hlmBtn variant="outline" class="mt-4" (click)="goBack()">
         <ng-icon name="lucideArrowLeft" class="mr-2 size-4" />
-        Back to Users
+        {{ 'common.backTo' | transloco }} {{ 'users.title' | transloco }}
       </button>
     </div>
   }
@@ -42,7 +42,7 @@
             } @else {
               <ng-icon name="lucideCheck" class="mr-2 size-4" />
             }
-            {{ saving() ? 'Saving...' : 'Save' }}
+            {{ saving() ? ('common.saving' | transloco) : ('common.save' | transloco) }}
           </button>
         } @else {
           <button
@@ -115,7 +115,7 @@
         <div hlmCardContent class="space-y-6">
           <!-- Username -->
           <div class="space-y-1.5">
-            <label hlmLabel>Username</label>
+            <label hlmLabel>{{ 'common.username' | transloco }}</label>
             @if (isEditing()) {
               <input hlmInput formControlName="username" type="text" class="w-full" />
             } @else {
@@ -125,7 +125,7 @@
 
           <!-- Email -->
           <div class="space-y-1.5">
-            <label hlmLabel>Email</label>
+            <label hlmLabel>{{ 'users.email' | transloco }}</label>
             @if (isEditing()) {
               <input hlmInput formControlName="email" type="email" class="w-full" />
             } @else {
@@ -138,7 +138,7 @@
           <!-- Names -->
           <div class="grid grid-cols-2 gap-4">
             <div class="space-y-1.5">
-              <label hlmLabel>First Name</label>
+              <label hlmLabel>{{ 'common.firstName' | transloco }}</label>
               @if (isEditing()) {
                 <input hlmInput formControlName="firstName" type="text" class="w-full" />
               } @else {
@@ -146,7 +146,7 @@
               }
             </div>
             <div class="space-y-1.5">
-              <label hlmLabel>Last Name</label>
+              <label hlmLabel>{{ 'common.lastName' | transloco }}</label>
               @if (isEditing()) {
                 <input hlmInput formControlName="lastName" type="text" class="w-full" />
               } @else {
@@ -157,7 +157,7 @@
 
           @if (isEditing()) {
             <div class="space-y-1.5">
-              <label hlmLabel>Phone</label>
+              <label hlmLabel>{{ 'common.phone' | transloco }}</label>
               <input hlmInput formControlName="phone" type="text" class="w-full" />
             </div>
           }
@@ -166,7 +166,7 @@
 
           <!-- Role -->
           <div class="space-y-1.5">
-            <label hlmLabel>Role</label>
+            <label hlmLabel>{{ 'common.role' | transloco }}</label>
             @if (isEditing()) {
               <hlm-select formControlName="role" class="rounded-sm! w-full">
                 <hlm-select-trigger class="rounded-sm w-full">
@@ -190,7 +190,7 @@
 
           @if (!isEditing() && user()!.permissions?.length) {
             <div class="space-y-1.5">
-              <label hlmLabel>Permissions</label>
+              <label hlmLabel>{{ 'common.permissions' | transloco }}</label>
               <div class="flex flex-wrap gap-1.5">
                 @for (perm of user()!.permissions; track perm) {
                   <hlm-badge variant="outline">{{ perm }}</hlm-badge>
@@ -204,13 +204,13 @@
           <!-- Meta -->
           <div class="grid grid-cols-2 gap-4 text-sm">
             <div class="space-y-1.5">
-              <label hlmLabel>Joined</label>
+              <label hlmLabel>{{ 'common.joined' | transloco }}</label>
               <div class="px-3 py-2 rounded-md bg-muted/50">
                 {{ user()!.createdAt | date: 'medium' }}
               </div>
             </div>
             <div class="space-y-1.5">
-              <label hlmLabel>Last Active</label>
+              <label hlmLabel>{{ 'common.lastActive' | transloco }}</label>
               <div class="px-3 py-2 rounded-md bg-muted/50">
                 {{ user()!.lastActiveAt ? (user()!.lastActiveAt | date: 'medium') : '—' }}
               </div>

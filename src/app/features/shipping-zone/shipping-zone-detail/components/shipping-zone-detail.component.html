@@ -1,4 +1,4 @@
-<div class="flex flex-col gap-6 p-6 max-w-7xl mx-auto">
+﻿<div class="flex flex-col gap-6 p-6 max-w-7xl mx-auto">
   <!-- Loading -->
   @if (loading()) {
     <div class="space-y-6">
@@ -20,7 +20,7 @@
       <h2 class="text-xl font-semibold text-destructive">{{ error() }}</h2>
       <button hlmBtn variant="outline" class="mt-4" (click)="goBack()">
         <ng-icon name="lucideArrowLeft" class="mr-2 size-4" />
-        Back to Shipping Zones
+        {{ 'common.backTo' | transloco }} {{ 'shippingZones.title' | transloco }}
       </button>
     </div>
   }
@@ -31,14 +31,14 @@
     <div class="flex items-center justify-between">
       <button hlmBtn variant="ghost" size="sm" (click)="goBack()">
         <ng-icon name="lucideArrowLeft" class="mr-2 size-4" />
-        Back
+        {{ 'shippingZones.detail.back' | transloco }}
       </button>
 
       <div class="flex items-center gap-2">
         @if (isEditing()) {
           <button hlmBtn variant="outline" size="sm" (click)="cancelEdit()" [disabled]="saving()">
             <ng-icon name="lucideX" class="mr-2 size-4" />
-            Cancel
+            {{ 'common.cancel' | transloco }}
           </button>
           <button
             hlmBtn
@@ -51,16 +51,16 @@
             } @else {
               <ng-icon name="lucideCheck" class="mr-2 size-4" />
             }
-            {{ saving() ? 'Saving...' : 'Save' }}
+            {{ saving() ? ('common.saving' | transloco) : ('common.save' | transloco) }}
           </button>
         } @else {
           <button hlmBtn variant="outline" size="sm" (click)="startEdit()">
             <ng-icon name="lucidePencil" class="mr-2 size-4" />
-            Edit
+            {{ 'common.edit' | transloco }}
           </button>
           <button hlmBtn variant="destructive" size="sm" (click)="deleteZone()">
             <ng-icon name="lucideTrash2" class="mr-2 size-4" />
-            Delete
+            {{ 'common.delete' | transloco }}
           </button>
         }
       </div>
@@ -84,7 +84,7 @@
         <div hlmCardContent class="space-y-6 pt-4">
           <!-- Name -->
           <div class="space-y-1.5">
-            <label hlmLabel>Name</label>
+            <label hlmLabel>{{ 'common.name' | transloco }}</label>
             @if (isEditing()) {
               <input hlmInput formControlName="name" type="text" class="w-full" />
             } @else {
@@ -96,7 +96,7 @@
 
           <!-- Shipping Cost -->
           <div class="space-y-1.5">
-            <label hlmLabel>Shipping Cost</label>
+            <label hlmLabel>{{ 'common.shippingCost' | transloco }}</label>
             @if (isEditing()) {
               <input
                 hlmInput
@@ -115,7 +115,7 @@
 
           <!-- Cities -->
           <div class="space-y-1.5">
-            <label hlmLabel>Cities</label>
+            <label hlmLabel>{{ 'common.cities' | transloco }}</label>
             @if (isEditing()) {
               <textarea
                 hlmInput
@@ -129,7 +129,7 @@
                 @for (city of displayCities; track city) {
                   <hlm-badge variant="secondary">{{ city }}</hlm-badge>
                 } @empty {
-                  <span class="text-muted-foreground">No cities.</span>
+                  <span class="text-muted-foreground">{{ 'shippingZones.detail.noCities' | transloco }}</span>
                 }
               </div>
             }
@@ -137,7 +137,7 @@
 
           <!-- Active -->
           <div class="space-y-1.5">
-            <label hlmLabel>Status</label>
+            <label hlmLabel>{{ 'common.status' | transloco }}</label>
             @if (isEditing()) {
               <div class="flex items-center gap-3">
                 <input
@@ -146,18 +146,18 @@
                   id="active"
                   class="h-4 w-4 rounded border-primary"
                 />
-                <label for="active" class="text-sm font-medium">Active</label>
+                <label for="active" class="text-sm font-medium">{{ 'common.active' | transloco }}</label>
               </div>
             } @else {
               <hlm-badge [variant]="zone()!.active ? 'default' : 'destructive'">
-                {{ zone()!.active ? 'Active' : 'Inactive' }}
+                {{ zone()!.active ? ('common.active' | transloco) : ('common.inactive' | transloco) }}
               </hlm-badge>
             }
           </div>
 
           @if (zone()!.updatedAt) {
             <p class="text-xs text-muted-foreground">
-              Last updated: {{ zone()!.updatedAt | date:'medium' }}
+              {{ 'shippingZones.detail.lastUpdated' | transloco }} {{ zone()!.updatedAt | date:'medium' }}
             </p>
           }
         </div>

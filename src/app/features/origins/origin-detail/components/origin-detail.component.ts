@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal, computed } from '@angular/core';
+﻿import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -26,6 +26,7 @@ import { PageResponse } from '../../../../core/models/api-response.model';
 import { BreadcrumbService } from '../../../../shared/components/breadcrumb/service/breadcrumb.service';
 import { DashboardOriginResponse, OriginRequest, ProductCardResponse } from '../../models/origin.model';
 
+import { TranslocoPipe } from '@jsverse/transloco';
 type ViewMode = 'list' | 'grid';
 type EditMode = 'view' | 'edit';
 
@@ -36,6 +37,7 @@ type EditMode = 'view' | 'edit';
     CommonModule, FormsModule, ReactiveFormsModule,
     HlmCardImports, HlmButtonImports, HlmBadgeImports, HlmSkeletonImports,
     HlmSeparatorImports, HlmInputImports, HlmLabelImports, HlmTableImports, NgIcon,
+    TranslocoPipe,
   ],
   providers: [
     provideIcons({

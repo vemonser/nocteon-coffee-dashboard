@@ -2,9 +2,9 @@
   <!-- Header -->
   <div class="flex items-center justify-between">
     <div>
-      <h1 class="text-2xl font-bold tracking-tight">Categories</h1>
+      <h1 class="text-2xl font-bold tracking-tight">{{ 'categories.title' | transloco }}</h1>
       <p class="text-muted-foreground">
-        {{ items().length }} total · {{ activeCount() }} active · {{ inactiveCount() }} inactive
+        {{ items().length }} {{ 'common.of' | transloco }} · {{ activeCount() }} {{ 'common.active' | transloco }} · {{ inactiveCount() }} {{ 'common.inactive' | transloco }}
       </p>
     </div>
 
@@ -39,7 +39,7 @@
         (click)="openCreateDialog()"
       >
         <ng-icon name="lucidePlus" class="me-2 size-4" />
-        Add Category
+        {{ 'categories.add' | transloco }}
       </button>
     </div>
   </div>
@@ -57,7 +57,7 @@
         type="text"
         [(ngModel)]="searchQuery"
         (input)="onSearch()"
-        placeholder="Search categories..."
+        [placeholder]="'categories.search' | transloco"
         class="pl-9 w-full pb-1.25 pt-1.25"
       />
     </div>
@@ -72,14 +72,14 @@
   class="rounded-sm!   "
 >
   <hlm-select-trigger class="rounded-sm h-full">
-    <hlm-select-value placeholder="All Status"  />
+    <hlm-select-value [placeholder]="'common.all' | transloco"  />
   </hlm-select-trigger>
   <hlm-select-content *hlmSelectPortal >
     <hlm-select-group>
-      <hlm-select-label>All Status</hlm-select-label>
-      <hlm-select-item value="all">All Status</hlm-select-item>
-      <hlm-select-item value="active">Active</hlm-select-item>
-      <hlm-select-item value="inactive">Inactive</hlm-select-item>
+      <hlm-select-label>{{ 'common.all' | transloco }}</hlm-select-label>
+      <hlm-select-item value="all">{{ 'common.all' | transloco }}</hlm-select-item>
+      <hlm-select-item value="active">{{ 'common.active' | transloco }}</hlm-select-item>
+      <hlm-select-item value="inactive">{{ 'common.inactive' | transloco }}</hlm-select-item>
     </hlm-select-group>
   </hlm-select-content>
 </hlm-select>
@@ -145,9 +145,9 @@
             <!-- Status Badge -->
             <div class="absolute top-2 right-2">
               @if (item.isActive) {
-                <hlm-badge variant="default">Active</hlm-badge>
+                <hlm-badge variant="default">{{ 'common.active' | transloco }}</hlm-badge>
               } @else {
-                <hlm-badge variant="secondary">Inactive</hlm-badge>
+                <hlm-badge variant="secondary">{{ 'common.inactive' | transloco }}</hlm-badge>
               }
             </div>
           </div>
@@ -180,7 +180,7 @@
                 (click)="openEditDialog(item)"
               >
                 <ng-icon name="lucidePencil" class="mr-1 size-3" />
-                Edit
+                {{ 'common.edit' | transloco }}
               </button>
               <button
                 hlmBtn
@@ -190,7 +190,7 @@
                 (click)="confirmDelete(item)"
               >
                 <ng-icon name="lucideTrash2" class="mr-1 size-3" />
-                Delete
+                {{ 'common.delete' | transloco }}
               </button>
             </div>
           </div>
@@ -198,8 +198,8 @@
       } @empty {
         <div class="col-span-full text-center py-12 text-muted-foreground">
           <ng-icon name="lucideSearch" class="mx-auto size-12 opacity-20 mb-4" />
-          <p class="text-lg font-medium">No categories found</p>
-          <p class="text-sm">Try adjusting your search or filters</p>
+          <p class="text-lg font-medium">{{ 'categories.gridNoData' | transloco }}</p>
+          <p class="text-sm">{{ 'categories.adjustSearch' | transloco }}</p>
         </div>
       }
     </div>
@@ -209,9 +209,9 @@
   @if (pageData() && !loading()) {
     <div class="flex items-center justify-between">
       <span class="text-sm text-muted-foreground">
-        Showing {{ pageData()!.page * pageData()!.size + 1 }} -
+        {{ 'common.showing' | transloco }} {{ pageData()!.page * pageData()!.size + 1 }} -
         {{ Math.min((pageData()!.page + 1) * pageData()!.size, pageData()!.totalElements) }}
-        of {{ pageData()!.totalElements }}
+        {{ 'common.of' | transloco }} {{ pageData()!.totalElements }}
       </span>
 
       <div class="flex items-center gap-2">
@@ -226,7 +226,7 @@
         </button>
 
         <span class="text-sm text-muted-foreground px-2">
-          Page {{ pageData()!.page + 1 }} of {{ pageData()!.totalPages }}
+          {{ 'common.page' | transloco }} {{ pageData()!.page + 1 }} {{ 'common.of' | transloco }} {{ pageData()!.totalPages }}
         </span>
 
         <button
@@ -252,7 +252,7 @@
       <!-- Dialog Header -->
       <div class="flex items-center justify-between p-6 border-b sticky top-0 bg-card">
         <h2 class="text-lg font-bold">
-          {{ editing() ? 'Edit Category' : 'Add Category' }}
+          {{ (editing() ? 'categories.editTitle' : 'categories.addTitle') | transloco }}
         </h2>
         <button hlmBtn variant="ghost" size="icon" class="size-8" (click)="closeDialog()">
           <ng-icon name="lucideX" class="size-4" />
@@ -273,7 +273,7 @@
 
               <!-- Name -->
               <div class="space-y-1.5 mb-3">
-                <label hlmLabel>Name *</label>
+                <label hlmLabel>{{ 'categories.name' | transloco }} *</label>
                 <input
                   hlmInput
                   formControlName="name"
@@ -285,13 +285,13 @@
                   class="w-full"
                 />
                 @if (group.get('name')?.invalid && group.get('name')?.touched) {
-                  <p class="text-xs text-destructive">Name is required</p>
+                  <p class="text-xs text-destructive">{{ 'categories.name' | transloco }} {{ 'common.required' | transloco }}</p>
                 }
               </div>
 
               <!-- Description -->
               <div class="space-y-1.5">
-                <label hlmLabel>Description</label>
+                <label hlmLabel>{{ 'categories.description' | transloco }}</label>
                 <textarea
                   hlmInput
                   formControlName="description"
@@ -306,7 +306,7 @@
 
         <!-- Image Upload -->
         <div class="space-y-1.5">
-          <label hlmLabel>Image</label>
+          <label hlmLabel>{{ 'categories.image' | transloco }}</label>
           <input
             type="file"
             accept="image/*"
@@ -335,19 +335,19 @@
             id="isActive"
             class="h-4 w-4 rounded border-primary text-primary focus:ring-primary"
           />
-          <label for="isActive" class="text-sm font-medium">Active</label>
+          <label for="isActive" class="text-sm font-medium">{{ 'categories.activeLabel' | transloco }}</label>
         </div>
 
         <!-- Buttons -->
         <div class="flex gap-3 pt-2">
           <button type="button" hlmBtn variant="outline" class="flex-1" (click)="closeDialog()">
-            Cancel
+            {{ 'common.cancel' | transloco }}
           </button>
           <button type="submit" hlmBtn class="flex-1" [disabled]="form.invalid || submitting()">
             @if (submitting()) {
               <span class="animate-spin mr-2">⟳</span>
             }
-            {{ submitting() ? 'Saving...' : 'Save' }}
+            {{ submitting() ? ('common.saving' | transloco) : ('common.save' | transloco) }}
           </button>
         </div>
       </form>
@@ -361,14 +361,14 @@
 @if (deleting()) {
   <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
     <div class="w-full max-w-sm rounded-2xl bg-card shadow-2xl border p-6">
-      <h2 class="text-lg font-bold mb-2">Delete Category</h2>
+      <h2 class="text-lg font-bold mb-2">{{ 'categories.delete' | transloco }}</h2>
       <p class="text-muted-foreground mb-6">
-        Are you sure you want to delete
+        {{ 'categories.deleteConfirm' | transloco }}
         <strong class="text-foreground">{{ deleting()!.slug }}</strong
-        >? This action cannot be undone.
+        >?
       </p>
       <div class="flex gap-3">
-        <button hlmBtn variant="outline" class="flex-1" (click)="deleting.set(null)">Cancel</button>
+        <button hlmBtn variant="outline" class="flex-1" (click)="deleting.set(null)">{{ 'common.cancel' | transloco }}</button>
         <button
           hlmBtn
           variant="destructive"
@@ -379,7 +379,7 @@
           @if (submitting()) {
             <span class="animate-spin mr-2">⟳</span>
           }
-          {{ submitting() ? 'Deleting...' : 'Delete' }}
+          {{ submitting() ? ('common.deleting' | transloco) : ('common.delete' | transloco) }}
         </button>
       </div>
     </div>

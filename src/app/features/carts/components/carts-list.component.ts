@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+﻿import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
@@ -23,6 +23,7 @@ import { CartService } from '../services/cart.service';
 import { ColumnDef, createColumnHelper } from '@tanstack/table-core';
 import { ViewMode } from '../../../core/crud/base-list.component';
 
+import { TranslocoPipe } from '@jsverse/transloco';
 @Component({
   selector: 'app-carts-list',
   standalone: true,
@@ -37,6 +38,7 @@ import { ViewMode } from '../../../core/crud/base-list.component';
     HlmTableImports,
     HlmSkeletonImports,
     NgIcon,
+    TranslocoPipe,
   ],
   providers: [
     provideIcons({

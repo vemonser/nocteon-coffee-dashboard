@@ -1,4 +1,4 @@
-<div class="relative">
+﻿<div class="relative">
   <hlm-popover sideOffset="17" smoothScroll>
     <button
       hlmPopoverTrigger
@@ -24,9 +24,9 @@
       <!-- الـ list بس هي اللي بتعمل scroll -->
       <div class="max-h-80 overflow-y-auto" smoothScroll>
         @if (loading()) {
-          <div class="p-4 text-center text-gray-400">Loading...</div>
+          <div class="p-4 text-center text-gray-400">{{ 'dashboard.loading' | transloco }}</div>
         } @else if (notifications().length === 0) {
-          <div class="p-4 text-center text-gray-400">No notifications</div>
+          <div class="p-4 text-center text-gray-400">{{ 'notifications.noNotifications' | transloco }}</div>
         } @else {
           @for (n of notifications(); track n.id; let last = $last) {
             <hlm-popover-header

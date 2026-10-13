@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+﻿import { CommonModule } from '@angular/common';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -37,6 +37,7 @@ import {
 import { PageResponse } from '../../../../core/models/api-response.model';
 import { catchError, map, of, switchMap, tap } from 'rxjs';
 
+import { TranslocoPipe } from '@jsverse/transloco';
 type SortField = 'score' | 'createdAt';
 type SortDir = 'asc' | 'desc';
 type EditMode = 'view' | 'edit';
@@ -57,6 +58,7 @@ type EditMode = 'view' | 'edit';
     HlmTableImports,
     HlmSelectImports,
     NgIcon,
+    TranslocoPipe,
   ],
   providers: [
     provideIcons({

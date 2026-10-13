@@ -1,0 +1,125 @@
+<div class="flex flex-col gap-6 p-6">
+  <!-- Header -->
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-bold tracking-tight">{{ 'contactMessages.title' | transloco }}</h1>
+      <p class="text-muted-foreground">{{ items().length }} {{ 'common.of' | transloco }}</p>
+    </div>
+  </div>
+
+  <!-- Search -->
+  <div class="relative flex-1 max-w-md">
+    <ng-icon
+      name="lucideSearch"
+      class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground"
+    />
+    <input
+      hlmInput
+      type="text"
+      [(ngModel)]="searchQuery"
+      (input)="onSearch()"
+      [placeholder]="'contactMessages.search' | transloco"
+      class="pl-9 w-full"
+    />
+  </div>
+
+  <!-- Loading -->
+  @if (loading()) {
+    <div class="space-y-3">
+      @for (_ of [1, 2, 3, 4, 5]; track $index) {
+        <div class="h-16 rounded-md border bg-muted/50 animate-pulse"></div>
+      }
+    </div>
+  }
+
+  <!-- Empty -->
+  @if (!loading() && items().length === 0) {
+    <div class="py-16 text-center text-muted-foreground border-2 border-dashed rounded-md">
+      <ng-icon name="lucideInbox" class="mx-auto mb-2 size-8 opacity-50" />
+      {{ 'contactMessages.empty' | transloco }}
+    </div>
+  }
+
+  <!-- List -->
+  @if (!loading() && items().length > 0) {
+    <div class="rounded-md border bg-card divide-y">
+      @for (item of items(); track item.id) {
+        <button
+          type="button"
+          class="w-full flex items-start gap-4 p-4 text-left hover:bg-muted/40 transition-colors"
+          (click)="openMessage(item)"
+        >
+          <div class="mt-0.5 rounded-full bg-muted p-2 shrink-0">
+            <ng-icon name="lucideMail" class="size-4 text-muted-foreground" />
+          </div>
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center justify-between gap-3">
+              <span class="font-medium truncate">{{ item.name }}</span>
+              <span class="text-xs text-muted-foreground shrink-0">{{ item.createdAt | date:'short' }}</span>
+            </div>
+            <p class="text-sm font-medium truncate">{{ item.subject }}</p>
+            <p class="text-xs text-muted-foreground truncate">{{ item.email }}</p>
+          </div>
+        </button>
+      }
+    </div>
+  }
+
+  <!-- Pagination -->
+  @if (pageData() && !loading()) {
+    <div class="flex items-center justify-between">
+      <span class="text-sm text-muted-foreground">
+        {{ 'common.showing' | transloco }} {{ pageData()!.page * pageData()!.size + 1 }} -
+        {{ Math.min((pageData()!.page + 1) * pageData()!.size, pageData()!.totalElements) }}
+        {{ 'common.of' | transloco }} {{ pageData()!.totalElements }}
+      </span>
+      <div class="flex items-center gap-2">
+        <button
+          hlmBtn
+          variant="outline"
+          size="sm"
+          [disabled]="pageData()!.first"
+          (click)="goToPage(currentPage() - 1)"
+        >
+          <ng-icon name="lucideChevronLeft" class="size-4" />
+        </button>
+        <span class="text-sm text-muted-foreground px-2">
+          {{ 'common.page' | transloco }} {{ pageData()!.page + 1 }} {{ 'common.of' | transloco }}
+          {{ pageData()!.totalPages }}
+        </span>
+        <button
+          hlmBtn
+          variant="outline"
+          size="sm"
+          [disabled]="pageData()!.last"
+          (click)="goToPage(currentPage() + 1)"
+        >
+          <ng-icon name="lucideChevronRight" class="size-4" />
+        </button>
+      </div>
+    </div>
+  }
+</div>
+
+<!-- Message detail dialog -->
+@if (selected()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+    <div class="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl bg-card shadow-2xl border">
+      <div class="flex items-center justify-between gap-4 p-6 border-b sticky top-0 bg-card">
+        <div class="min-w-0">
+          <h2 class="text-lg font-bold truncate">{{ selected()!.subject }}</h2>
+          <p class="text-sm text-muted-foreground">
+            {{ selected()!.name }} — <a [href]="'mailto:' + selected()!.email" class="underline">{{ selected()!.email }}</a>
+          </p>
+        </div>
+        <div class="flex items-center gap-2 shrink-0">
+          <hlm-badge variant="outline" class="text-xs">{{ selected()!.createdAt | date:'medium' }}</hlm-badge>
+          <button hlmBtn variant="ghost" size="icon" class="size-8" (click)="closeMessage()">
+            <ng-icon name="lucideX" class="size-4" />
+          </button>
+        </div>
+      </div>
+      <div class="p-6 whitespace-pre-line text-sm">{{ selected()!.message }}</div>
+    </div>
+  </div>
+}

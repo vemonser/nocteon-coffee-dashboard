@@ -2,8 +2,8 @@
   <!-- Header -->
   <div class="flex items-center justify-between">
     <div>
-      <h1 class="text-2xl font-bold tracking-tight">Promo Codes</h1>
-      <p class="text-muted-foreground">{{ items().length }} total</p>
+      <h1 class="text-2xl font-bold tracking-tight">{{ 'promoCodes.title' | transloco }}</h1>
+      <p class="text-muted-foreground">{{ items().length }} {{ 'common.of' | transloco }}</p>
     </div>
 
     <button
@@ -13,7 +13,7 @@
       (click)="openCreateDialog()"
     >
       <ng-icon name="lucidePlus" class="me-2 size-4" />
-      Add Promo Code
+      {{ 'promoCodes.add' | transloco }}
     </button>
   </div>
 
@@ -28,7 +28,7 @@
       type="text"
       [(ngModel)]="searchQuery"
       (input)="onSearch()"
-      placeholder="Search by code..."
+      [placeholder]="'promoCodes.search' | transloco"
       class="pl-9 w-full pb-1.25 pt-1.25"
     />
   </div>
@@ -37,6 +37,24 @@
   @if (loading()) {
     <div class="rounded-md border">
       <div class="h-12 border-b bg-muted/50 animate-pulse" *ngFor="let _ of [1, 2, 3, 4, 5]"></div>
+    </div>
+  }
+
+  <!-- Analytics -->
+  @if (analytics()) {
+    <div class="grid gap-4 sm:grid-cols-3">
+      <div class="rounded-md border bg-card p-4">
+        <p class="text-sm text-muted-foreground">{{ 'promoCodes.discountGiven' | transloco }}</p>
+        <p class="text-2xl font-bold mt-1">{{ analytics()!.totalDiscountGivenAllTime | number:'1.2-2' }}</p>
+      </div>
+      <div class="rounded-md border bg-card p-4">
+        <p class="text-sm text-muted-foreground">{{ 'promoCodes.redemptions' | transloco }}</p>
+        <p class="text-2xl font-bold mt-1">{{ analytics()!.totalRedemptionsAllTime | number }}</p>
+      </div>
+      <div class="rounded-md border bg-card p-4">
+        <p class="text-sm text-muted-foreground">{{ 'promoCodes.activeCodes' | transloco }}</p>
+        <p class="text-2xl font-bold mt-1">{{ analytics()!.activeCodesCount | number }}</p>
+      </div>
     </div>
   }
 
@@ -58,9 +76,9 @@
   @if (pageData() && !loading()) {
     <div class="flex items-center justify-between">
       <span class="text-sm text-muted-foreground">
-        Showing {{ pageData()!.page * pageData()!.size + 1 }} -
+        {{ 'common.showing' | transloco }} {{ pageData()!.page * pageData()!.size + 1 }} -
         {{ Math.min((pageData()!.page + 1) * pageData()!.size, pageData()!.totalElements) }}
-        of {{ pageData()!.totalElements }}
+        {{ 'common.of' | transloco }} {{ pageData()!.totalElements }}
       </span>
 
       <div class="flex items-center gap-2">
@@ -74,7 +92,7 @@
           <ng-icon name="lucideChevronLeft" class="size-4" />
         </button>
         <span class="text-sm text-muted-foreground px-2">
-          Page {{ pageData()!.page + 1 }} of {{ pageData()!.totalPages }}
+          {{ 'common.page' | transloco }} {{ pageData()!.page + 1 }} {{ 'common.of' | transloco }} {{ pageData()!.totalPages }}
         </span>
         <button
           hlmBtn
@@ -97,7 +115,7 @@
   <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
     <div class="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl bg-card shadow-2xl border">
       <div class="flex items-center justify-between p-6 border-b sticky top-0 bg-card">
-        <h2 class="text-lg font-bold">{{ editing() ? 'Edit Promo Code' : 'Add Promo Code' }}</h2>
+        <h2 class="text-lg font-bold">{{ (editing() ? 'promoCodes.editTitle' : 'promoCodes.addTitle') | transloco }}</h2>
         <button hlmBtn variant="ghost" size="icon" class="size-8" (click)="closeDialog()">
           <ng-icon name="lucideX" class="size-4" />
         </button>
@@ -106,7 +124,7 @@
       <form [formGroup]="form" (ngSubmit)="onSubmit()" class="p-6 space-y-5">
         <!-- Code -->
         <div class="space-y-1.5">
-          <label hlmLabel>Code *</label>
+          <label hlmLabel>{{ 'promoCodes.code' | transloco }} *</label>
           <input
             hlmInput
             formControlName="code"
@@ -115,22 +133,22 @@
             class="w-full uppercase"
           />
           @if (form.get('code')?.invalid && form.get('code')?.touched) {
-            <p class="text-xs text-destructive">Code is required</p>
+            <p class="text-xs text-destructive">{{ 'promoCodes.codeRequired' | transloco }}</p>
           }
         </div>
 
         <!-- Discount Type -->
         <div class="space-y-1.5">
-          <label hlmLabel>Discount Type *</label>
+          <label hlmLabel>{{ 'promoCodes.discountType' | transloco }} *</label>
           <hlm-select formControlName="discountType" class="rounded-sm! w-full">
             <hlm-select-trigger class="rounded-sm w-full">
-              <hlm-select-value placeholder="Select type" />
+              <hlm-select-value [placeholder]="'promoCodes.selectType' | transloco" />
             </hlm-select-trigger>
             <hlm-select-content *hlmSelectPortal>
               <hlm-select-group>
-                <hlm-select-item value="PERCENTAGE">Percentage</hlm-select-item>
-                <hlm-select-item value="FIXED_AMOUNT">Fixed Amount</hlm-select-item>
-                <hlm-select-item value="FREE_SHIPPING">Free Shipping</hlm-select-item>
+                <hlm-select-item value="PERCENTAGE">{{ 'promoCodes.percentage' | transloco }}</hlm-select-item>
+                <hlm-select-item value="FIXED_AMOUNT">{{ 'promoCodes.fixedAmount' | transloco }}</hlm-select-item>
+                <hlm-select-item value="FREE_SHIPPING">{{ 'promoCodes.freeShipping' | transloco }}</hlm-select-item>
               </hlm-select-group>
             </hlm-select-content>
           </hlm-select>
@@ -140,7 +158,7 @@
         @if (!isFreeShipping) {
           <div class="space-y-1.5">
             <label hlmLabel>
-              Discount Value * {{ form.value.discountType === 'PERCENTAGE' ? '(%)' : '(EGP)' }}
+              {{ 'promoCodes.discountValue' | transloco }} * {{ form.value.discountType === 'PERCENTAGE' ? '(%)' : '(EGP)' }}
             </label>
             <input hlmInput formControlName="discountValue" type="number" min="0" class="w-full" />
           </div>
@@ -148,21 +166,21 @@
 
         <!-- Min Order Amount -->
         <div class="space-y-1.5">
-          <label hlmLabel>Minimum Order Amount</label>
+          <label hlmLabel>{{ 'promoCodes.minOrderAmount' | transloco }}</label>
           <input hlmInput formControlName="minOrderAmount" type="number" min="0" class="w-full" />
         </div>
 
         <!-- Scope Type -->
         <div class="space-y-1.5">
-          <label hlmLabel>Scope *</label>
+          <label hlmLabel>{{ 'promoCodes.scope' | transloco }} *</label>
           <hlm-select formControlName="scopeType" class="rounded-sm! w-full">
             <hlm-select-trigger class="rounded-sm w-full">
-              <hlm-select-value placeholder="Select scope" />
+              <hlm-select-value [placeholder]="'promoCodes.selectScope' | transloco" />
             </hlm-select-trigger>
             <hlm-select-content *hlmSelectPortal>
               <hlm-select-group>
-                <hlm-select-item value="GLOBAL">All Products</hlm-select-item>
-                <hlm-select-item value="CATEGORY">Specific Categories</hlm-select-item>
+                <hlm-select-item value="GLOBAL">{{ 'promoCodes.allProducts' | transloco }}</hlm-select-item>
+                <hlm-select-item value="CATEGORY">{{ 'promoCodes.specificCategories' | transloco }}</hlm-select-item>
               </hlm-select-group>
             </hlm-select-content>
           </hlm-select>
@@ -171,7 +189,7 @@
         <!-- Category Picker (only when scope = CATEGORY) -->
         @if (isCategoryScope) {
           <div class="space-y-1.5">
-            <label hlmLabel>Categories *</label>
+            <label hlmLabel>{{ 'promoCodes.categories' | transloco }} *</label>
             <div class="max-h-40 overflow-y-auto rounded-md border p-3 space-y-2">
               @for (cat of categoryOptions(); track cat.slug) {
                 <label class="flex items-center gap-2 text-sm cursor-pointer">
@@ -184,7 +202,7 @@
                   {{ getTranslationName(cat) }}
                 </label>
               } @empty {
-                <p class="text-xs text-muted-foreground">No categories available</p>
+                <p class="text-xs text-muted-foreground">{{ 'promoCodes.noCategories' | transloco }}</p>
               }
             </div>
           </div>
@@ -193,18 +211,18 @@
         <!-- Redemption Limits -->
         <div class="grid grid-cols-2 gap-4">
           <div class="space-y-1.5">
-            <label hlmLabel>Max Total Redemptions</label>
+            <label hlmLabel>{{ 'promoCodes.maxTotalRedemptions' | transloco }}</label>
             <input
               hlmInput
               formControlName="maxTotalRedemptions"
               type="number"
               min="1"
-              placeholder="Unlimited"
+              [placeholder]="'promoCodes.unlimited' | transloco"
               class="w-full"
             />
           </div>
           <div class="space-y-1.5">
-            <label hlmLabel>Max Per User *</label>
+            <label hlmLabel>{{ 'promoCodes.maxPerUser' | transloco }} *</label>
             <input
               hlmInput
               formControlName="maxRedemptionsPerUser"
@@ -218,22 +236,22 @@
         <!-- Validity Window -->
         <div class="grid grid-cols-2 gap-4">
           <div class="space-y-1.5">
-            <label hlmLabel>Valid From *</label>
+            <label hlmLabel>{{ 'promoCodes.validFrom' | transloco }} *</label>
             <div class="flex flex-col gap-2">
               <hlm-date-picker formControlName="validFromDate" class="flex-1">
                 <hlm-date-picker-trigger buttonId="validFromDateCreate" class="w-full"
-                  >Pick a date</hlm-date-picker-trigger
+                  >{{ 'promoCodes.pickDate' | transloco }}</hlm-date-picker-trigger
                 >
               </hlm-date-picker>
               <input hlmInput formControlName="validFromTime" type="time" class="w-full" />
             </div>
           </div>
           <div class="space-y-1.5">
-            <label hlmLabel>Valid Until *</label>
+            <label hlmLabel>{{ 'promoCodes.validUntil' | transloco }} *</label>
             <div class="flex flex-col gap-2">
               <hlm-date-picker formControlName="validUntilDate" class="flex-1">
                 <hlm-date-picker-trigger buttonId="validUntilDateCreate" class="w-full"
-                  >Pick a date</hlm-date-picker-trigger
+                  >{{ 'promoCodes.pickDate' | transloco }}</hlm-date-picker-trigger
                 >
               </hlm-date-picker>
               <input hlmInput formControlName="validUntilTime" type="time" class="w-full" />
@@ -249,19 +267,19 @@
             id="isActive"
             class="h-4 w-4 rounded border-primary"
           />
-          <label for="isActive" class="text-sm font-medium">Active</label>
+          <label for="isActive" class="text-sm font-medium">{{ 'common.active' | transloco }}</label>
         </div>
 
         <!-- Buttons -->
         <div class="flex gap-3 pt-2">
           <button type="button" hlmBtn variant="outline" class="flex-1" (click)="closeDialog()">
-            Cancel
+            {{ 'common.cancel' | transloco }}
           </button>
           <button type="submit" hlmBtn class="flex-1" [disabled]="form.invalid || submitting()">
             @if (submitting()) {
               <span class="animate-spin mr-2">⟳</span>
             }
-            {{ submitting() ? 'Saving...' : 'Save' }}
+            {{ submitting() ? ('common.saving' | transloco) : ('common.save' | transloco) }}
           </button>
         </div>
       </form>
@@ -275,14 +293,14 @@
 @if (deleting()) {
   <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
     <div class="w-full max-w-sm rounded-2xl bg-card shadow-2xl border p-6">
-      <h2 class="text-lg font-bold mb-2">Delete Promo Code</h2>
+      <h2 class="text-lg font-bold mb-2">{{ 'promoCodes.deleteTitle' | transloco }}</h2>
       <p class="text-muted-foreground mb-6">
-        Are you sure you want to delete
+        {{ 'promoCodes.deleteConfirm' | transloco }}
         <strong class="text-foreground">{{ deleting()!.code }}</strong
-        >? This action cannot be undone.
+        >?
       </p>
       <div class="flex gap-3">
-        <button hlmBtn variant="outline" class="flex-1" (click)="deleting.set(null)">Cancel</button>
+        <button hlmBtn variant="outline" class="flex-1" (click)="deleting.set(null)">{{ 'common.cancel' | transloco }}</button>
         <button
           hlmBtn
           variant="destructive"
@@ -293,7 +311,7 @@
           @if (submitting()) {
             <span class="animate-spin mr-2">⟳</span>
           }
-          {{ submitting() ? 'Deleting...' : 'Delete' }}
+          {{ submitting() ? ('common.deleting' | transloco) : ('common.delete' | transloco) }}
         </button>
       </div>
     </div>

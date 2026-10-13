@@ -1,3 +1,5 @@
+import { ProductOptionValueSummary } from '../../product-options/models/product-option.model';
+
 export interface CartItemResponse {
   id: number;
   variantId: number;
@@ -8,8 +10,7 @@ export interface CartItemResponse {
   price: number;
   compareAtPrice: number | null;
   discountPercentage: number;
-  weightGrams: number;
-  grindType: string;
+  optionValues: ProductOptionValueSummary[];
   quantity: number;
   stockQuantity: number;
   subtotal: number;

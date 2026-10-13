@@ -1,4 +1,4 @@
-// features/dashboard/components/revenue-chart/revenue-chart.component.ts
+﻿// features/dashboard/components/revenue-chart/revenue-chart.component.ts
 import { Component, Input, ViewChild, inject, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NgApexchartsModule, ChartComponent } from 'ng-apexcharts';
@@ -13,8 +13,6 @@ import {
   ApexTooltip,
 } from 'ng-apexcharts';
 import { ThemeService } from '../../../../core/theme/theme.service';
-
-
 
 export type RevenueChartOptions = {
   series: ApexAxisChartSeries;
@@ -31,7 +29,8 @@ export type RevenueChartOptions = {
 @Component({
   selector: 'app-revenue-chart',
   standalone: true,
-  imports: [CommonModule, NgApexchartsModule],
+  imports: [CommonModule, NgApexchartsModule,
+  ],
   templateUrl: './revenue-chart.component.html',
 })
 export class RevenueChartComponent {

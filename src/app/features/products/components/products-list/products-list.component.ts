@@ -1,26 +1,63 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
-import { ProductService } from '../../services/product.service';
-import { Router } from '@angular/router';
-import { ProductListItem, ProductListParams } from '../../models/product.models';
-import { PageResponse } from '../../../../core/models/api-response.model';
-import { ColumnDef, createColumnHelper } from '@tanstack/table-core';
-import { DataTableComponent, TableSortEvent } from '../../../../shared/components/data-table/data-table.component';
+import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
+import { DataTableComponent, TableSortEvent } from '../../../../shared/components/data-table/data-table.component';
+import { HlmCardImports } from '@spartan-ng/helm/card';
+import { HlmButtonImports } from '@spartan-ng/helm/button';
+import { HlmBadgeImports } from '@spartan-ng/helm/badge';
+import { HlmInputImports } from '@spartan-ng/helm/input';
+import { HlmSelectImports } from '@spartan-ng/helm/select';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import {
+  lucideSearch,
+  lucideChevronLeft,
+  lucideChevronRight,
+  lucideX,
+  lucidePlus,
+  lucideArrowRight,
+} from '@ng-icons/lucide';
+import { PageResponse } from '../../../../core/models/api-response.model';
+import { ProductListItem, ProductListParams } from '../../models/product.models';
+import { ProductService } from '../../services/product.service';
 import { HasPermissionDirective } from '../../../../core/auth/permission.directive';
+import { ColumnDef, createColumnHelper } from '@tanstack/table-core';
+import { TranslocoPipe } from '@jsverse/transloco';
 
 @Component({
   selector: 'app-products-list',
-  imports: [CommonModule, FormsModule, HasPermissionDirective, DataTableComponent],
+  standalone: true,
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    DataTableComponent,
+    HlmCardImports,
+    HlmButtonImports,
+    HlmBadgeImports,
+    HlmInputImports,
+    HlmSelectImports,
+    HasPermissionDirective,
+    NgIcon,
+    TranslocoPipe,
+  ],
+  providers: [
+    provideIcons({
+      lucideSearch,
+      lucideChevronLeft,
+      lucideChevronRight,
+      lucideX,
+      lucideArrowRight,
+      lucidePlus,
+    }),
+  ],
   templateUrl: './products-list.component.html',
-  styleUrl: './products-list.component.css',
 })
-export class ProductsListComponent implements OnInit {
+export class ProductsListComponent {
   private productService = inject(ProductService);
   private router = inject(Router);
-  protected Math = Math;
 
-  // ─── State ────────────────────────────────────────────────────────────────────
+  protected readonly Math = Math;
+
   items = signal<ProductListItem[]>([]);
   pageData = signal<PageResponse<ProductListItem> | null>(null);
   loading = signal(false);
@@ -28,15 +65,19 @@ export class ProductsListComponent implements OnInit {
   submitting = signal(false);
   currentPage = signal(0);
 
-  searchQuery = '';
-  isActiveFilter: boolean | undefined = undefined;
-  featuredFilter: boolean | undefined = undefined;
   currentSort = 'createdAt';
   currentDirection: 'asc' | 'desc' = 'desc';
   private searchTimeout: any;
 
-  private columnHelper = createColumnHelper<ProductListItem>();
+  readonly filters = new FormGroup({
+    search: new FormControl(''),
+    status: new FormControl('all'),
+    featured: new FormControl('all'),
+  });
 
+  readonly totalItems = computed(() => this.pageData()?.totalElements ?? 0);
+
+  private columnHelper = createColumnHelper<ProductListItem>();
   columns: ColumnDef<ProductListItem, any>[] = [
     this.columnHelper.accessor('primaryImageUrl', { id: 'image', header: 'Image', enableSorting: false }),
     this.columnHelper.accessor('name', { header: 'Name', enableSorting: true }),
@@ -51,25 +92,28 @@ export class ProductsListComponent implements OnInit {
     this.columnHelper.display({ id: 'actions', header: 'Actions' }),
   ];
 
-  ngOnInit(): void {
+  constructor() {
+    this.filters.valueChanges.subscribe(() => {
+      this.currentPage.set(0);
+      this.load();
+    });
     this.load();
   }
-  // ─── Data ────────────────────────────────────────────────────────────────────
 
   load(): void {
     this.loading.set(true);
+    const f = this.filters.value;
     const params: ProductListParams = {
       page: this.currentPage(),
-      search: this.searchQuery || undefined,
-      isActive: this.isActiveFilter,
-      featured: this.featuredFilter,
+      search: f.search || undefined,
+      isActive: f.status === 'all' ? undefined : f.status === 'active',
+      featured: f.featured === 'all' ? undefined : f.featured === 'featured',
       sort: this.currentSort,
       direction: this.currentDirection,
     };
 
     this.productService.getAll(params).subscribe({
       next: (res) => {
-        console.log(res.data.content)
         this.items.set(res.data.content);
         this.pageData.set(res.data);
         this.loading.set(false);
@@ -77,17 +121,13 @@ export class ProductsListComponent implements OnInit {
       error: () => this.loading.set(false),
     });
   }
+
   onSearch(): void {
     clearTimeout(this.searchTimeout);
     this.searchTimeout = setTimeout(() => {
       this.currentPage.set(0);
       this.load();
     }, 400);
-  }
-
-  onFilterChange(): void {
-    this.currentPage.set(0);
-    this.load();
   }
 
   goToPage(page: number): void {
@@ -101,7 +141,6 @@ export class ProductsListComponent implements OnInit {
     this.currentPage.set(0);
     this.load();
   }
-  // ─── Navigation — wizard lives at its own route ───────────────────────────────
 
   goToCreate(): void {
     this.router.navigate(['/dashboard/products/new']);
@@ -111,23 +150,17 @@ export class ProductsListComponent implements OnInit {
     this.router.navigate(['/dashboard/products', product.slug, 'edit']);
   }
 
-  // ─── Quick toggles — cheap PATCH, no full reload of detail needed ─────────────
-
   toggleActive(product: ProductListItem): void {
-    const next = !product.isActive;
-    this.productService.toggleActive(product.slug, next).subscribe({
+    this.productService.toggleActive(product.slug, !product.isActive).subscribe({
       next: () => this.load(),
     });
   }
 
   toggleFeatured(product: ProductListItem): void {
-    const next = !product.featured;
-    this.productService.toggleFeatured(product.slug, next).subscribe({
+    this.productService.toggleFeatured(product.slug, !product.featured).subscribe({
       next: () => this.load(),
     });
   }
-
-  // ─── Delete ───────────────────────────────────────────────────────────────────
 
   confirmDelete(product: ProductListItem): void {
     this.deleting.set(product);

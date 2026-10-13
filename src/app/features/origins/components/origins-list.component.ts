@@ -21,6 +21,7 @@ import { HlmAvatarImports } from '@spartan-ng/helm/avatar';
 import { HlmSkeletonImports } from '@spartan-ng/helm/skeleton';
 import { HlmLabelImports } from '@spartan-ng/helm/label';
 
+import { TranslocoPipe } from '@jsverse/transloco';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
   lucidePlus, lucideSearch, lucideGrid3x3, lucideList, lucidePencil,
@@ -37,7 +38,7 @@ import { Router } from '@angular/router';
   imports: [
     CommonModule, FormsModule, ReactiveFormsModule, HasPermissionDirective, DataTableComponent,
     HlmCardImports, HlmButtonImports, HlmBadgeImports, HlmInputImports,
-    HlmDialogImports, HlmTableImports, HlmAvatarImports, HlmSkeletonImports, HlmLabelImports, NgIcon,
+    HlmDialogImports, HlmTableImports, HlmAvatarImports, HlmSkeletonImports,     HlmLabelImports, NgIcon, TranslocoPipe,
   ],
   providers: [
     provideIcons({

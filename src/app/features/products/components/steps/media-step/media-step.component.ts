@@ -1,6 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ProductWizardStateService } from '../../product-wizard/product-wizard-state.service';
+import { TranslocoPipe } from '@jsverse/transloco';
 
 /**
  * Step 3 — Media gallery.
@@ -11,7 +12,7 @@ import { ProductWizardStateService } from '../../product-wizard/product-wizard-s
 @Component({
   selector: 'app-media-step',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TranslocoPipe],
   templateUrl: './media-step.component.html',
 })
 export class MediaStepComponent {

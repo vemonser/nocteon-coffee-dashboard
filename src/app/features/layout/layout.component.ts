@@ -14,6 +14,7 @@ import { HlmSidebarImports } from '@spartan-ng/helm/sidebar';
 import { AppSidebarComponent } from './sidebar/app-sidebar.component';
 import { NavigationBarComponent } from './navigation-bar/navigation-bar.component';
 
+import { TranslocoPipe } from '@jsverse/transloco';
 @Component({
   selector: 'app-layout.component',
   imports: [

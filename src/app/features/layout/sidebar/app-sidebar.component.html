@@ -1,4 +1,4 @@
-<div hlmSidebarWrapper>
+﻿<div hlmSidebarWrapper>
   <hlm-sidebar  variant="inset" [side]="language.current() === 'ar' ? 'right' : 'left'">
     <!-- Logo -->
     <hlm-sidebar-header>
@@ -22,7 +22,7 @@
     <hlm-sidebar-content >
       <!-- Main Menu -->
       <div class="px-3 py-2 text-xs font-medium text-sidebar-foreground/60">
-        {{ language.current() === 'ar' ? 'القائمة الرئيسية' : 'Main Menu' }}
+        {{ 'layout.sidebar.mainMenu' | transloco }}
       </div>
       <ul hlmSidebarMenu class="ps-2">
         @for (item of mainNav(); track item.route) {
@@ -48,7 +48,7 @@
 
       <!-- Catalog -->
       <div class="px-3 py-3 text-xs font-medium text-sidebar-foreground/60 mt-4">
-        {{ language.current() === 'ar' ? 'الكتالوج' : 'Catalog' }}
+        {{ 'layout.sidebar.catalog' | transloco }}
       </div>
       <ul hlmSidebarMenu class="ps-2  ">
         @for (item of catalogNav(); track item.route) {

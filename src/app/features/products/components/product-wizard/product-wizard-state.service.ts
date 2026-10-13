@@ -1,7 +1,8 @@
 import { inject, Injectable } from '@angular/core';
-import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { AbstractControl, FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { signal } from '@angular/core';
-import { GrindType, ProductDetail, StagedMedia } from '../../models/product.models';
+import { ProductDetail, ProductVariant, StagedMedia } from '../../models/product.models';
+import { ProductOption, ProductOptionValueSummary } from '../../../product-options/models/product-option.model';
 import { ExistingMedia } from '../../models/product.models';
 /**
  * Holds the wizard's shared state across all 5 steps.
@@ -86,23 +87,62 @@ export class ProductWizardStateService {
 
   // ─── Variant helpers ────────────────────────────────────────────────────────────
 
-  buildVariantGroup(v?: {
-    sku?: string;
-    grindType?: GrindType;
-    weightGrams?: number;
-    price?: number;
-    compareAtPrice?: number | null;
-    stockQuantity?: number;
-    isActive?: boolean;
-  }): FormGroup {
+  /** Product options (e.g. Weight → 250g/500g) loaded once by the variants step. */
+  productOptions = signal<ProductOption[]>([]);
+
+  private pendingEditPicks: { optionSlug: string; valueSlug: string }[][] = [];
+
+  /** True when at least one variant has picked at least one option value. */
+  static atLeastOneValueSelected(control: AbstractControl): { noValues: true } | null {
+    const picks = (control as FormArray).value as { valueId: string | number | null }[];
+    return picks.some((p) => p.valueId != null) ? null : { noValues: true };
+  }
+
+  /** Assign loaded options and resolve edit-mode picks from slug pairs. */
+  setProductOptions(options: ProductOption[]): void {
+    this.productOptions.set(options);
+    this.applyEditOptionPicks();
+  }
+
+  private applyEditOptionPicks(): void {
+    if (this.pendingEditPicks.length === 0) return;
+
+    const opts = this.productOptions();
+    this.variantsArray.controls.forEach((variant, vi) => {
+      const picks = variant.get('optionPicks') as FormArray;
+      picks.clear();
+      for (const pair of this.pendingEditPicks[vi] ?? []) {
+        const option = opts.find((o) => o.slug === pair.optionSlug);
+        const value = option?.values.find((v) => v.slug === pair.valueSlug);
+        if (option && value) {
+          picks.push(
+            this.fb.group({
+              optionId: [option.id],
+              valueId: [String(value.id)],
+            }),
+          );
+        }
+      }
+    });
+    this.pendingEditPicks = [];
+  }
+
+  buildVariantGroup(v?: Partial<ProductVariant>): FormGroup {
     return this.fb.group({
       sku: [v?.sku ?? '', Validators.required],
-      grindType: [v?.grindType ?? '', Validators.required],
-      weightGrams: [v?.weightGrams ?? null, [Validators.required, Validators.min(1)]],
       price: [v?.price ?? null, [Validators.required, Validators.min(0)]],
       compareAtPrice: [v?.compareAtPrice ?? null],
       stockQuantity: [v?.stockQuantity ?? 0, [Validators.required, Validators.min(0)]],
       isActive: [v?.isActive ?? true],
+      optionPicks: this.fb.array([], ProductWizardStateService.atLeastOneValueSelected),
+    });
+  }
+
+  /** A single "option → valueId" selection inside a variant's optionPicks array. */
+  buildVariantPickGroup(optionId: number): FormGroup {
+    return this.fb.group({
+      optionId: [optionId],
+      valueId: [null],
     });
   }
 
@@ -221,7 +261,13 @@ export class ProductWizardStateService {
     this.form.setControl('translations', buildTranslations(detail.translations));
 
     this.variantsArray.clear();
-    detail.variants.forEach((v) => this.variantsArray.push(this.buildVariantGroup(v)));
+    this.pendingEditPicks = [];
+    detail.variants.forEach((v) => {
+      this.variantsArray.push(this.buildVariantGroup(v));
+      this.pendingEditPicks.push(collectOptionPicks(v.optionValues));
+    });
+    // Options may already be loaded (order varies); resolve immediately if so.
+    if (this.productOptions().length > 0) this.applyEditOptionPicks();
 
     this.brewingMethodsArray.clear(); // NEW
     detail.brewingMethods.forEach(
@@ -256,6 +302,8 @@ export class ProductWizardStateService {
     this.tastingNotesArray.clear();
     this.pairingsArray.clear();
     this.translationsArray.clear();
+    this.productOptions.set([]);
+    this.pendingEditPicks = [];
     this.form.reset({ isActive: true, featured: false });
   }
   setPrimaryMedia(source: 'existing' | 'staged', index: number): void {
@@ -310,4 +358,10 @@ export class ProductWizardStateService {
       media.map((item, i) => (i === index ? { ...item, type } : item)),
     );
   }
+}
+
+function collectOptionPicks(
+  optionValues: ProductOptionValueSummary[],
+): { optionSlug: string; valueSlug: string }[] {
+  return optionValues.map((ov) => ({ optionSlug: ov.optionSlug, valueSlug: ov.valueSlug }));
 }

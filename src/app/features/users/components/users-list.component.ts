@@ -1,4 +1,4 @@
-import { Component, computed, inject } from '@angular/core';
+﻿import { Component, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormGroup, Validators } from '@angular/forms';
 import { Observable, throwError } from 'rxjs';
@@ -43,6 +43,7 @@ import { ApiResponse, PageResponse } from '../../../core/models/api-response.mod
 import { createColumnHelper, ColumnDef } from '@tanstack/angular-table';
 import { HlmField, HlmFieldImports, HlmFieldLabel } from '@spartan-ng/helm/field';
 
+import { TranslocoPipe } from '@jsverse/transloco';
 type RoleFilter = 'ALL' | 'ADMIN' | 'CUSTOMER';
 
 @Component({
@@ -66,6 +67,7 @@ type RoleFilter = 'ALL' | 'ADMIN' | 'CUSTOMER';
     HlmSkeletonImports,
     HlmLabelImports,
     NgIcon,
+    TranslocoPipe,
   ],
   providers: [
     provideIcons({

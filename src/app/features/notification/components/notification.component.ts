@@ -1,4 +1,4 @@
-import { Component, ElementRef, HostListener, inject, signal } from '@angular/core';
+﻿import { Component, ElementRef, HostListener, inject, signal } from '@angular/core';
 import { NotificationService } from '../services/notification.service';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { heroBell } from '@ng-icons/heroicons/outline';
@@ -11,6 +11,7 @@ import { HlmPopoverImports } from '@spartan-ng/helm/popover';
 import { SmoothScroll } from 'ngx-scrollbar/smooth-scroll';
 import { HlmSeparator } from '@spartan-ng/helm/separator';
 
+import { TranslocoPipe } from '@jsverse/transloco';
 @Component({
   selector: 'app-notification',
   templateUrl: './notification.component.html',
@@ -22,6 +23,7 @@ import { HlmSeparator } from '@spartan-ng/helm/separator';
     SmoothScroll,
     HlmSeparator,
     RouterLink,
+      TranslocoPipe,
   ],
   providers: [
     provideIcons({
@@ -38,9 +40,6 @@ export class NotificationComponent {
   notifications = signal<NotificationDto[]>([]);
   loading = signal(false);
 
-  ngOnInit() {
-    console.log(this.notifications());
-  }
   toggleDropdown() {
     this.isOpen.update((v) => !v);
     if (this.isOpen()) {

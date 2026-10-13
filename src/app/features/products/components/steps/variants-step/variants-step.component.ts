@@ -1,18 +1,44 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ControlContainer, FormGroupDirective, ReactiveFormsModule } from '@angular/forms';
+import {
+  AbstractControl,
+  ControlContainer,
+  FormArray,
+  FormControl,
+  FormGroup,
+  FormGroupDirective,
+  ReactiveFormsModule,
+} from '@angular/forms';
 import { ProductWizardStateService } from '../../product-wizard/product-wizard-state.service';
-import { GRIND_TYPE_LABELS, GrindType } from '../../../models/product.models';
+import { ProductOption } from '../../../../product-options/models/product-option.model';
+import { ProductOptionService } from '../../../../product-options/services/product-option.service';
+import { HlmSelectImports } from '@spartan-ng/helm/select';
+import { HlmInputImports } from '@spartan-ng/helm/input';
+import { HlmLabel } from '@spartan-ng/helm/label';
+import { HlmButtonImports } from '@spartan-ng/helm/button';
+import { HlmCheckboxImports } from '@spartan-ng/helm/checkbox';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { lucidePlus, lucideX } from '@ng-icons/lucide';
+import { TranslocoPipe } from '@jsverse/transloco';
+import { LanguageService } from '../../../../../core/i18n/language.service';
 
-/**
- * Step 2 — Variants (SKU, weight, price, stock).
- * A product must have at least one variant — enforced in
- * ProductWizardStateService.isCurrentStepValid().
- */
 @Component({
   selector: 'app-variants-step',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    HlmSelectImports,
+    HlmInputImports,
+    HlmLabel,
+    HlmButtonImports,
+    HlmCheckboxImports,
+    NgIcon,
+    TranslocoPipe,
+  ],
+  providers: [
+    provideIcons({ lucidePlus, lucideX }),
+  ],
   templateUrl: './variants-step.component.html',
   viewProviders: [
     {
@@ -21,14 +47,60 @@ import { GRIND_TYPE_LABELS, GrindType } from '../../../models/product.models';
     },
   ],
 })
-export class VariantsStepComponent {
+export class VariantsStepComponent implements OnInit {
   protected state = inject(ProductWizardStateService);
-  protected readonly GrindType = GrindType;
-  protected readonly grindTypeOptions = Object.values(GrindType);
+  private optionService = inject(ProductOptionService);
+  private language = inject(LanguageService);
 
-  getGrindTypeLabel(type: GrindType): string {
-    return GRIND_TYPE_LABELS[type];
+  loadingOptions = signal(false);
+
+  ngOnInit(): void {
+    this.loadOptions();
   }
+
+  private loadOptions(): void {
+    this.loadingOptions.set(true);
+    this.optionService.getAll({ page: 0, size: 100 }).subscribe({
+      next: (res) => {
+        this.state.setProductOptions(res.data.content);
+        this.loadingOptions.set(false);
+      },
+      error: () => this.loadingOptions.set(false),
+    });
+  }
+
+  get currentLang(): string {
+    return this.language.current();
+  }
+
+  getOptionName(option: ProductOption): string {
+    return option.translations.find((t) => t.language === this.currentLang)?.name ?? option.slug;
+  }
+
+  getValueName(option: ProductOption, valueId: string | number | null): string {
+    if (valueId == null) return '';
+    const value = option.values.find((v) => v.id === Number(valueId));
+    return value?.translations.find((t) => t.language === this.currentLang)?.name ?? '';
+  }
+
+  /** Stringify a value id for hlm-select-item's string-based binding. */
+  valueIdString(id: number): string {
+    return String(id);
+  }
+
+  /** Returns (creating on demand) the valueId FormControl for the given option. */
+  getPickControl(group: AbstractControl, option: ProductOption): FormControl {
+    const picks = group.get('optionPicks') as FormArray;
+    let pick = picks.controls.find(
+      (c) => Number(c.get('optionId')?.value) === option.id,
+    ) as FormGroup | undefined;
+    if (!pick) {
+      pick = this.state.buildVariantPickGroup(option.id);
+      picks.push(pick);
+    }
+    return pick.get('valueId') as FormControl;
+  }
+
   addVariant(): void {
     this.state.addVariant();
   }

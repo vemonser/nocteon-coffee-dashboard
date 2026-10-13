@@ -49,6 +49,13 @@ export class JournalService {
     return this.http.delete<ApiResponse<void>>(`${this.fullUrl}/${slug}`);
   }
 
+  /** POST /{slug}/cover — upload/replace a journal post cover image. */
+  uploadCover(slug: string, file: File): Observable<ApiResponse<JournalPostResponse>> {
+    const fd = new FormData();
+    fd.append('image', file);
+    return this.http.post<ApiResponse<JournalPostResponse>>(`${this.fullUrl}/${slug}/cover`, fd);
+  }
+
   private buildFormData(request: JournalPostRequest, image: File | null): FormData {
     const formData = new FormData();
     formData.append('data', new Blob([JSON.stringify(request)], { type: 'application/json' }));

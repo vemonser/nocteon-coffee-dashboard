@@ -1,19 +1,17 @@
-
 export interface TastingNoteTranslation {
   language: string;
   name: string;
-  description?: string;
 }
 
 export interface TastingNoteResponse {
-  id: string;
+  id: number;
   slug: string;
   createdAt?: string;
   translations: TastingNoteTranslation[];
 }
 
 export interface DashboardTastingNoteResponse {
-  id: string;
+  id: number;
   slug: string;
   createdAt?: string;
   translations: TastingNoteTranslation[];
@@ -22,4 +20,3 @@ export interface DashboardTastingNoteResponse {
 export interface TastingNoteRequest {
   translations: TastingNoteTranslation[];
 }
- 

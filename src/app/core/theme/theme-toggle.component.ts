@@ -1,6 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { ThemeService } from './theme.service';
 
+import { TranslocoPipe } from '@jsverse/transloco';
 
 @Component({
   selector: 'app-theme-toggle',

@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+﻿import { CommonModule } from '@angular/common';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import {
   FormBuilder,
@@ -41,6 +41,7 @@ import { BreadcrumbService } from '../../../../shared/components/breadcrumb/serv
 import { PromoCodeRequest, PromoCodeResponse } from '../../models/promo-code.model';
 import { CategoryResponse } from '../../../categories/models/category.model';
 
+import { TranslocoPipe } from '@jsverse/transloco';
 type EditMode = 'view' | 'edit';
 
 @Component({
@@ -60,6 +61,7 @@ type EditMode = 'view' | 'edit';
     HlmLabelImports,
     HlmSelectImports,
     NgIcon,
+    TranslocoPipe,
   ],
   providers: [
     provideIcons({

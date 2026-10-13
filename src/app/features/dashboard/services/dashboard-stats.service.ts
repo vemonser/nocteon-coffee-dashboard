@@ -29,6 +29,7 @@ export class DashboardStatsService {
       newCustomers: data.userGrowth.currentPeriodCount,
       coffeeSold: data.coffeeSoldKg,
       averageOrderValue: data.averageOrderValue,
+      userGrowth: data.userGrowth,
     };
   });
 
@@ -38,14 +39,16 @@ export class DashboardStatsService {
   readonly topProducts = computed(() => this._overview()?.topSellingProducts ?? []);
   readonly userGrowth = computed(() => this._overview()?.userGrowth ?? null);
   readonly onlineUsers = computed(() => this._overview()?.onlineUsersCount ?? 0);
+  readonly deviceBreakdown = computed(() => this._overview()?.deviceBreakdown ?? []);
+  readonly revenueByOrigin = computed(() => this._overview()?.revenueByOrigin ?? []);
+  readonly revenueByRoastLevel = computed(() => this._overview()?.revenueByRoastLevel ?? []);
+  readonly refundRate = computed(() => this._overview()?.refundRate ?? null);
+  readonly lowStockProducts = computed(() => this._overview()?.lowStockProducts ?? []);
+  readonly ordersByPaymentMethod = computed(() => this._overview()?.ordersByPaymentMethod ?? []);
+  readonly repeatPurchaseRate = computed(() => this._overview()?.repeatPurchaseRate ?? null);
 
   constructor() {
     this.fetchOverview();
-  }
-  getOverview(days: number) {
-    return this.http.get<ApiResponse<DashboardOverviewDto>>(
-      `${this.baseUrl}/overview?days=${days}`,
-    );
   }
 
   setDays(days: number) {

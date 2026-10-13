@@ -1,4 +1,4 @@
-<div class="flex flex-col gap-6 p-6 max-w-7xl mx-auto">
+﻿<div class="flex flex-col gap-6 p-6 max-w-7xl mx-auto">
   <!-- Loading -->
   @if (loading()) {
     <div class="space-y-6">
@@ -17,7 +17,7 @@
       <h2 class="text-xl font-semibold text-destructive">{{ error() }}</h2>
       <button hlmBtn variant="outline" class="mt-4" (click)="goBack()">
         <ng-icon name="lucideArrowLeft" class="mr-2 size-4" />
-        Back to Processing Methods
+        {{ 'common.backTo' | transloco }} {{ 'processingMethods.title' | transloco }}
       </button>
     </div>
   }
@@ -28,14 +28,14 @@
     <div class="flex items-center  justify-between">
       <button class="cursor-pointer" hlmBtn variant="ghost" size="sm" (click)="goBack()">
         <ng-icon name="lucideArrowLeft" class="mr-2 size-4" />
-        Back
+        {{ 'processingMethods.detail.back' | transloco }}
       </button>
 
       <div class="flex items-center gap-2">
         @if (isEditing()) {
           <button hlmBtn variant="outline" size="sm" (click)="cancelEdit()" [disabled]="saving()">
             <ng-icon name="lucideX" class="mr-2 size-4" />
-            Cancel
+            {{ 'common.cancel' | transloco }}
           </button>
           <button
             hlmBtn
@@ -48,16 +48,16 @@
             } @else {
               <ng-icon name="lucideCheck" class="mr-2 size-4" />
             }
-            {{ saving() ? 'Saving...' : 'Save' }}
+            {{ saving() ? ('common.saving' | transloco) : ('common.save' | transloco) }}
           </button>
         } @else {
           <button hlmBtn variant="outline" size="sm" (click)="startEdit()">
             <ng-icon name="lucidePencil" class="mr-2 size-4" />
-            Edit
+            {{ 'common.edit' | transloco }}
           </button>
           <button hlmBtn variant="destructive" size="sm" (click)="deleteMethod()">
             <ng-icon name="lucideTrash2" class="mr-2 size-4" />
-            Delete
+            {{ 'common.delete' | transloco }}
           </button>
         }
       </div>
@@ -90,7 +90,7 @@
 
                 <!-- Name -->
                 <div class="space-y-1.5">
-                  <label hlmLabel>Name</label>
+                  <label hlmLabel>{{ 'common.name' | transloco }}</label>
                   @if (isEditing()) {
                     <input hlmInput formControlName="name" type="text" class="w-full" />
                   } @else {
@@ -102,7 +102,7 @@
 
                 <!-- Description -->
                 <div class="space-y-1.5">
-                  <label hlmLabel>Description</label>
+                  <label hlmLabel>{{ 'common.description' | transloco }}</label>
                   @if (isEditing()) {
                     <textarea
                       hlmInput
@@ -114,7 +114,7 @@
                     <div
                       class="text-muted-foreground leading-relaxed px-3 py-2 rounded-md bg-muted/50 min-h-20"
                     >
-                      {{ group.get('description')?.value || 'No description.' }}
+                      {{ group.get('description')?.value || ('processingMethods.detail.noDescription' | transloco) }}
                     </div>
                   }
                 </div>

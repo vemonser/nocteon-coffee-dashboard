@@ -25,6 +25,7 @@ import { HlmToggleImports } from '@spartan-ng/helm/toggle';
 
 import { HlmLabelImports } from '@spartan-ng/helm/label';
 
+import { TranslocoPipe } from '@jsverse/transloco';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
   lucidePlus,
@@ -66,6 +67,7 @@ import { Router } from '@angular/router';
     HlmToggleImports,
     HlmLabelImports,
     NgIcon,
+    TranslocoPipe,
   ],
   providers: [
     provideIcons({

@@ -17,6 +17,19 @@
     @apply bg-background text-foreground;
   }
 
+  /* Luxury system: interactive elements always invite a click */
+  button:not(:disabled),
+  [role='button']:not(:disabled),
+  a,
+  [hlmBtn],
+  summary {
+    cursor: pointer;
+  }
+
+  button:disabled {
+    cursor: not-allowed;
+  }
+
   /* ─── Default (English / LTR) ─── */
   :root {
     --font-body: var(--font-sans);

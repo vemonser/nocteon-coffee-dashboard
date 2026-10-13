@@ -117,6 +117,38 @@ export class AuthService {
       );
   }
 
+  getProfile(): Observable<any> {
+    return this.http.get<any>(`${this.base}/api/users/me`);
+  }
+
+  updateProfile(data: { firstName: string; lastName: string; email: string }): Observable<any> {
+    return this.http.put<any>(`${this.base}/api/users/me/profile`, data).pipe(
+      tap((res) => {
+        const current = this._currentUser();
+        if (current) {
+          this._currentUser.set({ ...current, ...res.data });
+        }
+      }),
+    );
+  }
+
+  updateAvatar(file: File): Observable<any> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.put<any>(`${this.base}/api/users/me/avatar`, formData).pipe(
+      tap((res) => {
+        const current = this._currentUser();
+        if (current) {
+          this._currentUser.set({ ...current, avatarUrl: res.data.avatarUrl });
+        }
+      }),
+    );
+  }
+
+  changePassword(data: { currentPassword: string; newPassword: string }): Observable<any> {
+    return this.http.put<any>(`${this.base}/api/users/me/password`, data);
+  }
+
   hasPermission(permission: string): boolean {
     const user = this._currentUser();
 

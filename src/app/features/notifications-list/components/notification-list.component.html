@@ -2,16 +2,16 @@
   <!-- Header -->
   <div class="flex items-center justify-between">
     <div>
-      <h1 class="text-2xl font-bold tracking-tight">Notifications</h1>
+      <h1 class="text-2xl font-bold tracking-tight">{{ 'notifications.title' | transloco }}</h1>
       <p class="text-muted-foreground">
-        {{ pageData()?.totalElements ?? 0 }} total · {{ unreadCount() }} unread
+        {{ 'notifications.totalCount' | transloco: { count: pageData()?.totalElements ?? 0 } }} · {{ 'notifications.unreadCount' | transloco: { count: unreadCount() } }}
       </p>
     </div>
 
     @if (unreadCount() > 0) {
       <button hlmBtn variant="outline" (click)="markAllAsRead()">
         <ng-icon name="lucideCheck" class="me-2 size-4" />
-        Mark all as read
+        {{ 'notifications.markAllAsRead' | transloco }}
       </button>
     }
   </div>
@@ -25,13 +25,13 @@
       class="rounded-sm!"
     >
       <hlm-select-trigger class="rounded-sm h-full">
-        <hlm-select-value placeholder="All Notifications" />
+        <hlm-select-value placeholder="{{ 'notifications.all' | transloco }}" />
       </hlm-select-trigger>
       <hlm-select-content *hlmSelectPortal>
         <hlm-select-group>
-          <hlm-select-label>Status</hlm-select-label>
-          <hlm-select-item value="all">All Notifications</hlm-select-item>
-          <hlm-select-item value="unread">Unread Only</hlm-select-item>
+          <hlm-select-label>{{ 'notifications.status' | transloco }}</hlm-select-label>
+          <hlm-select-item value="all">{{ 'notifications.all' | transloco }}</hlm-select-item>
+          <hlm-select-item value="unread">{{ 'notifications.unreadOnly' | transloco }}</hlm-select-item>
         </hlm-select-group>
       </hlm-select-content>
     </hlm-select>
@@ -46,8 +46,8 @@
     } @else if (items().length === 0) {
       <div class="p-10 text-center text-muted-foreground">
         <ng-icon name="lucideBell" class="mx-auto size-12 opacity-20 mb-4" />
-        <p class="text-lg font-medium">No notifications</p>
-        <p class="text-sm">You're all caught up</p>
+        <p class="text-lg font-medium">{{ 'notifications.noNotifications' | transloco }}</p>
+        <p class="text-sm">{{ 'notifications.allCaughtUp' | transloco }}</p>
       </div>
     } @else {
       @for (n of items(); track n.id) {
@@ -81,7 +81,7 @@
               size="sm"
               (click)="$event.stopPropagation(); markAsRead(n)"
             >
-              Mark as read
+              {{ 'notifications.markAsRead' | transloco }}
             </button>
           }
         </div>
@@ -93,9 +93,9 @@
   @if (pageData() && !loading()) {
     <div class="flex items-center justify-between">
       <span class="text-sm text-muted-foreground">
-        Showing {{ pageData()!.page * pageData()!.size + 1 }} -
+        {{ 'common.showing' | transloco }} {{ pageData()!.page * pageData()!.size + 1 }} -
         {{ Math.min((pageData()!.page + 1) * pageData()!.size, pageData()!.totalElements) }}
-        of {{ pageData()!.totalElements }}
+        {{ 'common.of' | transloco }} {{ pageData()!.totalElements }}
       </span>
 
       <div class="flex items-center gap-2">
@@ -110,7 +110,7 @@
         </button>
 
         <span class="text-sm text-muted-foreground px-2">
-          Page {{ pageData()!.page + 1 }} of {{ pageData()!.totalPages }}
+          {{ 'common.page' | transloco }} {{ pageData()!.page + 1 }} {{ 'common.of' | transloco }} {{ pageData()!.totalPages }}
         </span>
 
         <button
@@ -132,7 +132,7 @@
   <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-center p-6 border-b sticky top-0 bg-white">
-        <h2 class="text-lg font-bold">Notification</h2>
+        <h2 class="text-lg font-bold">{{ 'notifications.detail' | transloco }}</h2>
         <button (click)="closeView()" class="text-gray-400 hover:text-gray-600 text-xl">✕</button>
       </div>
 
@@ -159,14 +159,14 @@
           (click)="closeView()"
           class="flex-1 px-4 py-2 border rounded-md text-gray-700 hover:bg-gray-50"
         >
-          Close
+          {{ 'common.close' | transloco }}
         </button>
         @if (viewing()!.link) {
           <button
             (click)="router.navigateByUrl(viewing()!.link!)"
             class="flex-1 px-4 py-2 bg-primary text-white rounded-md hover:opacity-90"
           >
-            View details
+            {{ 'notifications.viewDetails' | transloco }}
           </button>
         }
       </div>

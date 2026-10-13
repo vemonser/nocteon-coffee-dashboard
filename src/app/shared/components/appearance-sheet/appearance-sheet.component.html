@@ -14,9 +14,9 @@
       <div class="border-b px-6 py-5">
         <div class="flex items-center justify-between">
           <div>
-            <h2 class="text-xl font-semibold tracking-tight">Appearance</h2>
+            <h2 class="text-xl font-semibold tracking-tight">{{ 'appearance.title' | transloco }}</h2>
 
-            <p class="mt-1 text-sm text-muted-foreground">Customize your workspace</p>
+            <p class="mt-1 text-sm text-muted-foreground">{{ 'appearance.subtitle' | transloco }}</p>
           </div>
 
           <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-xl">
@@ -30,7 +30,7 @@
 
         <section class="space-y-3">
           <h3 class="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-            Theme
+            {{ 'appearance.theme' | transloco }}
           </h3>
 
           <div class="grid grid-cols-2 rounded-2xl bg-muted p-1">
@@ -43,7 +43,7 @@
                   : 'text-muted-foreground hover:text-foreground'
               "
             >
-              ☀ Light
+              ☀ {{ 'appearance.light' | transloco }}
             </button>
 
             <button
@@ -55,7 +55,7 @@
                   : 'text-muted-foreground hover:text-foreground'
               "
             >
-              🌙 Dark
+              🌙 {{ 'appearance.dark' | transloco }}
             </button>
           </div>
         </section>
@@ -66,7 +66,7 @@
 
         <section class="space-y-3">
           <h3 class="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-            Accent
+            {{ 'appearance.accent' | transloco }}
           </h3>
 
           <div class="grid grid-cols-2 gap-4">
@@ -129,7 +129,7 @@
 
         <section class="space-y-3">
           <h3 class="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-            Language
+            {{ 'appearance.language' | transloco }}
           </h3>
 
           <div class="grid grid-cols-2 rounded-2xl bg-muted p-1">
@@ -153,15 +153,15 @@
 
         <section class="space-y-5">
           <h3 class="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-            Effects
+            {{ 'appearance.effects' | transloco }}
           </h3>
 
           <div class="space-y-4">
             <div class="flex items-center justify-between">
               <div>
-                <p class="font-medium">Theme Transition</p>
+                <p class="font-medium">{{ 'appearance.themeTransition' | transloco }}</p>
 
-                <p class="text-xs text-muted-foreground">Circle Reveal Animation</p>
+                <p class="text-xs text-muted-foreground">{{ 'appearance.circleReveal' | transloco }}</p>
               </div>
 
               <hlm-switch [(checked)]="themeTransition" />

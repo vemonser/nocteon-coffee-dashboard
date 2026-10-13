@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+﻿import { CommonModule } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HasPermissionDirective } from '../../../core/auth/permission.directive';
@@ -27,7 +27,9 @@ import { map, Observable } from 'rxjs';
 import { PageResponse } from '../../../core/models/api-response.model';
 import { ColumnDef, createColumnHelper } from '@tanstack/table-core';
 import { Router } from '@angular/router';
+import { PromoCodeAnalyticsResponse } from '../models/promo-code.model';
 
+import { TranslocoPipe } from '@jsverse/transloco';
 @Component({
   selector: 'app-promo-codes-list',
   standalone: true,
@@ -46,6 +48,7 @@ import { Router } from '@angular/router';
     HlmTableImports,
     HlmLabelImports,
     NgIcon,
+    TranslocoPipe,
   ],
   providers: [provideIcons({ lucidePlus, lucidePencil, lucideTrash2, lucideX, lucideSearch })],
   templateUrl: './promo-codes-list.component.html',
@@ -61,6 +64,7 @@ export class PromoCodesListComponent extends BaseListComponent<
 
   // Category options for the scope picker
   categoryOptions = signal<CategoryResponse[]>([]);
+  analytics = signal<PromoCodeAnalyticsResponse | null>(null);
 
   protected ngOnInitOverrideHook(): void {} // placeholder if BaseListComponent exposes a hook; otherwise load in constructor
 
@@ -68,6 +72,10 @@ export class PromoCodesListComponent extends BaseListComponent<
     super();
     this.categoryService.getAll({ isActive: true }).subscribe((res) => {
       this.categoryOptions.set(res.data.content);
+    });
+    this.promoCodeService.getAnalytics(30).subscribe({
+      next: (res) => this.analytics.set(res.data),
+      error: () => this.analytics.set(null),
     });
   }
 

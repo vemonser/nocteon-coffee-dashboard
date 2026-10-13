@@ -1,4 +1,4 @@
-<div class="flex flex-col gap-6 p-6 max-w-7xl mx-auto">
+﻿<div class="flex flex-col gap-6 p-6 max-w-7xl mx-auto">
   <!-- Loading -->
   @if (loading()) {
     <div class="space-y-6">
@@ -20,7 +20,7 @@
       <h2 class="text-xl font-semibold text-destructive">{{ error() }}</h2>
       <button hlmBtn variant="outline" class="mt-4" (click)="goBack()">
         <ng-icon name="lucideArrowLeft" class="mr-2 size-4" />
-        Back to Coffee Varieties
+        {{ 'common.backTo' | transloco }} {{ 'coffeeVarieties.title' | transloco }}
       </button>
     </div>
   }
@@ -51,7 +51,7 @@
             } @else {
               <ng-icon name="lucideCheck" class="mr-2 size-4" />
             }
-            {{ saving() ? 'Saving...' : 'Save' }}
+            {{ saving() ? ('common.saving' | transloco) : ('common.save' | transloco) }}
           </button>
         } @else {
           <button hlmBtn variant="outline" size="sm" (click)="startEdit()">
@@ -96,7 +96,7 @@
 
                   <!-- Name -->
                   <div class="space-y-1.5">
-                    <label hlmLabel>Name</label>
+                    <label hlmLabel>{{ 'common.name' | transloco }}</label>
                     @if (isEditing()) {
                       <input hlmInput formControlName="name" type="text" class="w-full" />
                     } @else {
@@ -108,7 +108,7 @@
 
                   <!-- Description -->
                   <div class="space-y-1.5">
-                    <label hlmLabel>Description</label>
+                    <label hlmLabel>{{ 'common.description' | transloco }}</label>
                     @if (isEditing()) {
                       <textarea
                         hlmInput
@@ -141,7 +141,7 @@
                   id="isActive"
                   class="h-4 w-4 rounded border-primary"
                 />
-                <label for="isActive" class="text-sm font-medium">Active</label>
+                <label for="isActive" class="text-sm font-medium">{{ 'common.active' | transloco }}</label>
               </div>
             }
           </div>

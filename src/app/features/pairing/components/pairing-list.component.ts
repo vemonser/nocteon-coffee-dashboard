@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+﻿import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormGroup } from '@angular/forms';
 import { ColumnDef, createColumnHelper } from '@tanstack/angular-table';
@@ -43,6 +43,7 @@ import { TranslationFormHelper } from '../../../shared/utils/translation.utils';
 import { SUPPORTED_LANGUAGES } from '../../../core/i18n/language';
 import { PageResponse } from '../../../core/models/api-response.model';
 
+import { TranslocoPipe } from '@jsverse/transloco';
 
 @Component({
   selector: 'app-pairings-list',
@@ -66,6 +67,7 @@ import { PageResponse } from '../../../core/models/api-response.model';
     HlmToggleImports,
     HlmLabelImports,
     NgIcon,
+    TranslocoPipe,
   ],
   providers: [
     provideIcons({
@@ -143,12 +145,7 @@ export class PairingListComponent extends BaseListComponent<PairingResponse, Pai
         sort: this.currentSort,
         direction: this.currentDirection,
       })
-      .pipe(
-        map((res) => {
-          console.log(res.data);
-          return res.data;
-        }),
-      );
+      .pipe(map((res) => res.data));
   }
 
   protected override buildForm(): FormGroup {

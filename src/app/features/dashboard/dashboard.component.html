@@ -2,8 +2,8 @@
   <!-- Header Row -->
   <div class="flex items-center justify-between">
     <div>
-      <h1 class="text-2xl font-bold tracking-tight">Dashboard</h1>
-      <p class="text-muted-foreground">Here's what's happening with your coffee business today.</p>
+      <h1 class="text-2xl font-bold tracking-tight">{{ 'dashboard.title' | transloco }}</h1>
+      <p class="text-muted-foreground">{{ 'dashboard.subtitle' | transloco }}</p>
     </div>
 
     <div class="flex items-center gap-3">
@@ -16,15 +16,18 @@
             size="sm"
             (click)="onFilterChange(option.value)"
           >
-            {{ option.label }}
+            @if (option.value === 7) { {{ 'dashboard.last7Days' | transloco }} }
+            @else if (option.value === 30) { {{ 'dashboard.last30Days' | transloco }} }
+            @else if (option.value === 90) { {{ 'dashboard.last90Days' | transloco }} }
+            @else { {{ 'dashboard.lastYear' | transloco }} }
           </button>
         }
       </div>
 
-      <button hlmBtn variant="outline" size="sm">
+      <!-- <button hlmBtn variant="outline" size="sm">
         <ng-icon name="lucideCalendar" class="mr-2 size-4" />
-        Export Report
-      </button>
+        {{ 'dashboard.exportReport' | transloco }}
+      </button> -->
     </div>
   </div>
 
@@ -36,7 +39,7 @@
         <div hlmCardContent class="p-4 h-full flex flex-col justify-between">
           <div class="flex items-center justify-between">
             <div>
-              <p class="text-sm text-muted-foreground pb-1">Total Revenue</p>
+              <p class="text-sm text-muted-foreground pb-1">{{ 'dashboard.metrics.totalRevenue' | transloco }}</p>
               <p class="text-2xl font-bold">$ {{ stats.totalRevenue | number }}</p>
             </div>
             <div
@@ -52,7 +55,7 @@
               </div>
               <span class="w-full">+12.5%</span>
             </div>
-            <span class="text-muted-foreground w-full">vs previous period</span>
+            <span class="text-muted-foreground w-full">{{ 'dashboard.vsPreviousPeriod' | transloco }}</span>
           </div>
         </div>
       </hlm-card>
@@ -62,7 +65,7 @@
         <div hlmCardContent class="p-4 h-full flex flex-col justify-between">
           <div class="flex items-center justify-between">
             <div>
-              <p class="text-sm text-muted-foreground">Orders</p>
+              <p class="text-sm text-muted-foreground">{{ 'dashboard.orders' | transloco }}</p>
               <p class="text-2xl font-bold">{{ stats.totalOrders | number }}</p>
             </div>
             <div
@@ -78,7 +81,7 @@
               </div>
               <span class="w-full">+8.3%</span>
             </div>
-            <span class="text-muted-foreground w-full">vs previous period</span>
+            <span class="text-muted-foreground w-full">{{ 'dashboard.vsPreviousPeriod' | transloco }}</span>
           </div>
         </div>
       </hlm-card>
@@ -88,7 +91,7 @@
         <div hlmCardContent class="p-4 h-full flex flex-col justify-between">
           <div class="flex items-center justify-between">
             <div>
-              <p class="text-sm text-muted-foreground">New Customers</p>
+              <p class="text-sm text-muted-foreground">{{ 'dashboard.newCustomers' | transloco }}</p>
               <p class="text-2xl font-bold">{{ stats.newCustomers | number }}</p>
             </div>
             <div
@@ -104,7 +107,7 @@
               </div>
               <span>+15.7%</span>
             </div>
-            <span class="text-muted-foreground">vs previous period</span>
+            <span class="text-muted-foreground">{{ 'dashboard.vsPreviousPeriod' | transloco }}</span>
           </div>
         </div>
       </hlm-card>
@@ -114,7 +117,7 @@
         <div hlmCardContent class="p-4 h-full flex flex-col justify-between">
           <div class="flex items-center justify-between">
             <div>
-              <p class="text-sm text-muted-foreground">Coffee Sold</p>
+              <p class="text-sm text-muted-foreground">{{ 'dashboard.coffeeSold' | transloco }}</p>
               <p class="text-2xl font-bold">{{ stats.coffeeSold | number }} kg</p>
             </div>
             <div
@@ -130,7 +133,7 @@
               </div>
               <span class="w-full">+10.2%</span>
             </div>
-            <span class="text-muted-foreground w-full">vs previous period</span>
+            <span class="text-muted-foreground w-full">{{ 'dashboard.vsPreviousPeriod' | transloco }}</span>
           </div>
         </div>
       </hlm-card>
@@ -140,7 +143,7 @@
         <div hlmCardContent class="p-4 h-full flex flex-col justify-between">
           <div class="flex items-center justify-between">
             <div>
-              <p class="text-sm text-muted-foreground">Average Order Value</p>
+              <p class="text-sm text-muted-foreground">{{ 'dashboard.averageOrderValue' | transloco }}</p>
               <p class="text-2xl font-bold">${{ stats.averageOrderValue | number }}</p>
             </div>
             <div
@@ -156,7 +159,7 @@
               </div>
               <span class="w-full">+6.1%</span>
             </div>
-            <span class="text-muted-foreground w-full">vs previous period</span>
+            <span class="text-muted-foreground w-full">{{ 'dashboard.vsPreviousPeriod' | transloco }}</span>
           </div>
         </div>
       </hlm-card>
@@ -168,7 +171,7 @@
     <!-- Revenue Chart -->
     <hlm-card class="lg:col-span-2">
       <hlm-card-header>
-        <h3 hlmCardTitle>Revenue Overview</h3>
+        <h3 hlmCardTitle>{{ 'dashboard.revenueOverview' | transloco }}</h3>
         <app-online-users [count]="statsService.onlineUsers()" />
       </hlm-card-header>
       <div hlmCardContent>
@@ -179,7 +182,7 @@
     <!-- Category Chart -->
     <hlm-card>
       <hlm-card-header>
-        <h3 hlmCardTitle>Revenue by Category</h3>
+        <h3 hlmCardTitle>{{ 'dashboard.revenueByCategory' | transloco }}</h3>
       </hlm-card-header>
       <div hlmCardContent>
         <app-category-chart [data]="statsService.categoryChartData()" />
@@ -192,7 +195,7 @@
     <!-- Top Products -->
     <hlm-card>
       <hlm-card-header>
-        <h3 hlm-card-title>Top Selling Products</h3>
+        <h3 hlm-card-title>{{ 'dashboard.topSellingProducts' | transloco }}</h3>
       </hlm-card-header>
       <div hlmCardContent>
         <app-top-products [products]="statsService.topProducts()" />
@@ -202,7 +205,7 @@
     <!-- Recent Orders (Live) -->
     <hlm-card class="lg:col-span-2">
       <hlm-card-header>
-        <h3 hlm-card-title>Recent Orders</h3>
+        <h3 hlm-card-title>{{ 'dashboard.recentOrders' | transloco }}</h3>
       </hlm-card-header>
       <div hlmCardContent>
         <app-recent-orders />

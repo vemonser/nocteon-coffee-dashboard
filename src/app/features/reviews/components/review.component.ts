@@ -1,4 +1,4 @@
-import { Component, computed, effect, inject, signal } from '@angular/core';
+﻿import { Component, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -39,6 +39,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { map } from 'rxjs';
 import { heroStar } from '@ng-icons/heroicons/outline';
 
+import { TranslocoPipe } from '@jsverse/transloco';
 @Component({
   selector: 'app-review-list',
   standalone: true,
@@ -59,6 +60,7 @@ import { heroStar } from '@ng-icons/heroicons/outline';
     HlmToggleImports,
     HlmLabelImports,
     NgIcon,
+    TranslocoPipe,
   ],
   providers: [
     provideIcons({

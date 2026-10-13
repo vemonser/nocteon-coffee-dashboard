@@ -48,13 +48,13 @@ export const routes: Routes = [
         data: { breadcrumb: 'journal' },
         canActivate: [permissionGuard('journal:read')],
         children: [
-          // {
-          //   path: '',
-          //   loadComponent: () =>
-          //     import('./features/journal/components/journal').then(
-          //       (m) => m.JournalListComponent,
-          //     ),
-          // },
+          {
+            path: '',
+            loadComponent: () =>
+              import('./features/journal/components/journal-list.component').then(
+                (m) => m.JournalListComponent,
+              ),
+          },
           {
             path: 'new',
             data: { breadcrumb: 'newJournalPost' },
@@ -76,7 +76,7 @@ export const routes: Routes = [
       {
         path: 'store-settings',
         data: { breadcrumb: 'storeSettings' },
-        canActivate: [permissionGuard('settings:read')],
+        canActivate: [permissionGuard('settings:update')],
         loadComponent: () =>
           import('./features/store-settings/components/store-settings-list.component').then(
             (m) => m.StoreSettingsListComponent,
@@ -131,7 +131,7 @@ export const routes: Routes = [
       {
         path: 'origins',
         data: { breadcrumb: 'origins' },
-        canActivate: [permissionGuard('origins:read')],
+        canActivate: [permissionGuard('origin:read')],
         children: [
           {
             path: '',
@@ -153,7 +153,7 @@ export const routes: Routes = [
       {
         path: 'farms',
         data: { breadcrumb: 'farms' },
-        canActivate: [permissionGuard('farms:read')],
+        canActivate: [permissionGuard('farm:read')],
         children: [
           {
             path: '',
@@ -191,6 +191,28 @@ export const routes: Routes = [
             loadComponent: () =>
               import('./features/processing-method/processing-method-detail/components/processing-method-detail.component').then(
                 (m) => m.ProcessingMethodDetailComponent,
+              ),
+          },
+        ],
+      },
+      {
+        path: 'roast-levels',
+        data: { breadcrumb: 'roastLevels' },
+        canActivate: [permissionGuard('roast_level:read')],
+        children: [
+          {
+            path: '',
+            loadComponent: () =>
+              import('./features/roast-level/components/roast-level-list.component').then(
+                (m) => m.RoastLevelListComponent,
+              ),
+          },
+          {
+            path: ':slug',
+            data: { breadcrumb: 'roastLevelDetail' },
+            loadComponent: () =>
+              import('./features/roast-level/roast-level-detail/components/roast-level-detail.component').then(
+                (m) => m.RoastLevelDetailComponent,
               ),
           },
         ],
@@ -242,7 +264,7 @@ export const routes: Routes = [
       {
         path: 'reviews',
         data: { breadcrumb: 'reviews' },
-        canActivate: [permissionGuard('review:read')],
+        canActivate: [permissionGuard('review:moderate')],
         children: [
           {
             path: '',
@@ -259,6 +281,41 @@ export const routes: Routes = [
               ),
           },
         ],
+      },
+
+      {
+        path: 'product-options',
+        data: { breadcrumb: 'productOptions' },
+        canActivate: [permissionGuard('product_option:read')],
+        children: [
+          {
+            path: '',
+            loadComponent: () =>
+              import('./features/product-options/components/product-option-list.component').then(
+                (m) => m.ProductOptionListComponent,
+              ),
+          },
+        ],
+      },
+
+      {
+        path: 'broadcasts',
+        data: { breadcrumb: 'broadcasts' },
+        canActivate: [permissionGuard('broadcast:read')],
+        loadComponent: () =>
+          import('./features/broadcasts/components/broadcast-list.component').then(
+            (m) => m.BroadcastListComponent,
+          ),
+      },
+
+      {
+        path: 'contact-messages',
+        data: { breadcrumb: 'contactMessages' },
+        canActivate: [permissionGuard('contact:read')],
+        loadComponent: () =>
+          import('./features/contact-messages/components/contact-messages-list.component').then(
+            (m) => m.ContactMessagesListComponent,
+          ),
       },
 
       {
@@ -361,6 +418,7 @@ export const routes: Routes = [
       {
         path: 'products/new',
         data: { breadcrumb: 'newProduct' },
+        canActivate: [permissionGuard('product:create')],
         loadComponent: () =>
           import('./features/products/components/product-wizard/product-wizard.component').then(
             (m) => m.ProductWizardComponent,
@@ -369,6 +427,7 @@ export const routes: Routes = [
       {
         path: 'products/:slug/edit',
         data: { breadcrumb: 'products' },
+        canActivate: [permissionGuard('product:update')],
         loadComponent: () =>
           import('./features/products/components/product-wizard/product-wizard.component').then(
             (m) => m.ProductWizardComponent,
@@ -392,7 +451,20 @@ export const routes: Routes = [
             (m) => m.CartsListComponent,
           ),
       },
+      {
+        path: 'profile',
+        data: { breadcrumb: 'profile' },
+        loadComponent: () =>
+          import('./features/profile/components/profile.component').then(
+            (m) => m.ProfileComponent,
+          ),
+      },
     ],
   },
   { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+  {
+    path: 'unauthorized',
+    loadComponent: () =>
+      import('./features/unauthorized/unauthorized.component').then((m) => m.UnauthorizedComponent),
+  },
 ];

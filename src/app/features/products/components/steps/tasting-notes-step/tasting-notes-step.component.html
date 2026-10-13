@@ -1,11 +1,11 @@
-<!-- tasting-notes-step.component.html -->
+﻿<!-- tasting-notes-step.component.html -->
 <div class="space-y-4">
-  <h2 class="text-lg font-bold mb-2">Tasting Notes</h2>
-  <p class="text-sm text-gray-500 mb-4">Select all flavor notes that apply to this coffee.</p>
+  <h2 class="text-lg font-bold mb-2">{{ 'products.tastingNotes.title' | transloco }}</h2>
+  <p class="text-sm text-gray-500 mb-4">{{ 'products.tastingNotes.description' | transloco }}</p>
 
   @if (allNotes().length === 0) {
     <div class="text-center py-12 text-gray-400 border-2 border-dashed rounded-md">
-      No tasting notes available yet. Add some in the Tasting Notes management page first.
+      {{ 'products.tastingNotes.noNotes' | transloco }}
     </div>
   } @else {
     <div class="flex flex-wrap gap-2">

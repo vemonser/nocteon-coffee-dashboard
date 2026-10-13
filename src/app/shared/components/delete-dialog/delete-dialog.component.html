@@ -3,12 +3,11 @@
   <div
     class="bg-white p-6 rounded-md w-96">
     <h2 class="font-bold">
-      Delete
+      {{ 'common.delete' | transloco }}
     </h2>
 
     <p>
-      Are you sure you want
-      to delete
+      {{ 'common.deleteConfirm' | transloco }}
       {{ entity()?.slug }}
       ?
     </p>
@@ -17,12 +16,12 @@
       class="flex gap-3 mt-4">
       <button
         (click)="cancel.emit()">
-        Cancel
+        {{ 'common.cancel' | transloco }}
       </button>
 
       <button
         (click)="confirm.emit()">
-        Delete
+        {{ 'common.delete' | transloco }}
       </button>
     </div>
   </div>

@@ -1,4 +1,4 @@
-import { Component, computed, inject } from '@angular/core';
+﻿import { Component, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NgIcon, provideIcons } from '@ng-icons/core';
@@ -11,6 +11,12 @@ import {
   lucideUsers,
   lucideCoffee,
   lucidePackage,
+  lucideAlertTriangle,
+  lucideRefreshCw,
+  lucideCreditCard,
+  lucideRepeat,
+  lucideGlobe,
+  lucideFlame,
 } from '@ng-icons/lucide';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmCardImports } from '@spartan-ng/helm/card';
@@ -19,12 +25,10 @@ import { HlmBadgeImports } from '@spartan-ng/helm/badge';
 import { DashboardStatsService } from './services/dashboard-stats.service';
 import { RevenueChartComponent } from '../../shared/components/dashboard/revenue-chart/revenue-chart.component';
 import { CategoryChartComponent } from './category-chart/category-chart.component';
-import { StatusChartComponent } from '../../shared/components/dashboard/status-chart/status-chart.component';
 import { TopProductsComponent } from '../../shared/components/dashboard/top-products/top-products.component';
-import { RecentOrdersComponent } from '../../shared/components/dashboard/recent-orders/recent-orders.component';
 import { OnlineUsersComponent } from '../../shared/components/dashboard/online-users/online-users.component';
-
-
+import { RecentOrdersComponent } from '../../shared/components/dashboard/recent-orders/recent-orders.component';
+import { TranslocoPipe } from '@jsverse/transloco';
 @Component({
   selector: 'app-dashboard',
   standalone: true,
@@ -38,8 +42,9 @@ import { OnlineUsersComponent } from '../../shared/components/dashboard/online-u
     RevenueChartComponent,
     CategoryChartComponent,
     TopProductsComponent,
-    RecentOrdersComponent,
     OnlineUsersComponent,
+    RecentOrdersComponent,
+    TranslocoPipe,
   ],
   providers: [
     provideIcons({
@@ -51,6 +56,12 @@ import { OnlineUsersComponent } from '../../shared/components/dashboard/online-u
       lucideUsers,
       lucideCoffee,
       lucidePackage,
+      lucideAlertTriangle,
+      lucideRefreshCw,
+      lucideCreditCard,
+      lucideRepeat,
+      lucideGlobe,
+      lucideFlame,
     }),
   ],
   templateUrl: './dashboard.component.html',
@@ -66,6 +77,9 @@ export class DashboardComponent {
   ];
 
   readonly selectedDays = computed(() => this.statsService.days());
+  readonly totalPaymentOrders = computed(() =>
+    this.statsService.ordersByPaymentMethod().reduce((sum, m) => sum + m.count, 0),
+  );
 
   onFilterChange(days: number) {
     this.statsService.setDays(days);

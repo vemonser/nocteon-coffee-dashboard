@@ -20,7 +20,7 @@
       <h2 class="text-xl font-semibold text-destructive">{{ error() }}</h2>
       <button hlmBtn variant="outline" class="mt-4" (click)="goBack()">
         <ng-icon name="lucideArrowLeft" class="mr-2 size-4" />
-        Back to Origins
+        {{ 'origins.detail.backToOrigins' | transloco }}
       </button>
     </div>
   }
@@ -31,14 +31,14 @@
     <div class="flex items-center justify-between">
       <button hlmBtn variant="ghost" size="sm" (click)="goBack()">
         <ng-icon name="lucideArrowLeft" class="mr-2 size-4" />
-        Back
+        {{ 'origins.detail.back' | transloco }}
       </button>
 
       <div class="flex items-center gap-2">
         @if (isEditing()) {
           <button hlmBtn variant="outline" size="sm" (click)="cancelEdit()" [disabled]="saving()">
             <ng-icon name="lucideX" class="mr-2 size-4" />
-            Cancel
+            {{ 'common.cancel' | transloco }}
           </button>
           <button
             hlmBtn
@@ -51,16 +51,16 @@
             } @else {
               <ng-icon name="lucideCheck" class="mr-2 size-4" />
             }
-            {{ saving() ? 'Saving...' : 'Save' }}
+            {{ saving() ? ('common.saving' | transloco) : ('common.save' | transloco) }}
           </button>
         } @else {
           <button hlmBtn variant="outline" size="sm" (click)="startEdit()">
             <ng-icon name="lucidePencil" class="mr-2 size-4" />
-            Edit
+            {{ 'common.edit' | transloco }}
           </button>
           <button hlmBtn variant="destructive" size="sm" (click)="deleteOrigin()">
             <ng-icon name="lucideTrash2" class="mr-2 size-4" />
-            Delete
+            {{ 'common.delete' | transloco }}
           </button>
         }
       </div>
@@ -103,7 +103,7 @@
           <div hlmCardContent class="space-y-6">
             <!-- Code -->
             <div class="space-y-1.5">
-              <label hlmLabel>Code</label>
+              <label hlmLabel>{{ 'origins.detail.code' | transloco }}</label>
               @if (isEditing()) {
                 <input hlmInput formControlName="code" type="text" class="w-full" />
               } @else {
@@ -124,7 +124,7 @@
 
                   <!-- Name -->
                   <div class="space-y-1.5">
-                    <label hlmLabel>Name</label>
+                    <label hlmLabel>{{ 'common.name' | transloco }}</label>
                     @if (isEditing()) {
                       <input hlmInput formControlName="name" type="text" class="w-full" />
                     } @else {
@@ -136,7 +136,7 @@
 
                   <!-- Description -->
                   <div class="space-y-1.5">
-                    <label hlmLabel>Description</label>
+                    <label hlmLabel>{{ 'common.description' | transloco }}</label>
                     @if (isEditing()) {
                       <textarea
                         hlmInput
@@ -148,7 +148,7 @@
                       <div
                         class="text-muted-foreground leading-relaxed px-3 py-2 rounded-md bg-muted/50 min-h-20"
                       >
-                        {{ group.get('description')?.value || 'No description.' }}
+                        {{ group.get('description')?.value || ('origins.detail.noDescription' | transloco) }}
                       </div>
                     }
                   </div>
@@ -172,7 +172,7 @@
       <div class="flex items-center justify-between">
         <h2 class="text-xl font-bold tracking-tight flex items-center gap-2">
           <ng-icon name="lucidePackage" class="size-5" />
-          Products
+          {{ 'origins.detail.products' | transloco }}
           <hlm-badge variant="secondary">{{ productsPage()?.totalElements ?? 0 }}</hlm-badge>
         </h2>
 
@@ -230,14 +230,14 @@
             <table hlmTable>
               <thead hlmTableHeader>
                 <tr hlmTableRow>
-                  <th hlmTableHead class="w-16">Image</th>
-                  <th hlmTableHead>Name</th>
-                  <th hlmTableHead>Price</th>
-                  <th hlmTableHead>Type</th>
-                  <th hlmTableHead>Discount</th>
-                  <th hlmTableHead>Featured</th>
-                  <th hlmTableHead>Status</th>
-                  <th hlmTableHead class="text-right">Actions</th>
+                  <th hlmTableHead class="w-16">{{ 'origins.detail.image' | transloco }}</th>
+                  <th hlmTableHead>{{ 'common.name' | transloco }}</th>
+                  <th hlmTableHead>{{ 'common.price' | transloco }}</th>
+                  <th hlmTableHead>{{ 'common.type' | transloco }}</th>
+                  <th hlmTableHead>{{ 'common.discount' | transloco }}</th>
+                  <th hlmTableHead>{{ 'common.featured' | transloco }}</th>
+                  <th hlmTableHead>{{ 'common.status' | transloco }}</th>
+                  <th hlmTableHead class="text-right">{{ 'common.actions' | transloco }}</th>
                 </tr>
               </thead>
               <tbody hlmTableBody>
@@ -281,16 +281,16 @@
                     </td>
                     <td hlmTableCell>
                       @if (product.featured) {
-                        <hlm-badge variant="default" class="text-xs">★ Featured</hlm-badge>
+                        <hlm-badge variant="default" class="text-xs">★ {{ 'common.featured' | transloco }}</hlm-badge>
                       } @else {
                         <span>-</span>
                       }
                     </td>
                     <td hlmTableCell>
                       @if (product.isActive) {
-                        <hlm-badge variant="default" class="text-xs">Active</hlm-badge>
+                        <hlm-badge variant="default" class="text-xs">{{ 'common.active' | transloco }}</hlm-badge>
                       } @else {
-                        <hlm-badge variant="secondary" class="text-xs">Inactive</hlm-badge>
+                        <hlm-badge variant="secondary" class="text-xs">{{ 'common.inactive' | transloco }}</hlm-badge>
                       }
                     </td>
                     <td hlmTableCell class="text-right">
@@ -315,7 +315,7 @@
         } @else {
           <div class="text-center py-12 text-muted-foreground">
             <ng-icon name="lucidePackage" class="mx-auto size-12 opacity-20 mb-4" />
-            <p class="text-lg font-medium">No products for this origin</p>
+            <p class="text-lg font-medium">{{ 'origins.detail.noProducts' | transloco }}</p>
           </div>
         }
       }
@@ -342,7 +342,7 @@
                 }
                 @if (!product.isActive) {
                   <div class="absolute top-2 right-2">
-                    <hlm-badge variant="secondary">Inactive</hlm-badge>
+                    <hlm-badge variant="secondary">{{ 'common.inactive' | transloco }}</hlm-badge>
                   </div>
                 }
               </div>
@@ -371,7 +371,7 @@
           } @empty {
             <div class="col-span-full text-center py-12 text-muted-foreground">
               <ng-icon name="lucidePackage" class="mx-auto size-12 opacity-20 mb-4" />
-              <p class="text-lg font-medium">No products for this origin</p>
+            <p class="text-lg font-medium">{{ 'origins.detail.noProducts' | transloco }}</p>
             </div>
           }
         </div>
@@ -381,14 +381,14 @@
       @if (productsPage() && !productsLoading() && productsPage()!.totalPages > 1) {
         <div class="flex items-center justify-between">
           <span class="text-sm text-muted-foreground">
-            Showing {{ productsPage()!.page * productsPage()!.size + 1 }} -
+            {{ 'common.showing' | transloco }} {{ productsPage()!.page * productsPage()!.size + 1 }} -
             {{
               Math.min(
                 (productsPage()!.page + 1) * productsPage()!.size,
                 productsPage()!.totalElements
               )
             }}
-            of {{ productsPage()!.totalElements }}
+            {{ 'common.of' | transloco }} {{ productsPage()!.totalElements }}
           </span>
           <div class="flex items-center gap-2">
             <button
@@ -401,7 +401,7 @@
               <ng-icon name="lucideChevronLeft" class="size-4" />
             </button>
             <span class="text-sm text-muted-foreground px-2">
-              Page {{ productsPage()!.page + 1 }} of {{ productsPage()!.totalPages }}
+              {{ 'common.page' | transloco }} {{ productsPage()!.page + 1 }} {{ 'common.of' | transloco }} {{ productsPage()!.totalPages }}
             </span>
             <button
               hlmBtn

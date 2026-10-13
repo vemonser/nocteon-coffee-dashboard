@@ -20,6 +20,7 @@ import { HlmBreadcrumbImports } from '@spartan-ng/helm/breadcrumb';
 import { HlmInputGroupImports } from '@spartan-ng/helm/input-group';
 import { HlmAutocompleteImports } from '@spartan-ng/helm/autocomplete';
 import { FormsModule } from '@angular/forms';
+import { TranslocoPipe } from '@jsverse/transloco';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { debounceTime, distinctUntilChanged, switchMap, catchError, of, tap } from 'rxjs';
 
@@ -51,6 +52,7 @@ import { SearchResultDto } from './global-search/model/search.model';
     NotificationComponent,
     AppearanceSheetComponent,
     UserMenuComponent,
+    TranslocoPipe,
   ],
   providers: [
     provideIcons({

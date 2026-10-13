@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+﻿import { CommonModule } from '@angular/common';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import {
   FormArray,
@@ -27,7 +27,8 @@ import { ProductService } from '../../products/services/product.service';
 import { CategoryResponse } from '../../categories/models/category.model';
 import { JournalPostRequest, JournalPostResponse } from '../models/journal.model';
 import { QuillEditorComponent, QuillModule } from 'ngx-quill';
-type Lang = 'en' | 'ar';
+
+import { TranslocoPipe } from '@jsverse/transloco';type Lang = 'en' | 'ar';
 
 @Component({
   selector: 'app-journal-form',
@@ -44,8 +45,9 @@ type Lang = 'en' | 'ar';
     HlmSelectImports,
     HlmTabsImports,
     HlmBadgeImports,
-    // QuillEditorComponent,
+    QuillEditorComponent,
     NgIcon,
+    TranslocoPipe,
   ],
   providers: [provideIcons({ lucideArrowLeft, lucideCheck, lucideLoader2, lucideUpload })],
   templateUrl: './journal-form.component.html',
@@ -118,7 +120,9 @@ export class JournalFormComponent implements OnInit {
     this.form = this.fb.group({
       categorySlug: ['', Validators.required],
       featured: [false],
+      status: ['DRAFT', Validators.required],
       publishedAt: [null],
+      tagsInput: [''],
       productSlugs: [[] as string[]],
       translations: this.fb.array(
         this.languages.map((lang) =>
@@ -140,7 +144,9 @@ export class JournalFormComponent implements OnInit {
     this.form.patchValue({
       categorySlug: post.categorySlug,
       featured: post.featured,
+      status: post.status,
       publishedAt: post.publishedAt ? post.publishedAt.substring(0, 16) : null,
+      tagsInput: (post.tags ?? []).join(', '),
       productSlugs: post.relatedProductSlugs ?? [],
     });
 
@@ -187,8 +193,10 @@ export class JournalFormComponent implements OnInit {
     const request: JournalPostRequest = {
       categorySlug: v.categorySlug,
       featured: v.featured,
+      status: v.status ?? 'DRAFT',
       publishedAt: v.publishedAt ? new Date(v.publishedAt).toISOString() : null,
       productSlugs: v.productSlugs,
+      tags: (v.tagsInput ?? '').split(',').map((t: string) => t.trim()).filter(Boolean),
       translations: v.translations.filter((t: any) => t.title?.trim() && t.content?.trim()),
     };
 

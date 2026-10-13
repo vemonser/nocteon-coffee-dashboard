@@ -30,7 +30,7 @@ export type CategoryChartOptions = {
   templateUrl: './category-chart.component.html',
 })
 export class CategoryChartComponent {
-  @Input() data: { category: string; revenue: number }[] = [];
+  @Input() data: { categoryName: string; revenue: number; percentage: number }[] = [];
   @ViewChild('chart') chart!: ChartComponent;
 
   private themeService = inject(ThemeService);
@@ -91,7 +91,7 @@ export class CategoryChartComponent {
 
   private updateData() {
     this.chartOptions.series = this.data.map((d) => d.revenue);
-    this.chartOptions.labels = this.data.map((d) => d.category);
+    this.chartOptions.labels = this.data.map((d) => d.categoryName);
   }
 
   private updateTheme() {

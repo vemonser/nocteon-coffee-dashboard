@@ -4,6 +4,7 @@ import { ReactiveFormsModule, FormControl } from '@angular/forms';
 import { ProductWizardStateService } from '../../product-wizard/product-wizard-state.service';
 import { PairingService } from '../../../../pairing/services/pairing.service';
 import { PairingResponse } from '../../../../pairing/models/pairing.model';
+import { TranslocoPipe } from '@jsverse/transloco';
  
 /**
  * Step 5 — Pairings (multi-select from existing lookup entity).
@@ -16,7 +17,7 @@ import { PairingResponse } from '../../../../pairing/models/pairing.model';
 @Component({
   selector: 'app-pairings-step',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, TranslocoPipe],
   templateUrl: './pairings-step.component.html',
 })
 export class PairingsStepComponent {

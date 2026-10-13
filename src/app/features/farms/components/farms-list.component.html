@@ -2,8 +2,8 @@
   <!-- Header -->
   <div class="flex items-center justify-between">
     <div>
-      <h1 class="text-2xl font-bold tracking-tight">Farms</h1>
-      <p class="text-muted-foreground">{{ items().length }} total</p>
+      <h1 class="text-2xl font-bold tracking-tight">{{ 'farms.title' | transloco }}</h1>
+      <p class="text-muted-foreground">{{ items().length }} {{ 'common.of' | transloco }}</p>
     </div>
 
     <div class="flex items-center gap-3">
@@ -35,7 +35,7 @@
         (click)="openCreateDialog()"
       >
         <ng-icon name="lucidePlus" class="me-2 size-4" />
-        Add Farm
+        {{ 'farms.add' | transloco }}
       </button>
     </div>
   </div>
@@ -52,7 +52,7 @@
         type="text"
         [(ngModel)]="searchQuery"
         (input)="onSearch()"
-        placeholder="Search farms..."
+        [placeholder]="'farms.search' | transloco"
         class="pl-9 w-full"
       />
     </div>
@@ -146,7 +146,7 @@
                 (click)="openEditDialog(item)"
               >
                 <ng-icon name="lucidePencil" class="mr-1 size-3" />
-                Edit
+                {{ 'common.edit' | transloco }}
               </button>
               <button
                 hlmBtn
@@ -156,7 +156,7 @@
                 (click)="confirmDelete(item)"
               >
                 <ng-icon name="lucideTrash2" class="mr-1 size-3" />
-                Delete
+                {{ 'common.delete' | transloco }}
               </button>
             </div>
           </div>
@@ -164,8 +164,8 @@
       } @empty {
         <div class="col-span-full text-center py-12 text-muted-foreground">
           <ng-icon name="lucideSearch" class="mx-auto size-12 opacity-20 mb-4" />
-          <p class="text-lg font-medium">No farms found</p>
-          <p class="text-sm">Try adjusting your search</p>
+          <p class="text-lg font-medium">{{ 'farms.noData' | transloco }}</p>
+          <p class="text-sm">{{ 'farms.adjustSearch' | transloco }}</p>
         </div>
       }
     </div>
@@ -175,9 +175,9 @@
   @if (pageData() && !loading()) {
     <div class="flex items-center justify-between">
       <span class="text-sm text-muted-foreground">
-        Showing {{ pageData()!.page * pageData()!.size + 1 }} -
+        {{ 'common.showing' | transloco }} {{ pageData()!.page * pageData()!.size + 1 }} -
         {{ Math.min((pageData()!.page + 1) * pageData()!.size, pageData()!.totalElements) }}
-        of {{ pageData()!.totalElements }}
+        {{ 'common.of' | transloco }} {{ pageData()!.totalElements }}
       </span>
       <div class="flex items-center gap-2">
         <button
@@ -190,7 +190,7 @@
           <ng-icon name="lucideChevronLeft" class="size-4" />
         </button>
         <span class="text-sm text-muted-foreground px-2"
-          >Page {{ pageData()!.page + 1 }} of {{ pageData()!.totalPages }}</span
+          >{{ 'common.page' | transloco }} {{ pageData()!.page + 1 }} {{ 'common.of' | transloco }} {{ pageData()!.totalPages }}</span
         >
         <button
           hlmBtn
@@ -211,7 +211,7 @@
   <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
     <div class="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl bg-card shadow-2xl border">
       <div class="flex items-center justify-between p-6 border-b sticky top-0 bg-card">
-        <h2 class="text-lg font-bold">{{ editing() ? 'Edit Farm' : 'Add Farm' }}</h2>
+        <h2 class="text-lg font-bold">{{ (editing() ? 'farms.editTitle' : 'farms.addTitle') | transloco }}</h2>
         <button hlmBtn variant="ghost" size="icon" class="size-8" (click)="closeDialog()">
           <ng-icon name="lucideX" class="size-4" />
         </button>
@@ -219,7 +219,7 @@
 
       <form [formGroup]="form" (ngSubmit)="onSubmit()" class="p-6 space-y-5">
         <div class="space-y-1.5">
-          <label hlmLabel>Origin Slug *</label>
+          <label hlmLabel>{{ 'farms.originSlug' | transloco }} *</label>
           <input
             hlmInput
             formControlName="originSlug"
@@ -239,7 +239,7 @@
               </div>
 
               <div class="space-y-1.5 mb-3">
-                <label hlmLabel>Name *</label>
+                <label hlmLabel>{{ 'farms.name' | transloco }} *</label>
                 <input
                   hlmInput
                   formControlName="name"
@@ -248,17 +248,17 @@
                   class="w-full"
                 />
                 @if (group.get('name')?.invalid && group.get('name')?.touched) {
-                  <p class="text-xs text-destructive">Name is required</p>
+                  <p class="text-xs text-destructive">{{ 'farms.nameRequired' | transloco }}</p>
                 }
               </div>
 
               <div class="space-y-1.5 mb-3">
-                <label hlmLabel>Country</label>
+                <label hlmLabel>{{ 'farms.country' | transloco }}</label>
                 <input hlmInput formControlName="country" type="text" class="w-full" />
               </div>
 
               <div class="space-y-1.5">
-                <label hlmLabel>Description</label>
+                <label hlmLabel>{{ 'farms.description' | transloco }}</label>
                 <textarea
                   hlmInput
                   formControlName="description"
@@ -272,7 +272,7 @@
         </div>
 
         <div class="space-y-1.5">
-          <label hlmLabel>Image</label>
+          <label hlmLabel>{{ 'farms.image' | transloco }}</label>
           <input
             type="file"
             accept="image/*"
@@ -295,13 +295,13 @@
 
         <div class="flex gap-3 pt-2">
           <button type="button" hlmBtn variant="outline" class="flex-1" (click)="closeDialog()">
-            Cancel
+            {{ 'common.cancel' | transloco }}
           </button>
           <button type="submit" hlmBtn class="flex-1" [disabled]="form.invalid || submitting()">
             @if (submitting()) {
               <span class="animate-spin mr-2">⟳</span>
             }
-            {{ submitting() ? 'Saving...' : 'Save' }}
+            {{ submitting() ? ('common.saving' | transloco) : ('common.save' | transloco) }}
           </button>
         </div>
       </form>
@@ -313,14 +313,14 @@
 @if (deleting()) {
   <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
     <div class="w-full max-w-sm rounded-2xl bg-card shadow-2xl border p-6">
-      <h2 class="text-lg font-bold mb-2">Delete Farm</h2>
+      <h2 class="text-lg font-bold mb-2">{{ 'farms.deleteTitle' | transloco }}</h2>
       <p class="text-muted-foreground mb-6">
-        Are you sure you want to delete
+        {{ 'farms.deleteConfirm' | transloco }}
         <strong class="text-foreground">{{ deleting()!.slug }}</strong
-        >? This action cannot be undone.
+        >?
       </p>
       <div class="flex gap-3">
-        <button hlmBtn variant="outline" class="flex-1" (click)="deleting.set(null)">Cancel</button>
+        <button hlmBtn variant="outline" class="flex-1" (click)="deleting.set(null)">{{ 'common.cancel' | transloco }}</button>
         <button
           hlmBtn
           variant="destructive"
@@ -331,7 +331,7 @@
           @if (submitting()) {
             <span class="animate-spin mr-2">⟳</span>
           }
-          {{ submitting() ? 'Deleting...' : 'Delete' }}
+          {{ submitting() ? ('common.deleting' | transloco) : ('common.delete' | transloco) }}
         </button>
       </div>
     </div>

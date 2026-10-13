@@ -5,7 +5,7 @@
       class="cursor-pointer inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground h-8 px-3"
       (click)="edit.emit(item())"
     >
-      {{ editLabel() }}
+      {{ 'common.edit' | transloco }}
     </button>
   }
 
@@ -16,7 +16,7 @@
       [class.text-destructive]="viewLabel() === 'View' || viewLabel() === 'Block'"
       (click)="view.emit(item())"
     >
-      {{ viewLabel() }}
+      {{ 'common.view' | transloco }}
     </button>
   }
 
@@ -27,7 +27,7 @@
       [class.text-destructive]="deleteLabel() === 'Delete' || deleteLabel() === 'Block'"
       (click)="delete.emit(item())"
     >
-      {{ deleteLabel() }}
+      {{ 'common.delete' | transloco }}
     </button>
   }
 </div>

@@ -2,10 +2,10 @@
   <!-- Header -->
   <div class="flex items-center justify-between">
     <div>
-      <h1 class="text-2xl font-bold tracking-tight">Users</h1>
+      <h1 class="text-2xl font-bold tracking-tight">{{ 'users.title' | transloco }}</h1>
       <p class="text-muted-foreground">
-        {{ totalUsers() }} total · {{ activeUsers() }} active · {{ blockedUsers() }} blocked ·
-        {{ unverifiedUsers() }} unverified
+        {{ totalUsers() }} {{ 'common.of' | transloco }} · {{ activeUsers() }} {{ 'common.active' | transloco }} · {{ blockedUsers() }} {{ 'users.blocked' | transloco }} ·
+        {{ unverifiedUsers() }} {{ 'users.unverified' | transloco }}
       </p>
     </div>
 
@@ -17,7 +17,7 @@
         (click)="openCreateDialog()"
       >
         <ng-icon name="lucidePlus" class="me-2 size-4" />
-        Add User
+        {{ 'users.add' | transloco }}
       </button>
     </div>
   </div>
@@ -34,7 +34,7 @@
         type="text"
         [(ngModel)]="searchQuery"
         (input)="onSearch()"
-        placeholder="Search by username or email..."
+        [placeholder]="'users.search' | transloco"
         class="pl-9 w-full"
       />
     </div>
@@ -44,9 +44,9 @@
       (change)="onFilterChange()"
       class="h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm"
     >
-      <option value="ALL">All Roles</option>
-      <option value="ADMIN">Admin</option>
-      <option value="CUSTOMER">Customer</option>
+      <option value="ALL">{{ 'users.allRoles' | transloco }}</option>
+      <option value="ADMIN">{{ 'users.admin' | transloco }}</option>
+      <option value="CUSTOMER">{{ 'users.customer' | transloco }}</option>
     </select>
 
     <select
@@ -54,9 +54,9 @@
       (change)="onFilterChange()"
       class="h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm"
     >
-      <option [ngValue]="undefined">All Status</option>
-      <option [ngValue]="true">Active</option>
-      <option [ngValue]="false">Blocked</option>
+      <option [ngValue]="undefined">{{ 'common.all' | transloco }}</option>
+      <option [ngValue]="true">{{ 'common.active' | transloco }}</option>
+      <option [ngValue]="false">{{ 'users.blocked' | transloco }}</option>
     </select>
 
     <select
@@ -64,9 +64,9 @@
       (change)="onFilterChange()"
       class="h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm"
     >
-      <option [ngValue]="undefined">All Verification</option>
-      <option [ngValue]="true">Verified</option>
-      <option [ngValue]="false">Unverified</option>
+      <option [ngValue]="undefined">{{ 'users.allVerification' | transloco }}</option>
+      <option [ngValue]="true">{{ 'users.verified' | transloco }}</option>
+      <option [ngValue]="false">{{ 'users.unverified' | transloco }}</option>
     </select>
   </div>
 
@@ -86,8 +86,8 @@
         [loading]="loading()"
         editPermission="user:update"
         deletePermission="user:delete"
-        editLabel="Edit"
-        deleteLabel="Block"
+        [editLabel]="'common.edit' | transloco"
+        [deleteLabel]="'users.block' | transloco"
         (edit)="openEditDialog($event)"
         (delete)="confirmDelete($event)"
         (sortChange)="onSortChange($event)"
@@ -100,8 +100,8 @@
   @if (pageData() && !loading()) {
     <div class="flex items-center justify-between">
       <span class="text-sm text-muted-foreground">
-        Showing {{ pageData()!.page * pageData()!.size + 1 }} -
-        {{ Math.min((pageData()!.page + 1) * pageData()!.size, pageData()!.totalElements) }} of
+        {{ 'common.showing' | transloco }} {{ pageData()!.page * pageData()!.size + 1 }} -
+        {{ Math.min((pageData()!.page + 1) * pageData()!.size, pageData()!.totalElements) }} {{ 'common.of' | transloco }}
         {{ pageData()!.totalElements }}
       </span>
       <div class="flex items-center gap-2">
@@ -115,7 +115,7 @@
           <ng-icon name="lucideChevronLeft" class="size-4" />
         </button>
         <span class="text-sm text-muted-foreground px-2"
-          >Page {{ pageData()!.page + 1 }} of {{ pageData()!.totalPages }}</span
+          >{{ 'common.page' | transloco }} {{ pageData()!.page + 1 }} {{ 'common.of' | transloco }} {{ pageData()!.totalPages }}</span
         >
         <button
           hlmBtn
@@ -138,14 +138,14 @@
       class="w-full max-w-lg max-h-[90vh] snap-y snap-mandatory scrollbar-hide gap-4 overflow-y-auto rounded-2xl bg-card shadow-2xl border"
     >
       <div class="flex items-center justify-between p-6 border-b sticky top-0 bg-card">
-        <h2 class="text-2xl font-bold">{{ editing() ? 'Edit User' : 'Add User' }}</h2>
+        <h2 class="text-2xl font-bold">{{ (editing() ? 'users.editTitle' : 'users.addTitle') | transloco }}</h2>
         <button hlmBtn variant="ghost" size="icon" class="size-8" (click)="closeDialog()">
           <ng-icon name="lucideX" class="size-4" />
         </button>
       </div>
       <form [formGroup]="form" (ngSubmit)="onSubmit()" class="p-6 space-y-5">
         <div class="space-y-1.5">
-          <label hlmLabel>Username *</label>
+          <label hlmLabel>{{ 'users.username' | transloco }} *</label>
           <input
             hlmInput
             formControlName="username"
@@ -154,11 +154,11 @@
             class="w-full"
           />
           @if (form.get('username')?.invalid && form.get('username')?.touched) {
-            <p class="text-xs text-destructive">Username is required (min 3 characters)</p>
+            <p class="text-xs text-destructive">{{ 'users.usernameRequired' | transloco }}</p>
           }
         </div>
         <div class="space-y-1.5">
-          <label hlmLabel>Email *</label>
+          <label hlmLabel>{{ 'users.email' | transloco }} *</label>
           <input
             hlmInput
             formControlName="email"
@@ -167,36 +167,36 @@
             class="w-full"
           />
           @if (form.get('email')?.invalid && form.get('email')?.touched) {
-            <p class="text-xs text-destructive">Valid email is required</p>
+            <p class="text-xs text-destructive">{{ 'users.emailRequired' | transloco }}</p>
           }
         </div>
         @if (!editing()) {
           <div class="space-y-1.5">
-            <label hlmLabel>Password *</label>
+            <label hlmLabel>{{ 'users.password' | transloco }} *</label>
             <input
               hlmInput
               formControlName="password"
               type="password"
-              placeholder="Min 6 characters"
+              [placeholder]="'users.passwordPlaceholder' | transloco"
               class="w-full"
             />
             @if (form.get('password')?.invalid && form.get('password')?.touched) {
-              <p class="text-xs text-destructive">Password is required (min 6 characters)</p>
+              <p class="text-xs text-destructive">{{ 'users.passwordRequired' | transloco }}</p>
             }
           </div>
           <div class="space-y-1.5">
-            <label hlmLabel>Confirm Password *</label>
+            <label hlmLabel>{{ 'users.confirmPassword' | transloco }} *</label>
             <input
               hlmInput
               formControlName="confirmPassword"
               type="password"
-              placeholder="Repeat password"
+              [placeholder]="'users.repeatPassword' | transloco"
               class="w-full"
             />
           </div>
         }
         <div class="space-y-1.5">
-          <label hlmLabel>Phone *</label>
+          <label hlmLabel>{{ 'users.phone' | transloco }} *</label>
           <input
             hlmInput
             formControlName="phone"
@@ -205,30 +205,30 @@
             class="w-full"
           />
           @if (form.get('phone')?.invalid && form.get('phone')?.touched) {
-            <p class="text-xs text-destructive">Valid Phone is required</p>
+            <p class="text-xs text-destructive">{{ 'users.phoneRequired' | transloco }}</p>
           }
         </div>
         <div class="space-y-1.5">
           <hlm-field>
-            <label hlmFieldLabel for="role">Role</label>
+            <label hlmFieldLabel for="role">{{ 'users.role' | transloco }}</label>
             <hlm-select formControlName="role" class="w-full h-fit">
               <hlm-select-trigger buttonId="role" size="default" class="w-full flex h-fit!">
-                <hlm-select-value class="px-1" placeholder="Select a fruit" />
+                <hlm-select-value class="px-1" [placeholder]="'users.selectRole' | transloco" />
               </hlm-select-trigger>
               <hlm-select-content class="p-1" *hlmSelectPortal>
                 <hlm-select-group>
-                  <hlm-select-label>Roles</hlm-select-label>
+                  <hlm-select-label>{{ 'users.roles' | transloco }}</hlm-select-label>
                   @for (item of permission; track item.value) {
                     <hlm-select-item [value]="item.value">{{ item.label }}</hlm-select-item>
                   }
                 </hlm-select-group>
               </hlm-select-content>
             </hlm-select>
-            <hlm-field-error>Please select a fruit.</hlm-field-error>
+            <hlm-field-error>{{ 'users.selectRoleError' | transloco }}</hlm-field-error>
           </hlm-field>
         </div>
         <div class="space-y-1.5">
-          <label hlmLabel>First Name</label>
+          <label hlmLabel>{{ 'users.firstName' | transloco }}</label>
           <input
             hlmInput
             formControlName="firstName"
@@ -238,7 +238,7 @@
           />
         </div>
         <div class="space-y-1.5">
-          <label hlmLabel>Last Name</label>
+          <label hlmLabel>{{ 'users.lastName' | transloco }}</label>
           <input hlmInput formControlName="lastName" type="text" placeholder="Doe" class="w-full" />
         </div>
         <div class="flex items-center gap-3">
@@ -248,17 +248,17 @@
             id="isActive"
             class="h-4 w-4 rounded border-primary text-primary focus:ring-primary"
           />
-          <label for="isActive" class="text-sm font-medium">Account Active</label>
+          <label for="isActive" class="text-sm font-medium">{{ 'users.accountActive' | transloco }}</label>
         </div>
         <div class="flex gap-3 pt-2">
           <button type="button" hlmBtn variant="outline" class="flex-1" (click)="closeDialog()">
-            Cancel
+            {{ 'common.cancel' | transloco }}
           </button>
           <button type="submit" hlmBtn class="flex-1" [disabled]="form.invalid || submitting()">
             @if (submitting()) {
               <span class="animate-spin mr-2">⟳</span>
             }
-            {{ submitting() ? 'Saving...' : 'Save' }}
+            {{ submitting() ? ('common.saving' | transloco) : ('common.save' | transloco) }}
           </button>
         </div>
       </form>
@@ -271,16 +271,16 @@
   <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
     <div class="w-full max-w-sm rounded-2xl bg-card shadow-2xl border p-6">
       <h2 class="text-lg font-bold mb-2">
-        {{ deleting()!.active ? 'Block User' : 'Unblock User' }}
+        {{ deleting()!.active ? ('users.blockUser' | transloco) : ('users.unblockUser' | transloco) }}
       </h2>
       <p class="text-muted-foreground mb-6">
-        Are you sure you want to
-        <strong class="text-foreground">{{ deleting()!.active ? 'block' : 'unblock' }}</strong>
+        {{ 'users.confirmAction' | transloco }}
+        <strong class="text-foreground">{{ deleting()!.active ? ('users.block' | transloco) : ('users.unblock' | transloco) }}</strong>
         <strong class="text-foreground">{{ deleting()!.username }}</strong
         >?
       </p>
       <div class="flex gap-3">
-        <button hlmBtn variant="outline" class="flex-1" (click)="deleting.set(null)">Cancel</button>
+        <button hlmBtn variant="outline" class="flex-1" (click)="deleting.set(null)">{{ 'common.cancel' | transloco }}</button>
         <button
           hlmBtn
           [variant]="deleting()!.active ? 'destructive' : 'default'"
@@ -291,7 +291,7 @@
           @if (submitting()) {
             <span class="animate-spin mr-2">⟳</span>
           }
-          {{ submitting() ? 'Processing...' : deleting()!.active ? 'Block' : 'Unblock' }}
+          {{ submitting() ? ('users.processing' | transloco) : deleting()!.active ? ('users.block' | transloco) : ('users.unblock' | transloco) }}
         </button>
       </div>
     </div>

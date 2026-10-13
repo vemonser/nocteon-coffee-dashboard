@@ -4,6 +4,7 @@ import { ReactiveFormsModule, FormControl } from '@angular/forms';
 import { ProductWizardStateService } from '../../product-wizard/product-wizard-state.service';
 import { TastingNoteService } from '../../../../tasting-note/services/tasting-note.service';
 import { TastingNoteResponse } from '../../../../tasting-note/models/tasting-note.model';
+import { TranslocoPipe } from '@jsverse/transloco';
  
 /**
  * Step 4 — Tasting Notes (multi-select from existing lookup entity).
@@ -14,7 +15,7 @@ import { TastingNoteResponse } from '../../../../tasting-note/models/tasting-not
 @Component({
   selector: 'app-tasting-notes-step',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, TranslocoPipe],
   templateUrl: './tasting-notes-step.component.html',
 })
 export class TastingNotesStepComponent {

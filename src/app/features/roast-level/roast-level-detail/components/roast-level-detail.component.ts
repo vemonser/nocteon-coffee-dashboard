@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal, computed } from '@angular/core';
+﻿import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -28,6 +28,7 @@ import { TranslationFormHelper } from '../../../../shared/utils/translation.util
 import { RoastLevelRequest, RoastLevelResponse } from '../../models/roast-level.model';
 import { BreadcrumbService } from '../../../../shared/components/breadcrumb/service/breadcrumb.service';
 
+import { TranslocoPipe } from '@jsverse/transloco';
 type EditMode = 'view' | 'edit';
 
 @Component({
@@ -45,6 +46,7 @@ type EditMode = 'view' | 'edit';
     HlmInputImports,
     HlmLabelImports,
     NgIcon,
+    TranslocoPipe,
   ],
   providers: [
     provideIcons({

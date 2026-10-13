@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
+import { HttpParams } from '@angular/common/http';
 import { BaseCrudService, BaseListParams } from '../../../core/crud/base-crud.service';
-import { PromoCodeRequest, PromoCodeResponse } from '../models/promo-code.model';
+import { PromoCodeAnalyticsResponse, PromoCodeRequest, PromoCodeResponse } from '../models/promo-code.model';
 import { Observable } from 'rxjs';
 import { ApiResponse, PageResponse } from '../../../core/models/api-response.model';
 import { environment } from '../../../../environments/environment';
@@ -18,5 +19,12 @@ export class PromoCodeService extends BaseCrudService<PromoCodeResponse, PromoCo
       `${environment.apiUrl}/api/dashboard/promo-codes/${id}`,
     )
       // ${this.fullUrl}/${id}`);
+  }
+
+  getAnalytics(days = 30): Observable<ApiResponse<PromoCodeAnalyticsResponse>> {
+    return this.http.get<ApiResponse<PromoCodeAnalyticsResponse>>(
+      `${this.fullUrl}/analytics`,
+      { params: new HttpParams().set('days', days) },
+    );
   }
 }

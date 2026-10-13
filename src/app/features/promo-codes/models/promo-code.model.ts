@@ -19,8 +19,27 @@ export interface PromoCodeResponse {
   maxRedemptionsPerUser: number;
   validFrom: string; // ISO instant string
   validUntil: string;
-  active: boolean; // ASSUMPTION: verify your DTO field name — Jackson may serialize the entity's `active` boolean as "active", not "isActive". Check your mapper output once and adjust here if needed.
+  active: boolean;
+  totalRedemptions: number;
+  totalDiscountGiven: number;
+  usageRate: number;
   createdAt: string;
+}
+
+export interface PromoCodeAnalyticsResponse {
+  totalDiscountGivenAllTime: number;
+  totalRedemptionsAllTime: number;
+  activeCodesCount: number;
+  topPerformingCodes: {
+    code: string;
+    redemptionCount: number;
+    totalDiscountGiven: number;
+  }[];
+  redemptionsByDay: {
+    date: string;
+    count: number;
+    discountAmount: number;
+  }[];
 }
 
 export interface PromoCodeRequest {

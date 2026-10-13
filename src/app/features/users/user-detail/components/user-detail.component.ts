@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+﻿import { CommonModule } from '@angular/common';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import {
   FormBuilder,
@@ -39,6 +39,7 @@ import { BreadcrumbService } from '../../../../shared/components/breadcrumb/serv
 import { UserRequest, UserResponse } from '../../model/user.model';
 import { HasPermissionDirective } from '../../../../core/auth/permission.directive';
 
+import { TranslocoPipe } from '@jsverse/transloco';
 type EditMode = 'view' | 'edit';
 type RoleOption = 'CUSTOMER' | 'ADMIN' | 'MODERATOR';
 
@@ -60,6 +61,7 @@ type RoleOption = 'CUSTOMER' | 'ADMIN' | 'MODERATOR';
     HlmSeparatorImports,
     HlmAvatarImports,
     NgIcon,
+    TranslocoPipe,
   ],
   providers: [
     provideIcons({

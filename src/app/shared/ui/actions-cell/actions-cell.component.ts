@@ -1,10 +1,11 @@
 import { Component, input, output } from '@angular/core';
 import { HasPermissionDirective } from '../../../core/auth/permission.directive';
 import { CommonModule } from '@angular/common';
+import { TranslocoPipe } from '@jsverse/transloco';
 
 @Component({
   selector: 'app-actions-cell',
-  imports: [CommonModule, HasPermissionDirective],
+  imports: [CommonModule, HasPermissionDirective, TranslocoPipe],
   templateUrl: './actions-cell.component.html',
   styleUrl: './actions-cell.component.css',
 })
