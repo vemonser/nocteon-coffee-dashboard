@@ -1,20 +1,43 @@
 <div class="relative overflow-x-scroll">
   <!-- Loading overlay -->
   @if (loading()) {
-    <div class="absolute inset-0 bg-white/60 flex items-center justify-center z-10 rounded-md">
+    <div class="absolute inset-0 bg-card/80 flex items-center justify-center z-10 rounded-md backdrop-blur-[1px]">
       <div
         class="w-6 h-6 border-2 border-amber-600 border-t-transparent rounded-full animate-spin"
       ></div>
     </div>
   }
 
-  <table hlmTable class="w-full table-auto">
+  <!--
+    Fixed layout + a floor width: columns share the container when it fits and the
+    table scrolls inside its own wrapper when it does not. Under `auto`, one long
+    value (a date, a name) stretched its column and pushed Actions off-canvas.
+  -->
+  <table hlmTable class="w-full table-fixed" [style.minWidth]="minWidth()">
     <thead class="border-b border-gray-200">
       @for (headerGroup of table().getHeaderGroups(); track headerGroup.id) {
         <tr hlmTr>
+          @if (selectable()) {
+            <th class="w-10 px-4 py-3">
+              <input
+                type="checkbox"
+                class="size-4 rounded border-input accent-primary"
+                [checked]="allSelected()"
+                [indeterminate]="someSelected() && !allSelected()"
+                [attr.aria-label]="selectAllLabel()"
+                (change)="toggleAllChange.emit($any($event.target).checked)"
+              />
+            </th>
+          }
           @for (header of headerGroup.headers; track header.id) {
             <th
-              class="px-4 py-3 text-start text-xs font-medium text-gray-500 uppercase tracking-wider"
+              class="px-4 py-3 text-start text-xs font-medium text-muted-foreground uppercase tracking-wider"
+              [style.width]="widthFor(header.column.id, header.column.columnDef)"
+              [class.sticky]="header.column.id === 'actions'"
+              [class.z-10]="header.column.id === 'actions'"
+              [class.bg-card]="header.column.id === 'actions'"
+              [style.insetInlineEnd.px]="header.column.id === 'actions' ? 0 : null"
+              [style.borderInlineStart]="header.column.id === 'actions' ? '1px solid var(--border)' : null"
             >
               @if (!header.isPlaceholder) {
                 @if (header.column.getCanSort()) {
@@ -23,7 +46,7 @@
                     class="flex items-center min-w-max gap-1 hover:text-foreground transition-colors group"
                   >
                     <span class="min-w-max inline-block">{{ header.column.columnDef.header }}</span>
-                    <span class="text-gray-400 min-w-max inline-block group-hover:text-foreground">
+                    <span class="text-muted-foreground min-w-max inline-block group-hover:text-foreground">
                       @if (header.column.getIsSorted() === 'asc') {
                         ↑
                       } @else if (header.column.getIsSorted() === 'desc') {
@@ -43,19 +66,37 @@
       }
     </thead>
 
-    <tbody class="divide-y divide-gray-100">
+    <tbody class="divide-y divide-border">
       @if (data().length === 0 && !loading()) {
         <tr hlmTr>
-          <td hlmTd [attr.colspan]="columns().length" class="text-center py-16 text-gray-400">
+          <td hlmTd [attr.colspan]="columns().length" class="text-center py-16 text-muted-foreground">
             {{ emptyMessage() }}
           </td>
         </tr>
       }
 
       @for (row of table().getRowModel().rows; track row.id) {
-        <tr hlmTr class="hover:bg-accent transition-colors">
-          @for (cell of row.getVisibleCells(); track cell.id) {
+        <tr hlmTr class="hover:bg-accent transition-colors" [attr.data-selected]="isSelected(row.original) ? '' : null">
+          @if (selectable()) {
             <td class="px-4 py-3">
+              <input
+                type="checkbox"
+                class="size-4 rounded border-input accent-primary"
+                [checked]="isSelected(row.original)"
+                [attr.aria-label]="selectRowLabel()"
+                (change)="onToggleRow(row.original, $any($event.target).checked)"
+              />
+            </td>
+          }
+          @for (cell of row.getVisibleCells(); track cell.id) {
+            <td
+              class="px-4 py-3"
+              [class.sticky]="cell.column.id === 'actions'"
+              [class.z-10]="cell.column.id === 'actions'"
+              [class.bg-card]="cell.column.id === 'actions'"
+              [style.insetInlineEnd.px]="cell.column.id === 'actions' ? 0 : null"
+              [style.borderInlineStart]="cell.column.id === 'actions' ? '1px solid var(--border)' : null"
+            >
               @switch (cell.column.id) {
                 @case ('image') {
                   <app-image-cell
@@ -97,19 +138,27 @@
                   <app-color-cell [color]="$any(cell.getValue())" />
                 }
                 @case ('createdAt') {
-                  <span class="block min-w-max">
-                  {{$any(cell.getValue()) | date:'short'}}
+                  <span class="block text-sm tabular-nums">
+                    {{ $any(cell.getValue()) | date: 'mediumDate' }}
+                  </span>
+                }
+
+                @case ('deletedAt') {
+                  <span class="block text-sm tabular-nums">
+                    {{ $any(cell.getValue()) | date: 'mediumDate' }}
+                  </span>
+                }
+
+                <!-- Trash tab: the status column becomes "Deleted (relative)". -->
+                @case ('deleted') {
+                  <span class="block text-sm text-muted-foreground">
+                    {{ $any(cell.getValue()) | date: 'mediumDate' }} · {{ relativeTime(cell.getValue()) }}
                   </span>
                 }
 
                 @case ('updatedAt') {
-                  <span class="block min-w-max text-sm">
-                  {{$any(cell.getValue()) | date:'short'}}
-                  </span>
-                }
-                @case ('updatedAt') {
-                  <span class="block min-w-max  text-sm">
-                    {{ $any(cell.getValue()) | date: 'short' }}
+                  <span class="block text-sm tabular-nums">
+                    {{ $any(cell.getValue()) | date: 'mediumDate' }}
                   </span>
                 }
 
@@ -130,8 +179,8 @@
                       [class.text-red-800]="status.variant === 'destructive'"
                       [class.bg-yellow-100]="status.variant === 'warning'"
                       [class.text-yellow-800]="status.variant === 'warning'"
-                      [class.bg-gray-100]="status.variant === 'secondary'"
-                      [class.text-gray-800]="status.variant === 'secondary'"
+                      [class.bg-muted]="status.variant === 'secondary'"
+                      [class.text-muted-foreground]="status.variant === 'secondary'"
                     >
                       {{ status.label }}
                     </span>
@@ -143,25 +192,46 @@
                     [item]="row.original"
                     [editPermission]="editPermission()"
                     [deletePermission]="deletePermission()"
+                    [restorePermission]="restorePermission()"
                     [editLabel]="editLabel()"
                     [deleteLabel]="deleteLabel()"
+                    [destructiveDelete]="destructiveDelete()"
+                    [restoreLabel]="restoreLabel()"
+                    [permanentDeleteLabel]="permanentDeleteLabel()"
+                    [permanentDeletePermission]="permanentDeletePermission()"
+                    [showPermanentDelete]="showPermanentDelete()"
                     [showEdit]="showEdit()"
                     [showView]="showView()"
                     [showDelete]="showDelete()"
+                    [showRestore]="showRestore()"
                     (edit)="edit.emit($event)"
                     (delete)="delete.emit($event)"
+                    (restore)="restore.emit($event)"
+                    (permanentDelete)="permanentDelete.emit($event)"
                     (view)="rowClick.emit(row.original)"
                   />
                 }
 
                 @default {
-                  <span
-                    class="flex min-w-max w-fit items-start"
-                    [class.arabic-text]="containsArabic(cell.getValue())"
-                    [dir]="getDir(cell.getValue())"
-                  >
-                    {{ cell.getValue() }}
-                  </span>
+                  @if (cell.column.id === navigableColumn()) {
+                    <button
+                      type="button"
+                      class="inline-block cursor-pointer truncate text-start text-primary hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                      dir="auto"
+                      (click)="rowClick.emit(row.original)"
+                    >
+                      {{ cell.getValue() }}
+                    </button>
+                  } @else {
+                    <!--
+                      dir="auto" lets the browser pick direction from the first strong
+                      character, so an English name and an Arabic name in adjacent RTL
+                      columns both align to the column's own edge.
+                    -->
+                    <span class="block truncate" dir="auto">
+                      {{ cell.getValue() }}
+                    </span>
+                  }
                 }
               }
             </td>

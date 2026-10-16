@@ -12,7 +12,9 @@ export class HlmSidebarContent {
   constructor() {
     classes(
       () =>
-        'no-scrollbar gap-0 flex min-h-0 flex-1 flex-col overflow-auto group-data-[collapsible=icon]:overflow-hidden',
+        // Deliberately no `no-scrollbar`: when the nav is taller than the viewport it scrolls,
+        // and hiding the scrollbar left no cue that the active item was below the fold.
+        'gap-0 flex min-h-0 flex-1 flex-col overflow-y-auto group-data-[collapsible=icon]:overflow-hidden',
     );
   }
 }

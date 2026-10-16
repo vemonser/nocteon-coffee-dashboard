@@ -1,4 +1,4 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HasPermissionDirective } from '../../../core/auth/permission.directive';
@@ -10,6 +10,7 @@ import { ColumnDef, createColumnHelper } from '@tanstack/table-core';
 import { SUPPORTED_LANGUAGES } from '../../../core/i18n/language';
 import { map, Observable } from 'rxjs';
 import { PageResponse } from '../../../core/models/api-response.model';
+import { AuthService } from '../../../core/auth/auth.service';
 
 // Spartan UI
 import { HlmCardImports } from '@spartan-ng/helm/card';
@@ -42,6 +43,9 @@ import {
 } from '@ng-icons/lucide';
 
 import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
+import { LifecycleTabsComponent } from '../../../shared/components/lifecycle-tabs/lifecycle-tabs.component';
+import { ConfirmTypedDialogComponent } from '../../../shared/components/confirm-typed-dialog/confirm-typed-dialog.component';
+import { HlmToaster } from '@spartan-ng/helm/sonner';
 import { Router } from '@angular/router';
 
 
@@ -54,6 +58,9 @@ import { Router } from '@angular/router';
     ReactiveFormsModule,
     HasPermissionDirective,
     DataTableComponent,
+    LifecycleTabsComponent,
+    ConfirmTypedDialogComponent,
+    HlmToaster,
     // Spartan
     HlmCardImports,
     HlmButtonImports,
@@ -88,88 +95,212 @@ import { Router } from '@angular/router';
 })
 export class CategoriesListComponent extends BaseListComponent<CategoryResponse, CategoryRequest> {
   private categoryService = inject(CategoryService);
+  private auth = inject(AuthService);
   protected translationHelper = inject(TranslationFormHelper);
   protected router = inject(Router);
-readonly isActiveFilterString = computed(() => {
-  if (this.isActiveFilter === undefined) return 'all';
-  return this.isActiveFilter ? 'active' : 'inactive';
-});
 
-onStatusFilterValueChange(value: string | null | undefined): void {
-  this.isActiveFilter = value === 'active' ? true : value === 'inactive' ? false : undefined;
-  this.currentPage.set(0);
-  this.load();
-}
-itemToString = (value: string) => {
-  const labels: Record<string, string> = { all: 'All Status', active: 'Active', inactive: 'Inactive' };
-  return labels[value] ?? value;
-};
+  /** Opt into the shared soft-delete capability (tabs, counts, undo, restore). */
+  protected override softDeleteEnabled = true;
+  protected override canManageTrash = this.auth.hasPermission('category:delete');
+  protected override statusFilterValue: boolean | undefined = undefined;
+
+  readonly isActiveFilterString = computed(() => {
+    if (this.statusFilterValue === undefined) return 'all';
+    return this.statusFilterValue ? 'enabled' : 'disabled';
+  });
+
+  /** The trash endpoints require 'category:delete' — hide the tab without it. */
+  readonly isTrashAllowed = computed(() => this.auth.hasPermission('category:delete'));
+
+  onStatusFilterValueChange(value: string | null | undefined): void {
+    this.statusFilterValue = value === 'enabled' ? true : value === 'disabled' ? false : undefined;
+    this.currentPage.set(0);
+    this.writeUrlState();
+    this.load();
+  }
+
+  itemToString = (value: string) => {
+    const labels: Record<string, string> = { all: 'All Status', enabled: 'Active', disabled: 'Inactive' };
+    return labels[value] ?? value;
+  };
 
   protected override getId(item: CategoryResponse): string {
     return item.slug;
   }
 
-  // View mode toggle
+  // ─── Soft-delete hooks ───────────────────────────────────────────────────────
 
-  // Category-specific filter
-  isActiveFilter: boolean | undefined = undefined;
+  protected override loadTrashPage(): Observable<PageResponse<CategoryResponse>> {
+    return this.categoryService.getDeleted(this.trashParams()).pipe(map((res) => res.data));
+  }
+
+  private trashParams() {
+    return {
+      page: this.currentPage(),
+      search: this.searchQuery || undefined,
+      sort: this.currentSort,
+      direction: this.currentDirection,
+    };
+  }
+
+  protected override callRestore(id: number) {
+    return this.categoryService.restore(id);
+  }
+
+  protected override restoreIdOf(item: CategoryResponse): number | null {
+    return typeof item.id === 'number' ? item.id : null;
+  }
+
+  /** DataTable selection is keyed on the backend id (what restore takes). */
+  readonly rowIdOf = (row: CategoryResponse): number | null =>
+    typeof row?.id === 'number' ? row.id : null;
+
+  onSelectionChange(event: { id: number; checked: boolean }): void {
+    this.toggleSelection(event.id, event.checked);
+  }
+
+  protected override confirmTokenOf(item: CategoryResponse): string {
+    return item.slug;
+  }
+
+  protected override undoItemLabel(item: CategoryResponse): string {
+    return this.getTranslationName(item, 'en');
+  }
+
+  // ─── Copy ────────────────────────────────────────────────────────────────────
+
+  protected override undoLabel(): string {
+    return 'common.undo';
+  }
+  protected override undoMessage(): string {
+    return 'categories.trash.movedToTrash';
+  }
+  protected override restoreConflictTitle(): string {
+    return 'categories.trash.restoreConflictTitle';
+  }
+  protected override restoreConflictBody(): string {
+    return 'categories.trash.restoreConflictBody';
+  }
+  protected override restoreNotFoundBody(): string {
+    return 'categories.trash.restoreNotFound';
+  }
+  protected override restoreForbiddenBody(): string {
+    return 'categories.trash.restoreForbidden';
+  }
+  protected override restoreFailedBody(): string {
+    return 'categories.trash.restoreFailed';
+  }
+  protected override permanentDeleteUnsupportedTitle(): string {
+    return 'common.permanentDeleteUnavailable';
+  }
+  protected override permanentDeleteUnsupportedBody(): string {
+    return 'common.permanentDeleteUnsupported';
+  }
+
+  // View mode toggle
 
   // Columns for list view
   private columnHelper = createColumnHelper<CategoryResponse>();
-  columns: ColumnDef<CategoryResponse, any>[] = [
+
+  /**
+   * Columns that exist on both tabs. Explicitly composed rather than filtered:
+   * TanStack's generated column ids made a filter-by-id unreliable.
+   */
+  private sharedColumns: ColumnDef<CategoryResponse, any>[] = [
     this.columnHelper.accessor('id', {
       header: 'ID',
       enableSorting: true,
+      meta: { width: '72px' },
     }),
     this.columnHelper.accessor((row) => row.imageUrl, {
       id: 'image',
       header: 'Image',
       enableSorting: false,
+      meta: { width: '72px' },
     }),
     this.columnHelper.accessor('slug', {
       header: 'Slug',
       enableSorting: true,
+      meta: { width: '160px' },
     }),
     ...SUPPORTED_LANGUAGES.map((lang) =>
       this.columnHelper.accessor(
         (row): string => row.translations.find((t) => t.language === lang.code)?.name ?? '—',
         {
-          id: `name_${lang.code}`, // يفضل زي ما هو كـ column id بس للعرض
+          id: `name_${lang.code}`,
           header: `Name (${lang.label})`,
           enableSorting: false,
+          meta: { width: '160px' },
         },
       ),
     ),
+  ];
+
+  /** Active tail: status (enabled/disabled) + when it was created. */
+  private activeTail: ColumnDef<CategoryResponse, any>[] = [
     this.columnHelper.accessor('isActive', {
       header: 'Status',
       cell: (info) => info.getValue(),
+      meta: { width: '112px' },
     }),
     this.columnHelper.accessor('createdAt', {
       header: 'Created At',
       cell: (info) => info.getValue(),
-    }),
-    this.columnHelper.display({
-      id: 'actions',
-      header: 'Actions',
+      meta: { width: '132px' },
     }),
   ];
 
-  // Computed
-  readonly activeCount = computed(() => this.items().filter((i) => i.isActive).length);
+  /**
+   * Trash tail: lifecycle replaces status and created-at — Deleted (relative) and
+   * Deleted At. Neither active-tab column survives the switch.
+   */
+  private trashTail: ColumnDef<CategoryResponse, any>[] = [
+    this.columnHelper.accessor('deletedAt', {
+      id: 'deleted',
+      header: 'Deleted',
+      enableSorting: false,
+      cell: (info) => info.row.original.deletedAt,
+      meta: { width: '148px' },
+    }),
+    this.columnHelper.accessor('deletedAt', {
+      header: 'Deleted At',
+      enableSorting: false,
+      meta: { width: '132px' },
+    }),
+  ];
 
-  readonly inactiveCount = computed(() => this.items().filter((i) => !i.isActive).length);
+  /** Actions cell — edit/delete on active, restore/permanent on trash. */
+  private actionsColumn: ColumnDef<CategoryResponse, any> = this.columnHelper.display({
+    id: 'actions',
+    header: 'Actions',
+    meta: { width: '104px' },
+  });
+
+  /** Lifecycle and status are separate concepts: the tab picks the tail. */
+  readonly columns = computed<ColumnDef<CategoryResponse, any>[]>(() =>
+    this.listView() === 'trash'
+      ? [...this.sharedColumns, ...this.trashTail, this.actionsColumn]
+      : [...this.sharedColumns, ...this.activeTail, this.actionsColumn],
+  );
+
+  // Computed
+
 
   // ─── Base contract ─────────────────────────────────────────────────────────
 
+  /**
+   * ACTIVE rows only. The base picks the endpoint by tab and calls
+   * `loadTrashPage()` for trash, so branching here as well would make this method
+   * useless as the source for the other tab's count.
+   */
   protected override loadPage(): Observable<PageResponse<CategoryResponse>> {
-
     return this.categoryService
       .getAll({
         page: this.currentPage(),
         search: this.searchQuery || undefined,
-        isActive: this.isActiveFilter,
         sort: this.currentSort,
         direction: this.currentDirection,
+        isActive: this.statusFilterValue,
       })
       .pipe(map((res) => res.data));
   }
@@ -213,8 +344,11 @@ itemToString = (value: string) => {
   }
 
   goToDetail(item: CategoryResponse): void {
+    // Trashed rows are hidden from the backend detail queries — stay on the list.
+    if (this.listView() === 'trash') return;
     this.router.navigate(['/dashboard/categories', item.slug]);
   }
+
   // ─── UI helpers ────────────────────────────────────────────────────────────
 
   getTranslationName(item: CategoryResponse, langCode: string): string {
@@ -229,6 +363,5 @@ itemToString = (value: string) => {
     this.currentPage.set(0);
     this.load();
   }
-
 
 }

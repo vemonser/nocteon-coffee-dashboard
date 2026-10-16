@@ -49,4 +49,8 @@ export class OrderService {
   updateStatus(id: number, status: OrderStatus): Observable<ApiResponse<OrderResponse>> {
     return this.http.put<ApiResponse<OrderResponse>>(`${this.base}/${id}/status`, { status });
   }
+
+  getById(id: number): Observable<ApiResponse<OrderResponse>> {
+    return this.http.get<ApiResponse<OrderResponse>>(`${this.base}/{$id}`);
+  }
 }

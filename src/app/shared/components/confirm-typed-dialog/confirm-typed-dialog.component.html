@@ -1,0 +1,71 @@
+<!--
+  Follows the app's existing dialog convention (conditional overlay + backdrop, as in
+  categories-list.component.html) rather than the Spartan dialog service, which no page
+  uses yet. Focus moves into the input on open and the dialog is aria-modal.
+-->
+@if (open()) {
+  <div
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
+    (click)="onBackdrop($event)"
+  >
+    <div
+      role="dialog"
+      aria-modal="true"
+      [attr.aria-labelledby]="'confirm-typed-title'"
+      [attr.aria-describedby]="'confirm-typed-desc'"
+      class="w-full max-w-md rounded-2xl border bg-card p-6 shadow-2xl"
+    >
+      <h2 id="confirm-typed-title" class="text-lg font-bold">{{ title() }}</h2>
+      <p id="confirm-typed-desc" class="mt-1 text-sm text-muted-foreground">{{ description() }}</p>
+
+      @if (notice()) {
+        <p class="mt-4 rounded-md border border-warning/40 bg-warning-soft px-3 py-2 text-sm text-warning">
+          {{ notice() }}
+        </p>
+      }
+
+      <div class="mt-4 space-y-2">
+        <label for="confirm-typed-input" class="text-sm font-medium">{{ typedLabel() }}</label>
+        <input
+          #typedInput
+          id="confirm-typed-input"
+          hlmInput
+          type="text"
+          dir="auto"
+          autocomplete="off"
+          spellcheck="false"
+          autocapitalize="none"
+          [ngModel]="typed()"
+          (ngModelChange)="onInput($event)"
+          (keydown.enter)="onConfirm()"
+          (keydown.escape)="closed.emit()"
+          [attr.aria-invalid]="showMismatch()"
+          [attr.aria-describedby]="showMismatch() ? 'confirm-typed-error' : null"
+          class="w-full font-mono"
+          [placeholder]="expected()"
+        />
+
+        @if (showMismatch()) {
+          <p id="confirm-typed-error" role="alert" class="text-xs text-destructive">
+            {{ mismatchMessage() }}
+          </p>
+        }
+      </div>
+
+      <div class="mt-6 flex justify-end gap-3">
+        <button hlmBtn variant="outline" type="button" (click)="closed.emit()">
+          {{ 'common.cancel' | transloco }}
+        </button>
+        <button
+          hlmBtn
+          variant="destructive"
+          type="button"
+          [disabled]="!matches() || pending()"
+          (click)="onConfirm()"
+        >
+          {{ confirmLabel() }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

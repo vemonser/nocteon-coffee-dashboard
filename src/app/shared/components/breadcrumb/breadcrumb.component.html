@@ -16,9 +16,12 @@
       </li>
     }
 
-    @for (item of breadcrumbs(); track item.url; let last = $last) {
+    @for (item of breadcrumbs(); track item.label; let last = $last) {
       <li hlmBreadcrumbItem>
-        @if (!last) {
+        @if (!item.url) {
+          <!-- Section crumb (e.g. Catalog) — not a destination -->
+          <span hlmBreadcrumbLink class="text-muted-foreground">{{ item.label }}</span>
+        } @else if (!last) {
           <a hlmBreadcrumbLink [routerLink]="item.url">{{ item.label }}</a>
         } @else {
           <a hlmBreadcrumbPage>{{ item.label }}</a>

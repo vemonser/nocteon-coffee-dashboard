@@ -86,8 +86,6 @@
         [loading]="loading()"
         editPermission="user:update"
         deletePermission="user:delete"
-        [editLabel]="'common.edit' | transloco"
-        [deleteLabel]="'users.block' | transloco"
         (edit)="openEditDialog($event)"
         (delete)="confirmDelete($event)"
         (sortChange)="onSortChange($event)"

@@ -4,13 +4,6 @@ import { CommonModule } from '@angular/common';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
   lucideSearch,
-  lucideBell,
-  lucideLogOut,
-  lucideUser,
-  lucideSettings,
-  lucideSun,
-  lucideMoon,
-  lucideGlobe,
   lucideMenu,
   lucideLoader2,
 } from '@ng-icons/lucide';
@@ -27,10 +20,10 @@ import { debounceTime, distinctUntilChanged, switchMap, catchError, of, tap } fr
 import { AuthService } from '../../../core/auth/auth.service';
 import { LanguageService } from '../../../core/i18n/language.service';
 import { ThemeService } from '../../../core/theme/theme.service';
+import { ThemeToggleComponent } from '../../../core/theme/theme-toggle.component';
 
 import { NotificationComponent } from '../../notification/components/notification.component';
 import { BreadcrumbComponent } from '../../../shared/components/breadcrumb/breadcrumb.component';
-import { AppearanceSheetComponent } from '../../../shared/components/appearance-sheet/appearance-sheet.component';
 import { UserMenuComponent } from '../../../shared/ui/user-menu/user-menu.component';
 import { GlobalSearchService } from './global-search/service/global-search.service';
 import { SearchResultDto } from './global-search/model/search.model';
@@ -50,20 +43,13 @@ import { SearchResultDto } from './global-search/model/search.model';
     NgIcon,
     BreadcrumbComponent,
     NotificationComponent,
-    AppearanceSheetComponent,
+    ThemeToggleComponent,
     UserMenuComponent,
     TranslocoPipe,
   ],
   providers: [
     provideIcons({
       lucideSearch,
-      lucideBell,
-      lucideLogOut,
-      lucideUser,
-      lucideSettings,
-      lucideSun,
-      lucideMoon,
-      lucideGlobe,
       lucideMenu,
       lucideLoader2,
     }),

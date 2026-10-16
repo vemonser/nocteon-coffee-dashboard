@@ -1,0 +1,170 @@
+<div class="p-6 max-w-4xl mx-auto">
+  @if (loading()) {
+    <div class="text-center py-20 text-muted-foreground">{{ 'products.media.loading' | transloco }}</div>
+  } @else {
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-6">
+      <button hlmBtn variant="ghost" size="icon" (click)="goBack()">
+        <ng-icon name="lucideArrowLeft" class="size-4" />
+      </button>
+      <div>
+        <h1 class="text-2xl font-bold tracking-tight">{{ 'products.media.title' | transloco }}</h1>
+        <p class="text-muted-foreground">{{ productName() }}</p>
+      </div>
+    </div>
+
+    @if (error()) {
+      <div class="mb-4 p-3 rounded-md bg-destructive/10 border border-destructive/20 text-destructive text-sm">
+        {{ error() }}
+      </div>
+    }
+
+    <!-- Upload -->
+    <hlm-card>
+      <hlm-card-header>
+        <h3 hlmCardTitle>{{ 'products.media.imagesVideos' | transloco }}</h3>
+      </hlm-card-header>
+      <div hlmCardContent>
+        <input
+          type="file"
+          accept="image/*,video/*"
+          multiple
+          (change)="onFilesSelected($event)"
+          [disabled]="uploading()"
+          class="w-full text-sm text-gray-500 mb-4"
+        />
+        @if (stagedMedia().length > 0) {
+          <button hlmBtn (click)="uploadMedia()" [disabled]="uploading()">
+            @if (uploading()) {
+              <ng-icon name="lucideLoader2" class="mr-2 size-4 animate-spin" />
+            } @else {
+              <ng-icon name="lucidePlus" class="mr-2 size-4" />
+            }
+            {{ uploading() ? ('products.media.uploading' | transloco) : ('products.media.upload' | transloco) }}
+          </button>
+        }
+      </div>
+    </hlm-card>
+
+    <!-- Existing Media -->
+    @if (existingMedia().length > 0) {
+      <hlm-card>
+        <hlm-card-header>
+          <h3 hlmCardTitle>{{ 'products.media.currentMedia' | transloco }}</h3>
+        </hlm-card-header>
+        <div hlmCardContent>
+          <div class="grid grid-cols-4 gap-4">
+            @for (media of existingMedia(); track media.id; let i = $index) {
+              <div class="relative group">
+                @if (media.type === 'IMAGE') {
+                  <img [src]="media.url" class="w-full aspect-square object-cover rounded-md border" />
+                } @else {
+                  <video
+                    [src]="media.url"
+                    controls
+                    class="w-full aspect-square rounded-md border"
+                  ></video>
+                }
+
+                @if (media.isPrimary) {
+                  <span class="absolute top-2 left-2 px-2 py-1 bg-amber-600 text-white text-xs rounded">
+                    {{ 'products.media.primary' | transloco }}
+                  </span>
+                }
+
+                @if (media.type === 'IMAGE' && !media.isPrimary) {
+                  <button
+                    type="button"
+                    (click)="setPrimary('existing', i)"
+                    class="absolute bottom-2 left-2 px-2 py-1 bg-white/90 text-xs rounded opacity-0 group-hover:opacity-100 transition"
+                  >
+                    {{ 'products.media.setPrimary' | transloco }}
+                  </button>
+                }
+
+                <button
+                  type="button"
+                  (click)="removeExisting(i)"
+                  class="absolute top-2 right-2 w-6 h-6 rounded-full bg-red-500 text-white opacity-0 group-hover:opacity-100 transition"
+                >
+                  <ng-icon name="lucideTrash2" class="size-4" />
+                </button>
+              </div>
+            }
+          </div>
+        </div>
+      </hlm-card>
+    }
+
+    <!-- Staged Media -->
+    @if (stagedMedia().length > 0) {
+      <hlm-card>
+        <hlm-card-header>
+          <h3 hlmCardTitle>{{ 'products.media.newMedia' | transloco }}</h3>
+        </hlm-card-header>
+        <div hlmCardContent>
+          <div class="grid grid-cols-4 gap-4">
+            @for (media of stagedMedia(); track media.file.name; let i = $index) {
+              <div class="relative group">
+                @if (media.type === 'IMAGE') {
+                  <img
+                    [src]="media.previewUrl"
+                    class="w-full aspect-square object-cover rounded-md border-2 border-amber-300"
+                  />
+                } @else {
+                  <video
+                    [src]="media.previewUrl"
+                    controls
+                    class="w-full aspect-square rounded-md border-2 border-amber-300"
+                  ></video>
+                }
+
+                @if (media.isPrimary) {
+                  <span class="absolute top-2 left-2 px-2 py-1 bg-amber-600 text-white text-xs rounded">
+                    {{ 'products.media.primary' | transloco }}
+                  </span>
+                }
+
+                @if (media.type === 'IMAGE' && !media.isPrimary) {
+                  <button
+                    type="button"
+                    (click)="setPrimary('staged', i)"
+                    class="absolute bottom-2 left-2 px-2 py-1 bg-white/90 text-xs rounded opacity-0 group-hover:opacity-100 transition"
+                  >
+                    {{ 'products.media.setPrimary' | transloco }}
+                  </button>
+                }
+
+                <button
+                  type="button"
+                  (click)="removeStaged(i)"
+                  class="absolute top-2 right-2 w-6 h-6 rounded-full bg-red-500 text-white opacity-0 group-hover:opacity-100 transition"
+                >
+                  <ng-icon name="lucideTrash2" class="size-4" />
+                </button>
+              </div>
+            }
+          </div>
+
+          <div class="mt-4">
+            <button hlmBtn (click)="uploadMedia()" [disabled]="uploading()">
+              @if (uploading()) {
+                <ng-icon name="lucideLoader2" class="mr-2 size-4 animate-spin" />
+              } @else {
+                <ng-icon name="lucidePlus" class="mr-2 size-4" />
+              }
+              {{ uploading() ? ('products.media.uploading' | transloco) : ('products.media.upload' | transloco) }}
+            </button>
+          </div>
+        </div>
+      </hlm-card>
+    }
+
+    @if (existingMedia().length === 0 && stagedMedia().length === 0) {
+      <div class="text-center py-12 border-2 border-dashed rounded-md text-gray-400">
+        <ng-icon name="lucideImage" class="mx-auto mb-2 size-8 opacity-50" />
+        {{ 'products.media.noMedia' | transloco }}
+      </div>
+    }
+  }
+</div>

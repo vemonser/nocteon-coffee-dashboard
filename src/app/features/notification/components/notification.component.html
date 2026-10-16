@@ -6,6 +6,7 @@
       hlmBtn
       variant="outline"
       class="border-0 hover:text-primary px-0"
+      [attr.aria-label]="'notifications.title' | transloco"
     >
       <ng-icon name="heroBell" size="20" class="text-foreground" />
       @if (notificationService.unreadCount() > 0) {

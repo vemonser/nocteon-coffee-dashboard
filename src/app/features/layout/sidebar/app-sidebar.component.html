@@ -19,20 +19,45 @@
       </ul>
     </hlm-sidebar-header>
 
-    <hlm-sidebar-content >
-      <!-- Main Menu -->
-      <div class="px-3 py-2 text-xs font-medium text-sidebar-foreground/60">
-        {{ 'layout.sidebar.mainMenu' | transloco }}
-      </div>
-      <ul hlmSidebarMenu class="ps-2">
-        @for (item of mainNav(); track item.route) {
-          @if (!item.permission || auth.hasPermission(item.permission)) {
+    <!--
+      #nav is the scroll container; the component scrolls the active link into view after
+      each navigation. Without it, deep sections (Catalog) sat below the fold with no cue.
+    -->
+    <hlm-sidebar-content #nav>
+      <!-- Home -->
+      <ul hlmSidebarMenu>
+        <li hlmSidebarMenuItem class="py-1.5">
+          <a
+            hlmSidebarMenuButton
+            [routerLink]="dashboardItem().route"
+            [routerLinkActiveOptions]="{ exact: true }"
+            ariaCurrentWhenActive="page"
+            routerLinkActive="bg-sidebar-accent text-sidebar-accent-foreground [&_ng-icon]:text-sidebar-accent-foreground"
+            class="group"
+          >
+            <ng-icon [name]="dashboardItem().icon" class="size-4 shrink-0 text-sidebar-foreground/60 group-hover:text-sidebar-foreground transition-colors duration-200" />
+            <span>{{ dashboardItem().label }}</span>
+          </a>
+        </li>
+      </ul>
+
+      <!-- Sections -->
+      @for (section of sections(); track section.key) {
+        <!-- A header over a single item is noise — permission filtering can leave one. -->
+        @if (section.items.length > 1) {
+          <div class="mt-5 px-3 pb-1.5 text-[11px] font-semibold uppercase tracking-wider text-sidebar-foreground/50 first:mt-3">
+            {{ section.label }}
+          </div>
+        }
+
+        <ul hlmSidebarMenu>
+          @for (item of section.items; track item.route) {
             <li hlmSidebarMenuItem class="py-1.5">
               <a
                 hlmSidebarMenuButton
                 [routerLink]="item.route"
+                ariaCurrentWhenActive="page"
                 routerLinkActive="bg-sidebar-accent text-sidebar-accent-foreground [&_ng-icon]:text-sidebar-accent-foreground"
-                [routerLinkActiveOptions]="{ exact: item.route === '/dashboard' }"
                 class="group"
               >
                 <ng-icon
@@ -43,33 +68,8 @@
               </a>
             </li>
           }
-        }
-      </ul>
-
-      <!-- Catalog -->
-      <div class="px-3 py-3 text-xs font-medium text-sidebar-foreground/60 mt-4">
-        {{ 'layout.sidebar.catalog' | transloco }}
-      </div>
-      <ul hlmSidebarMenu class="ps-2  ">
-        @for (item of catalogNav(); track item.route) {
-          @if (!item.permission || auth.hasPermission(item.permission)) {
-            <li hlmSidebarMenuItem class="py-1.5  ">
-              <a
-                hlmSidebarMenuButton
-                [routerLink]="item.route"
-                routerLinkActive="bg-sidebar-primary text-sidebar-primary-foreground [&_ng-icon]:text-sidebar-primary-foreground hover:text-sidebar-primary-foreground hover:bg-sidebar-primary"
-                class="group  rounded-sm!"
-              >
-                <ng-icon
-                  [name]="item.icon"
-                  class="size-4 shrink-0 text-sidebar-foreground/60 group-hover:text-sidebar-foreground transition-colors duration-200"
-                />
-                <span>{{ item.label }}</span>
-              </a>
-            </li>
-          }
-        }
-      </ul>
+        </ul>
+      }
     </hlm-sidebar-content>
     <hlm-separator />
     <!-- User Footer -->

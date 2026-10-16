@@ -30,9 +30,12 @@
   }
 
   /* ─── Default (English / LTR) ─── */
+  /* Admin headings use the sans stack in BOTH locales: the Arabic heading face was
+     already sans, so EN/AR dashboards otherwise felt like two different products.
+     --font-brand-display keeps the serif for marketing surfaces (login). */
   :root {
     --font-body: var(--font-sans);
-    --font-display: var(--font-heading);
+    --font-display: var(--font-sans);
   }
 
   html {
@@ -53,7 +56,7 @@
   [dir='rtl'],
   [dir='rtl'] * {
     --font-body: var(--font-sans-ar);
-    --font-display: var(--font-heading-ar);
+    --font-display: var(--font-sans-ar);
   }
 
   /* Override مباشر للـ font-family */
@@ -67,7 +70,7 @@
   [dir='rtl'] h4,
   [dir='rtl'] h5,
   [dir='rtl'] h6 {
-    font-family: var(--font-heading-ar);
+    font-family: var(--font-sans-ar);
   }
 }
 td:lang(ar),

@@ -1,33 +1,97 @@
-<div class="flex items-center gap-2">
+<!--
+  Row actions are icon-only: text buttons overflow the column, and an icon set is
+  faster to scan in a 40px-tall row. Every button keeps an accessible name and a
+  tooltip that opens ABOVE the row so it never covers the controls below it.
+
+  One treatment for all of them — no borders, hover surface only. Soft delete stays
+  neutral; red is reserved for permanent delete.
+-->
+<div class="flex items-center gap-0.5">
   @if (showEdit()) {
     <button
       *hasPermission="editPermission()"
-      class="cursor-pointer inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground h-8 px-3"
+      type="button"
+      hlmBtn
+      variant="ghost"
+      size="icon"
+      class="size-8 text-muted-foreground hover:text-foreground"
+      hlmTooltip
+      position="top"
+      [brnTooltip]="'common.edit' | transloco"
+      [attr.aria-label]="'common.edit' | transloco"
       (click)="edit.emit(item())"
     >
-      {{ 'common.edit' | transloco }}
+      <ng-icon name="lucidePencil" class="size-4" aria-hidden="true" />
     </button>
   }
 
   @if (showView()) {
     <button
-      *hasPermission="editPermission()"
-      class="cursor-pointer text-primary border inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-8 px-3"
-      [class.text-destructive]="viewLabel() === 'View' || viewLabel() === 'Block'"
+      type="button"
+      hlmBtn
+      variant="ghost"
+      size="icon"
+      class="size-8 text-muted-foreground hover:text-foreground"
+      hlmTooltip
+      position="top"
+      [brnTooltip]="'common.view' | transloco"
+      [attr.aria-label]="'common.view' | transloco"
       (click)="view.emit(item())"
     >
-      {{ 'common.view' | transloco }}
+      <ng-icon name="lucideEye" class="size-4" aria-hidden="true" />
     </button>
   }
 
   @if (showDelete()) {
     <button
-      *hasPermission="deletePermission()"
-      class="cursor-pointer inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-8 px-3"
-      [class.text-destructive]="deleteLabel() === 'Delete' || deleteLabel() === 'Block'"
+      type="button"
+      hlmBtn
+      variant="ghost"
+      size="icon"
+      class="size-8"
+      [class]="deleteColorClass()"
+      hlmTooltip
+      position="top"
+      [brnTooltip]="deleteLabel() | transloco"
+      [attr.aria-label]="deleteLabel() | transloco"
       (click)="delete.emit(item())"
     >
-      {{ 'common.delete' | transloco }}
+      <ng-icon name="lucideTrash2" class="size-4" aria-hidden="true" />
+    </button>
+  }
+
+  @if (showRestore()) {
+    <button
+      type="button"
+      hlmBtn
+      variant="ghost"
+      size="icon"
+      class="size-8 text-success hover:bg-success/10"
+      hlmTooltip
+      position="top"
+      [brnTooltip]="restoreLabel() | transloco"
+      [attr.aria-label]="restoreLabel() | transloco"
+      (click)="restore.emit(item())"
+    >
+      <ng-icon name="lucideRotateCcw" class="size-4" aria-hidden="true" />
+    </button>
+  }
+
+  @if (showPermanentDelete()) {
+    <button
+      *hasPermission="permanentDeletePermission()"
+      type="button"
+      hlmBtn
+      variant="ghost"
+      size="icon"
+      class="size-8 text-destructive hover:bg-destructive/10"
+      hlmTooltip
+      position="top"
+      [brnTooltip]="permanentDeleteLabel() | transloco"
+      [attr.aria-label]="permanentDeleteLabel() | transloco"
+      (click)="permanentDelete.emit(item())"
+    >
+      <ng-icon name="lucideTrash" class="size-4" aria-hidden="true" />
     </button>
   }
 </div>

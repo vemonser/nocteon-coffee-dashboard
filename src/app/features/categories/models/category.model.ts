@@ -2,6 +2,7 @@
 export interface CategoryResponse {
   id: number;
   createdAt?:string;
+  deletedAt?: string;
   slug: string;
   translations: CategoryTranslationRequest[];
   // name: string;
@@ -41,5 +42,7 @@ export interface DashboardCategoryResponse {
   slug: string;
   imageUrl: string | null;
   isActive: boolean;
+  createdAt?: string;
+  deletedAt?: string;
   translations: CategoryTranslationRequest[];
 }

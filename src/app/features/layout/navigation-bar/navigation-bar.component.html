@@ -1,7 +1,7 @@
 <header class="flex h-16 shrink-0 items-center rounded-se-md rounded-ss-md gap-2 border-b bg-background px-4">
   <!-- Left -->
   <div class="flex items-center gap-2">
-    <button hlmSidebarTrigger class="shrink-0">
+    <button hlmSidebarTrigger class="shrink-0" [attr.aria-label]="'common.toggleSidebar' | transloco">
       <ng-icon name="lucideMenu" class="size-5" />
     </button>
     <hlm-separator orientation="vertical" class="h-4" />
@@ -20,6 +20,7 @@
       >
         <hlm-autocomplete-input
           [placeholder]="'nav.search' | transloco"
+          [attr.aria-label]="'nav.search' | transloco"
           class="h-9 w-full rounded-md border border-input bg-transparent px-9 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
         />
         <ng-icon
@@ -66,14 +67,9 @@
     </div>
     <app-notification />
 
-    <app-appearance-sheet />
-    <button
-      (click)="language.toggle()"
-      class="sm:inline-flex hidden items-center  justify-center rounded-md text-sm font-medium transition-colors  hover:text-primary h-6 w-6"
-      [title]="language.current() === 'ar' ? 'Switch to English' : 'Switch to Arabic'"
-    >
-      <ng-icon size="20" name="lucideGlobe" />
-    </button>
+    <!-- Theme stays a single toggle in the header; language + accent live in the avatar menu. -->
+    <app-theme-toggle />
+
     <app-user-menu variant="navbar" />
   </div>
 </header>

@@ -1,0 +1,104 @@
+<div class="p-6 max-w-4xl mx-auto">
+  @if (loading()) {
+    <div class="text-center py-20 text-muted-foreground">{{ 'carts.loading' | transloco }}</div>
+  } @else if (cart()) {
+    <div class="flex items-center justify-between mb-6">
+      <button hlmBtn variant="ghost" size="icon" (click)="goBack()">
+        <ng-icon name="lucideArrowLeft" class="size-4" />
+      </button>
+      <h1 class="text-2xl font-bold tracking-tight">{{ 'carts.detail.title' | transloco }} #{{ cart()!.id }}</h1>
+    </div>
+
+    <!-- Cart Info -->
+    <div class="grid gap-6 lg:grid-cols-4 mb-8">
+      <hlm-card>
+        <hlm-card-header>
+          <h3 hlmCardTitle>{{ 'carts.detail.customer' | transloco }}</h3>
+        </hlm-card-header>
+        <div hlmCardContent class="space-y-2">
+          <div class="flex items-center gap-2">
+            <ng-icon name="lucideUser" class="size-4 text-muted-foreground" />
+            <span>{{ cart()!.userFullName }}</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <ng-icon name="lucideClock" class="size-4 text-muted-foreground" />
+            <span>{{ cart()!.createdAt | date:'medium' }}</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <ng-icon name="lucideShoppingCart" class="size-4 text-muted-foreground" />
+            <span>{{ cart()!.itemCount }} {{ 'carts.detail.items' | transloco }}</span>
+          </div>
+        </div>
+      </hlm-card>
+
+      <hlm-card>
+        <hlm-card-header>
+          <h3 hlmCardTitle>{{ 'carts.detail.status' | transloco }}</h3>
+        </hlm-card-header>
+        <div hlmCardContent>
+          <hlm-badge variant="default">{{ 'carts.status.active' | transloco }}</hlm-badge>
+        </div>
+      </hlm-card>
+
+      <hlm-card>
+        <hlm-card-header>
+          <h3 hlmCardTitle>{{ 'carts.detail.total' | transloco }}</h3>
+        </hlm-card-header>
+        <div hlmCardContent>
+          <div class="text-3xl font-bold">{{ cart()!.total | currency }}</div>
+        </div>
+      </hlm-card>
+
+      <hlm-card>
+        <hlm-card-header>
+          <h3 hlmCardTitle>{{ 'carts.detail.updatedAt' | transloco }}</h3>
+        </hlm-card-header>
+        <div hlmCardContent>
+          <div class="text-sm text-muted-foreground">{{ cart()!.updatedAt | date:'medium' }}</div>
+        </div>
+      </hlm-card>
+    </div>
+
+    <!-- Cart Items -->
+    <hlm-card>
+      <hlm-card-header>
+        <h3 hlmCardTitle>{{ 'carts.detail.items' | transloco }}</h3>
+      </hlm-card-header>
+      <div hlmCardContent>
+        <div class="rounded-md border">
+          <table class="w-full">
+            <thead>
+              <tr class="border-b text-left text-sm text-muted-foreground">
+                <th class="px-4 py-3">{{ 'carts.detail.product' | transloco }}</th>
+                <th class="px-4 py-3">{{ 'carts.detail.quantity' | transloco }}</th>
+                <th class="px-4 py-3 text-right">{{ 'carts.detail.price' | transloco }}</th>
+                <th class="px-4 py-3 text-right">{{ 'carts.detail.subtotal' | transloco }}</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y">
+              @for (item of cart()!.items; track item.id) {
+                <tr>
+                  <td class="px-4 py-3">
+                    <div class="font-medium">{{ item.productName }}</div>
+                    <div class="text-sm text-muted-foreground">SKU: {{ item.sku }}</div>
+                  </td>
+                  <td class="px-4 py-3">{{ item.quantity }}</td>
+                  <td class="px-4 py-3 text-right">{{ item.price | currency }}</td>
+                  <td class="px-4 py-3 text-right font-medium">{{ item.subtotal | currency }}</td>
+                </tr>
+              }
+            </tbody>
+            <tfoot>
+              <tr class="border-t font-bold">
+                <td colspan="3" class="px-4 py-3 text-right">{{ 'carts.detail.total' | transloco }}</td>
+                <td class="px-4 py-3 text-right">{{ cart()!.total | currency }}</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+    </hlm-card>
+  } @else {
+    <div class="text-center py-20 text-destructive">{{ 'carts.detail.notFound' | transloco }}</div>
+  }
+</div>

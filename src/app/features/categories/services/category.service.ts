@@ -3,8 +3,7 @@ import { HttpParams } from '@angular/common/http';
 
 import { Observable } from 'rxjs';
 import { BaseCrudService, BaseListParams } from '../../../core/crud/base-crud.service';
-import { CategoryRequest, CategoryResponse, DashboardCategoryResponse, ProductCardResponse } from '../models/category.model';
-import { ApiResponse, PageResponse } from '../../../core/models/api-response.model';
+import { CategoryRequest, CategoryResponse, DashboardCategoryResponse, ProductCardResponse } from '../models/category.model';import { ApiResponse, PageResponse } from '../../../core/models/api-response.model';
 import { environment } from '../../../../environments/environment';
 
 export interface CategoryListParams extends BaseListParams {
@@ -30,6 +29,9 @@ export class CategoryService extends BaseCrudService<CategoryResponse, CategoryR
       `${environment.apiUrl}/api/categories/${slug}`,
     );
   }
+
+  // getDeleted() and restore() come from BaseCrudService — every soft-deletable
+  // entity uses the same /deleted + /{id}/restore convention.
 
   getDashboardBySlug(slug: string): Observable<ApiResponse<DashboardCategoryResponse>> {
     return this.http.get<ApiResponse<DashboardCategoryResponse>>(

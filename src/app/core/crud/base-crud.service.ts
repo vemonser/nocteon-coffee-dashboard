@@ -3,7 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
-import { ApiResponse } from '../models/api-response.model';
+import { ApiResponse, PageResponse } from '../models/api-response.model';
 
 export interface BaseListParams {
   page?: number;
@@ -85,6 +85,40 @@ export abstract class BaseCrudService<TResponse, TRequest, TId = string> {
       this.fullUrl,
       this.buildRequestBody(data, image, format),
     );
+  }
+
+  // ─── Soft delete ─────────────────────────────────────────────────────────────
+  //
+  // The backend exposes soft delete as a SEPARATE list endpoint rather than a
+  // `deleted` filter on the main one (verified: BaseFilterRequest/LookupFilterRequest
+  // carry only page/size/sort/direction/search/isActive), and every entity that
+  // supports it follows the same two conventions:
+  //
+  //   GET   /api/dashboard/<entity>/deleted?page&size&search&sort&direction
+  //   PATCH /api/dashboard/<entity>/{id}/restore
+  //
+  // so both live here once and every soft-deletable service inherits them.
+  //
+  // Not implemented on purpose: `DELETE .../permanent`. No such endpoint exists
+  // anywhere in the API today (see SoftDeleteContract for the exact gap), so the
+  // capability surfaces it as unavailable instead of inventing a route.
+
+  /** Trashed rows. `PageResponse.totalElements` carries the trash count. */
+  getDeleted(params: BaseListParams = {}): Observable<ApiResponse<PageResponse<TResponse>>> {
+    return this.http.get<ApiResponse<PageResponse<TResponse>>>(`${this.fullUrl}/deleted`, {
+      params: this.buildBaseParams(params),
+    });
+  }
+
+  /**
+   * Un-delete by numeric id.
+   *
+   * Fails with 404 when the id is live or unknown, and 409
+   * (`error.duplicate.slug`) when a new item took the slug while this one was in
+   * the trash — callers must surface that conflict rather than retry blindly.
+   */
+  restore(id: number): Observable<ApiResponse<void>> {
+    return this.http.patch<ApiResponse<void>>(`${this.fullUrl}/${id}/restore`, null);
   }
 
   update(

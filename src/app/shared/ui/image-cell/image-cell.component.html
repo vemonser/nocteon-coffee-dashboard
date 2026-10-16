@@ -1,7 +1,12 @@
 ﻿@if (src()) {
   <img [src]="src()" [alt]="alt()" class="w-10 h-10 rounded-md object-cover" />
 } @else {
-  <div class="w-10 h-10 rounded-md bg-gray-100 flex items-center justify-center">
-    <span class="text-gray-400 text-xs">{{ 'imageCell.noImage' | transloco }}</span>
+  <!-- Decorative stand-in: the previous text placeholder measured 2.31:1 -->
+  <div
+    role="img"
+    [attr.aria-label]="'imageCell.noImage' | transloco"
+    class="w-10 h-10 rounded-md bg-muted flex items-center justify-center"
+  >
+    <ng-icon name="lucideImage" class="size-4 text-muted-foreground/50" aria-hidden="true" />
   </div>
 }

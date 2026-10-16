@@ -18,3 +18,19 @@
     --radius: 0.25rem;
 
 }
+
+/**
+ * Semantic state colors get real Tailwind utilities (text-success, bg-success-soft,
+ * …). `inline` keeps the var() reference, so each utility resolves against whatever
+ * theme is active at that node — emerald, burgundy, or dark.
+ */
+@theme inline {
+    --color-success: var(--success);
+    --color-success-soft: var(--success-soft);
+    --color-success-foreground: var(--success-foreground);
+    --color-warning: var(--warning);
+    --color-warning-soft: var(--warning-soft);
+    --color-info: var(--info);
+    --color-info-soft: var(--info-soft);
+    --color-destructive-soft: var(--destructive-soft);
+}

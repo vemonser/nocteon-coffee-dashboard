@@ -6,7 +6,7 @@ import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
   lucideChevronsUpDown,
   lucideUser,
-  lucideBell,
+  lucideGlobe,
   lucideLogOut,
 } from '@ng-icons/lucide';
 import { HlmAvatarImports } from '@spartan-ng/helm/avatar';
@@ -17,6 +17,7 @@ import { TranslocoPipe } from '@jsverse/transloco';
 import { AuthService } from '../../../core/auth/auth.service';
 import { LanguageService } from '../../../core/i18n/language.service';
 import { HlmSidebarService } from '@spartan-ng/helm/sidebar';
+import { AppearanceSheetComponent } from '../../components/appearance-sheet/appearance-sheet.component';
 
 @Component({
   selector: 'app-user-menu',
@@ -28,13 +29,14 @@ import { HlmSidebarService } from '@spartan-ng/helm/sidebar';
     HlmAvatarImports,
     HlmSidebarImports,
     HlmDropdownMenuImports,
+    AppearanceSheetComponent,
     TranslocoPipe,
   ],
   providers: [
     provideIcons({
       lucideChevronsUpDown,
       lucideUser,
-      lucideBell,
+      lucideGlobe,
       lucideLogOut,
     }),
   ],

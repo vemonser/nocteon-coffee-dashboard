@@ -1,39 +1,20 @@
-<div class="flex flex-col gap-6 p-6">
-  <!-- Header -->
-  <div class="flex items-center justify-between">
-    <div>
+<div class="flex flex-col gap-4 p-6" id="lifecycle-panel" role="tabpanel" [attr.aria-labelledby]="'lifecycle-tab-' + listView()">
+  <!-- Page header -->
+  <div class="flex items-start justify-between gap-4">
+    <div class="min-w-0">
       <h1 class="text-2xl font-bold tracking-tight">{{ 'categories.title' | transloco }}</h1>
-      <p class="text-muted-foreground">
-        {{ items().length }} {{ 'common.of' | transloco }} · {{ activeCount() }} {{ 'common.active' | transloco }} · {{ inactiveCount() }} {{ 'common.inactive' | transloco }}
+      <p class="text-sm text-muted-foreground">
+        @if (isTrash()) {
+          {{ 'categories.trash.subtitleTrash' | transloco: { count: trashCount() ?? '\u2014' } }}
+        } @else {
+          {{ 'categories.trash.subtitleActive' | transloco: { count: activeCount() ?? '\u2014' } }}
+        }
       </p>
     </div>
 
-    <div class="flex items-center gap-3">
-      <!-- View Toggle -->
-      <div class="flex items-center rounded-md border bg-card p-1">
-        <button
-          hlmBtn
-          [variant]="viewMode() === 'list' ? 'default' : 'ghost'"
-          size="icon"
-          class="size-8"
-          (click)="toggleView('list')"
-        >
-          <ng-icon name="lucideList" class="size-4" />
-        </button>
-        <button
-          hlmBtn
-          [variant]="viewMode() === 'grid' ? 'default' : 'ghost'"
-          size="icon"
-          class="size-8"
-          (click)="toggleView('grid')"
-        >
-          <ng-icon name="lucideGrid3x3" class="size-4" />
-        </button>
-      </div>
-
-      <!-- Add Button -->
+    @if (!isTrash()) {
       <button
-        class="p-4 min-h-10"
+        class="min-h-10 px-4"
         *hasPermission="'category:create'"
         hlmBtn
         (click)="openCreateDialog()"
@@ -41,200 +22,205 @@
         <ng-icon name="lucidePlus" class="me-2 size-4" />
         {{ 'categories.add' | transloco }}
       </button>
+    }
+  </div>
+
+  <!-- Lifecycle tabs + toolbar -->
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    @if (isTrashAllowed()) {
+      <app-lifecycle-tabs
+        [selected]="listView()"
+        [activeLabel]="'categories.trash.tabActive' | transloco"
+        [trashLabel]="'categories.trash.tabTrash' | transloco"
+        [activeCount]="activeCount()"
+        [trashCount]="trashCount()"
+        [tablistLabel]="'categories.trash.tabsLabel' | transloco"
+        (viewChange)="setListView($event)"
+      />
+    }
+
+    <div class="flex flex-1 items-center justify-end gap-3">
+      <!-- Search (URL-backed) -->
+      <div class="relative w-full max-w-64 sm:w-64">
+        <ng-icon
+          name="lucideSearch"
+          class="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+        />
+        <input
+          hlmInput
+          type="search"
+          dir="auto"
+          [ngModel]="searchQuery"
+          (ngModelChange)="searchQuery = $event; onSearch()"
+          [placeholder]="'categories.trash.searchInCategories' | transloco"
+          [attr.aria-label]="'categories.trash.searchInCategories' | transloco"
+          class="w-full ps-9"
+        />
+      </div>
+
+      <!-- Status filter: active tab only, and never in trash -->
+      @if (!isTrash()) {
+        <hlm-select
+          [value]="isActiveFilterString()"
+          [itemToString]="itemToString"
+          (valueChange)="onStatusFilterValueChange($event)"
+        >
+          <hlm-select-trigger class="rounded-sm h-full">
+            <hlm-select-value [placeholder]="'common.all' | transloco" />
+          </hlm-select-trigger>
+          <hlm-select-content *hlmSelectPortal>
+            <hlm-select-group>
+              <hlm-select-item value="all">{{ 'categories.trash.statusAll' | transloco }}</hlm-select-item>
+              <hlm-select-item value="enabled">{{ 'categories.trash.statusEnabled' | transloco }}</hlm-select-item>
+              <hlm-select-item value="disabled">{{ 'categories.trash.statusDisabled' | transloco }}</hlm-select-item>
+            </hlm-select-group>
+          </hlm-select-content>
+        </hlm-select>
+      }
     </div>
   </div>
 
-  <!-- Filters -->
-  <div class="flex flex-col gap-4 sm:flex-row sm:items-center items-stretch">
-    <!-- Search -->
-    <div class="relative flex-1  max-w-md">
-      <ng-icon
-        name="lucideSearch"
-        class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground"
-      />
-      <input
-        hlmInput
-        type="text"
-        [(ngModel)]="searchQuery"
-        (input)="onSearch()"
-        [placeholder]="'categories.search' | transloco"
-        class="pl-9 w-full pb-1.25 pt-1.25"
-      />
+  <!-- Bulk actions -->
+  @if (hasSelection()) {
+    <div
+      class="flex flex-wrap items-center gap-2 rounded-lg border bg-muted/50 px-3 py-2"
+      role="region"
+      [attr.aria-label]="'categories.trash.bulkActions' | transloco"
+    >
+      <span class="text-sm font-medium tabular-nums">
+        {{ 'categories.trash.selectedCount' | transloco: { count: selectionCount() } }}
+      </span>
+      <div class="ms-auto flex items-center gap-2">
+        @if (!isTrash()) {
+          <button hlmBtn variant="outline" size="sm" (click)="bulkSoftDelete()">
+            {{ 'categories.trash.bulkMoveToTrash' | transloco }}
+          </button>
+        } @else {
+          <button hlmBtn variant="outline" size="sm" (click)="bulkRestore()">
+            {{ 'categories.trash.bulkRestore' | transloco }}
+          </button>
+          <button hlmBtn variant="destructive" size="sm" (click)="bulkPermanentDelete()">
+            {{ 'categories.trash.deletePermanently' | transloco }}
+          </button>
+        }
+        <button hlmBtn variant="ghost" size="sm" (click)="clearSelection()">
+          {{ 'common.cancel' | transloco }}
+        </button>
+      </div>
     </div>
+  }
 
-    <!-- Status Filter -->
+  <!-- Trash banner -->
+  @if (isTrash()) {
+    <p class="rounded-lg border border-warning/40 bg-warning-soft px-3 py-2 text-sm text-warning">
+      {{ 'categories.trash.banner' | transloco }}
+    </p>
+  }
 
-    <hlm-select
-  [value]="isActiveFilterString()"
-  [itemToString]="itemToString"
-
-  (valueChange)="onStatusFilterValueChange($event)"
-  class="rounded-sm!   "
->
-  <hlm-select-trigger class="rounded-sm h-full">
-    <hlm-select-value [placeholder]="'common.all' | transloco"  />
-  </hlm-select-trigger>
-  <hlm-select-content *hlmSelectPortal >
-    <hlm-select-group>
-      <hlm-select-label>{{ 'common.all' | transloco }}</hlm-select-label>
-      <hlm-select-item value="all">{{ 'common.all' | transloco }}</hlm-select-item>
-      <hlm-select-item value="active">{{ 'common.active' | transloco }}</hlm-select-item>
-      <hlm-select-item value="inactive">{{ 'common.inactive' | transloco }}</hlm-select-item>
-    </hlm-select-group>
-  </hlm-select-content>
-</hlm-select>
-  </div>
-
-  <!-- Loading State -->
-  @if (loading()) {
-    @if (viewMode() === 'list') {
-      <div class="rounded-md border">
-        <div
-          class="h-12 border-b bg-muted/50 animate-pulse"
-          *ngFor="let _ of [1, 2, 3, 4, 5]"
-        ></div>
+  <!-- Error state -->
+  @if (loadError()) {
+    <div
+      role="alert"
+      class="rounded-lg border border-destructive/40 bg-destructive-soft px-4 py-6 text-center"
+    >
+      <p class="font-medium text-destructive">{{ 'categories.trash.loadError' | transloco }}</p>
+      <button hlmBtn variant="outline" size="sm" class="mt-3" (click)="load()">
+        {{ 'common.retry' | transloco }}
+      </button>
+    </div>
+  } @else {
+    <!--
+      Table renders only when there is something to show. With no rows the designed
+      empty state below takes over — otherwise the table draws its own blank row and
+      the empty state repeats underneath it.
+    -->
+    @if (loading() || items().length > 0) {
+      <div class="rounded-md border bg-card" [class.opacity-60]="loading()">
+        <app-data-table
+          [data]="items()"
+          [columns]="columns()"
+          [loading]="false"
+          [selectable]="isTrashAllowed()"
+          [selectedIds]="selection()"
+          [rowId]="rowIdOf"
+          [selectAllLabel]="'categories.trash.selectAll' | transloco"
+          [selectRowLabel]="'categories.trash.selectRow' | transloco"
+          [initialSort]="{ column: currentSort, direction: currentDirection }"
+          [navigableColumn]="'slug'"
+          [minWidth]="isTrash() ? '996px' : '904px'"
+          [showEdit]="!isTrash()"
+          [showView]="false"
+          [showDelete]="!isTrash()"
+          [showRestore]="isTrash()"
+          [showPermanentDelete]="isTrash()"
+          [deleteLabel]="'categories.trash.moveToTrash'"
+          [destructiveDelete]="false"
+          [restoreLabel]="'categories.trash.restore'"
+          [permanentDeleteLabel]="'categories.trash.deletePermanently'"
+          (selectionChange)="onSelectionChange($event)"
+          (toggleAllChange)="toggleAll($event)"
+          (edit)="openEditDialog($event)"
+          (delete)="softDelete($event)"
+          (restore)="restore($event)"
+          (permanentDelete)="openPermanentDelete($event)"
+          (sortChange)="onSortChange($event)"
+          (rowClick)="goToDetail($event)"
+        />
       </div>
-    } @else {
-      <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        <hlm-card *ngFor="let _ of [1, 2, 3, 4, 5, 6, 7, 8]" class="overflow-hidden">
-          <div class="aspect-video bg-muted animate-pulse"></div>
-          <div hlmCardContent class="p-4 space-y-2">
-            <div class="h-4 bg-muted animate-pulse rounded w-3/4"></div>
-            <div class="h-3 bg-muted animate-pulse rounded w-1/2"></div>
-          </div>
-        </hlm-card>
+    }
+
+    <!-- Empty state -->
+    @if (!loading() && items().length === 0) {
+      <div class="rounded-md border bg-card px-4 py-12 text-center">
+        <ng-icon name="lucideTrash2" class="mx-auto mb-3 size-10 text-muted-foreground/40" aria-hidden="true" />
+        <p class="font-medium">{{ isTrash() ? ('categories.trash.emptyTrash' | transloco) : ('categories.trash.emptyActive' | transloco) }}</p>
+        <p class="mt-1 text-sm text-muted-foreground">
+          {{ isTrash() ? ('categories.trash.emptyTrashHint' | transloco) : ('categories.trash.emptyActiveHint' | transloco) }}
+        </p>
+
+        <!-- Cross-tab hint: nothing here, but the other tab has matches -->
+        @if (otherTabMatches()) {
+          <p class="mt-3 text-sm text-muted-foreground" role="status">
+            {{ (isTrash() ? 'categories.trash.noResultsInTrash' : 'categories.trash.noResultsInActive')
+              | transloco: { count: otherTabMatchesCount() } }}
+          </p>
+          <button hlmBtn variant="link" size="sm" class="mt-1" (click)="setListView(isTrash() ? 'active' : 'trash')">
+            {{ (isTrash() ? 'categories.trash.switchToActive' : 'categories.trash.switchToTrash') | transloco }}
+          </button>
+        }
       </div>
+    }
+
+    <!-- Loading skeleton (first load only — never blanks content already on screen) -->
+    @if (loading() && items().length === 0) {
+      <div class="rounded-md border bg-card p-4" aria-hidden="true">
+        @for (row of [1, 2, 3, 4, 5]; track row) {
+          <div class="mb-3 h-9 animate-pulse rounded bg-muted last:mb-0"></div>
+        }
+      </div>
+      <p class="sr-only" role="status">{{ 'common.loading' | transloco }}</p>
     }
   }
 
-  <!-- List View -->
-  @if (viewMode() === 'list') {
-    <div class="rounded-md border bg-card">
-      <app-data-table
-        [data]="items()"
-        [columns]="columns"
-        [loading]="loading()"
-        [initialSort]="{ column: currentSort, direction: currentDirection }"
-        (edit)="openEditDialog($event)"
-        (delete)="confirmDelete($event)"
-        (sortChange)="onSortChange($event)"
-        (rowClick)="goToDetail($event)"
-      />
-    </div>
-  }
-
-  <!-- Grid View -->
-  @if (!loading() && viewMode() === 'grid') {
-    <div class="grid gap-4 grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
-      @for (item of items(); track item.slug) {
-        <hlm-card class="group overflow-hidden transition-all py-0 hover:shadow-lg">
-          <!-- Image -->
-          <div class="relative aspect-video overflow-hidden bg-muted">
-            @if (item.imageUrl) {
-              <img
-                [src]="item.imageUrl"
-                [alt]="getTranslationName(item, 'en')"
-                class="h-full w-full object-cover transition-transform group-hover:scale-105"
-              />
-            } @else {
-              <div class="flex h-full items-center justify-center text-muted-foreground">
-                <ng-icon name="lucideImage" class="size-12 opacity-20" />
-              </div>
-            }
-
-            <!-- Status Badge -->
-            <div class="absolute top-2 right-2">
-              @if (item.isActive) {
-                <hlm-badge variant="default">{{ 'common.active' | transloco }}</hlm-badge>
-              } @else {
-                <hlm-badge variant="secondary">{{ 'common.inactive' | transloco }}</hlm-badge>
-              }
-            </div>
-          </div>
-
-          <div hlmCardContent class="p-4">
-            <!-- Names -->
-            <div class="space-y-1 mb-3">
-              @for (lang of ['en', 'ar']; track lang) {
-                <div class="flex items-center gap-2">
-                  <span class="text-xs font-medium text-muted-foreground uppercase w-6">{{
-                    lang
-                  }}</span>
-                  <p class="text-sm font-medium truncate" [dir]="lang === 'ar' ? 'rtl' : 'ltr'">
-                    {{ getTranslationName(item, lang) }}
-                  </p>
-                </div>
-              }
-            </div>
-
-            <!-- Slug -->
-            <p class="text-xs text-muted-foreground mb-3">/{{ item.slug }}</p>
-
-            <!-- Actions -->
-            <div class="flex items-center gap-2 pt-3 border-t">
-              <button
-                hlmBtn
-                variant="ghost"
-                size="sm"
-                class="flex-1"
-                (click)="openEditDialog(item)"
-              >
-                <ng-icon name="lucidePencil" class="mr-1 size-3" />
-                {{ 'common.edit' | transloco }}
-              </button>
-              <button
-                hlmBtn
-                variant="ghost"
-                size="sm"
-                class="flex-1 text-destructive hover:text-destructive"
-                (click)="confirmDelete(item)"
-              >
-                <ng-icon name="lucideTrash2" class="mr-1 size-3" />
-                {{ 'common.delete' | transloco }}
-              </button>
-            </div>
-          </div>
-        </hlm-card>
-      } @empty {
-        <div class="col-span-full text-center py-12 text-muted-foreground">
-          <ng-icon name="lucideSearch" class="mx-auto size-12 opacity-20 mb-4" />
-          <p class="text-lg font-medium">{{ 'categories.gridNoData' | transloco }}</p>
-          <p class="text-sm">{{ 'categories.adjustSearch' | transloco }}</p>
-        </div>
-      }
-    </div>
-  }
-
-  <!-- Pagination -->
-  @if (pageData() && !loading()) {
+  <!-- Pagination: hidden when everything fits on one page -->
+  @if (pageData() && !loading() && pageData()!.totalPages > 1) {
     <div class="flex items-center justify-between">
       <span class="text-sm text-muted-foreground">
-        {{ 'common.showing' | transloco }} {{ pageData()!.page * pageData()!.size + 1 }} -
+        {{ pageData()!.page * pageData()!.size + 1 }} -
         {{ Math.min((pageData()!.page + 1) * pageData()!.size, pageData()!.totalElements) }}
         {{ 'common.of' | transloco }} {{ pageData()!.totalElements }}
       </span>
-
       <div class="flex items-center gap-2">
         <button
-          hlmBtn
-          variant="outline"
-          size="sm"
-          [disabled]="pageData()!.first"
-          (click)="goToPage(currentPage() - 1)"
+          hlmBtn variant="outline" size="sm" [disabled]="pageData()!.first" (click)="goToPage(currentPage() - 1)"
         >
           <ng-icon name="lucideChevronLeft" class="size-4" />
         </button>
-
-        <span class="text-sm text-muted-foreground px-2">
-          {{ 'common.page' | transloco }} {{ pageData()!.page + 1 }} {{ 'common.of' | transloco }} {{ pageData()!.totalPages }}
+        <span class="text-sm tabular-nums text-muted-foreground">
+          {{ pageData()!.page + 1 }} {{ 'common.of' | transloco }} {{ pageData()!.totalPages }}
         </span>
-
         <button
-          hlmBtn
-          variant="outline"
-          size="sm"
-          [disabled]="pageData()!.last"
-          (click)="goToPage(currentPage() + 1)"
+          hlmBtn variant="outline" size="sm" [disabled]="pageData()!.last" (click)="goToPage(currentPage() + 1)"
         >
           <ng-icon name="lucideChevronRight" class="size-4" />
         </button>
@@ -243,13 +229,28 @@
   }
 </div>
 
-<!-- ══════════════════════════════════════════════════════════
-     Create / Edit Dialog
-══════════════════════════════════════════════════════════ -->
+<hlm-toaster />
+
+<!-- Permanent delete: type the slug to confirm. The API has no such endpoint yet,
+     so the dialog reports the gap instead of calling an invented route. -->
+<app-confirm-typed-dialog
+  [open]="!!permanentDeleteTarget()"
+  [expected]="permanentDeleteTarget() ? confirmToken(permanentDeleteTarget()!) : ''"
+  [title]="'categories.trash.deletePermanently' | transloco"
+  [description]="'categories.trash.permanentDescription' | transloco"
+  [typedLabel]="'categories.trash.typeSlugToConfirm' | transloco"
+  [mismatchMessage]="'categories.trash.slugMismatch' | transloco"
+  [confirmLabel]="'categories.trash.deletePermanently' | transloco"
+  [notice]="'categories.trash.permanentUnavailable' | transloco"
+  [pending]="permanentDeletePending()"
+  (confirmed)="confirmPermanentDelete($event)"
+  (closed)="closePermanentDelete()"
+/>
+
+<!-- Create / Edit dialog (unchanged behaviour) -->
 @if (showDialog()) {
   <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
     <div class="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl bg-card shadow-2xl border">
-      <!-- Dialog Header -->
       <div class="flex items-center justify-between p-6 border-b sticky top-0 bg-card">
         <h2 class="text-lg font-bold">
           {{ (editing() ? 'categories.editTitle' : 'categories.addTitle') | transloco }}
@@ -260,18 +261,15 @@
       </div>
 
       <form [formGroup]="form" (ngSubmit)="onSubmit()" class="p-6 space-y-5">
-        <!-- Translations -->
         <div formArrayName="translations">
           @for (group of translationsArray.controls; track $index; let i = $index) {
             <div [formGroupName]="i" class="rounded-md border p-4 mb-4">
-              <!-- Language Badge -->
-              <div class="flex items-center gap-2 mb-3">
+              <div class="mb-3">
                 <hlm-badge variant="outline">
                   {{ translationHelper.getLangLabel(group.get('language')?.value) }}
                 </hlm-badge>
               </div>
 
-              <!-- Name -->
               <div class="space-y-1.5 mb-3">
                 <label hlmLabel>{{ 'categories.name' | transloco }} *</label>
                 <input
@@ -279,17 +277,15 @@
                   formControlName="name"
                   type="text"
                   [dir]="translationHelper.getLangDir(group.get('language')?.value)"
-                  [placeholder]="
-                    group.get('language')?.value === 'ar' ? 'مثال: قهوة مثلجة' : 'e.g. Ice Coffee'
-                  "
                   class="w-full"
                 />
                 @if (group.get('name')?.invalid && group.get('name')?.touched) {
-                  <p class="text-xs text-destructive">{{ 'categories.name' | transloco }} {{ 'common.required' | transloco }}</p>
+                  <p class="text-xs text-destructive">
+                    {{ 'categories.name' | transloco }} {{ 'common.required' | transloco }}
+                  </p>
                 }
               </div>
 
-              <!-- Description -->
               <div class="space-y-1.5">
                 <label hlmLabel>{{ 'categories.description' | transloco }}</label>
                 <textarea
@@ -304,7 +300,6 @@
           }
         </div>
 
-        <!-- Image Upload -->
         <div class="space-y-1.5">
           <label hlmLabel>{{ 'categories.image' | transloco }}</label>
           <input
@@ -315,10 +310,10 @@
           />
           @if (imagePreview()) {
             <div class="relative mt-2 w-20 h-20">
-              <img [src]="imagePreview()" class="w-full h-full object-cover rounded-md" />
+              <img [src]="imagePreview()" class="w-full h-full object-cover rounded-md" alt="" />
               <button
                 type="button"
-                class="absolute -top-2 -right-2 size-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center"
+                class="absolute -top-2 -start-2 size-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center"
                 (click)="imagePreview.set(null); selectedImage.set(null)"
               >
                 <ng-icon name="lucideX" class="size-3" />
@@ -327,7 +322,6 @@
           }
         </div>
 
-        <!-- Active Toggle -->
         <div class="flex items-center gap-3">
           <input
             type="checkbox"
@@ -335,53 +329,23 @@
             id="isActive"
             class="h-4 w-4 rounded border-primary text-primary focus:ring-primary"
           />
-          <label for="isActive" class="text-sm font-medium">{{ 'categories.activeLabel' | transloco }}</label>
+          <label for="isActive" class="text-sm font-medium">
+            {{ 'categories.activeLabel' | transloco }}
+          </label>
         </div>
 
-        <!-- Buttons -->
         <div class="flex gap-3 pt-2">
           <button type="button" hlmBtn variant="outline" class="flex-1" (click)="closeDialog()">
             {{ 'common.cancel' | transloco }}
           </button>
           <button type="submit" hlmBtn class="flex-1" [disabled]="form.invalid || submitting()">
             @if (submitting()) {
-              <span class="animate-spin mr-2">⟳</span>
+              <span class="animate-spin me-2">⟳</span>
             }
             {{ submitting() ? ('common.saving' | transloco) : ('common.save' | transloco) }}
           </button>
         </div>
       </form>
-    </div>
-  </div>
-}
-
-<!-- ══════════════════════════════════════════════════════════
-     Delete Confirm Dialog
-══════════════════════════════════════════════════════════ -->
-@if (deleting()) {
-  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-    <div class="w-full max-w-sm rounded-2xl bg-card shadow-2xl border p-6">
-      <h2 class="text-lg font-bold mb-2">{{ 'categories.delete' | transloco }}</h2>
-      <p class="text-muted-foreground mb-6">
-        {{ 'categories.deleteConfirm' | transloco }}
-        <strong class="text-foreground">{{ deleting()!.slug }}</strong
-        >?
-      </p>
-      <div class="flex gap-3">
-        <button hlmBtn variant="outline" class="flex-1" (click)="deleting.set(null)">{{ 'common.cancel' | transloco }}</button>
-        <button
-          hlmBtn
-          variant="destructive"
-          class="flex-1"
-          [disabled]="submitting()"
-          (click)="submitDelete()"
-        >
-          @if (submitting()) {
-            <span class="animate-spin mr-2">⟳</span>
-          }
-          {{ submitting() ? ('common.deleting' | transloco) : ('common.delete' | transloco) }}
-        </button>
-      </div>
     </div>
   </div>
 }

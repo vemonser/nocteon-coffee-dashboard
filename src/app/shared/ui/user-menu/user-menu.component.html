@@ -8,6 +8,7 @@
         [hlmDropdownMenuTrigger]="menu"
         [side]="_menuSide()"
         align="end"
+        [attr.aria-label]="'navigationBar.accountMenu.account' | transloco"
       >
         <hlm-avatar class="rounded-md">
           @if (auth.currentUser()?.avatarUrl) {
@@ -30,6 +31,7 @@
     <button
       [hlmDropdownMenuTrigger]="menu"
       class="flex items-center gap-2 rounded-md p-1 hover:bg-accent transition-colors"
+      [attr.aria-label]="'navigationBar.accountMenu.account' | transloco"
     >
       <hlm-avatar class="size-8 rounded-full">
         @if (auth.currentUser()?.avatarUrl) {
@@ -73,9 +75,15 @@
         <ng-icon name="lucideUser" class="me-2 size-4" />
         {{ 'navigationBar.accountMenu.account' | transloco }}
       </button>
-      <button hlmDropdownMenuItem class="flex">
-        <ng-icon name="lucideBell" class="me-2 size-4" />
-        {{ 'navigationBar.accountMenu.notifications' | transloco }}
+
+      <!-- Theme + accent (sun/moon toggle stays in the header) -->
+      <app-appearance-sheet />
+
+      <!-- Language used to be a third header control; one settings surface now. -->
+      <button hlmDropdownMenuItem class="flex" (click)="language.toggle()">
+        <ng-icon name="lucideGlobe" class="me-2 size-4" />
+        {{ 'navigationBar.accountMenu.language' | transloco }} —
+        {{ language.current() === 'ar' ? 'العربية' : 'English' }}
       </button>
     </hlm-dropdown-menu-group>
 
