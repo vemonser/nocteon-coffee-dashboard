@@ -314,7 +314,9 @@ export class CategoriesListComponent extends BaseListComponent<CategoryResponse,
   private actionsColumn: ColumnDef<CategoryResponse, any> = this.columnHelper.display({
     id: 'actions',
     header: 'Actions',
-    meta: { width: '96px' },
+    // No meta width here: the shared DataTable resolves the actions budget —
+    // 116px for icon rows, 264px in trash where rows carry text labels that
+    // would otherwise overflow the column and force a horizontal scroll.
   });
 
   /**
