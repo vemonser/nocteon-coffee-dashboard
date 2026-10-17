@@ -1,27 +1,28 @@
-<div class="relative overflow-x-scroll">
+<div class="relative overflow-x-auto">
   <!-- Loading overlay -->
   @if (loading()) {
     <div class="absolute inset-0 bg-card/80 flex items-center justify-center z-10 rounded-md backdrop-blur-[1px]">
       <div
-        class="w-6 h-6 border-2 border-amber-600 border-t-transparent rounded-full animate-spin"
+        class="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin"
       ></div>
     </div>
   }
 
   <!--
     Fixed layout + a floor width: columns share the container when it fits and the
-    table scrolls inside its own wrapper when it does not. Under `auto`, one long
-    value (a date, a name) stretched its column and pushed Actions off-canvas.
+    table scrolls inside its own wrapper when it does not. Every column has an
+    explicit budget (see widthFor) and header/cell content truncates instead of
+    forcing max-content width — that was the scrollWidth > clientWidth cause.
   -->
   <table hlmTable class="w-full table-fixed" [style.minWidth]="minWidth()">
-    <thead class="border-b border-gray-200">
+    <thead class="border-b border-border">
       @for (headerGroup of table().getHeaderGroups(); track headerGroup.id) {
         <tr hlmTr>
           @if (selectable()) {
             <th class="w-10 px-4 py-3">
               <input
                 type="checkbox"
-                class="size-4 rounded border-input accent-primary"
+                class="table-check size-4 rounded"
                 [checked]="allSelected()"
                 [indeterminate]="someSelected() && !allSelected()"
                 [attr.aria-label]="selectAllLabel()"
@@ -31,22 +32,49 @@
           }
           @for (header of headerGroup.headers; track header.id) {
             <th
-              class="px-4 py-3 text-start text-xs font-medium text-muted-foreground uppercase tracking-wider"
+              class="py-3 text-start text-xs font-medium text-muted-foreground"
+              [class.px-4]="header.column.id !== 'actions'"
+              [class.px-2]="header.column.id === 'actions'"
               [style.width]="widthFor(header.column.id, header.column.columnDef)"
+              [class.col-narrow-hide]="
+                header.column.id === 'createdAt' ||
+                header.column.id === 'updatedAt' ||
+                header.column.id === 'deletedAt' ||
+                header.column.id === 'id'
+              "
+              [class.col-tight]="
+                header.column.id === 'name_en' ||
+                header.column.id === 'name_ar' ||
+                header.column.id === 'id' ||
+                isVisualColumn(header.column.id)
+              "
               [class.sticky]="header.column.id === 'actions'"
               [class.z-10]="header.column.id === 'actions'"
               [class.bg-card]="header.column.id === 'actions'"
               [style.insetInlineEnd.px]="header.column.id === 'actions' ? 0 : null"
-              [style.borderInlineStart]="header.column.id === 'actions' ? '1px solid var(--border)' : null"
+              [attr.dir]="contentDir(header.column.id) || null"
+              [attr.data-numeric]="isNumericColumn(header.column.id) ? '' : null"
             >
               @if (!header.isPlaceholder) {
                 @if (header.column.getCanSort()) {
                   <button
                     (click)="header.column.toggleSorting()"
-                    class="flex items-center min-w-max gap-1 hover:text-foreground transition-colors group"
+                    class="flex max-w-full items-center gap-1 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+                    [attr.aria-label]="
+                      headerNameLang(header.column.columnDef.header)
+                        ? ('common.name' | transloco) + ' (' + headerNameLang(header.column.columnDef.header) + ')'
+                        : (headerKey(header.column.columnDef.header) | transloco)
+                    "
                   >
-                    <span class="min-w-max inline-block">{{ header.column.columnDef.header }}</span>
-                    <span class="text-muted-foreground min-w-max inline-block group-hover:text-foreground">
+                    <span class="block truncate">
+                      @if (headerNameLang(header.column.columnDef.header)) {
+                        {{ 'common.name' | transloco }}
+                        <bdi>({{ headerNameLang(header.column.columnDef.header) }})</bdi>
+                      } @else {
+                        {{ headerKey(header.column.columnDef.header) | transloco }}
+                      }
+                    </span>
+                    <span class="inline-block shrink-0" aria-hidden="true">
                       @if (header.column.getIsSorted() === 'asc') {
                         ↑
                       } @else if (header.column.getIsSorted() === 'desc') {
@@ -57,7 +85,20 @@
                     </span>
                   </button>
                 } @else {
-                  <span class="min-w-max inline-block">{{ header.column.columnDef.header }}</span>
+                  <span
+                    [class]="
+                      isVisualColumn(header.column.id)
+                        ? 'sr-only'
+                        : 'block truncate text-xs font-medium'
+                    "
+                  >
+                    @if (headerNameLang(header.column.columnDef.header)) {
+                      {{ 'common.name' | transloco }}
+                      <bdi>({{ headerNameLang(header.column.columnDef.header) }})</bdi>
+                    } @else {
+                      {{ headerKey(header.column.columnDef.header) | transloco }}
+                    }
+                  </span>
                 }
               }
             </th>
@@ -69,7 +110,11 @@
     <tbody class="divide-y divide-border">
       @if (data().length === 0 && !loading()) {
         <tr hlmTr>
-          <td hlmTd [attr.colspan]="columns().length" class="text-center py-16 text-muted-foreground">
+          <td
+            hlmTd
+            [attr.colspan]="renderedColumnCount() + (selectable() ? 1 : 0)"
+            class="text-center py-16 text-muted-foreground"
+          >
             {{ emptyMessage() }}
           </td>
         </tr>
@@ -81,7 +126,7 @@
             <td class="px-4 py-3">
               <input
                 type="checkbox"
-                class="size-4 rounded border-input accent-primary"
+                class="table-check size-4 rounded"
                 [checked]="isSelected(row.original)"
                 [attr.aria-label]="selectRowLabel()"
                 (change)="onToggleRow(row.original, $any($event.target).checked)"
@@ -90,14 +135,50 @@
           }
           @for (cell of row.getVisibleCells(); track cell.id) {
             <td
-              class="px-4 py-3"
+              class="py-3"
+              [class.px-4]="cell.column.id !== 'actions'"
+              [class.px-2]="cell.column.id === 'actions'"
+              [class.col-narrow-hide]="
+                cell.column.id === 'createdAt' ||
+                cell.column.id === 'updatedAt' ||
+                cell.column.id === 'deletedAt' ||
+                cell.column.id === 'id'
+              "
+              [class.col-tight]="
+                cell.column.id === 'name_en' ||
+                cell.column.id === 'name_ar' ||
+                cell.column.id === 'id' ||
+                isVisualColumn(cell.column.id)
+              "
               [class.sticky]="cell.column.id === 'actions'"
               [class.z-10]="cell.column.id === 'actions'"
               [class.bg-card]="cell.column.id === 'actions'"
               [style.insetInlineEnd.px]="cell.column.id === 'actions' ? 0 : null"
-              [style.borderInlineStart]="cell.column.id === 'actions' ? '1px solid var(--border)' : null"
+              [attr.dir]="contentDir(cell.column.id) || null"
+              [attr.data-numeric]="isNumericColumn(cell.column.id) ? '' : null"
             >
               @switch (cell.column.id) {
+                @case ('id') {
+                  <span class="block truncate text-start tabular-nums">
+                    {{ cell.getValue() }}
+                  </span>
+                }
+                @case ('main_en') {
+                  <app-main-cell
+                    [data]="$any(cell.getValue())"
+                    [langDir]="'ltr'"
+                    [navigable]="!!navigableColumn()"
+                    (slugClick)="rowClick.emit(row.original)"
+                  />
+                }
+                @case ('main_ar') {
+                  <app-main-cell
+                    [data]="$any(cell.getValue())"
+                    [langDir]="'rtl'"
+                    [navigable]="!!navigableColumn()"
+                    (slugClick)="rowClick.emit(row.original)"
+                  />
+                }
                 @case ('image') {
                   <app-image-cell
                     [src]="$any(cell.getValue())"
@@ -116,7 +197,7 @@
                     <img
                       [src]="$any(cell.getValue())"
                       [alt]="row.original.username"
-                      class="h-8 w-8 rounded-full object-cover"
+                      class="h-8 w-8 max-w-none rounded-full object-cover"
                     />
                   } @else {
                     <div
@@ -138,27 +219,37 @@
                   <app-color-cell [color]="$any(cell.getValue())" />
                 }
                 @case ('createdAt') {
-                  <span class="block text-sm tabular-nums">
-                    {{ $any(cell.getValue()) | date: 'mediumDate' }}
+                  <span class="block text-xs text-muted-foreground">
+                    <app-localized-date [value]="$any(cell.getValue())" />
                   </span>
                 }
 
                 @case ('deletedAt') {
-                  <span class="block text-sm tabular-nums">
-                    {{ $any(cell.getValue()) | date: 'mediumDate' }}
+                  <span class="block text-xs text-muted-foreground">
+                    <app-localized-date [value]="$any(cell.getValue())" />
                   </span>
                 }
 
-                <!-- Trash tab: the status column becomes "Deleted (relative)". -->
+                <!-- Trash tab: the status column becomes a warning "Deleted" badge. -->
                 @case ('deleted') {
-                  <span class="block text-sm text-muted-foreground">
-                    {{ $any(cell.getValue()) | date: 'mediumDate' }} · {{ relativeTime(cell.getValue()) }}
-                  </span>
+                  <app-deleted-badge [date]="$any(cell.getValue())" [relative]="relativeTime(cell.getValue())" />
                 }
 
                 @case ('updatedAt') {
-                  <span class="block text-sm tabular-nums">
-                    {{ $any(cell.getValue()) | date: 'mediumDate' }}
+                  <span class="block text-xs text-muted-foreground">
+                    <app-localized-date [value]="$any(cell.getValue())" />
+                  </span>
+                }
+
+                @case ('validUntil') {
+                  <span class="block text-xs text-muted-foreground">
+                    <app-localized-date [value]="$any(cell.getValue())" />
+                  </span>
+                }
+
+                @case ('joined') {
+                  <span class="block text-xs text-muted-foreground">
+                    <app-localized-date [value]="$any(cell.getValue())" />
                   </span>
                 }
 
@@ -173,12 +264,12 @@
                   @if ($any(cell.getValue()); as status) {
                     <span
                       class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
-                      [class.bg-green-100]="status.variant === 'default'"
-                      [class.text-green-800]="status.variant === 'default'"
-                      [class.bg-red-100]="status.variant === 'destructive'"
-                      [class.text-red-800]="status.variant === 'destructive'"
-                      [class.bg-yellow-100]="status.variant === 'warning'"
-                      [class.text-yellow-800]="status.variant === 'warning'"
+                      [class.bg-success-soft]="status.variant === 'default'"
+                      [class.text-success]="status.variant === 'default'"
+                      [class.bg-destructive-soft]="status.variant === 'destructive'"
+                      [class.text-destructive-text]="status.variant === 'destructive'"
+                      [class.bg-warning-soft]="status.variant === 'warning'"
+                      [class.text-warning]="status.variant === 'warning'"
                       [class.bg-muted]="status.variant === 'secondary'"
                       [class.text-muted-foreground]="status.variant === 'secondary'"
                     >
@@ -212,24 +303,39 @@
                   />
                 }
 
+                @case ('featured') {
+                  @if (cell.getValue()) {
+                    <span
+                      class="inline-flex items-center justify-center"
+                      title="{{ 'common.featured' | transloco }}"
+                      role="img"
+                      [attr.aria-label]="'common.featured' | transloco"
+                    >
+                      <ng-icon name="lucideStar" class="size-4 text-warning" aria-hidden="true" />
+                    </span>
+                  } @else {
+                    <span class="text-muted-foreground" aria-hidden="true">—</span>
+                  }
+                }
+
                 @default {
                   @if (cell.column.id === navigableColumn()) {
                     <button
                       type="button"
-                      class="inline-block cursor-pointer truncate text-start text-primary hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                      dir="auto"
+                      data-testid="slug-link"
+                      class="inline-block max-w-full cursor-pointer truncate text-start text-foreground hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                       (click)="rowClick.emit(row.original)"
                     >
                       {{ cell.getValue() }}
                     </button>
                   } @else {
                     <!--
-                      dir="auto" lets the browser pick direction from the first strong
-                      character, so an English name and an Arabic name in adjacent RTL
-                      columns both align to the column's own edge.
+                      Direction comes from the column's content language
+                      (contentDir), set on th and td alike — never dir="auto"
+                      per cell, which split header and body onto opposite edges.
                     -->
-                    <span class="block truncate" dir="auto">
-                      {{ cell.getValue() }}
+                    <span class="block truncate text-start">
+                      <bdi [attr.dir]="contentDir(cell.column.id) || null">{{ cell.getValue() }}</bdi>
                     </span>
                   }
                 }

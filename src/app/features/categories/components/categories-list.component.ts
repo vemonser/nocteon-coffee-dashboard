@@ -265,8 +265,11 @@ export class CategoriesListComponent extends BaseListComponent<CategoryResponse,
         id: `main_${langCode}`,
         header: langCode === 'en' ? 'Category' : 'فئة',
         enableSorting: true,
-        // No width on purpose: in `table-fixed` the unsized column absorbs the
-        // leftover, so the primary name cell gets the space (see columnWidths).
+        // Proportional share (O1): the entity column owns ~30% of the row in
+        // `table-fixed`, so its width scales with the container instead of
+        // absorbing whatever is left over. The rest of the row spreads
+        // proportionally (see data-table.component.ts `columnWidths`).
+        meta: { width: '30%' },
       }
     );
   }
@@ -355,9 +358,10 @@ export class CategoriesListComponent extends BaseListComponent<CategoryResponse,
         id: `name_${otherLang.code}`,
         header: otherNameHeaders[otherLang.code][currentLang],
         enableSorting: false,
-        // A share of the row, not a slug-sized box: the other language's name is
-        // an entity name too. See data-table.component.ts `columnWidths`.
-        meta: { width: '30%' },
+        // A proportional share, not a slug-sized box: the other language's name
+        // is an entity name too (O1: other-language ~28% vs entity ~30%).
+        // See data-table.component.ts `columnWidths`.
+        meta: { width: '28%' },
       }
     );
 
