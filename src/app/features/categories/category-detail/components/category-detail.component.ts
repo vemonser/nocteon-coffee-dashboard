@@ -52,6 +52,7 @@ import { TrashBannerComponent } from '../../../../shared/components/trash-banner
 import { DataTableComponent } from '../../../../shared/components/data-table/data-table.component';
 import { CategoryFormComponent } from '../../components/category-form/category-form.component';
 import { StatusCellComponent } from '../../../../shared/ui/status-cell/status-cell.component';
+import { StatusBadgeComponent } from '../../../../shared/ui/status-badge/status-badge.component';
 
 type ViewMode = 'list' | 'grid';
 
@@ -64,6 +65,7 @@ type ViewMode = 'list' | 'grid';
     TrashBannerComponent,
     DataTableComponent,
     StatusCellComponent,
+    StatusBadgeComponent,
     CategoryFormComponent,
     CommonModule,
     RouterModule,
@@ -169,16 +171,11 @@ export class CategoryDetailComponent implements OnInit, OnDestroy {
       },
     );
 
-    const priceCell = helper.accessor(
-      (row): string =>
-        row.minPrice === row.maxPrice
-          ? this.fmtPrice(row.minPrice)
-          : this.translocoService.translate('categories.detail.priceRange', {
-              min: this.fmtPrice(row.minPrice),
-              max: this.fmtPrice(row.maxPrice),
-            }),
-      { id: 'price', header: lang === 'en' ? 'Price' : 'السعر', enableSorting: false },
-    );
+    const priceCell = helper.accessor((row): string => this.priceLabel(row), {
+      id: 'price',
+      header: lang === 'en' ? 'Price' : 'السعر',
+      enableSorting: false,
+    });
 
     const discountCell = helper.accessor(
       (row): string => (row.discountPercentage ? this.fmtPct(row.discountPercentage) : '—'),
@@ -491,6 +488,16 @@ export class CategoryDetailComponent implements OnInit, OnDestroy {
 
   fmtPrice(value: unknown): string {
     return formatCurrency(value, this.language.language());
+  }
+
+  /** Single price, or the localized range `from … to …` when min ≠ max. */
+  priceLabel(row: ProductCardResponse): string {
+    return row.minPrice === row.maxPrice
+      ? this.fmtPrice(row.minPrice)
+      : this.translocoService.translate('categories.detail.priceRange', {
+          min: this.fmtPrice(row.minPrice),
+          max: this.fmtPrice(row.maxPrice),
+        });
   }
 
   fmtPct(value: unknown): string {
