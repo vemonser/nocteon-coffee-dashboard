@@ -17,7 +17,6 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { TranslocoService } from '@jsverse/transloco';
 
 import { TranslocoPipe } from '@jsverse/transloco';
-import { HlmSwitchImports } from '@spartan-ng/helm/switch';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
   lucidePlus,
@@ -73,7 +72,6 @@ import { HlmSelectImports } from '@spartan-ng/helm/select';
     HlmInputImports,
     HlmLabelImports,
     HlmSelectImports,
-    HlmSwitchImports,
     NgIcon,
     TranslocoPipe,
   ],

@@ -83,6 +83,8 @@
   },
   "common": {
     "copyId": "نسخ المعرّف",
+    "uploadImage": "رفع صورة",
+    "changeImage": "تغيير الصورة",
     "restore": "استعادة",
     "deletePermanently": "حذف نهائي",
     "deleteFailed": "تعذّر النقل إلى المهملات",
