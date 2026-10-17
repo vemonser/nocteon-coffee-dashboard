@@ -82,6 +82,7 @@
     "title": "إعدادات المتجر"
   },
   "common": {
+    "copyId": "نسخ المعرّف",
     "restore": "استعادة",
     "deletePermanently": "حذف نهائي",
     "deleteFailed": "تعذّر النقل إلى المهملات",

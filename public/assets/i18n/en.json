@@ -82,6 +82,7 @@
     "title": "Store Setting"
   },
   "common": {
+    "copyId": "Copy ID",
     "restore": "Restore",
     "deletePermanently": "Delete permanently",
     "deleteFailed": "Could not move to trash",

@@ -124,12 +124,20 @@
       </div>
       <div>
         <p class="text-xs text-muted-foreground">{{ 'common.id' | transloco }}</p>
-        <p class="mt-1 text-sm tabular-nums">
+        <p class="mt-1 flex items-center gap-1 text-sm tabular-nums">
           <bdi>{{ category()!.id }}</bdi>
+          <button
+            hlmBtn
+            variant="ghost"
+            size="icon"
+            class="size-6"
+            [attr.title]="'common.copyId' | transloco"
+            [attr.aria-label]="'common.copyId' | transloco"
+            (click)="copyId()"
+          >
+            <ng-icon name="lucideCopy" class="size-3" />
+          </button>
         </p>
-        <button hlmBtn variant="ghost" size="sm" title="Copy ID" (click)="copyId()" aria-label="Copy ID">
-          <ng-icon name="lucideCopy" class="size-3" />
-        </button>
       </div>
       <div>
         <p class="text-xs text-muted-foreground">{{ 'common.createdAt' | transloco }}</p>
