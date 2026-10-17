@@ -2,36 +2,6 @@
      flex flex-col gap-6 p-6; no max-width in this layout). Detail content sits
      flush against the sidebar edge without it. -->
 <div class="flex flex-col gap-6 p-6">
-@if (!productsLoading() && productViewMode() === 'list') {
-  @if (products().length > 0) {
-    <!--
-      Embedded products list using the shared DataTable component.
-      All column widths, header i18n, status badges, and feature-star rendering
-      are handled by the shared component so this table matches the catalog list
-      visual style exactly.
-    -->
-    <app-data-table
-      [data]="products()"
-      [columns]="columns()"
-      [showId]="false"
-      [loading]="productsLoading()"
-      [selectable]="false"
-      [navigableColumn]="'slug'"
-      [minWidth]="'720px'"
-      [showEdit]="false"
-      [showView]="false"
-      [showDelete]="false"
-      [showRestore]="false"
-      [showPermanentDelete]="false"
-    />
-  } @else {
-    <div class="col-span-full text-center py-12 text-muted-foreground">
-      <ng-icon name="lucidePackage" class="mx-auto size-12 opacity-20 mb-4" />
-      <p class="text-lg font-medium">{{ 'categories.detail.noProducts' | transloco }}</p>
-    </div>
-  }
-}
-
 @if (category() && !loading() && form) {
   <!-- Header: back link, h1 + status badge, actions -->
   <div class="flex flex-wrap items-center gap-3">
@@ -232,68 +202,27 @@
     }
   } @else {
     @if (products().length > 0) {
-      <div class="rounded-md border bg-card">
-        <table hlmTable>
-          <thead hlmTableHeader>
-            <tr hlmTableRow>
-              <th hlmTableHead class="w-16">{{ 'categories.detail.image' | transloco }}</th>
-              <th hlmTableHead>{{ 'common.name' | transloco }}</th>
-              <th hlmTableHead>{{ 'common.price' | transloco }}</th>
-              <th hlmTableHead>{{ 'common.discount' | transloco }}</th>
-              <th hlmTableHead *ngIf="uniqueProductTypes() > 1">{{ 'common.type' | transloco }}</th>
-              <th hlmTableHead *ngIf="uniqueProductTypes() > 1">{{ 'common.featured' | transloco }}</th>
-            </tr>
-          </thead>
-          <tbody hlmTableBody>
-            @for (product of products(); track product.slug) {
-              <tr hlmTableRow class="cursor-pointer hover:bg-accent" (click)="openProduct(product.slug)">
-                <td hlmTableCell>
-                  @if (product.primaryImageUrl) {
-                    <img [src]="product.primaryImageUrl" [alt]="product.name" class="w-10 h-10 rounded-md object-cover" />
-                  } @else {
-                    <div class="w-10 h-10 rounded-md bg-muted flex items-center justify-center text-muted-foreground">
-                      <ng-icon name="lucideImage" class="size-5 opacity-40" />
-                    </div>
-                  }
-                </td>
-                <td hlmTableCell class="font-medium">{{ product.name }}</td>
-                <td hlmTableCell class="tabular-nums">
-                  @if (product.minPrice === product.maxPrice) {
-                    {{ fmtPrice(product.minPrice) }}
-                  } @else {
-                    {{
-                      'categories.detail.priceRange'
-                        | transloco: { min: fmtPrice(product.minPrice), max: fmtPrice(product.maxPrice) }
-                    }}
-                  }
-                </td>
-                <td hlmTableCell>
-                  @if (product.discountPercentage) {
-                    <span class="text-success font-medium"><bdi>{{ fmtPct(product.discountPercentage) }}</bdi></span>
-                  } @else {
-                    <span class="text-muted-foreground">—</span>
-                  }
-                </td>
-                <td hlmTableCell *ngIf="uniqueProductTypes() > 1">{{ product.productType }}</td>
-                <td hlmTableCell *ngIf="uniqueProductTypes() > 1">
-                  @if (product.featured) {
-                    <span
-                      class="inline-flex items-center justify-center"
-                      title="{{ 'common.featured' | transloco }}"
-                      role="img"
-                      aria-label="{{ 'common.featured' | transloco }}"
-                    >
-                      <ng-icon name="lucideStar" class="size-4 text-warning" aria-hidden="true" />
-                    </span>
-                  } @else {
-                    <span class="text-muted-foreground" aria-hidden="true">—</span>
-                  }
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      </div>
+      <!--
+        List mode — the shared DataTable, exactly like the catalog lists:
+        an entity main-cell (thumbnail + name + slug) instead of a separate
+        Image column, shared header style, shared StatusBadge for isActive.
+        Type/Featured columns appear only when they carry information
+        (see the columns computed).
+      -->
+      <app-data-table
+        [data]="products()"
+        [columns]="columns()"
+        [showId]="false"
+        [loading]="productsLoading()"
+        [selectable]="false"
+        [navigableColumn]="'slug'"
+        (rowClick)="openProduct($any($event).slug)"
+        [showEdit]="false"
+        [showView]="false"
+        [showDelete]="false"
+        [showRestore]="false"
+        [showPermanentDelete]="false"
+      />
     } @else {
       <div class="col-span-full text-center py-12 text-muted-foreground">
         <ng-icon name="lucidePackage" class="mx-auto size-12 opacity-20 mb-4" />
