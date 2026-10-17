@@ -1,3 +1,7 @@
+<!-- Page root — same container the other pages use (origins/users/products-list:
+     flex flex-col gap-6 p-6; no max-width in this layout). Detail content sits
+     flush against the sidebar edge without it. -->
+<div class="flex flex-col gap-6 p-6">
 @if (!productsLoading() && productViewMode() === 'list') {
   @if (products().length > 0) {
     <!--
@@ -180,7 +184,7 @@
         variant="link"
         size="sm"
         [routerLink]="['/dashboard/products']"
-        [queryParams]="{ category: category()!.slug }"
+        [queryParams]="{ category: category()?.slug }"
       >
         {{ 'categories.detail.viewAllProducts' | transloco }}
       </button>
@@ -309,4 +313,5 @@
     (pageChange)="goToProductPage($event)"
   />
 }
+</div>
 </div>
