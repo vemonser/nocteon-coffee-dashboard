@@ -1,4 +1,19 @@
 {
+  "notify": {
+    "created": "Created successfully",
+    "updated": "Updated successfully",
+    "saved": "Saved successfully",
+    "deleted": "Deleted successfully",
+    "restored": "Restored successfully",
+    "deletedPermanently": "Deleted permanently",
+    "statusUpdated": "Status updated",
+    "markedAsRead": "Marked as read",
+    "allMarkedAsRead": "All marked as read",
+    "errorFallback": "Something went wrong. Please try again.",
+    "logoutFailed": "Logout failed",
+    "loadFailed": "Could not load data",
+    "copied": "Copied"
+  },
   "loginPage": {
     "title": "Welcome Back",
     "subTitle": "Enter your email and password to access your account",
@@ -8,6 +23,7 @@
     "statementFooter": "Private Roasters — Est. 2026",
     "welcomeBack": "Welcome back.",
     "signInSubtitle": "Sign in to your Nocteon account.",
+    "languageToggle": "Language",
     "form": {
       "identifier": "Email or Username",
       "identifierPlaceholder": "Enter your email or username",
@@ -25,6 +41,8 @@
       "passwordMinLength": "Password must be at least 8 characters long.",
       "login": "Login",
       "loginSuccess": "Login successful",
+      "showPassword": "Show password",
+      "hidePassword": "Hide password",
       "orContinueWith": "Or continue with",
       "loginWithGoogle": "Login with Google",
       "noAccount": "Don't have an account?",
@@ -51,14 +69,14 @@
     "mainMenu": "Main Menu"
   },
   "nav": {
-    "search": "Search...",
     "search": "Search everything...",
     "noResults": "No results found.",
     "orders": "Orders",
     "users": "Users",
     "products": "Products",
     "promoCodes": "Promo Codes",
-    "journalPosts": "Journal Posts"
+    "journalPosts": "Journal Posts",
+    "searching": "Searching…"
   },
   "StoreSettingPage": {
     "title": "Store Setting"
@@ -66,30 +84,46 @@
   "common": {
     "restore": "Restore",
     "deletePermanently": "Delete permanently",
+    "deleteFailed": "Could not move to trash",
+    "deleteFailedBody": "Please try again.",
     "cancel": "Cancel",
-    "save": "Save",
+    "save": "Save changes",
     "saving": "Saving...",
     "edit": "Edit",
     "delete": "Delete",
     "deleting": "Deleting...",
     "back": "Back",
     "close": "Close",
+    "removeImage": "Remove image",
     "total": "total",
     "showing": "Showing",
     "of": "of",
     "page": "Page",
+    "previousPage": "Previous page",
+    "nextPage": "Next page",
     "perPage": "per page",
     "name": "Name",
     "description": "Description",
     "status": "Status",
-    "active": "Active",
-    "inactive": "Inactive",
+    "statuses": {
+      "pending": "Pending",
+      "paid": "Paid",
+      "processing": "Processing",
+      "shipped": "Shipped",
+      "delivered": "Delivered",
+      "cancelled": "Cancelled",
+      "failed": "Failed",
+      "refunded": "Refunded",
+      "enabled": "Enabled",
+      "disabled": "Disabled"
+    },
+    "active": "Enabled",
+    "inactive": "Disabled",
     "image": "Image",
     "actions": "Actions",
     "view": "View",
     "yes": "Yes",
     "no": "No",
-    "search": "Search...",
     "search": "Search everything...",
     "tryAdjusting": "Try adjusting your search or filters",
     "confirmDelete": "Are you sure you want to delete",
@@ -122,8 +156,6 @@
     "profile": "Profile",
     "accountSettings": "Account Settings",
     "personalInfo": "Personal Information",
-    "firstName": "First Name",
-    "lastName": "Last Name",
     "email": "Email",
     "avatar": "Profile Picture",
     "changeAvatar": "Change Photo",
@@ -131,9 +163,19 @@
     "currentPassword": "Current Password",
     "newPassword": "New Password",
     "confirmPassword": "Confirm Password",
-    "save": "Save Changes",
     "originSlug": "Origin Slug",
     "shippingCost": "Shipping Cost",
+    "color": "Color",
+    "customer": "Customer",
+    "expires": "Expires",
+    "freeShippingThreshold": "Free Shipping Threshold",
+    "fullName": "Full Name",
+    "items": "Items",
+    "origin": "Origin",
+    "paymentMethod": "Method",
+    "paymentStatus": "Payment",
+    "priceRange": "Price Range",
+    "totalHeader": "Total",
     "cities": "Cities",
     "code": "Code",
     "discountType": "Discount Type",
@@ -167,7 +209,18 @@
     "restoreForbidden": "You do not have permission to restore items.",
     "permanentDeleteUnavailable": "Permanent delete unavailable",
     "permanentDeleteUnsupported": "The API does not expose a permanent-delete endpoint yet.",
-    "retry": "Retry"
+    "retry": "Retry",
+    "categories": "Categories",
+    "deleteConfirm": "Are you sure you want to delete this item?",
+    "discount": "Discount",
+    "featured": "Featured",
+    "price": "Price",
+    "required": "is required",
+    "type": "Type",
+    "deletedAt": "Deleted at",
+    "updatedAt": "Updated at",
+    "common.deletedPermanently": "Deleted permanently",
+    "common.permanentDeleteFailed": "Could not delete permanently"
   },
   "products": {
     "title": "Products",
@@ -178,8 +231,8 @@
     "filterByFeatured": "Filter by Featured",
     "status": {
       "all": "All",
-      "active": "Active",
-      "inactive": "Inactive"
+      "active": "Enabled",
+      "inactive": "Disabled"
     },
     "featured": {
       "all": "All",
@@ -232,7 +285,7 @@
       "shortDescription": "Short Description",
       "shortDescriptionPlaceholder": "One-line summary shown in product cards",
       "description": "Description",
-      "active": "Active",
+      "active": "Enabled",
       "featured": "Featured"
     },
     "variants": {
@@ -252,7 +305,7 @@
       "grindType": "Grind Type",
       "selectGrindType": "Select Grind Type",
       "grindTypes": "Grind Types",
-      "active": "Active",
+      "active": "Enabled",
       "loadingOptions": "Loading options...",
       "noOptions": "No product options available yet. Add some in the Product Options page first.",
       "optionsLabel": "Option values (e.g. Size: 250g / 500g)",
@@ -266,7 +319,10 @@
       "newMedia": "New Media",
       "primary": "Primary",
       "setPrimary": "Set Primary",
-      "noMedia": "No media uploaded yet."
+      "noMedia": "No media uploaded yet.",
+      "loading": "Loading media…",
+      "upload": "Upload",
+      "uploading": "Uploading…"
     },
     "tastingNotes": {
       "title": "Tasting Notes",
@@ -314,32 +370,27 @@
       "farm": "No products for this farm",
       "brewingMethod": "No products for this brewing method",
       "pairing": "No products for this pairing"
-    }
+    },
+    "categoryFilter": "Category: {{slug}}",
+    "clearCategoryFilter": "Clear category filter"
   },
   "categories": {
     "title": "Categories",
     "add": "Add Category",
-    "search": "Search categories...",
     "search": "Search in categories...",
-    "addTitle": "Add Category",
-    "editTitle": "Edit Category",
+    "addTitle": "Create category",
+    "editTitle": "Save changes",
     "deleteTitle": "Delete Category",
     "empty": "No categories found",
     "tabActive": "Active",
     "tabTrash": "Trash",
     "tabsLabel": "Category view",
-    "subtitleActive": "{{count}} categories in your store",
-    "subtitleTrash": "{{count}} deleted",
-    "emptyHint": "Add a category to organize your products.",
     "emptyTrashHint": "Deleted categories show up here until you restore or remove them.",
-    "trashBanner": "These categories are hidden from your store. Restore them, or delete them permanently.",
     "restore": "Restore",
     "trash": {
       "tabActive": "Active",
       "tabTrash": "Trash",
       "tabsLabel": "Category view",
-      "subtitleActive": "{{count}} categories in your store",
-      "subtitleTrash": "{{count}} deleted",
       "banner": "These categories are hidden from the store. Restore them, or remove them permanently.",
       "statusAll": "All status",
       "statusEnabled": "Enabled",
@@ -349,6 +400,9 @@
       "emptyActiveHint": "Add a category to organize your products.",
       "emptyTrash": "Trash is empty",
       "emptyTrashHint": "Deleted categories show up here until you restore or remove them.",
+      "searchNoResults": "No matches for your search",
+      "searchNoResultsHint": "Check the spelling, or clear the search to see everything.",
+      "clearSearch": "Clear search",
       "noResultsInActive": "No results in Active. {{count}} result in Trash.",
       "noResultsInTrash": "No results in Trash. {{count}} result in Active.",
       "switchToTrash": "Open Trash",
@@ -372,8 +426,39 @@
       "bulkMoveToTrash": "Move to trash",
       "bulkRestore": "Restore",
       "selectAll": "Select all rows",
-      "selectRow": "Select row"
-    }
+      "selectRow": "Select row",
+      "columns": "Columns",
+      "subtitleActive": "{{count}} categories in your store",
+      "subtitleTrash": "{{count}} deleted"
+    },
+    "image": "Image",
+    "activeLabel": "Enabled",
+    "detail": {
+      "back": "Back",
+      "backToCategories": "Back to categories",
+      "image": "Image",
+      "noDescription": "No description yet",
+      "noProducts": "No products in this category yet",
+      "products": "Products",
+      "unsavedChanges": "Unsaved changes",
+      "discard": "Discard",
+      "moveToTrash": "Move to trash",
+      "deleteImpact": "This category has {{count}} products. They will be hidden from the store until the category is restored.",
+      "deletedBanner": "This category is in the trash and hidden from the store.",
+      "infoTitle": "Details",
+      "viewAllProducts": "View all products",
+      "uploadImage": "Upload image",
+      "changeImage": "Change image",
+      "imageUploadFailed": "Image upload failed",
+      "listView": "List view",
+      "gridView": "Grid view",
+      "priceRange": "from {{min}} to {{max}}",
+      "visibleInStore": "Visible in store"
+    },
+    "subtitleActive": "{{count}} categories in your store",
+    "subtitleTrash": "{{count}} deleted",
+    "emptyHint": "Add a category to organize your products.",
+    "trashBanner": "These categories are hidden from your store. Restore them, or delete them permanently."
   },
   "origins": {
     "title": "Origins",
@@ -386,7 +471,24 @@
     "empty": "No origins found",
     "tryAdjusting": "Try adjusting your search",
     "code": "Code",
-    "isoCode": "ISO Code *"
+    "isoCode": "ISO Code *",
+    "name": "Origin name",
+    "description": "Description",
+    "image": "Image",
+    "nameRequired": "Origin name is required",
+    "codeRequired": "Origin code is required",
+    "noData": "No origins found",
+    "adjustSearch": "Try adjusting your search",
+    "deleteConfirm": "Delete this origin?",
+    "detail": {
+      "back": "Back",
+      "backToOrigins": "Back to origins",
+      "code": "Code",
+      "image": "Image",
+      "noDescription": "No description yet",
+      "noProducts": "No products from this origin yet",
+      "products": "Products"
+    }
   },
   "farms": {
     "title": "Farms",
@@ -400,7 +502,24 @@
     "tryAdjusting": "Try adjusting your search",
     "originSlug": "Origin Slug",
     "originSlugPlaceholder": "e.g. ethiopia",
-    "country": "Country"
+    "country": "Country",
+    "name": "Farm name",
+    "description": "Description",
+    "image": "Image",
+    "nameRequired": "Farm name is required",
+    "noData": "No farms found",
+    "adjustSearch": "Try adjusting your search",
+    "deleteConfirm": "Delete this farm?",
+    "detail": {
+      "back": "Back",
+      "backToFarms": "Back to farms",
+      "country": "Country",
+      "image": "Image",
+      "noDescription": "No description yet",
+      "noProducts": "No products from this farm yet",
+      "originSlug": "Origin",
+      "products": "Products"
+    }
   },
   "roastLevels": {
     "title": "Roast Levels",
@@ -412,7 +531,18 @@
     "deleteTitle": "Delete Roast Level",
     "color": "Color",
     "colorHint": "Used for roast visualization in the coffee details.",
-    "lastUpdated": "Last updated:"
+    "lastUpdated": "Last updated:",
+    "name": "Roast level name",
+    "description": "Description",
+    "nameRequired": "Roast level name is required",
+    "deleteConfirm": "Delete this roast level?",
+    "detail": {
+      "back": "Back",
+      "backToRoastLevels": "Back to roast levels",
+      "color": "Color",
+      "lastUpdated": "Last updated",
+      "noDescription": "No description yet"
+    }
   },
   "processingMethods": {
     "title": "Processing Methods",
@@ -423,7 +553,17 @@
     "editTitle": "Edit Processing Method",
     "deleteTitle": "Delete Processing Method",
     "empty": "No processing methods found",
-    "tryAdjusting": "Try adjusting your search or filters"
+    "tryAdjusting": "Try adjusting your search or filters",
+    "description": "Description",
+    "name": "Method name",
+    "nameRequired": "Method name is required",
+    "adjustSearch": "Try adjusting your search",
+    "deleteConfirm": "Delete this method?",
+    "gridNoData": "No processing methods found",
+    "detail": {
+      "back": "Back",
+      "noDescription": "No description yet"
+    }
   },
   "coffeeVarieties": {
     "title": "Coffee Varieties",
@@ -449,7 +589,11 @@
     "name": "Name",
     "nameRequired": "Name is required",
     "description": "Description",
-    "deleteConfirm": "Are you sure you want to delete"
+    "deleteConfirm": "Are you sure you want to delete",
+    "detail": {
+      "back": "Back",
+      "noDescription": "No description yet"
+    }
   },
   "pairings": {
     "title": "Pairings",
@@ -478,7 +622,17 @@
     "name": "Name",
     "nameRequired": "Name is required",
     "description": "Description",
-    "deleteConfirm": "Are you sure you want to delete"
+    "deleteConfirm": "Are you sure you want to delete",
+    "detail": {
+      "back": "Back",
+      "backToBrewingMethods": "Back to brewing methods",
+      "image": "Image",
+      "linkedProducts": "Linked products",
+      "noDescription": "No description yet",
+      "noProducts": "No products use this method yet",
+      "score": "Score",
+      "sortBy": "Sort by"
+    }
   },
   "shippingZones": {
     "title": "Shipping Zones",
@@ -487,7 +641,19 @@
     "edit": "Edit Shipping Zone",
     "addTitle": "Add Shipping Zone",
     "editTitle": "Edit Shipping Zone",
-    "deleteTitle": "Delete Shipping Zone"
+    "deleteTitle": "Delete Shipping Zone",
+    "name": "Zone name",
+    "nameRequired": "Zone name is required",
+    "cities": "Cities",
+    "citiesRequired": "Add at least one city",
+    "shippingCost": "Shipping cost",
+    "shippingCostRequired": "Shipping cost is required",
+    "deleteConfirm": "Delete this shipping zone?",
+    "detail": {
+      "back": "Back",
+      "lastUpdated": "Last updated",
+      "noCities": "No cities in this zone yet"
+    }
   },
   "promoCodes": {
     "title": "Promo Codes",
@@ -502,7 +668,29 @@
     "showAll": "Show all",
     "discountGiven": "Discount Given",
     "redemptions": "Redemptions",
-    "activeCodes": "Active Codes"
+    "activeCodes": "Active Codes",
+    "code": "Code",
+    "codeRequired": "Promo code is required",
+    "deleteConfirm": "Delete this promo code?",
+    "discountType": "Discount type",
+    "discountValue": "Discount value",
+    "fixedAmount": "Fixed amount",
+    "percentage": "Percentage",
+    "freeShipping": "Free shipping",
+    "maxPerUser": "Max uses per customer",
+    "maxTotalRedemptions": "Max total redemptions",
+    "minOrderAmount": "Minimum order amount",
+    "noCategories": "No categories selected",
+    "specificCategories": "Specific categories",
+    "allProducts": "All products",
+    "categories": "Categories",
+    "pickDate": "Pick a date",
+    "scope": "Scope",
+    "selectScope": "Select scope",
+    "selectType": "Select type",
+    "unlimited": "Unlimited",
+    "validFrom": "Valid from",
+    "validUntil": "Valid until"
   },
   "reviews": {
     "title": "Reviews",
@@ -529,7 +717,8 @@
     "minRating": "Minimum Rating",
     "adjustSearch": "Adjust your search or filters",
     "deleteTitle": "Delete Review",
-    "deleteConfirm": "Are you sure you want to delete this review?"
+    "deleteConfirm": "Are you sure you want to delete this review?",
+    "unapproved": "Unapproved"
   },
   "users": {
     "title": "Users",
@@ -555,7 +744,28 @@
     "confirmPassword": "Confirm Password",
     "account": "Account",
     "created": "Created",
-    "lastUpdated": "Last Updated"
+    "lastUpdated": "Last Updated",
+    "username": "Username",
+    "usernameRequired": "Username is required",
+    "firstName": "First name",
+    "lastName": "Last name",
+    "emailRequired": "A valid email is required",
+    "phoneRequired": "Phone number is required",
+    "role": "Role",
+    "roles": "Roles",
+    "selectRole": "Select a role",
+    "selectRoleError": "Please select a role",
+    "passwordPlaceholder": "Set a password for the new user",
+    "passwordRequired": "Password is required",
+    "repeatPassword": "Repeat password",
+    "accountActive": "Account active",
+    "allVerification": "All verification states",
+    "block": "Block",
+    "unblock": "Unblock",
+    "blockUser": "Block user",
+    "unblockUser": "Unblock user",
+    "confirmAction": "Confirm this action",
+    "processing": "Processing…"
   },
   "carts": {
     "title": "Carts",
@@ -566,7 +776,31 @@
     "totalLabel": "Total",
     "date": "Date",
     "empty": "No carts found",
-    "item": "item"
+    "item": "item",
+    "cartItems": "Cart items",
+    "cartNumber": "Cart",
+    "created": "Created",
+    "customer": "Customer",
+    "lastUpdated": "Last updated",
+    "loading": "Loading carts…",
+    "noItems": "No items in this cart",
+    "stock": "Stock",
+    "status": {
+      "active": "Active"
+    },
+    "detail": {
+      "title": "Cart details",
+      "customer": "Customer",
+      "items": "Items",
+      "notFound": "Cart not found",
+      "price": "Price",
+      "product": "Product",
+      "quantity": "Quantity",
+      "status": "Status",
+      "subtotal": "Subtotal",
+      "total": "Total",
+      "updatedAt": "Updated at"
+    }
   },
   "orders": {
     "title": "Orders",
@@ -576,6 +810,12 @@
     "orderDetail": "Order",
     "status": "Status",
     "paymentStatus": "Payment Status",
+    "paymentStatuses": {
+      "PENDING": "Pending",
+      "PAID": "Paid",
+      "FAILED": "Failed",
+      "REFUNDED": "Refunded"
+    },
     "totalAmount": "Total",
     "shipping": "Shipping",
     "discount": "Discount",
@@ -601,7 +841,26 @@
       "delivered": "Delivered",
       "cancelled": "Cancelled"
     },
-    "empty": "No orders found"
+    "empty": "No orders found",
+    "changeStatus": "Change status",
+    "loading": "Loading orders…",
+    "detail": {
+      "title": "Order details",
+      "createdAt": "Created at",
+      "discountAmount": "Discount",
+      "id": "Order ID",
+      "items": "Items",
+      "notFound": "Order not found",
+      "paymentMethod": "Payment method",
+      "paymentStatus": "Payment status",
+      "price": "Price",
+      "product": "Product",
+      "quantity": "Quantity",
+      "shippingCost": "Shipping",
+      "summary": "Order summary",
+      "total": "Total",
+      "totalAmount": "Total amount"
+    }
   },
   "notifications": {
     "title": "Notifications",
@@ -614,7 +873,15 @@
     "empty": "No notifications yet",
     "allRead": "All notifications are read",
     "loading": "Loading...",
-    "noNotifications": "No notifications"
+    "noNotifications": "No notifications",
+    "all": "All",
+    "allCaughtUp": "You're all caught up",
+    "detail": "Notification",
+    "markAllAsRead": "Mark all as read",
+    "markAsRead": "Mark as read",
+    "totalCount": "notifications",
+    "unreadCount": "unread",
+    "viewDetails": "View details"
   },
   "journal": {
     "title": "Journal Post",
@@ -661,6 +928,7 @@
   "dashboard": {
     "title": "Dashboard",
     "subtitle": "Here's what's happening with your coffee business today.",
+    "currencyUnavailable": "The store currency could not be loaded, so amounts are shown in USD.",
     "last7Days": "Last 7 days",
     "last30Days": "Last 30 days",
     "last90Days": "Last 90 days",
@@ -673,8 +941,12 @@
     "revenueOverview": "Revenue Overview",
     "revenueByCategory": "Revenue by Category",
     "topSellingProducts": "Top Selling Products",
-    "recentOrders": "Recent Orders",
-    "onlineUsersCount": "{count} user online",
+    "recentOrders": {
+      "title": "Recent Orders",
+      "viewAll": "View all",
+      "empty": "No orders yet."
+    },
+    "onlineUsersCount": "{{count}} user online",
     "periods": {
       "30d": "30d",
       "60d": "60d",
@@ -716,6 +988,9 @@
       "noProducts": "No products sold in this period"
     },
     "recentOrdersTable": {
+      "title": "Recent Orders",
+      "viewAll": "View all",
+      "empty": "No orders yet.",
       "orderId": "Order ID",
       "customer": "Customer",
       "date": "Date",
@@ -729,7 +1004,8 @@
       "user": "user",
       "online": "online"
     },
-    "loading": "Loading..."
+    "loading": "Loading...",
+    "exportReport": "Export report"
   },
   "imageCell": {
     "noImage": "No img"
@@ -742,24 +1018,24 @@
     }
   },
   "appearance": {
-    "title": "Appearance",
-    "subtitle": "Customize your workspace",
-    "theme": "Theme",
     "light": "Light",
     "dark": "Dark",
     "accent": "Accent Color",
-    "emerald": "Emerald",
-    "emeraldDesc": "Fresh & Balanced",
+    "accentChange": "Accent Change",
     "burgundy": "Burgundy",
     "burgundyDesc": "Bold & Warm",
-    "language": "Language",
-    "effects": "Effects",
-    "themeTransition": "Theme Transition",
-    "circleRevealAnimation": "Circle Reveal",
     "circleReveal": "Circle reveal",
+    "circleRevealAnimation": "Circle Reveal",
+    "effects": "Effects",
+    "emerald": "Emerald",
+    "emeraldDesc": "Fresh & Balanced",
+    "language": "Language",
     "radius": "Radius",
     "rippleEffect": "Ripple Effect",
-    "accentChange": "Accent Change"
+    "subtitle": "Customize your workspace",
+    "theme": "Theme",
+    "themeTransition": "Theme Transition",
+    "title": "Appearance"
   },
   "productOptions": {
     "title": "Product Options",
@@ -802,5 +1078,28 @@
     "title": "Access Denied",
     "message": "You don't have permission to view this page. Contact your administrator if you believe this is a mistake.",
     "goBack": "Back to Dashboard"
+  },
+  "profile": {
+    "title": "Profile",
+    "avatar": "Profile picture",
+    "changeAvatar": "Change picture",
+    "information": "Personal information",
+    "firstName": "First name",
+    "lastName": "Last name",
+    "email": "Email",
+    "changePassword": "Change password",
+    "currentPassword": "Current password",
+    "newPassword": "New password",
+    "confirmPassword": "Confirm new password",
+    "save": "Save changes"
+  },
+  "needsAttention": {
+    "title": "Needs Attention",
+    "allClear": "All clear — nothing needs attention",
+    "pendingOrders": "Pending Orders",
+    "lowStock": "Low Stock Products",
+    "viewDetails": "View details",
+    "pendingReviews": "Pending Reviews",
+    "unreadMessages": "Unread Messages"
   }
 }

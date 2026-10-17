@@ -1,4 +1,19 @@
 {
+  "notify": {
+    "created": "تمت الإضافة بنجاح",
+    "updated": "تم التحديث بنجاح",
+    "saved": "تم الحفظ بنجاح",
+    "deleted": "تم الحذف بنجاح",
+    "restored": "تمت الاستعادة بنجاح",
+    "deletedPermanently": "تم الحذف نهائياً",
+    "statusUpdated": "تم تحديث الحالة",
+    "markedAsRead": "تم التحديد كمقروء",
+    "allMarkedAsRead": "تم تحديد الكل كمقروء",
+    "errorFallback": "حدث خطأ ما. يرجى المحاولة مرة أخرى.",
+    "logoutFailed": "تعذّر تسجيل الخروج",
+    "loadFailed": "تعذّر تحميل البيانات",
+    "copied": "تم النسخ"
+  },
   "loginPage": {
     "title": "مرحباً بعودتك",
     "subTitle": "أدخل بريدك الإلكتروني وكلمة المرور للوصول إلى حسابك",
@@ -8,6 +23,7 @@
     "statementFooter": "محامص خاصة — تأسست 2026",
     "welcomeBack": "مرحباً بعودتك.",
     "signInSubtitle": "سجّل الدخول إلى حسابك في نوكتيون.",
+    "languageToggle": "اللغة",
     "form": {
       "identifier": "البريد الإلكتروني أو إسم المستخدم",
       "identifierPlaceholder": "البريد الإلكتروني أو إسم المستخدم",
@@ -25,6 +41,8 @@
       "passwordMinLength": "يجب أن تكون كلمة المرور 8 أحرف على الأقل.",
       "login": "تسجيل الدخول",
       "loginSuccess": "تم تسجيل الدخول بنجاح",
+      "showPassword": "إظهار كلمة المرور",
+      "hidePassword": "إخفاء كلمة المرور",
       "orContinueWith": "أو تابع باستخدام",
       "loginWithGoogle": "تسجيل الدخول بجوجل",
       "noAccount": "ليس لديك حساب؟",
@@ -51,14 +69,14 @@
     "mainMenu": "القائمة الرئيسية"
   },
   "nav": {
-    "search": "بحث...",
     "search": "ابحث في كل المتجر...",
     "noResults": "لا توجد نتائج.",
     "orders": "الطلبات",
     "users": "المستخدمين",
     "products": "المنتجات",
     "promoCodes": "أكواد الخصم",
-    "journalPosts": "مقالات المجلة"
+    "journalPosts": "مقالات المجلة",
+    "searching": "جارٍ البحث…"
   },
   "StoreSettingPage": {
     "title": "إعدادات المتجر"
@@ -66,29 +84,45 @@
   "common": {
     "restore": "استعادة",
     "deletePermanently": "حذف نهائي",
+    "deleteFailed": "تعذّر النقل إلى المهملات",
+    "deleteFailedBody": "يرجى المحاولة مرة أخرى.",
     "cancel": "إلغاء",
-    "save": "حفظ",
+    "save": "حفظ التغييرات",
     "saving": "جارٍ الحفظ...",
     "edit": "تعديل",
     "delete": "حذف",
     "deleting": "جارٍ الحذف...",
     "back": "رجوع",
     "close": "إغلاق",
+    "removeImage": "إزالة الصورة",
     "total": "إجمالي",
     "showing": "عرض",
     "of": "من",
     "page": "صفحة",
+    "previousPage": "الصفحة السابقة",
+    "nextPage": "الصفحة التالية",
     "perPage": "لكل صفحة",
     "name": "الاسم",
     "description": "الوصف",
     "status": "الحالة",
-    "active": "نشط",
-    "inactive": "غير نشط",
+    "statuses": {
+      "pending": "قيد الانتظار",
+      "paid": "مدفوع",
+      "processing": "قيد المعالجة",
+      "shipped": "تم الشحن",
+      "delivered": "تم التوصيل",
+      "cancelled": "ملغي",
+      "failed": "فشل",
+      "refunded": "مسترد",
+      "enabled": "مفعّل",
+      "disabled": "معطّل"
+    },
+    "active": "مُفعّل",
+    "inactive": "معطّل",
     "image": "الصورة",
     "actions": "الإجراءات",
     "yes": "نعم",
     "no": "لا",
-    "search": "بحث...",
     "search": "ابحث في كل المتجر...",
     "tryAdjusting": "حاول تعديل البحث أو الفلاتر",
     "confirmDelete": "هل أنت متأكد أنك تريد حذف",
@@ -121,8 +155,6 @@
     "profile": "الملف الشخصي",
     "accountSettings": "إعدادات الحساب",
     "personalInfo": "المعلومات الشخصية",
-    "firstName": "الاسم الأول",
-    "lastName": "اسم العائلة",
     "email": "البريد الإلكتروني",
     "avatar": "الصورة الشخصية",
     "changeAvatar": "تغيير الصورة",
@@ -130,9 +162,19 @@
     "currentPassword": "كلمة المرور الحالية",
     "newPassword": "كلمة المرور الجديدة",
     "confirmPassword": "تأكيد كلمة المرور",
-    "save": "حفظ التغييرات",
     "originSlug": "رابط المنشأ",
     "shippingCost": "تكلفة الشحن",
+    "color": "اللون",
+    "customer": "العميل",
+    "expires": "ينتهي",
+    "freeShippingThreshold": "حد الشحن المجاني",
+    "fullName": "الاسم الكامل",
+    "items": "العناصر",
+    "origin": "المنشأ",
+    "paymentMethod": "طريقة الدفع",
+    "paymentStatus": "الدفع",
+    "priceRange": "نطاق السعر",
+    "totalHeader": "الإجمالي",
     "cities": "المدن",
     "code": "الكود",
     "discountType": "نوع الخصم",
@@ -167,7 +209,18 @@
     "restoreForbidden": "ليس لديك صلاحية الاستعادة.",
     "permanentDeleteUnavailable": "الحذف النهائي غير متاح",
     "permanentDeleteUnsupported": "لا توفر الواجهة نقطة حذف نهائي بعد.",
-    "retry": "إعادة المحاولة"
+    "retry": "إعادة المحاولة",
+    "categories": "الفئات",
+    "deleteConfirm": "هل أنت متأكد أنك تريد حذف هذا العنصر؟",
+    "discount": "الخصم",
+    "featured": "مميز",
+    "price": "السعر",
+    "required": "مطلوب",
+    "type": "النوع",
+    "deletedAt": "تاريخ الحذف",
+    "updatedAt": "آخر تحديث",
+    "common.deletedPermanently": "تم الحذف نهائياً",
+    "common.permanentDeleteFailed": "تعذّر الحذف النهائي"
   },
   "products": {
     "title": "المنتجات",
@@ -178,8 +231,8 @@
     "filterByFeatured": "تصفية حسب المميز",
     "status": {
       "all": "الكل",
-      "active": "نشط",
-      "inactive": "غير نشط"
+      "active": "مُفعّل",
+      "inactive": "معطّل"
     },
     "featured": {
       "all": "الكل",
@@ -232,7 +285,7 @@
       "shortDescription": "وصف قصير",
       "shortDescriptionPlaceholder": "ملخص سطر واحد يظهر في بطاقات المنتج",
       "description": "الوصف",
-      "active": "نشط",
+      "active": "مُفعّل",
       "featured": "مميز"
     },
     "variants": {
@@ -252,7 +305,7 @@
       "grindType": "نوع الطحن",
       "selectGrindType": "اختر نوع الطحن",
       "grindTypes": "أنواع الطحن",
-      "active": "نشط",
+      "active": "مُفعّل",
       "loadingOptions": "جارٍ تحميل الخيارات...",
       "noOptions": "لا توجد خيارات منتجات متاحة بعد. أضفها من صفحة خيارات المنتجات أولاً.",
       "optionsLabel": "قيم الخيارات (مثل الحجم: 250 جرام / 500 جرام)",
@@ -266,7 +319,10 @@
       "newMedia": "وسائط جديدة",
       "primary": "أساسي",
       "setPrimary": "تعيين كأساسي",
-      "noMedia": "لم يتم رفع أي وسائط بعد."
+      "noMedia": "لم يتم رفع أي وسائط بعد.",
+      "loading": "جارٍ تحميل الوسائط…",
+      "upload": "رفع",
+      "uploading": "جارٍ الرفع…"
     },
     "tastingNotes": {
       "title": "ملاحظات التذوق",
@@ -314,32 +370,27 @@
       "farm": "لا توجد منتجات لهذه المزرعة",
       "brewingMethod": "لا توجد منتجات لهذه الطريقة",
       "pairing": "لا توجد منتجات لهذه الصحبة"
-    }
+    },
+    "categoryFilter": "الفئة: {{slug}}",
+    "clearCategoryFilter": "مسح فلتر الفئة"
   },
   "categories": {
     "title": "الفئات",
     "add": "إضافة فئة",
-    "search": "بحث في الفئات...",
     "search": "ابحث في الفئات...",
-    "addTitle": "إضافة فئة",
-    "editTitle": "تعديل الفئة",
+    "addTitle": "إنشاء فئة",
+    "editTitle": "حفظ التغييرات",
     "deleteTitle": "حذف الفئة",
     "empty": "لم يتم العثور على فئات",
     "tabActive": "نشط",
     "tabTrash": "المحذوفات",
     "tabsLabel": "عرض التصنيفات",
-    "subtitleActive": "{{count}} تصنيف في متجرك",
-    "subtitleTrash": "{{count}} محذوف",
-    "emptyHint": "أضف تصنيفا لتنظيم منتجاتك.",
     "emptyTrashHint": "التصنيفات المحذوفة تظهر هنا حتى تستعيدها أو تحذفها للأبد.",
-    "trashBanner": "هذه التصنيفات مخفية من متجرك. استعدها، أو احذفها نهائيا.",
     "restore": "استعادة",
     "trash": {
       "tabActive": "نشط",
       "tabTrash": "المحذوفات",
       "tabsLabel": "عرض التصنيفات",
-      "subtitleActive": "{{count}} تصنيف في متجرك",
-      "subtitleTrash": "{{count}} محذوف",
       "banner": "هذه التصنيفات مخفية من المتجر. استعدها، أو احذفها نهائياً.",
       "statusAll": "كل الحالات",
       "statusEnabled": "مفعّل",
@@ -349,6 +400,9 @@
       "emptyActiveHint": "أضف تصنيفاً لتنظيم منتجاتك.",
       "emptyTrash": "سلة المحذوفات فارغة",
       "emptyTrashHint": "تظهر التصنيفات المحذوفة هنا حتى تستعيدها أو تحذفها نهائياً.",
+      "searchNoResults": "لا توجد نتائج لبحثك",
+      "searchNoResultsHint": "تحقق من الإملاء، أو امسح البحث لعرض كل العناصر.",
+      "clearSearch": "مسح البحث",
       "noResultsInActive": "لا نتائج في نشط. {{count}} نتيجة في المحذوفات.",
       "noResultsInTrash": "لا نتائج في المحذوفات. {{count}} نتيجة في نشط.",
       "switchToTrash": "فتح المحذوفات",
@@ -372,8 +426,39 @@
       "bulkMoveToTrash": "نقل إلى المحذوفات",
       "bulkRestore": "استعادة",
       "selectAll": "تحديد كل الصفوف",
-      "selectRow": "تحديد الصف"
-    }
+      "selectRow": "تحديد الصف",
+      "columns": "الأعمدة",
+      "subtitleActive": "{{count}} تصنيف في متجرك",
+      "subtitleTrash": "{{count}} محذوف"
+    },
+    "image": "الصورة",
+    "activeLabel": "مفعّل",
+    "detail": {
+      "back": "رجوع",
+      "backToCategories": "العودة إلى الفئات",
+      "image": "الصورة",
+      "noDescription": "لا يوجد وصف بعد",
+      "noProducts": "لا توجد منتجات في هذه الفئة بعد",
+      "products": "المنتجات",
+      "unsavedChanges": "تغييرات غير محفوظة",
+      "discard": "تجاهل",
+      "moveToTrash": "نقل إلى المهملات",
+      "deleteImpact": "تحتوي هذه الفئة على {{count}} منتجات. ستُخفى من المتجر حتى تتم استعادة الفئة.",
+      "deletedBanner": "هذه الفئة في المهملات ومخفية من المتجر.",
+      "infoTitle": "التفاصيل",
+      "viewAllProducts": "عرض كل المنتجات",
+      "uploadImage": "رفع صورة",
+      "changeImage": "تغيير الصورة",
+      "imageUploadFailed": "فشل رفع الصورة",
+      "listView": "عرض القائمة",
+      "gridView": "عرض الشبكة",
+      "priceRange": "من {{min}} إلى {{max}}",
+      "visibleInStore": "ظاهر في المتجر"
+    },
+    "subtitleActive": "{{count}} تصنيف في متجرك",
+    "subtitleTrash": "{{count}} محذوف",
+    "emptyHint": "أضف تصنيفا لتنظيم منتجاتك.",
+    "trashBanner": "هذه التصنيفات مخفية من متجرك. استعدها، أو احذفها نهائيا."
   },
   "origins": {
     "title": "المصادر",
@@ -386,7 +471,24 @@
     "empty": "لم يتم العثور على مصادر",
     "tryAdjusting": "حاول تعديل البحث",
     "code": "الرمز",
-    "isoCode": "الرمز ISO *"
+    "isoCode": "الرمز ISO *",
+    "name": "اسم المنشأ",
+    "description": "الوصف",
+    "image": "الصورة",
+    "nameRequired": "اسم المنشأ مطلوب",
+    "codeRequired": "رمز المنشأ مطلوب",
+    "noData": "لا توجد مناشئ",
+    "adjustSearch": "جرّب تعديل البحث",
+    "deleteConfirm": "حذف هذا المنشأ؟",
+    "detail": {
+      "back": "رجوع",
+      "backToOrigins": "العودة إلى المناشئ",
+      "code": "الرمز",
+      "image": "الصورة",
+      "noDescription": "لا يوجد وصف بعد",
+      "noProducts": "لا توجد منتجات من هذا المنشأ بعد",
+      "products": "المنتجات"
+    }
   },
   "farms": {
     "title": "المزارع",
@@ -400,7 +502,24 @@
     "tryAdjusting": "حاول تعديل البحث",
     "originSlug": "رابط المنشأ",
     "originSlugPlaceholder": "مثال: ethiopia",
-    "country": "الدولة"
+    "country": "الدولة",
+    "name": "اسم المزرعة",
+    "description": "الوصف",
+    "image": "الصورة",
+    "nameRequired": "اسم المزرعة مطلوب",
+    "noData": "لا توجد مزارع",
+    "adjustSearch": "جرّب تعديل البحث",
+    "deleteConfirm": "حذف هذه المزرعة؟",
+    "detail": {
+      "back": "رجوع",
+      "backToFarms": "العودة إلى المزارع",
+      "country": "البلد",
+      "image": "الصورة",
+      "noDescription": "لا يوجد وصف بعد",
+      "noProducts": "لا توجد منتجات من هذه المزرعة بعد",
+      "originSlug": "المنشأ",
+      "products": "المنتجات"
+    }
   },
   "roastLevels": {
     "title": "درجات التحميص",
@@ -412,7 +531,18 @@
     "deleteTitle": "حذف درجة التحميص",
     "color": "اللون",
     "colorHint": "يُستخدم لتصور التحميص في تفاصيل القهوة.",
-    "lastUpdated": "آخر تحديث:"
+    "lastUpdated": "آخر تحديث:",
+    "name": "اسم درجة التحميص",
+    "description": "الوصف",
+    "nameRequired": "اسم درجة التحميص مطلوب",
+    "deleteConfirm": "حذف درجة التحميص هذه؟",
+    "detail": {
+      "back": "رجوع",
+      "backToRoastLevels": "العودة إلى درجات التحميص",
+      "color": "اللون",
+      "lastUpdated": "آخر تحديث",
+      "noDescription": "لا يوجد وصف بعد"
+    }
   },
   "processingMethods": {
     "title": "طرق المعالجة",
@@ -423,7 +553,17 @@
     "editTitle": "تعديل طريقة المعالجة",
     "deleteTitle": "حذف طريقة المعالجة",
     "empty": "لم يتم العثور على طرق معالجة",
-    "tryAdjusting": "حاول تعديل البحث أو الفلاتر"
+    "tryAdjusting": "حاول تعديل البحث أو الفلاتر",
+    "description": "الوصف",
+    "name": "اسم الطريقة",
+    "nameRequired": "اسم الطريقة مطلوب",
+    "adjustSearch": "جرّب تعديل البحث",
+    "deleteConfirm": "حذف هذه الطريقة؟",
+    "gridNoData": "لا توجد طرق معالجة",
+    "detail": {
+      "back": "رجوع",
+      "noDescription": "لا يوجد وصف بعد"
+    }
   },
   "coffeeVarieties": {
     "title": "أنواع البن",
@@ -449,7 +589,11 @@
     "name": "الاسم",
     "nameRequired": "الاسم مطلوب",
     "description": "الوصف",
-    "deleteConfirm": "هل أنت متأكد أنك تريد حذف"
+    "deleteConfirm": "هل أنت متأكد أنك تريد حذف",
+    "detail": {
+      "back": "رجوع",
+      "noDescription": "لا يوجد وصف بعد"
+    }
   },
   "pairings": {
     "title": "التوائم",
@@ -478,7 +622,17 @@
     "name": "الاسم",
     "nameRequired": "الاسم مطلوب",
     "description": "الوصف",
-    "deleteConfirm": "هل أنت متأكد أنك تريد حذف"
+    "deleteConfirm": "هل أنت متأكد أنك تريد حذف",
+    "detail": {
+      "back": "رجوع",
+      "backToBrewingMethods": "العودة إلى طرق التحضير",
+      "image": "الصورة",
+      "linkedProducts": "المنتجات المرتبطة",
+      "noDescription": "لا يوجد وصف بعد",
+      "noProducts": "لا توجد منتجات تستخدم هذه الطريقة بعد",
+      "score": "النتيجة",
+      "sortBy": "ترتيب حسب"
+    }
   },
   "shippingZones": {
     "title": "مناطق الشحن",
@@ -487,7 +641,19 @@
     "edit": "تعديل منطقة الشحن",
     "addTitle": "إضافة منطقة شحن",
     "editTitle": "تعديل منطقة الشحن",
-    "deleteTitle": "حذف منطقة الشحن"
+    "deleteTitle": "حذف منطقة الشحن",
+    "name": "اسم المنطقة",
+    "nameRequired": "اسم المنطقة مطلوب",
+    "cities": "المدن",
+    "citiesRequired": "أضف مدينة واحدة على الأقل",
+    "shippingCost": "تكلفة الشحن",
+    "shippingCostRequired": "تكلفة الشحن مطلوبة",
+    "deleteConfirm": "حذف منطقة الشحن هذه؟",
+    "detail": {
+      "back": "رجوع",
+      "lastUpdated": "آخر تحديث",
+      "noCities": "لا توجد مدن في هذه المنطقة بعد"
+    }
   },
   "promoCodes": {
     "title": "أكواد الخصم",
@@ -502,7 +668,29 @@
     "showAll": "عرض الكل",
     "discountGiven": "قيمة الخصومات",
     "redemptions": "مرات الاستخدام",
-    "activeCodes": "الأكواد النشطة"
+    "activeCodes": "الأكواد النشطة",
+    "code": "الرمز",
+    "codeRequired": "رمز الخصم مطلوب",
+    "deleteConfirm": "حذف رمز الخصم هذا؟",
+    "discountType": "نوع الخصم",
+    "discountValue": "قيمة الخصم",
+    "fixedAmount": "مبلغ ثابت",
+    "percentage": "نسبة مئوية",
+    "freeShipping": "شحن مجاني",
+    "maxPerUser": "الحد الأقصى للاستخدام لكل عميل",
+    "maxTotalRedemptions": "الحد الأقصى لإجمالي الاستخدامات",
+    "minOrderAmount": "الحد الأدنى لقيمة الطلب",
+    "noCategories": "لم تُختر أي فئات",
+    "specificCategories": "فئات محددة",
+    "allProducts": "كل المنتجات",
+    "categories": "الفئات",
+    "pickDate": "اختر التاريخ",
+    "scope": "النطاق",
+    "selectScope": "اختر النطاق",
+    "selectType": "اختر النوع",
+    "unlimited": "غير محدود",
+    "validFrom": "صالح من",
+    "validUntil": "صالح حتى"
   },
   "reviews": {
     "title": "التقييمات",
@@ -529,7 +717,8 @@
     "minRating": "الحد الأدنى للتقييم",
     "adjustSearch": "عدّل البحث أو الفلاتر",
     "deleteTitle": "حذف التقييم",
-    "deleteConfirm": "هل أنت متأكد من حذف هذا التقييم؟"
+    "deleteConfirm": "هل أنت متأكد من حذف هذا التقييم؟",
+    "unapproved": "غير معتمدة"
   },
   "users": {
     "title": "المستخدمين",
@@ -555,7 +744,28 @@
     "confirmPassword": "تأكيد كلمة المرور",
     "account": "الحساب",
     "created": "تاريخ الإنشاء",
-    "lastUpdated": "آخر تحديث"
+    "lastUpdated": "آخر تحديث",
+    "username": "اسم المستخدم",
+    "usernameRequired": "اسم المستخدم مطلوب",
+    "firstName": "الاسم الأول",
+    "lastName": "اسم العائلة",
+    "emailRequired": "بريد إلكتروني صالح مطلوب",
+    "phoneRequired": "رقم الهاتف مطلوب",
+    "role": "الدور",
+    "roles": "الأدوار",
+    "selectRole": "اختر الدور",
+    "selectRoleError": "يرجى اختيار الدور",
+    "passwordPlaceholder": "عيّن كلمة مرور للمستخدم الجديد",
+    "passwordRequired": "كلمة المرور مطلوبة",
+    "repeatPassword": "تكرار كلمة المرور",
+    "accountActive": "الحساب نشط",
+    "allVerification": "كل حالات التحقق",
+    "block": "حظر",
+    "unblock": "إلغاء الحظر",
+    "blockUser": "حظر المستخدم",
+    "unblockUser": "إلغاء حظر المستخدم",
+    "confirmAction": "تأكيد هذا الإجراء",
+    "processing": "جارٍ التنفيذ…"
   },
   "carts": {
     "title": "السلات",
@@ -566,7 +776,31 @@
     "totalLabel": "الإجمالي",
     "date": "التاريخ",
     "empty": "لم يتم العثور على سلات",
-    "item": "عنصر"
+    "item": "عنصر",
+    "cartItems": "عناصر السلة",
+    "cartNumber": "السلة",
+    "created": "أُنشئت",
+    "customer": "العميل",
+    "lastUpdated": "آخر تحديث",
+    "loading": "جارٍ تحميل السلال…",
+    "noItems": "لا توجد عناصر في هذه السلة",
+    "stock": "المخزون",
+    "status": {
+      "active": "نشطة"
+    },
+    "detail": {
+      "title": "تفاصيل السلة",
+      "customer": "العميل",
+      "items": "العناصر",
+      "notFound": "السلة غير موجودة",
+      "price": "السعر",
+      "product": "المنتج",
+      "quantity": "الكمية",
+      "status": "الحالة",
+      "subtotal": "المجموع الفرعي",
+      "total": "الإجمالي",
+      "updatedAt": "آخر تحديث"
+    }
   },
   "orders": {
     "title": "الطلبات",
@@ -576,6 +810,12 @@
     "orderDetail": "الطلب",
     "status": "الحالة",
     "paymentStatus": "حالة الدفع",
+    "paymentStatuses": {
+      "PENDING": "قيد الانتظار",
+      "PAID": "مدفوع",
+      "FAILED": "فشل",
+      "REFUNDED": "مسترد"
+    },
     "totalAmount": "الإجمالي",
     "shipping": "الشحن",
     "discount": "الخصم",
@@ -601,7 +841,26 @@
       "delivered": "تم التوصيل",
       "cancelled": "ملغي"
     },
-    "empty": "لم يتم العثور على طلبات"
+    "empty": "لم يتم العثور على طلبات",
+    "changeStatus": "تغيير الحالة",
+    "loading": "جارٍ تحميل الطلبات…",
+    "detail": {
+      "title": "تفاصيل الطلب",
+      "createdAt": "تاريخ الإنشاء",
+      "discountAmount": "الخصم",
+      "id": "رقم الطلب",
+      "items": "العناصر",
+      "notFound": "الطلب غير موجود",
+      "paymentMethod": "طريقة الدفع",
+      "paymentStatus": "حالة الدفع",
+      "price": "السعر",
+      "product": "المنتج",
+      "quantity": "الكمية",
+      "shippingCost": "الشحن",
+      "summary": "ملخص الطلب",
+      "total": "الإجمالي",
+      "totalAmount": "المبلغ الإجمالي"
+    }
   },
   "notifications": {
     "title": "الإشعارات",
@@ -614,7 +873,15 @@
     "empty": "لا توجد إشعارات بعد",
     "allRead": "تمت قراءة جميع الإشعارات",
     "loading": "جارٍ التحميل...",
-    "noNotifications": "لا توجد إشعارات"
+    "noNotifications": "لا توجد إشعارات",
+    "all": "الكل",
+    "allCaughtUp": "لا توجد إشعارات جديدة",
+    "detail": "الإشعار",
+    "markAllAsRead": "تعيين الكل كمقروء",
+    "markAsRead": "تعيين كمقروء",
+    "totalCount": "إشعارات",
+    "unreadCount": "غير مقروءة",
+    "viewDetails": "عرض التفاصيل"
   },
   "journal": {
     "title": "مقالة المجلة",
@@ -661,6 +928,7 @@
   "dashboard": {
     "title": "لوحة التحكم",
     "subtitle": "إليك ما يحدث في أعمال القهوة الخاصة بك اليوم.",
+    "currencyUnavailable": "تعذّر تحميل عملة المتجر، لذلك تُعرض المبالغ بالدولار الأمريكي.",
     "last7Days": "آخر 7 أيام",
     "last30Days": "آخر 30 يوم",
     "last90Days": "آخر 90 يوم",
@@ -673,8 +941,12 @@
     "revenueOverview": "نظرة عامة على الإيرادات",
     "revenueByCategory": "الإيرادات حسب الفئة",
     "topSellingProducts": "المنتجات الأكثر مبيعاً",
-    "recentOrders": "الطلبات الأخيرة",
-    "onlineUsersCount": "{count} مستخدم متصل",
+    "recentOrders": {
+      "title": "أحدث الطلبات",
+      "viewAll": "عرض الكل",
+      "empty": "لا توجد طلبات بعد."
+    },
+    "onlineUsersCount": "{{count}} مستخدم متصل",
     "periods": {
       "30d": "30 يوم",
       "60d": "60 يوم",
@@ -716,6 +988,9 @@
       "noProducts": "لا توجد منتجات مبيعة في هذه الفترة"
     },
     "recentOrdersTable": {
+      "title": "أحدث الطلبات",
+      "viewAll": "عرض الكل",
+      "empty": "لا توجد طلبات بعد.",
       "orderId": "رقم الطلب",
       "customer": "العميل",
       "date": "التاريخ",
@@ -729,7 +1004,8 @@
       "user": "مستخدم",
       "online": "متصل"
     },
-    "loading": "جارٍ التحميل..."
+    "loading": "جارٍ التحميل...",
+    "exportReport": "تصدير التقرير"
   },
   "imageCell": {
     "noImage": "لا توجد صورة"
@@ -742,24 +1018,24 @@
     }
   },
   "appearance": {
-    "title": "المظهر",
-    "subtitle": "تخصيص مساحة العمل",
-    "theme": "المظهر",
     "light": "فاتح",
     "dark": "داكن",
     "accent": "لون التمييز",
-    "emerald": "زمردي",
-    "emeraldDesc": "طازج ومتوازن",
+    "accentChange": "تغيير لون التمييز",
     "burgundy": "عنابي",
     "burgundyDesc": "جريء ودافئ",
-    "language": "اللغة",
-    "effects": "المؤثرات",
-    "themeTransition": "انتقال المظهر",
-    "circleRevealAnimation": "تأثير الكشف الدائري",
     "circleReveal": "الكشف الدائري",
+    "circleRevealAnimation": "تأثير الكشف الدائري",
+    "effects": "المؤثرات",
+    "emerald": "زمردي",
+    "emeraldDesc": "طازج ومتوازن",
+    "language": "اللغة",
     "radius": "نصف القطر",
     "rippleEffect": "تأثير الأمواج",
-    "accentChange": "تغيير لون التمييز"
+    "subtitle": "تخصيص مساحة العمل",
+    "theme": "المظهر",
+    "themeTransition": "انتقال المظهر",
+    "title": "المظهر"
   },
   "productOptions": {
     "title": "خيارات المنتجات",
@@ -802,5 +1078,28 @@
     "title": "الوصول مرفوض",
     "message": "ليس لديك صلاحية لعرض هذه الصفحة. تواصل مع المسؤول إذا كنت تعتقد أن هذا خطأ.",
     "goBack": "العودة إلى لوحة التحكم"
+  },
+  "profile": {
+    "title": "الملف الشخصي",
+    "avatar": "الصورة الشخصية",
+    "changeAvatar": "تغيير الصورة",
+    "information": "المعلومات الشخصية",
+    "firstName": "الاسم الأول",
+    "lastName": "اسم العائلة",
+    "email": "البريد الإلكتروني",
+    "changePassword": "تغيير كلمة المرور",
+    "currentPassword": "كلمة المرور الحالية",
+    "newPassword": "كلمة المرور الجديدة",
+    "confirmPassword": "تأكيد كلمة المرور الجديدة",
+    "save": "حفظ التغييرات"
+  },
+  "needsAttention": {
+    "title": "يحتاج انتباه",
+    "allClear": "كل شيء على ما يرام — لا يوجد ما يحتاج انتباه",
+    "pendingOrders": "طلبات معلقة",
+    "lowStock": "منتجات مخزون منخفض",
+    "viewDetails": "عرض التفاصيل",
+    "pendingReviews": "مراجعات معلقة",
+    "unreadMessages": "رسائل غير مقروءة"
   }
 }
