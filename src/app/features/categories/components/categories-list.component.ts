@@ -1,7 +1,7 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { HasPermissionDirective } from '../../../core/auth/permission.directive';
+import { ImageUploadComponent } from '../../../shared/components/image-upload/image-upload.component';
 import { BaseListComponent } from '../../../core/crud/base-list.component';
 import { CategoryRequest, CategoryResponse } from '../models/category.model';
 import { CategoryService } from '../services/category.service';
@@ -11,27 +11,17 @@ import { SUPPORTED_LANGUAGES } from '../../../core/i18n/language';
 import { map, Observable } from 'rxjs';
 import { PageResponse } from '../../../core/models/api-response.model';
 import { AuthService } from '../../../core/auth/auth.service';
-
-// Spartan UI
-import { HlmCardImports } from '@spartan-ng/helm/card';
-import { HlmButtonImports } from '@spartan-ng/helm/button';
-import { HlmBadgeImports } from '@spartan-ng/helm/badge';
-import { HlmInputImports } from '@spartan-ng/helm/input';
-import { HlmSelectImports } from '@spartan-ng/helm/select';
-import { HlmDialogImports } from '@spartan-ng/helm/dialog';
-import { HlmTableImports } from '@spartan-ng/helm/table';
-import { HlmAvatarImports } from '@spartan-ng/helm/avatar';
-import { HlmSkeletonImports } from '@spartan-ng/helm/skeleton';
-import { HlmToggleImports } from '@spartan-ng/helm/toggle';
-
-import { HlmLabelImports } from '@spartan-ng/helm/label';
+import { HasPermissionDirective } from '../../../core/auth/permission.directive';
+import { LanguageService } from '../../../core/i18n/language.service';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { TranslocoService } from '@jsverse/transloco';
 
 import { TranslocoPipe } from '@jsverse/transloco';
+import { HlmSwitchImports } from '@spartan-ng/helm/switch';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
   lucidePlus,
   lucideSearch,
-  lucideGrid3x3,
   lucideList,
   lucidePencil,
   lucideTrash2,
@@ -40,39 +30,50 @@ import {
   lucideImage,
   lucideChevronLeft,
   lucideChevronRight,
+  lucideColumns,
+  lucideInbox,
 } from '@ng-icons/lucide';
 
 import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
 import { LifecycleTabsComponent } from '../../../shared/components/lifecycle-tabs/lifecycle-tabs.component';
 import { ConfirmTypedDialogComponent } from '../../../shared/components/confirm-typed-dialog/confirm-typed-dialog.component';
-import { HlmToaster } from '@spartan-ng/helm/sonner';
+import { TrashBannerComponent } from '../../../shared/components/trash-banner/trash-banner.component';
+import { CategoryFormComponent } from './category-form/category-form.component';
 import { Router } from '@angular/router';
+import { PagerComponent } from '../../../shared/components/pager/pager.component';
+import { HlmAvatarImports } from '@spartan-ng/helm/avatar';
+import { HlmSkeletonImports } from '@spartan-ng/helm/skeleton';
+import { HlmDialogImports } from '@spartan-ng/helm/dialog';
+import { HlmTableImports } from '@spartan-ng/helm/table';
+import { HlmCardImports } from '@spartan-ng/helm/card';
+import { HlmButtonImports } from '@spartan-ng/helm/button';
+import { HlmInputImports } from '@spartan-ng/helm/input';
+import { HlmLabelImports } from '@spartan-ng/helm/label';
+import { HlmSelectImports } from '@spartan-ng/helm/select';
 
 
 @Component({
   selector: 'app-categories-list',
   standalone: true,
   imports: [
+    PagerComponent,
     CommonModule,
+    ImageUploadComponent,
     FormsModule,
     ReactiveFormsModule,
     HasPermissionDirective,
     DataTableComponent,
     LifecycleTabsComponent,
     ConfirmTypedDialogComponent,
-    HlmToaster,
+    TrashBannerComponent,
+    CategoryFormComponent,
     // Spartan
     HlmCardImports,
     HlmButtonImports,
-    HlmBadgeImports,
     HlmInputImports,
-    HlmSelectImports,
-    HlmDialogImports,
-    HlmTableImports,
-    HlmAvatarImports,
-    HlmSkeletonImports,
-    HlmToggleImports,
     HlmLabelImports,
+    HlmSelectImports,
+    HlmSwitchImports,
     NgIcon,
     TranslocoPipe,
   ],
@@ -80,7 +81,6 @@ import { Router } from '@angular/router';
     provideIcons({
       lucidePlus,
       lucideSearch,
-      lucideGrid3x3,
       lucideList,
       lucidePencil,
       lucideTrash2,
@@ -89,6 +89,8 @@ import { Router } from '@angular/router';
       lucideImage,
       lucideChevronLeft,
       lucideChevronRight,
+      lucideColumns,
+      lucideInbox,
     }),
   ],
   templateUrl: './categories-list.component.html',
@@ -96,6 +98,37 @@ import { Router } from '@angular/router';
 export class CategoriesListComponent extends BaseListComponent<CategoryResponse, CategoryRequest> {
   private categoryService = inject(CategoryService);
   private auth = inject(AuthService);
+  protected readonly language = inject(LanguageService);
+  private readonly trx = inject(TranslocoService);
+  private readonly statusLabel = {
+    all: toSignal(this.trx.selectTranslate('categories.trash.statusAll'), { initialValue: 'All' }),
+    enabled: toSignal(this.trx.selectTranslate('categories.trash.statusEnabled'), {
+      initialValue: 'Active',
+    }),
+    disabled: toSignal(this.trx.selectTranslate('categories.trash.statusDisabled'), {
+      initialValue: 'Inactive',
+    }),
+  };
+
+  /**
+   * Columns menu (§8): secondary columns toggle on wide screens. Narrow
+   * screens hide them via CSS regardless — the detail page holds the dates.
+   */
+  readonly showId = signal(false);
+  readonly showDates = signal(true);
+  readonly columnsOpen = signal(false);
+
+  toggleShowId(value: boolean): void {
+    this.showId.set(value);
+  }
+
+  toggleShowDates(value: boolean): void {
+    this.showDates.set(value);
+  }
+
+  noResultsKey(): string {
+    return this.isTrash() ? 'categories.trash.noResultsInTrash' : 'categories.trash.noResultsInActive';
+  }
   protected translationHelper = inject(TranslationFormHelper);
   protected router = inject(Router);
 
@@ -120,8 +153,14 @@ export class CategoriesListComponent extends BaseListComponent<CategoryResponse,
   }
 
   itemToString = (value: string) => {
-    const labels: Record<string, string> = { all: 'All Status', enabled: 'Active', disabled: 'Inactive' };
-    return labels[value] ?? value;
+    switch (value) {
+      case 'enabled':
+        return this.statusLabel.enabled();
+      case 'disabled':
+        return this.statusLabel.disabled();
+      default:
+        return this.statusLabel.all();
+    }
   };
 
   protected override getId(item: CategoryResponse): string {
@@ -149,6 +188,11 @@ export class CategoriesListComponent extends BaseListComponent<CategoryResponse,
 
   protected override restoreIdOf(item: CategoryResponse): number | null {
     return typeof item.id === 'number' ? item.id : null;
+  }
+
+  /** Backend: DELETE /dashboard/categories/{id}/permanent → 204 (hard delete). */
+  protected override permanentDeleteSrv() {
+    return this.categoryService;
   }
 
   /** DataTable selection is keyed on the backend id (what restore takes). */
@@ -197,74 +241,71 @@ export class CategoriesListComponent extends BaseListComponent<CategoryResponse,
     return 'common.permanentDeleteUnsupported';
   }
 
-  // View mode toggle
-
   // Columns for list view
   private columnHelper = createColumnHelper<CategoryResponse>();
 
   /**
-   * Columns that exist on both tabs. Explicitly composed rather than filtered:
-   * TanStack's generated column ids made a filter-by-id unreliable.
+   * Main-cell accessor: thumbnail + name (current UI language) + slug below.
+   * The other language's name stays in its own column.
    */
+  private makeMainCell(langCode: string): ColumnDef<CategoryResponse, any> {
+    const otherLang = SUPPORTED_LANGUAGES.find((l) => l.code !== langCode)!;
+    return this.columnHelper.accessor(
+      (row): { name: string; slug: string; imageUrl: string | null; otherName: string } => {
+        const current = row.translations.find((t) => t.language === langCode)?.name ?? '—';
+        const other = row.translations.find((t) => t.language === otherLang.code)?.name ?? '—';
+        return {
+          name: current,
+          slug: row.slug,
+          imageUrl: row.imageUrl,
+          otherName: other,
+        };
+      },
+      {
+        id: `main_${langCode}`,
+        header: langCode === 'en' ? 'Category' : 'فئة',
+        enableSorting: true,
+        // No width on purpose: in `table-fixed` the unsized column absorbs the
+        // leftover, so the primary name cell gets the space (see columnWidths).
+      }
+    );
+  }
+
   private sharedColumns: ColumnDef<CategoryResponse, any>[] = [
-    this.columnHelper.accessor('id', {
-      header: 'ID',
-      enableSorting: true,
-      meta: { width: '72px' },
-    }),
-    this.columnHelper.accessor((row) => row.imageUrl, {
-      id: 'image',
-      header: 'Image',
-      enableSorting: false,
-      meta: { width: '72px' },
-    }),
-    this.columnHelper.accessor('slug', {
-      header: 'Slug',
-      enableSorting: true,
-      meta: { width: '160px' },
-    }),
-    ...SUPPORTED_LANGUAGES.map((lang) =>
-      this.columnHelper.accessor(
-        (row): string => row.translations.find((t) => t.language === lang.code)?.name ?? '—',
-        {
-          id: `name_${lang.code}`,
-          header: `Name (${lang.label})`,
-          enableSorting: false,
-          meta: { width: '160px' },
-        },
-      ),
-    ),
+    // Main cell for current UI language (thumbnail + name + slug)
+    // The column is dynamic based on current language
   ];
 
-  /** Active tail: status (enabled/disabled) + when it was created. */
+  /**
+   * Active tail: status (enabled/disabled) + when it was created.
+   */
   private activeTail: ColumnDef<CategoryResponse, any>[] = [
     this.columnHelper.accessor('isActive', {
       header: 'Status',
       cell: (info) => info.getValue(),
-      meta: { width: '112px' },
+      meta: { width: '96px' },
     }),
     this.columnHelper.accessor('createdAt', {
       header: 'Created At',
       cell: (info) => info.getValue(),
-      meta: { width: '132px' },
+      // 120px, not 104px: the header label + its sort arrow need ~82px inside
+      // px-4 padding, so at 104px "Created at" rendered as "Created... ↓".
+      meta: { width: '120px' },
     }),
   ];
 
   /**
-   * Trash tail: lifecycle replaces status and created-at — Deleted (relative) and
-   * Deleted At. Neither active-tab column survives the switch.
+   * Trash tail: lifecycle replaces status and created-at. ONE column, labeled
+   * "Deleted" (design.md §4): the relative time as plain text, sorted by the
+   * real `deletedAt` timestamp rather than by the rendered text. There is no
+   * second absolute-date column — the tooltip is the absolute date.
    */
   private trashTail: ColumnDef<CategoryResponse, any>[] = [
     this.columnHelper.accessor('deletedAt', {
       id: 'deleted',
       header: 'Deleted',
-      enableSorting: false,
+      enableSorting: true,
       cell: (info) => info.row.original.deletedAt,
-      meta: { width: '148px' },
-    }),
-    this.columnHelper.accessor('deletedAt', {
-      header: 'Deleted At',
-      enableSorting: false,
       meta: { width: '132px' },
     }),
   ];
@@ -273,15 +314,58 @@ export class CategoriesListComponent extends BaseListComponent<CategoryResponse,
   private actionsColumn: ColumnDef<CategoryResponse, any> = this.columnHelper.display({
     id: 'actions',
     header: 'Actions',
-    meta: { width: '104px' },
+    meta: { width: '96px' },
   });
 
-  /** Lifecycle and status are separate concepts: the tab picks the tail. */
-  readonly columns = computed<ColumnDef<CategoryResponse, any>[]>(() =>
-    this.listView() === 'trash'
-      ? [...this.sharedColumns, ...this.trashTail, this.actionsColumn]
-      : [...this.sharedColumns, ...this.activeTail, this.actionsColumn],
-  );
+  /**
+   * Columns are now computed dynamically based on current language.
+   * Main cell for current language, separate column for other language.
+   * ID column hidden by default (showId signal), available in Columns menu.
+   */
+  readonly columns = computed<ColumnDef<CategoryResponse, any>[]>(() => {
+    const currentLang = this.language.current();
+    const mainCell = this.makeMainCell(currentLang);
+
+    const shared = this.showId()
+      ? [
+          this.columnHelper.accessor('id', {
+            header: 'ID',
+            enableSorting: true,
+            meta: { width: '48px' },
+          }),
+          mainCell,
+        ]
+      : [mainCell];
+
+    // Other language name column (always shown)
+    const otherLang = SUPPORTED_LANGUAGES.find((l) => l.code !== currentLang)!;
+    // Header names the language the column holds, expressed in the UI language
+    // it is rendered in — 'Arabic name' (EN UI) / 'الاسم بالإنجليزية' (AR UI)
+    // over English cells, 'Arabic name' (EN UI) / 'الاسم بالعربية' (AR UI) over
+    // Arabic cells. Keeps headers single-script and semantically honest.
+    const otherNameHeaders: Record<string, Record<string, string>> = {
+      en: { en: 'English name', ar: 'الاسم بالإنجليزية' },
+      ar: { en: 'Arabic name', ar: 'الاسم بالعربية' },
+    };
+    const otherNameColumn = this.columnHelper.accessor(
+      (row): string => row.translations.find((t) => t.language === otherLang.code)?.name ?? '—',
+      {
+        id: `name_${otherLang.code}`,
+        header: otherNameHeaders[otherLang.code][currentLang],
+        enableSorting: false,
+        // A share of the row, not a slug-sized box: the other language's name is
+        // an entity name too. See data-table.component.ts `columnWidths`.
+        meta: { width: '30%' },
+      }
+    );
+
+    if (this.listView() === 'trash') {
+      const tail = this.showDates() ? this.trashTail : [];
+      return [...shared, otherNameColumn, ...tail, this.actionsColumn];
+    }
+    const tail = this.showDates() ? this.activeTail : [this.activeTail[0]];
+    return [...shared, otherNameColumn, ...tail, this.actionsColumn];
+  });
 
   // Computed
 
@@ -344,7 +428,11 @@ export class CategoriesListComponent extends BaseListComponent<CategoryResponse,
   }
 
   goToDetail(item: CategoryResponse): void {
-    // Trashed rows are hidden from the backend detail queries — stay on the list.
+    // Trashed rows cannot open a detail page: `Category` extends
+    // `SoftDeletableEntity` (`@SQLRestriction("deleted_at IS NULL")`), so every
+    // detail query filters them out, and there is no single-trashed-entity
+    // endpoint to fall back on. Routing anyway would land on a 404, so the slug
+    // stays inert in that tab (see the `navigableColumn` note in the template).
     if (this.listView() === 'trash') return;
     this.router.navigate(['/dashboard/categories', item.slug]);
   }
@@ -364,4 +452,9 @@ export class CategoriesListComponent extends BaseListComponent<CategoryResponse,
     this.load();
   }
 
+  /** Empty-state escape hatch: clear the term and reload the current tab. */
+  clearSearch(): void {
+    this.searchQuery = '';
+    this.onSearch();
+  }
 }
