@@ -6,12 +6,13 @@
         <li hlmSidebarMenuItem>
           <a hlmSidebarMenuButton size="lg" routerLink="/dashboard">
             <div
-              class="text-sidebar-primary-foreground flex aspect-square size-10 items-center justify-center rounded-md"
+              class="text-sidebar-primary-foreground flex aspect-square size-10 items-center justify-center rounded-[var(--radius-control)]"
             >
-              <img src="/logo.svg" alt="nocteon logo icon"  />
+              <!-- Decorative: the same link already names the brand in text. -->
+              <img src="/logo.svg" alt="" />
             </div>
             <div class="grid flex-1 text-start text-sm leading-tight">
-              <span class="truncate font-medium">Nocteon </span>
+              <span class="truncate font-medium">Nocteon</span>
               <span class="truncate text-xs">Coffee</span>
             </div>
           </a>
@@ -23,10 +24,10 @@
       #nav is the scroll container; the component scrolls the active link into view after
       each navigation. Without it, deep sections (Catalog) sat below the fold with no cue.
     -->
-    <hlm-sidebar-content #nav>
-      <!-- Home -->
-      <ul hlmSidebarMenu>
-        <li hlmSidebarMenuItem class="py-1.5">
+    <hlm-sidebar-content #nav class="thin-scroll">
+      <!-- Home: pinned above the scroll so it never scrolls out of view. -->
+      <ul hlmSidebarMenu class="sticky top-0 z-10 bg-sidebar pb-1">
+        <li hlmSidebarMenuItem class="py-3">
           <a
             hlmSidebarMenuButton
             [routerLink]="dashboardItem().route"
@@ -35,37 +36,69 @@
             routerLinkActive="bg-sidebar-accent text-sidebar-accent-foreground [&_ng-icon]:text-sidebar-accent-foreground"
             class="group"
           >
-            <ng-icon [name]="dashboardItem().icon" class="size-4 shrink-0 text-sidebar-foreground/60 group-hover:text-sidebar-foreground transition-colors duration-200" />
+            <ng-icon [name]="dashboardItem().icon" class="size-4 shrink-0 text-sidebar-foreground/60 group-hover:text-sidebar-foreground transition-colors duration-150" />
             <span>{{ dashboardItem().label }}</span>
           </a>
         </li>
       </ul>
 
-      <!-- Sections -->
+      <!--
+        One <ul> per section. The group labels and their links are real list items —
+        they used to be bare <li> elements stacked straight into this flex column,
+        which no screen reader announces as a list.
+      -->
       @for (section of sections(); track section.key) {
-        <!-- A header over a single item is noise — permission filtering can leave one. -->
-        @if (section.items.length > 1) {
-          <div class="mt-5 px-3 pb-1.5 text-[11px] font-semibold uppercase tracking-wider text-sidebar-foreground/50 first:mt-3">
-            {{ section.label }}
-          </div>
-        }
-
         <ul hlmSidebarMenu>
-          @for (item of section.items; track item.route) {
-            <li hlmSidebarMenuItem class="py-1.5">
-              <a
-                hlmSidebarMenuButton
-                [routerLink]="item.route"
-                ariaCurrentWhenActive="page"
-                routerLinkActive="bg-sidebar-accent text-sidebar-accent-foreground [&_ng-icon]:text-sidebar-accent-foreground"
-                class="group"
+          @for (parentItem of section.items; track parentItem.route) {
+            <li hlmSidebarMenuItem class="py-1">
+              <!-- Group label: the control that opens and closes the group. -->
+              <button
+                type="button"
+                (click)="toggleItem(parentItem.route)"
+                [attr.aria-expanded]="!isItemCollapsed(parentItem.route)"
+                class="flex h-9 w-full cursor-pointer items-center justify-between px-3 text-sm font-medium text-sidebar-foreground/50 transition-colors duration-150 hover:text-sidebar-foreground ltr:uppercase ltr:tracking-wider"
               >
+                <span class="flex items-center gap-2">
+                  <span>{{ parentItem.label }}</span>
+                </span>
+                <!--
+                  Collapsed points at the container's inline start. Written as a
+                  direction variant, not a language check, so the arrow follows the
+                  layout instead of the translation.
+                -->
                 <ng-icon
-                  [name]="item.icon"
-                  class="size-4 shrink-0 text-sidebar-foreground/60 group-hover:text-sidebar-foreground transition-colors duration-200"
+                  name="lucideChevronDown"
+                  class="size-3.5 shrink-0 transition-transform duration-150"
+                  [class]="isItemCollapsed(parentItem.route) ? 'ltr:-rotate-90 rtl:rotate-90' : ''"
                 />
-                <span>{{ item.label }}</span>
-              </a>
+              </button>
+
+              <!-- Children - collapsible. ps-6, not pl-6: the indent belongs to the
+                   inline start, so it lands under the label in Arabic too. -->
+              <div
+                class="nav-collapse"
+                [class.nav-collapse-open]="!isItemCollapsed(parentItem.route)"
+              >
+                <ul hlmSidebarMenu class="min-h-0 overflow-hidden ps-6">
+                  @for (child of parentItem.children; track child.route) {
+                    <li hlmSidebarMenuItem class="py-0.5">
+                      <a
+                        hlmSidebarMenuButton
+                        [routerLink]="child.route"
+                        ariaCurrentWhenActive="page"
+                        routerLinkActive="bg-sidebar-accent text-sidebar-accent-foreground [&_ng-icon]:text-sidebar-accent-foreground"
+                        class="group"
+                      >
+                        <ng-icon
+                          [name]="child.icon"
+                          class="size-4 shrink-0 text-sidebar-foreground/60 group-hover:text-sidebar-foreground transition-colors duration-150"
+                        />
+                        <span>{{ child.label }}</span>
+                      </a>
+                    </li>
+                  }
+                </ul>
+              </div>
             </li>
           }
         </ul>
