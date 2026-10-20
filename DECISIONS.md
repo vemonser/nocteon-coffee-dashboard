@@ -1286,6 +1286,43 @@ sections, and the locale files were merged key by key.
 
 **179 unit tests** and the whole e2e suite pass on the merged branch.
 
+## ORDERS — The three things that were left open, now built
+
+### 1. The gateway refund
+
+**The money leaves the store through Paymob.** The refund dialog asks for
+the AMOUNT (the whole order or a part of it) and a REASON, and the backend
+calls the gateway:
+
+```
+POST https://accept.paymob.com/api/acceptance/refunds
+{ "parent_transaction_id": "<the transaction>", "amount_cents": "<cents>" }
+```
+
+**The refund is recorded only when the gateway has accepted it.** That is
+the whole point of the order: a refund row means the customer has the money
+back, and a row without a gateway reference would be a promise the store
+cannot keep. A refusal changes nothing at all — the gateway's own message
+is shown, and the order is untouched. The unit test proves it.
+
+### 2. The status-change e-mail
+
+The status dialog has a **"notify the customer"** switch, and the change is
+recorded with the flag. The e-mail is enqueued **after the transaction
+commits**, so nobody is told about a change that was rolled back. The
+template id comes from the environment (`BREVO_TEMPLATE_ORDER_STATUS_CHANGED`),
+like the other order e-mails.
+
+### 3. The dates
+
+The last **22** uses of the built-in `| date` pipe are gone, in 12
+features. The pipe rendered the date in the LOCALE'S OWN order with no
+direction handling, so an Arabic page showed "10/20/2026" while the rest of
+the app showed "20 Oct 2026" / "20 أكتوبر 2026". One date, one helper.
+
+**The formatter audit now reports 0 findings**: no money, no date and no
+order number is formatted outside the shared helpers, anywhere in the app.
+
 ## ORDERS — One environment finding: the API rate limit
 
 The full e2e suite (both sessions' specs, 200+ tests) tripped the backend's
