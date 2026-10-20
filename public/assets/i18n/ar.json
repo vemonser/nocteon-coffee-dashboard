@@ -214,7 +214,7 @@
       "confirmed": "مؤكد",
       "unknown": "غير معروف",
       "approved": "معتمد",
-      "active": "نشط",
+      "active": "مُفعّل",
       "abandoned": "مهجور",
       "converted": "محول"
     },
@@ -1187,13 +1187,17 @@
       "dateRange": "الفترة",
       "rating": "الحد الأدنى للتقييم",
       "verification": "التحقق",
-      "clear": "مسح الفلاتر"
+      "clear": "مسح الفلاتر",
+      "ratingAll": "التقييم: الكل",
+      "ratingAtLeast": "التقييم: {{n}}+"
     },
     "stats": {
       "averageRating": "متوسط التقييم",
       "distribution": "توزيع النجوم",
       "pending": "قيد المراجعة",
-      "total": "الإجمالي"
+      "total": "الإجمالي",
+      "reviews": "تقييمات",
+      "verifiedShare": "حصة الموثق"
     },
     "dateRange": {
       "all": "كل الفترات",
@@ -1934,7 +1938,14 @@
       "status": "الحالة",
       "dateRange": "الفترة",
       "clear": "مسح الفلاتر"
-    }
+    },
+    "sending": "جارٍ الإرسال...",
+    "markRead": "تحديد كمقروء",
+    "markUnread": "تحديد كغير مقروء",
+    "markUnreadNotSupported": "تحديد كغير مقروء غير متاح",
+    "bulkSelected": "تم تحديد {{count}}",
+    "bulkMarkRead": "تحديد كمقروء",
+    "bulkDelete": "حذف المحدد"
   },
   "unauthorized": {
     "title": "الوصول مرفوض",

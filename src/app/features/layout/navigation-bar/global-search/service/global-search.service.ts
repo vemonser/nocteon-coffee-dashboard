@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { GlobalSearchResponse } from '../model/search.model';
+import { SearchResponse as GlobalSearchResponse } from '../model/search.model';
 import { environment } from '../../../../../../environments/environment';
 import { ApiResponse } from '../../../../../core/models/api-response.model';
 

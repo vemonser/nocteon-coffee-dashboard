@@ -155,29 +155,44 @@
   <div class="grid grid-cols-2 gap-4 md:grid-cols-4">
     <div class="rounded-[var(--radius-card)] border bg-card p-4" data-testid="reviews-stat-average">
       <p class="text-sm text-muted-foreground">{{ 'reviews.stats.averageRating' | transloco }}</p>
-      <p class="mt-1 text-2xl font-bold tabular-nums">
-        {{ stats().averageRating === null ? '—' : (stats().averageRating | number: '1.1-1') }}
-      </p>
+      <div class="mt-1 flex items-center gap-2">
+        <app-rating-stars [rating]="stats().averageRating ?? 0" />
+        <span class="text-2xl font-bold tabular-nums">
+          {{ stats().averageRating === null ? '—' : (stats().averageRating | number: '1.1-1') }} / 5
+        </span>
+      </div>
+      <p class="text-xs text-muted-foreground">{{ stats().total }} {{ 'reviews.stats.reviews' | transloco }}</p>
     </div>
 
     <div class="rounded-[var(--radius-card)] border bg-card p-4" data-testid="reviews-stat-distribution">
       <p class="text-sm text-muted-foreground">{{ 'reviews.stats.distribution' | transloco }}</p>
       <div class="mt-2 flex items-end gap-1" aria-hidden="true">
         @for (star of [5, 4, 3, 2, 1]; track star) {
-          <div class="w-4 rounded-sm bg-warning/70" [style.height.px]="barHeight(star)"></div>
+          <button
+            type="button"
+            class="flex w-4 flex-col items-center gap-1"
+            (click)="rating.set(String(star)); applyFilter()"
+            [attr.aria-label]="'Rating ' + star"
+          >
+            <div class="w-4 rounded-sm bg-warning/70" [style.height.px]="barHeight(star)"></div>
+            <span class="text-[10px] tabular-nums text-muted-foreground">{{ stats().distribution[String(star)] ?? 0 }}</span>
+          </button>
         }
       </div>
-      <p class="sr-only">{{ distributionText() }}</p>
     </div>
 
-    <div class="rounded-[var(--radius-card)] border bg-card p-4" data-testid="reviews-stat-pending">
+    <button
+      class="rounded-[var(--radius-card)] border bg-card p-4 text-start"
+      data-testid="reviews-stat-pending"
+      (click)="setStatus('pending')"
+    >
       <p class="text-sm text-muted-foreground">{{ 'reviews.stats.pending' | transloco }}</p>
       <p class="mt-1 text-2xl font-bold tabular-nums">{{ stats().pending }}</p>
-    </div>
+    </button>
 
-    <div class="rounded-[var(--radius-card)] border bg-card p-4" data-testid="reviews-stat-total">
-      <p class="text-sm text-muted-foreground">{{ 'reviews.stats.total' | transloco }}</p>
-      <p class="mt-1 text-2xl font-bold tabular-nums">{{ stats().total }}</p>
+    <div class="rounded-[var(--radius-card)] border bg-card p-4" data-testid="reviews-stat-verified">
+      <p class="text-sm text-muted-foreground">{{ 'reviews.stats.verifiedShare' | transloco }}</p>
+      <p class="mt-1 text-2xl font-bold tabular-nums">{{ verifiedShare() }}%</p>
     </div>
   </div>
 
@@ -228,13 +243,14 @@
         [selectedIds]="selectedIds()"
         [rowId]="rowId"
         [menuActions]="menuActions"
-        [primaryAction]="primaryAction()"
+        [primaryActionFor]="primaryActionFor"
         [hideSlug]="true"
         [minWidth]="'975px'"
         (selectionChange)="onSelectionChange($event)"
         (toggleAllChange)="onToggleAll($event)"
         (menuAction)="onMenuAction($event)"
         (rowClick)="openView($event)"
+        (sortChange)="onSort($event)"
       />
     </div>
   } @else {
@@ -242,7 +258,7 @@
          thumbnail beside the text, not a full-bleed image. -->
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       @for (item of items(); track item.id) {
-        <hlm-card class="overflow-hidden py-0">
+        <hlm-card class="flex min-h-[12rem] flex-col overflow-hidden py-0">
           <div hlmCardContent class="flex gap-3 p-4">
             @if (item.primaryImageUrl) {
               <img
@@ -255,31 +271,37 @@
               <p class="truncate text-sm font-medium">
                 <bdi>{{ item.productName ?? item.productSlug }}</bdi>
               </p>
+              <div class="mt-1 flex items-center gap-2">
+                <app-user-avatar [src]="item.avatarUrl" [name]="item.username" size="sm" />
+                <span class="truncate text-xs"><bdi>{{ item.username }}</bdi></span>
+                <app-verified-badge [verified]="item.verified" />
+              </div>
               <p class="text-xs text-muted-foreground">
                 <app-localized-date [value]="item.createdAt" />
               </p>
               <div class="mt-1 flex items-center gap-1.5">
-                <span class="text-xs tabular-nums text-muted-foreground">{{ item.rating }}/5</span>
+                <app-rating-stars [rating]="item.rating" />
                 <app-status-badge
                   [status]="item.approved ? 'approved' : 'pending'"
                   [customLabel]="item.approved ? 'reviews.status.approved' : 'reviews.status.pending'"
                 />
               </div>
-              <p class="mt-1 line-clamp-2 text-xs text-muted-foreground">
+              <p class="mt-1 line-clamp-3 text-xs text-muted-foreground">
                 <bdi>{{ item.comment }}</bdi>
               </p>
             </div>
           </div>
-          <div class="flex items-center gap-2 border-t px-4 py-3">
-            <button
-              *hasPermission="'review:moderate'"
-              hlmBtn
-              size="sm"
-              class="flex-1"
-              (click)="approve(item)"
-            >
-              {{ 'reviews.approve' | transloco }}
-            </button>
+          <div class="mt-auto flex items-center gap-2 border-t px-4 py-3">
+            @if (!item.approved) {
+              <button
+                *hasPermission="'review:moderate'"
+                hlmBtn
+                size="sm"
+                (click)="approve(item)"
+              >
+                {{ 'reviews.approve' | transloco }}
+              </button>
+            }
             <app-actions-cell
               [item]="item"
               [showEdit]="false"
@@ -316,73 +338,88 @@
   }
 </div>
 
-<!-- The review drawer: the full comment, the product, the order, the rating
-     and the date — everything the table had to shorten. -->
-<app-order-dialog
+<!-- Review details dialog -->
+<app-dialog-shell
   [open]="viewing() !== null"
   [title]="'reviews.details' | transloco"
-  [cancelLabel]="'common.close' | transloco"
-  [confirmLabel]="
-    (viewing()?.approved ? 'reviews.withdrawApproval' : 'reviews.approve') | transloco
-  "
-  (confirmed)="toggleApprovalFromDialog()"
   (closed)="closeView()"
 >
   @if (viewing(); as review) {
     <div class="space-y-5">
       <div class="flex items-center gap-3">
-        <app-user-avatar [src]="review.avatarUrl" [name]="review.username" />
-        <div>
-          <p class="font-medium"><bdi>{{ review.username }}</bdi></p>
+        @if (review.primaryImageUrl) {
+          <img [src]="review.primaryImageUrl" [alt]="review.productName ?? review.productSlug" class="size-12 rounded-[var(--radius-control)] object-cover" />
+        }
+        <div class="min-w-0">
+          <a class="font-medium hover:underline" [routerLink]="['/dashboard/products', review.productSlug]">
+            <bdi>{{ review.productName ?? review.productSlug }}</bdi>
+          </a>
+          <div class="mt-1 flex items-center gap-2">
+            <app-user-avatar [src]="review.avatarUrl" [name]="review.username" size="sm" />
+            <span class="text-sm"><bdi>{{ review.username }}</bdi></span>
+            <app-verified-badge [verified]="review.verified" />
+          </div>
           <p class="text-xs text-muted-foreground">
             <app-localized-date [value]="review.createdAt" [showTime]="true" />
           </p>
         </div>
       </div>
 
-      <div class="rounded-[var(--radius-control)] border p-4">
-        <p class="mb-1 text-sm font-medium">{{ 'reviews.product' | transloco }}</p>
-        <p class="text-sm"><bdi>{{ review.productName ?? review.productSlug }}</bdi></p>
-        @if (review.orderNumber) {
-          <a
-            class="mt-1 inline-flex items-center gap-1 text-sm text-primary hover:underline"
-            [routerLink]="['/dashboard/orders', review.orderId]"
-          >
-            <ng-icon name="lucideBadgeCheck" class="size-4" />
-            {{ 'reviews.columns.verifiedPurchase' | transloco }} · {{ review.orderNumber }}
-          </a>
-        }
+      <div class="flex items-center gap-2">
+        <app-rating-stars [rating]="review.rating" [showText]="true" />
       </div>
 
-      <div class="rounded-[var(--radius-control)] border p-4">
-        <p class="mb-1 text-sm font-medium">{{ 'reviews.rating' | transloco }}</p>
-        <p class="text-sm">{{ review.rating }} / 5</p>
-      </div>
-
-      <div class="rounded-[var(--radius-control)] border p-4">
-        <p class="mb-1 text-sm font-medium">{{ 'reviews.comment' | transloco }}</p>
-        <p class="whitespace-pre-wrap text-sm"><bdi>{{ review.comment }}</bdi></p>
-      </div>
+      <blockquote class="rounded-[var(--radius-control)] border bg-muted/40 p-4 text-sm">
+        <bdi>{{ review.comment }}</bdi>
+      </blockquote>
 
       <div class="flex items-center gap-2">
         <app-status-badge
           [status]="review.approved ? 'approved' : 'pending'"
           [customLabel]="review.approved ? 'reviews.status.approved' : 'reviews.status.pending'"
         />
+        @if (review.verified && review.orderNumber) {
+          <a
+            class="inline-flex items-center gap-1 text-sm text-primary hover:underline"
+            [routerLink]="['/dashboard/orders', review.orderId]"
+          >
+            {{ review.orderNumber }}
+          </a>
+        }
       </div>
+    </div>
+  }
 
+  <div dialog-footer-start>
+    @if (viewing()) {
       <button
         *hasPermission="'review:delete'"
         hlmBtn
-        variant="destructive"
-        class="w-full"
-        (click)="confirmDelete(review)"
+        variant="ghost"
+        class="text-destructive-text hover:bg-destructive/10"
+        (click)="confirmDelete(viewing()!)"
       >
         {{ 'common.delete' | transloco }}
       </button>
-    </div>
-  }
-</app-order-dialog>
+    }
+  </div>
+  <div dialog-footer-end>
+    <button hlmBtn variant="outline" type="button" (click)="closeView()">
+      {{ 'common.close' | transloco }}
+    </button>
+    @if (viewing(); as review) {
+      @if (!review.approved) {
+        <button hlmBtn type="button" (click)="toggleApprovalFromDialog()">
+          {{ 'reviews.approve' | transloco }}
+        </button>
+      } @else {
+        <button hlmBtn variant="outline" type="button" (click)="toggleApprovalFromDialog()">
+          {{ 'reviews.withdrawApproval' | transloco }}
+        </button>
+      }
+    }
+  </div>
+</app-dialog-shell>
 
 <!-- The delete confirmation -->
 @if (deleting(); as review) {

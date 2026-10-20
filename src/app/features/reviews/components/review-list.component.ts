@@ -25,12 +25,14 @@ import { HasPermissionDirective } from '../../../core/auth/permission.directive'
 import { LanguageService } from '../../../core/i18n/language.service';
 import { NotifyService } from '../../../core/notify/notify.service';
 import { ViewMode } from '../../../core/crud/base-list.component';
-import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
+import { DataTableComponent, TableSortEvent } from '../../../shared/components/data-table/data-table.component';
 import { PagerComponent } from '../../../shared/components/pager/pager.component';
 import { PluralPipe } from '../../../shared/pipes/plural.pipe';
 import { ActionsCellComponent } from '../../../shared/ui/actions-cell/actions-cell.component';
 import { LocalizedDateComponent } from '../../../shared/ui/localized-date/localized-date.component';
-import { OrderDialogComponent } from '../../orders/components/order-dialog/order-dialog.component';
+import { DialogShellComponent } from '../../../shared/ui/dialog-shell/dialog-shell.component';
+import { RatingStarsComponent } from '../../../shared/ui/rating-stars/rating-stars.component';
+import { VerifiedBadgeComponent } from '../../../shared/ui/verified-badge/verified-badge.component';
 import { StatusBadgeComponent } from '../../../shared/ui/status-badge/status-badge.component';
 import { UserAvatarComponent } from '../../../shared/ui/user-avatar/user-avatar.component';
 import { RowMenuAction } from '../../../shared/ui/actions-cell/actions-cell.component';
@@ -66,8 +68,10 @@ type ReviewTab = 'pending' | 'approved' | 'all';
     PluralPipe,
     ActionsCellComponent,
     LocalizedDateComponent,
-    OrderDialogComponent,
+    DialogShellComponent,
     StatusBadgeComponent,
+    RatingStarsComponent,
+    VerifiedBadgeComponent,
     UserAvatarComponent,
     NgIcon,
     TranslocoPipe,
@@ -139,6 +143,14 @@ export class ReviewListComponent {
   private searchTimeout: ReturnType<typeof setTimeout> | undefined;
 
   protected readonly Math = Math;
+  protected readonly String = String;
+
+  protected readonly verifiedShare = computed(() => {
+    const total = this.stats().total || 0;
+    if (total === 0) return 0;
+    const verified = this.items().filter((r) => r.verified).length;
+    return Math.round((verified / Math.max(1, this.items().length)) * 100);
+  });
 
   constructor() {
     this.readUrl();
@@ -185,6 +197,10 @@ export class ReviewListComponent {
     this.to.set(params.get('to') ?? '');
     const page = Number(params.get('page') ?? '0');
     if (Number.isFinite(page) && page > 0) this.page.set(page);
+    const sort = params.get('sort');
+    if (sort) this.sort.set(sort);
+    const dir = params.get('direction');
+    if (dir === 'asc' || dir === 'desc') this.direction.set(dir);
   }
 
   private writeUrl(): void {
@@ -198,6 +214,8 @@ export class ReviewListComponent {
     if (this.from()) params['from'] = this.from();
     if (this.to()) params['to'] = this.to();
     if (this.page() > 0) params['page'] = `${this.page()}`;
+    if (this.sort() !== 'createdAt') params['sort'] = this.sort();
+    if (this.direction() !== 'desc') params['direction'] = this.direction();
     void this.router.navigate([], {
       relativeTo: this.route,
       queryParams: params,
@@ -310,6 +328,18 @@ export class ReviewListComponent {
     }, 400);
   }
 
+  protected onSort(event: TableSortEvent | null): void {
+    if (!event) return;
+    const col = event.column;
+    const mapped =
+      col.startsWith('main_') ? 'product.name' : col === 'createdAtTime' ? 'createdAt' : col;
+    this.sort.set(mapped);
+    this.direction.set(event.direction);
+    this.page.set(0);
+    this.writeUrl();
+    this.loadPage();
+  }
+
   protected applyFilter(): void {
     this.page.set(0);
     this.writeUrl();
@@ -367,10 +397,8 @@ export class ReviewListComponent {
         {
           id: `main_${langCode}`,
           header: 'Product',
-          enableSorting: false,
-          // A budget, because the COMMENT is this table's flex column: the
-          // comment is what a moderator reads, and it takes the remainder.
-          meta: { width: '145px' },
+          enableSorting: true,
+          meta: { width: '220px' },
         },
       ),
       this.columnHelper.accessor(
@@ -386,7 +414,7 @@ export class ReviewListComponent {
       this.columnHelper.accessor((row) => row.rating, {
         id: 'rating',
         header: 'Rating',
-        enableSorting: false,
+        enableSorting: true,
       }),
       this.columnHelper.accessor((row) => row.comment, {
         id: 'comment',
@@ -429,11 +457,8 @@ export class ReviewListComponent {
    * more than two. An unlabelled icon makes the reader guess, and a review
    * approved by mistake reaches a customer.
    */
-  protected readonly primaryAction = computed(() =>
-    this.status() === 'approved'
-      ? null
-      : { id: 'approve', label: 'reviews.approve' },
-  );
+  protected readonly primaryActionFor = (row: ReviewResponse) =>
+    row.approved ? null : { id: 'approve', label: 'reviews.approve' };
 
   /**
    * The menu holds the SECONDARY action only.
@@ -588,8 +613,8 @@ export class ReviewListComponent {
   });
 
   protected readonly tabs = computed(() => [
+    { id: 'all' as ReviewTab, label: 'reviews.tabs.all', count: this.stats().total },
     { id: 'pending' as ReviewTab, label: 'reviews.tabs.pending', count: this.stats().pending },
     { id: 'approved' as ReviewTab, label: 'reviews.tabs.approved', count: this.stats().approved },
-    { id: 'all' as ReviewTab, label: 'reviews.tabs.all', count: this.stats().total },
   ]);
 }

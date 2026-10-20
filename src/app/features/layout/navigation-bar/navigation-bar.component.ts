@@ -28,7 +28,7 @@ import { NotificationComponent } from '../../notification/components/notificatio
 import { BreadcrumbComponent } from '../../../shared/components/breadcrumb/breadcrumb.component';
 import { UserMenuComponent } from '../../../shared/ui/user-menu/user-menu.component';
 import { GlobalSearchService } from './global-search/service/global-search.service';
-import { SearchResultDto } from './global-search/model/search.model';
+import { SearchResultItem as SearchResultDto } from './global-search/model/search.model';
 
 @Component({
   selector: 'app-navigation-bar',
