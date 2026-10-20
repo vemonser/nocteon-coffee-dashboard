@@ -1558,3 +1558,64 @@ forever. The page says "Queued" and shows what HAS been sent rather than
 pretending the delivery is done. The backend needs a sender: a `POST
 /api/dashboard/broadcasts/{id}/send`, or a scheduled job that walks the
 `PENDING` recipient rows through the existing `EmailService`.
+
+### Global search command palette (ui/global-search-v2)
+
+- Replaced the anchored autocomplete dropdown with a centered command palette modal.
+- Opens via Ctrl/Cmd+K, "/", or clicking the top-bar trigger; trigger shows "Ctrl K" hint.
+- Surface uses `--card` token (warm) instead of cool bluish-white popover tint.
+- Added `--search-highlight` token for `<mark>` matched text.
+- Active row uses `--accent` background + `--primary` start-edge accent.
+- Group order: Orders, Products, Customers, Categories, Reviews, Contact messages, Carts, then Pages and Actions. Max 5 rows per data group; max 3 Pages/Actions.
+- Backend aggregated endpoint `GET /api/admin/search?q=&limitPerType=` proposed; frontend behind `GLOBAL_SEARCH_USE_MOCK = true` flag until backend ships (see API_GAPS.md).
+- Order identifiers use full order number (`ORD-2026-000002`); group named "Customers" not "Users".
+- Arabic normalization rules (backend): strip tashkeel; unify alef variants (أ إ آ -> ا), ي/ى, ة/ه. Ranking: exact match, then prefix, then substring.
+- Recent searches in localStorage (max 5, clearable); quick links Orders/Reviews/Contact/Carts; quick actions Add product/Add category.
+- Minimum 2 characters, debounce 250ms, stale requests cancelled via switchMap.
+- Roles: combobox/listbox/option, aria-activedescendant.
+
+## Contact & reviews round decisions (ui/contact-reviews-v2)
+
+- DialogShell created (shared/ui/dialog-shell): title sentence case, optional subtitle, close X, scrollable body, sticky footer with start/end slots, Esc close, focus trap, overlay from `--overlay` token (lighter scrim in light mode).
+- RatingStars: single star colour token (warning); optional "n/5" text with >=8px gap; used in table, grid, dialog, KPI.
+- VerifiedBadge: icon + visible tooltip "Verified purchase" + aria-label; replaces bare check icon.
+- SortHeader primitive created.
+- Tabs: "All" first on reviews list (kept Pending as default selected to preserve e2e).
+- Overlay token `--overlay` added to tokens.css (light 0.32, dark 0.6) and `--color-overlay`.
+- Contact dialog primary button label fixed: `contactMessages.sendReply` (was `replySent`).
+- Mark-as-unread not supported by backend; action disabled with tooltip. Bulk mark-read/delete fall back to per-id.
+- Rejected state not supported by backend; no Rejected tab/action. Logged in API_GAPS.
+- Verified share % computed from loaded page (backend lacks verified count).
+- Canned replies dropdown: skipped (logged). Admin response to review: skipped (API_GAPS).
+- Contact ORD-xxxx link detection: skipped (logged).
+- Unread count badge in sidebar: already exists via /stats/unread-contact-count.
+- Explicit numerals in Arabic: countPending_two etc. changed to include numerals.
+- RatingStars in data-table rating case; VerifiedBadge in reviewer case.
+
+## THE PAGE SIZE — the API caps a page at 100, and a bigger one is a 400
+
+Found while re-running the suites after the newsletter work: the **orders
+page never loaded** — it sat on "Loading..." forever, and ten orders tests
+failed with it.
+
+The cause was one line in the orders list: a full read of the filtered set
+for the revenue KPI asked for `size: 1000`. The API validates `size` on
+**every** dashboard list endpoint and answers **400**
+(`"must be less than or equal to 100"`) for anything bigger — verified
+against orders, users, categories and broadcasts, one shared cap. So the
+request was not a bigger page, it was a **failed** page, and a 400 inside
+the list's `forkJoin` took the rows, the counts and the KPIs down with it.
+
+Two rules now hold everywhere:
+
+- **The size is clamped, once, in the base CRUD service** (`MAX_PAGE_SIZE
+  = 100`), and in the product service (which does not extend the base).
+  A caller that asks for 200 gets 100 rows, not a 400. This also unbreaks
+  the preloader of the journal form and the product wizard's dropdowns,
+  which asked for 200 rows and silently got an error.
+- **A caller that needs MORE than a page walks the pages** — the orders
+  KPI read, the newsletter export and the broadcasts export all page until
+  a page comes back short. A "size: 1000" request is never sent.
+
+The rule for the future: the API's cap is 100 rows per page. Anything that
+wants the whole set asks for page 0, 1, 2 … until one page is short.
