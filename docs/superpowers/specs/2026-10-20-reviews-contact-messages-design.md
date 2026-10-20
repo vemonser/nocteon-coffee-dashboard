@@ -40,8 +40,9 @@ grows.
 
 ### In scope
 
-- Backend: contact-message thread + archive + unread + customer lookup + **email-sending reply**;
-  review bulk approval + date filter + statistics + order linkage; seed cleanup.
+- Backend: review bulk approval + date filter + statistics + order linkage; seed cleanup.
+  **The contact messages page changes no backend at all** — the six existing endpoints are
+  enough for it (§4.3).
 - Dashboard: both pages rebuilt on the shared patterns; new shared components
   (`app-user-avatar`, relative-time helper); glossary + i18n; sidebar focus fix.
 - Verification: 4 cells (light/dark × EN/AR) for both pages, plus interaction evidence.
@@ -52,8 +53,8 @@ grows.
 - Order status, payment status, catalogue pages, the Orders list — untouched except where a
   shared component changes behaviour for everyone (the sidebar focus fix).
 - Transactional email for the contact form (`POST /api/contact`) — it stays as-is.
-- Bulk actions other than the ones named: approve reviews; mark read/unread, archive, delete
-  messages.
+- Any change to the contact-message API: no thread, no archive, no mark-as-unread, no customer
+  lookup, no email sending. §4.3 records exactly what that costs and what is given up.
 - A configurable email template editor. The reply template is a fixed, translatable string.
 
 ### Out of scope but worth recording
@@ -78,13 +79,13 @@ column header, empty state). New rows pinned in `docs/glossary.md` and enforced 
 | 13 | Message state — not yet opened | Unread | غير مقروءة | — |
 | 14 | Message state — opened, no answer yet | Read | مقروءة | — |
 | 15 | Message state — answered | Replied | تم الرد عليها | `contactMessages.reply` = "رد" |
-| 16 | Message state — filed away | Archived | مؤرشفة | — |
-| 17 | Action — approve a review | Approve | اعتماد | `reviews.approve` = "اعتماد" (kept, now pinned) |
-| 18 | Action — take the approval back | Withdraw approval | سحب الاعتماد | `reviews.unapprove` = "إلغاء الاعتماد" |
-| 19 | Page title — the reviews list | Reviews | التقييمات | kept |
-| 20 | Page title — the messages list | Contact messages | رسائل التواصل | `contactMessages.title` = "رسائل التواصل" (kept) |
-| 21 | Count line — the counted reviews | reviews | تقييمات | the count line had no noun at all |
-| 22 | Count line — the counted messages | messages | رسائل | — |
+| 16 | Action — approve a review | Approve | اعتماد | `reviews.approve` = "اعتماد" (kept, now pinned) |
+| 17 | Action — take the approval back | Withdraw approval | سحب الاعتماد | `reviews.unapprove` = "إلغاء الاعتماد" |
+| 18 | Page title — the reviews list | Reviews | التقييمات | kept |
+| 19 | Page title — the messages list | Contact messages | رسائل التواصل | `contactMessages.title` = "رسائل التواصل" (kept) |
+| 20 | Count line — the counted reviews | reviews | تقييمات | the count line had no noun at all |
+| 21 | Count line — the counted messages | messages | رسائل | — |
+| 22 | The stored answer on a message | Your reply | ردّك | — |
 
 **Notes.**
 
@@ -94,7 +95,7 @@ column header, empty state). New rows pinned in `docs/glossary.md` and enforced 
   pins its own status family.
 - The count line **names the entity**: `15 reviews · 13 approved · 2 pending` /
   `15 تقييمات · 13 معتمد · 2 قيد المراجعة`. A bare "15 من · 13 مُفعّل" is not a count line.
-  The counted noun is pinned (rows 21–22) so it cannot drift from the page title.
+  The counted noun is pinned (rows 20–21) so it cannot drift from the page title.
 - `common.active` ("مُفعّل") and `common.inactive` ("معطّل") stay exactly as they are — they
   are the *entity* status family (categories, users, products). They must simply stop being
   used for review moderation.
@@ -104,32 +105,11 @@ column header, empty state). New rows pinned in `docs/glossary.md` and enforced 
 
 ## 4. Backend (`nocteon-backend`)
 
-### 4.1 Migration `V110__contact_message_thread.sql`
+### 4.1 No contact-message migration
 
-```sql
-ALTER TABLE contact_messages
-  ADD COLUMN is_archived   BOOLEAN     NOT NULL DEFAULT FALSE,
-  ADD COLUMN replied_at    TIMESTAMPTZ NULL,
-  ADD COLUMN replied_by    BIGINT      NULL REFERENCES users(id);
-
-CREATE TABLE contact_message_replies (
-  id                BIGSERIAL PRIMARY KEY,
-  contact_message_id BIGINT    NOT NULL REFERENCES contact_messages(id) ON DELETE CASCADE,
-  content           TEXT      NOT NULL,
-  created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  created_by        BIGINT    NULL REFERENCES users(id)
-);
-
--- Backfill: the single legacy reply_content becomes the first thread entry.
-INSERT INTO contact_message_replies (contact_message_id, content, created_at, created_by)
-SELECT id, reply_content, updated_at, NULL
-FROM contact_messages
-WHERE reply_content IS NOT NULL AND reply_content <> '';
-```
-
-`is_replied` on `contact_messages` stays (it is the cheap list-level flag) and is kept in sync
-with the thread: it becomes TRUE when the first reply row is written and is never unset
-except by archive/reset.
+**There is no contact-message schema change.** The thread, the archive, the mark-as-unread and
+the email all come off the list — the contact page is a read-and-reply console, not a
+correspondence system. The only migration in this spec is the seed one (§4.4).
 
 ### 4.2 Reviews
 
@@ -144,26 +124,47 @@ The order lookup is a new repository query: the most recent qualifying `Order` f
 `(user, product)` pair. One extra query per page of reviews, or a single join — the
 implementation picks whichever keeps the list query at one round trip.
 
-### 4.3 Contact messages
+### 4.3 Contact messages — no backend change
 
-| Change | Detail |
+The six existing endpoints are enough for the console this page becomes. Nothing is added,
+nothing is changed, no migration runs.
+
+| Endpoint | Used for |
 |---|---|
-| `GET /api/dashboard/contact-messages` | Add `status` (`all` \| `unread` \| `read` \| `replied` \| `archived`), `createdFrom`, `createdTo`, and `search` over name/email/subject/message. The legacy `/unread` endpoint stays (it is used by the dashboard drill-down) and is re-expressed in terms of the new filter. |
-| `GET /api/dashboard/contact-messages/stats` | **New.** `{ total, unread, read, replied, archived }` for the tab badges. |
-| `PATCH /api/dashboard/contact-messages/{id}/unread` | **New.** Marks unread. `id` may be any message, not only a read one. |
-| `PATCH /api/dashboard/contact-messages/{id}/archive` | **New.** Body `{ archived: boolean }` — archives and un-archives. Archiving does not delete. |
-| `GET /api/dashboard/contact-messages/{id}/customer` | **New.** Matches the message email against registered customers. → `{ matched: boolean, customerId, name, email, orderCount, lastOrderId }`. `matched: false` when there is no customer with that email. |
-| `POST /api/dashboard/contact-messages/{id}/reply` | **Changed.** Writes a `contact_message_replies` row, sets `is_replied` / `replied_at` / `replied_by`, marks the message read, then **sends an email** to the sender through the existing `common/email/EmailService`. Response: `{ message: ContactResponse, replies: ReplyResponse[], emailSent: boolean, emailError: string? }`. |
+| `GET /api/dashboard/contact-messages` | The **All** tab. `search` + paging, as today. |
+| `GET /api/dashboard/contact-messages/unread` | The **Unread** tab. Server-side, so the count and the list are the real ones. |
+| `GET /api/dashboard/contact-messages/{id}` | Opening a message. |
+| `PATCH /api/dashboard/contact-messages/{id}/read` | Marking a message read when it is opened. |
+| `POST /api/dashboard/contact-messages/{id}/reply` | Sending the reply. |
+| `DELETE /api/dashboard/contact-messages/{id}` | Deleting a message (behind a confirmation). |
+| `GET /api/dashboard/stats/unread-contact-count` | The **true** unread count for the subtitle and the tab badge — server-side, so it is not a guess. |
 
-**Reply semantics (decided):** the reply is **saved first**, the email is attempted second. If
-the email fails, the API still returns 200 with `emailSent: false` and a human-readable
-`emailError`. The dashboard shows a warning toast — *"Reply saved, but the email could not be
-sent"* — and keeps the reply in the thread. The admin never loses their work, and the UI never
-claims an email went out when it did not. A "Retry sending the email" action re-attempts the
-send for that reply without creating a second thread entry.
+**What the existing API does not support, and how the page copes:**
 
-The email itself: a fixed, translatable subject/body template rendered per language, sent from
-`MAIL_FROM`, to the message's stored email. The content is the reply text the admin typed.
+| Wanted | Without a backend change | Decision |
+|---|---|---|
+| A **Replied** tab | `isReplied` is already on every message, so the tab filters the loaded set client-side. | Kept. The count is the count within the loaded set. |
+| A **date-range** filter | The endpoint takes no dates. | Kept, filtered client-side over the loaded set. |
+| An **Archived** tab | No `archived` flag exists. | **Dropped.** Filing a message away is not worth a schema change for this console. |
+| **Mark as unread** | No endpoint; `PATCH /read` only sets it to read. | **Dropped.** A message is read once it has been opened. |
+| **Archive** | No endpoint. | **Dropped**, with the tab. |
+| A reply **thread** with dates and authors | `replyContent` is a single string with no timestamp and no author. | **Dropped.** The dialog shows the stored reply as one muted block, labelled "Your reply" (row 22), with no date. |
+| A **customer link** ("Ahmed Hassan · 3 orders") | No lookup by email. | **Dropped.** |
+| The reply **emails the customer** | `ContactService.reply()` only stores the text. | **Not claimed.** See below. |
+| **Bulk** actions | No bulk endpoint; N individual calls would work but the page is meant to stay small. | **Kept to one action** — "mark as read" for the selected rows, using the existing per-row endpoint. |
+
+**The honesty rule (this is the important one).** The page must not imply that a reply reached
+the customer. `POST /{id}/reply` writes to the database and nothing else — no mail is sent.
+So:
+
+- the button reads **"Save reply"** / **"حفظ الرد"**, not "Send reply" — because that is what
+  it does;
+- a line under the reply box states it in one sentence, in both languages: *"The reply is saved
+  in the dashboard. It is not emailed to the customer."* /
+  *"الرد بيتحفظ في الداشبورد، مش بيتبعت إيميل للعميل."*;
+- the success toast says **"Reply saved"** / **"تم حفظ الرد"**.
+
+An admin must never walk away believing a customer was answered.
 
 **Quick reply templates** (offered in the reply box, translatable, editable before sending):
 "شكرًا لتواصلك معنا. هنرد عليك خلال ٢٤ ساعة." / "Thanks for reaching out — we'll get back to

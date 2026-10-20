@@ -136,25 +136,29 @@ test.describe('dashboard — round 2', () => {
   test.beforeAll(async ({ browser }) => {
     context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
     page = await context.newPage();
-    for (let attempt = 1; attempt <= 4; attempt += 1) {
+    // The backend rate-limits the login to 5/min per identifier, and the
+    // other suites in the same run log in too — so the wait is generous and
+    // a login that did not land is retried rather than failed.
+    for (let attempt = 1; attempt <= 8; attempt += 1) {
       await gotoLogin(page);
       await fillLoginForm(page, creds.adminEmail, creds.adminPassword);
       const result = await submitLogin(page);
-      if (result.status === 429) {
-        await page.waitForTimeout(20_000);
+      const landed = !page.url().includes('/login');
+      if (result.status === 429 || !landed) {
+        console.log(`  login attempt ${attempt}: status ${result.status}, landed ${landed} — waiting`);
+        await page.waitForTimeout(25_000);
         continue;
       }
       // The login is proven by the URL leaving /login. The ROLE is a soft
       // check: the response body is sometimes already gone by the time it
       // is read (the SPA navigated away), and a null role there is a
       // timing artefact, not an auth failure.
-      expect(page.url(), 'the login must land on the dashboard').not.toContain('/login');
       if (result.role && result.role !== 'ADMIN') {
         throw new Error(`this suite requires an ADMIN account (got ${result.role})`);
       }
       return;
     }
-    throw new Error('login stayed rate-limited (429) after 4 attempts');
+    throw new Error('the login did not succeed after 8 attempts');
   });
 
   test.afterAll(async () => {

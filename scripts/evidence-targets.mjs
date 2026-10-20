@@ -383,6 +383,11 @@ const MEASURE_ORDER_DETAIL = () => {
 export const TARGET_SETS = {
   dashboard: [{ id: 'dashboard', url: '/dashboard?days=30' }],
 
+  // The Round-2 dashboard matrix: the same screen, captured with the
+  // language switched at runtime, and measured by
+  // scripts/measure-dashboard-r2.mjs.
+  'dashboard-r2': [{ id: 'dashboard', url: '/dashboard?days=30' }],
+
   orders: [
     {
       id: 'orders-list',

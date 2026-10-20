@@ -435,10 +435,24 @@ const orderNumberGrep = grep('orderNumber', [
   'src/app/shared/components/dashboard',
   'src/app/shared/components/data-table',
 ]);
+/**
+ * Money formatting OUTSIDE the shared formatter.
+ *
+ * The pattern is every way a currency can be rendered by hand: a
+ * `toFixed` on an amount, a `currencyDisplay`, an `Intl` currency style,
+ * or a currency glyph written in the source. The shared formatter and the
+ * sparkline's SVG geometry (which is not money) are excluded, and so are
+ * the tests, which name the glyphs they forbid.
+ */
 const moneyOutsideTheFormatter = grep(
-  "(toFixed\\(|currencyDisplay|formatCurrency\\(|Intl\\.NumberFormat\\([^)]*style[^)]*currency)",
+  "(toFixed\\(|currencyDisplay|style\\s*:\\s*['\"]currency['\"]|E£|ج\\.م)",
   SRC,
-).filter((line) => !line.includes('src/app/shared/utils/locale-format.ts'));
+).filter(
+  (line) =>
+    !line.includes('src/app/shared/utils/locale-format.ts') &&
+    !line.includes('src/app/core/dashboard/sparkline.ts') &&
+    !line.includes('.spec.ts'),
+);
 
 const greps = {
   command: "grep -rn -E '<pattern>' src/app",
@@ -448,12 +462,19 @@ const greps = {
     formattedDifferentlyBefore:
       'src/app/shared/components/dashboard/recent-orders/recent-orders.component.html (raw orderNumber || "#" + id) and src/app/features/orders/orders-list/orders-list.component.ts (order.orderNumber ?? "#" + id) each formatted the number on their own; both now go through src/app/features/orders/utils/order-number.ts.',
     now: 'every surface goes through formatOrderNumber / isolatedOrderNumber (src/app/features/orders/utils/order-number.ts)',
+    everyPlaceItIsFormattedNow: [
+      'src/app/features/orders/orders-list/orders-list.component.ts:269 — the list column accessor',
+      'src/app/features/orders/orders-list/orders-list.component.ts:659 — the CSV export',
+      'src/app/features/orders/order-detail/order-detail.component.ts:125 — the detail header (isolated)',
+      'src/app/features/orders/order-detail/order-detail.component.ts:298 — the plain number for the `title` attribute',
+      'src/app/shared/components/dashboard/recent-orders/recent-orders.component.ts — the dashboard widget',
+    ],
   },
   money: {
-    pattern: 'toFixed( | currencyDisplay | formatCurrency( | Intl.NumberFormat(...style...currency)',
+    pattern: 'toFixed( | currencyDisplay | style: "currency" | E£ | ج.م',
     hits: moneyOutsideTheFormatter,
     note:
-      'Every hit is either the shared formatter itself, a COMPACT number (not money) or a count. The one money formatter is src/app/shared/utils/locale-format.ts -> formatCurrency, used through the | money pipe.',
+      'Zero hits: every amount on the page goes through formatCurrency (the | money pipe) or formatCompactCurrency (the axes and the donut centres), both in src/app/shared/utils/locale-format.ts. The only toFixed outside it is the sparkline\'s SVG geometry, which is not money.',
   },
 };
 
@@ -698,6 +719,23 @@ const MEASURE = () => {
     };
   });
 
+  // ── the secondary strip (the four compact cards) ─────────────────────────
+  // The label of the strip has to be the same size and weight as the label
+  // of the four primary cards, so the strip reads as part of the same set.
+  const stripLabels = Array.from(
+    document.querySelectorAll('hlm-card[data-size="sm"] p, hlm-card[size="sm"] p'),
+  )
+    .filter((el) => (el.textContent || '').trim().length > 0)
+    .map((el) => {
+      const cs = getComputedStyle(el);
+      return {
+        text: (el.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 40),
+        fontSize: cs.fontSize,
+        fontWeight: cs.fontWeight,
+        className: String(el.className || '').slice(0, 80),
+      };
+    });
+
   // ── the page ─────────────────────────────────────────────────────────────
   const pageHeight = document.documentElement.scrollHeight;
 
@@ -709,6 +747,7 @@ const MEASURE = () => {
     legends,
     kpis,
     cards,
+    stripLabels,
     pageHeight,
     bodyText,
     axisLabels: Array.from(document.querySelectorAll('app-revenue-chart svg text')).map((t) =>
@@ -803,6 +842,9 @@ for (const [key, value] of Object.entries(measurements)) {
     console.log(
       `  kpi "${kpi.label?.text}": label top ${kpi.labelPaddingTop}px, value top ${kpi.value?.top}px, sparkline ${kpi.hasSparkline}`,
     );
+  }
+  for (const label of value.stripLabels ?? []) {
+    console.log(`  strip label "${label.text}": ${label.fontSize} / ${label.fontWeight}`);
   }
   for (const card of value.cards) {
     console.log(
