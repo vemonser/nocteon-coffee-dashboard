@@ -37,7 +37,7 @@ proved with the data that exists.
 | 1.3 | The status model: enums, methods, transitions, is "Refunded" a status or a flag; the chart mismatch | done | `features/orders/models/order-status.model.ts` + `.spec.ts` | `measurements.statusModel` | Order: PENDING CONFIRMED PROCESSING SHIPPED DELIVERED CANCELLED · Payment: PENDING PAID FAILED REFUNDED · Methods: ONLINE CASH_ON_DELIVERY · **Refunded = a payment flag** · The chart showed 3 of the 6 statuses |
 | 1.4 | The orders without items, per cause | done | `features/orders/orders-list/orders-list.component.html` | `measurements.withoutItems` | **7 of 17** — cause: **data** (no `order_items` rows); API omission 0; missing image 0 |
 | 1.5 | The clipping: the root cause, the fix | done | `libs/ui/card/src/lib/hlm-card.ts`, `features/layout/sidebar/app-sidebar.component.html` | `results.json` → the per-cell `verticalClipped` | The shared card had its bottom padding dropped (`pb-0`) and `overflow-hidden` cut the last line; the sidebar logo was 40 px in a 32 px box. **0 vertical clipping** in all 120 captures |
-| 1.6 | One formatter per concept; the grep report | partial | `scripts/formatter-audit.mjs`, `shared/utils/locale-format.ts`, `features/carts/**` | `evidence/orders/measurements-formatters.json` | The money is clean app-wide (the 2 carts pages were fixed). **22 places in 12 other features still use the built-in `\| date` pipe** — reported, not changed (see §5) |
+| 1.6 | One formatter per concept; the grep report | done | `scripts/formatter-audit.mjs`, `scripts/migrate-localized-dates.py`, `shared/utils/locale-format.ts` | `evidence/orders/measurements-formatters.json` | **0 findings.** The last 22 `\| date` uses (12 features) now go through the shared localized date |
 | 1.7 | The seed proposal (NOT executed) | done | `ORDERS_SEED_PROPOSAL.md` | the document | 60 days, 108 orders, 24 customers, every status and payment state, a pending COD order, a refunded order, a partially refunded order, a cancelled order with a reason, and the 7 checks it would unblock |
 
 ### Phase 2 — Language and Arabic
@@ -84,7 +84,7 @@ proved with the data that exists.
 | 5.0 | `ORDERS_CONTRACT.md` written, then **approved** | done | `ORDERS_CONTRACT.md` | the document | The DTOs, the endpoints, the migrations, the permissions, the defects in the API, the features that must not be faked, and the 6 decisions |
 | 5 (backend) | The strict transitions, `order_status_history`, `order_notes`, the shipment, the refunds, the order stats, the list filters | done | `../nocteon-backend` (a separate repository) | the backend's own suite: **579 tests pass** | The endpoint now refuses what the state machine forbids (**409**); the history is written in the same transaction; the counts are the API's |
 | 5 (frontend) | The activity timeline, the note composer, the shipment form, the payment card | done | `features/orders/order-detail/**`, `features/orders/services/order.service.ts` | `results.json`, `verification.json` | The timeline mixes the history, the notes and the refunds, newest first; the net paid is `null` until money comes in |
-| 5 (frontend) | The refund dialog | partial | `features/orders/components/order-refund-dialog/**` | the captures | **Still disabled**, as the ticket requires: the gateway refund is not integrated. The backend records a MANUAL refund, and the dialog says so |
+| 5 (frontend) | The refund dialog | done | `features/orders/components/order-refund-dialog/**` | the captures, `e2e/orders.spec.ts` | The amount (full or partial) and a reason; the money goes back through **Paymob**, and the refund is recorded only when the gateway accepts it |
 >>>>>>> feature/orders-standalone
 
 ### Phase 6 — States, interactions, accessibility
@@ -206,9 +206,9 @@ gateway:
 
 | Gap | Why it is still open |
 |---|---|
-| The **gateway refund** | Paymob's refund API is not wired in. The refund is RECORDED (the amount, the reason, who did it) and the row says it is manual until a gateway reference is written. The order page's refund dialog therefore stays disabled |
+| The **gateway refund** | **BUILT** — `POST /api/acceptance/refunds` with the parent transaction and the amount in cents. The refund is recorded only when the gateway accepts it. The live call cannot be exercised here: the dev environment has no Paymob credentials, so the seeded orders (which have no payment row at all) are refused with "only a paid order can be refunded" |
 | **`SHIPPED → CANCELLED`** | **DECIDED: it stays forbidden.** Once a parcel is on its way, cancelling is a return, and a return is a refund with a reason. The strict map is unchanged |
-| The **status-change e-mail** | The status change records `notifyCustomer`, but nothing sends an e-mail yet. The order page says so |
+| The **status-change e-mail** | **BUILT** — the change publishes an event, and the e-mail is enqueued after the transaction commits. The Brevo template id comes from the environment (`BREVO_TEMPLATE_ORDER_STATUS_CHANGED`), so the template itself is a Brevo-side task |
 | The **seed's broken totals** | **REPAIRED** — `V111__repair_seeded_order_totals.sql` recomputes the seventeen seeded totals with the checkout's own formula. 0 of 17 disagree now |
 | The **seed's order numbers** | The seed writes them by hand, so they can collide with the runtime sequence. Not repaired: renumbering a live order's identifier is a different decision |
 
