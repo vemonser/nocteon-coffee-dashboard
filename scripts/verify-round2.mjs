@@ -141,10 +141,16 @@ const CRITERIA = {
   },
   'AC-10': () => {
     const titles = (light?.cards ?? []).map((c) => c.title);
-    if (!titles.includes('Revenue by origin')) return 'the revenue card title does not follow the tab';
-    if (!titles.includes('Orders by status')) return 'the orders card title does not follow the tab';
+    // The title follows the tab ("... by <the tab>") and it STATES the
+    // scope it counts ("Paid orders by status" — the donut counts the paid
+    // orders, which is the scope of the dashboard's order count).
+    if (!titles.some((t) => /by origin/i.test(t))) return 'the revenue card title does not follow the tab';
+    if (!titles.some((t) => /by status/i.test(t))) return 'the orders card title does not follow the tab';
+    if (!titles.some((t) => /paid orders by status/i.test(t)))
+      return 'the orders card title does not state its scope';
     const arabic = (dark?.cards ?? []).map((c) => c.title);
     if (!arabic.some((t) => t.includes('المنشأ'))) return 'the Arabic title does not follow the tab';
+    if (!arabic.some((t) => t.includes('الحالة'))) return 'the Arabic title does not follow the tab';
     return true;
   },
   'AC-11': () => {

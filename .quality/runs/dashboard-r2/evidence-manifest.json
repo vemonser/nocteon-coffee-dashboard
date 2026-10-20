@@ -29,7 +29,7 @@
           "path": "evidence/dashboard-r2/measurements.json",
           "command": "node scripts/verify-round2.mjs AC-01",
           "exitCode": 0,
-          "recordedAt": "2026-10-20T18:05:58.728Z"
+          "recordedAt": "2026-10-20T20:22:09.906Z"
         }
       ]
     },
@@ -57,7 +57,7 @@
           "path": "evidence/dashboard-r2/measurements.json",
           "command": "node scripts/verify-round2.mjs AC-02",
           "exitCode": 0,
-          "recordedAt": "2026-10-20T18:05:58.831Z"
+          "recordedAt": "2026-10-20T20:22:09.974Z"
         }
       ]
     },
@@ -85,14 +85,14 @@
           "path": "evidence/dashboard-r2/en-light/dashboard-1440.png",
           "command": "node scripts/verify-round2.mjs AC-03",
           "exitCode": 0,
-          "recordedAt": "2026-10-20T18:05:59.460Z"
+          "recordedAt": "2026-10-20T20:22:10.428Z"
         },
         {
           "type": "e2e",
           "path": "evidence/dashboard-r2/results.json",
           "command": "node scripts/verify-round2.mjs AC-03",
           "exitCode": 0,
-          "recordedAt": "2026-10-20T18:05:59.573Z"
+          "recordedAt": "2026-10-20T20:22:10.498Z"
         }
       ]
     },
@@ -120,7 +120,7 @@
           "path": "evidence/dashboard-r2/measurements.json",
           "command": "node scripts/verify-round2.mjs AC-04",
           "exitCode": 0,
-          "recordedAt": "2026-10-20T18:05:58.947Z"
+          "recordedAt": "2026-10-20T20:22:10.050Z"
         }
       ]
     },
@@ -149,14 +149,14 @@
           "path": "evidence/dashboard-r2/en-light/dashboard-1440.png",
           "command": "node scripts/verify-round2.mjs AC-05",
           "exitCode": 0,
-          "recordedAt": "2026-10-20T18:05:59.678Z"
+          "recordedAt": "2026-10-20T20:22:10.567Z"
         },
         {
           "type": "integration-test",
           "path": "evidence/dashboard-r2/measurements.json",
           "command": "node scripts/verify-round2.mjs AC-05",
           "exitCode": 0,
-          "recordedAt": "2026-10-20T18:05:59.784Z"
+          "recordedAt": "2026-10-20T20:22:10.637Z"
         }
       ]
     },
@@ -182,7 +182,7 @@
           "path": "evidence/dashboard-r2/measurements.json",
           "command": "node scripts/verify-round2.mjs AC-06",
           "exitCode": 0,
-          "recordedAt": "2026-10-20T18:05:59.059Z"
+          "recordedAt": "2026-10-20T20:22:10.126Z"
         }
       ]
     },
@@ -209,7 +209,7 @@
           "path": "evidence/dashboard-r2/measurements.json",
           "command": "node scripts/verify-round2.mjs AC-07",
           "exitCode": 0,
-          "recordedAt": "2026-10-20T18:05:59.161Z"
+          "recordedAt": "2026-10-20T20:22:10.203Z"
         }
       ]
     },
@@ -237,14 +237,14 @@
           "path": "evidence/dashboard-r2/ar-dark/dashboard-1440.png",
           "command": "node scripts/verify-round2.mjs AC-08",
           "exitCode": 0,
-          "recordedAt": "2026-10-20T18:05:59.883Z"
+          "recordedAt": "2026-10-20T20:22:10.710Z"
         },
         {
           "type": "e2e",
           "path": "evidence/dashboard-r2/results.json",
           "command": "node scripts/verify-round2.mjs AC-08",
           "exitCode": 0,
-          "recordedAt": "2026-10-20T18:05:59.998Z"
+          "recordedAt": "2026-10-20T20:22:10.782Z"
         }
       ]
     },
@@ -271,14 +271,14 @@
           "path": "evidence/dashboard-r2/e2e/summary-line-ar-dark.png",
           "command": "node scripts/verify-round2.mjs AC-09",
           "exitCode": 0,
-          "recordedAt": "2026-10-20T18:06:00.111Z"
+          "recordedAt": "2026-10-20T20:22:10.853Z"
         },
         {
           "type": "integration-test",
           "path": "evidence/dashboard-r2/e2e/summary-line-ar-dark.png",
           "command": "node scripts/verify-round2.mjs AC-09",
           "exitCode": 0,
-          "recordedAt": "2026-10-20T18:06:00.218Z"
+          "recordedAt": "2026-10-20T20:22:10.921Z"
         }
       ]
     },
@@ -305,14 +305,14 @@
           "path": "evidence/dashboard-r2/en-light/dashboard-1440.png",
           "command": "node scripts/verify-round2.mjs AC-10",
           "exitCode": 0,
-          "recordedAt": "2026-10-20T18:06:00.316Z"
+          "recordedAt": "2026-10-20T20:22:10.995Z"
         },
         {
           "type": "integration-test",
           "path": "evidence/dashboard-r2/measurements.json",
           "command": "node scripts/verify-round2.mjs AC-10",
           "exitCode": 0,
-          "recordedAt": "2026-10-20T18:06:00.419Z"
+          "recordedAt": "2026-10-20T20:22:11.070Z"
         }
       ]
     },
@@ -338,14 +338,14 @@
           "path": "evidence/dashboard-r2/en-light/dashboard-1440.png",
           "command": "node scripts/verify-round2.mjs AC-11",
           "exitCode": 0,
-          "recordedAt": "2026-10-20T18:06:00.517Z"
+          "recordedAt": "2026-10-20T20:22:11.144Z"
         },
         {
           "type": "integration-test",
           "path": "evidence/dashboard-r2/measurements.json",
           "command": "node scripts/verify-round2.mjs AC-11",
           "exitCode": 0,
-          "recordedAt": "2026-10-20T18:06:00.614Z"
+          "recordedAt": "2026-10-20T20:22:11.219Z"
         }
       ]
     },
@@ -372,14 +372,14 @@
           "path": "evidence/dashboard-r2/en-light/dashboard-1440.png",
           "command": "node scripts/verify-round2.mjs AC-12",
           "exitCode": 0,
-          "recordedAt": "2026-10-20T18:06:00.705Z"
+          "recordedAt": "2026-10-20T20:22:11.290Z"
         },
         {
           "type": "integration-test",
           "path": "evidence/dashboard-r2/measurements.json",
           "command": "node scripts/verify-round2.mjs AC-12",
           "exitCode": 0,
-          "recordedAt": "2026-10-20T18:06:00.797Z"
+          "recordedAt": "2026-10-20T20:22:11.359Z"
         }
       ]
     },
@@ -406,14 +406,14 @@
           "path": "evidence/dashboard-r2/en-light/dashboard-1440.png",
           "command": "node scripts/verify-round2.mjs AC-13",
           "exitCode": 0,
-          "recordedAt": "2026-10-20T18:06:00.893Z"
+          "recordedAt": "2026-10-20T20:22:11.432Z"
         },
         {
           "type": "integration-test",
           "path": "evidence/dashboard-r2/measurements.json",
           "command": "node scripts/verify-round2.mjs AC-13",
           "exitCode": 0,
-          "recordedAt": "2026-10-20T18:06:00.988Z"
+          "recordedAt": "2026-10-20T20:22:11.505Z"
         }
       ]
     },
@@ -441,14 +441,14 @@
           "path": "evidence/dashboard-r2/ar-dark/dashboard-1440.png",
           "command": "node scripts/verify-round2.mjs AC-14",
           "exitCode": 0,
-          "recordedAt": "2026-10-20T18:06:01.089Z"
+          "recordedAt": "2026-10-20T20:22:11.580Z"
         },
         {
           "type": "static-analysis",
           "path": "evidence/dashboard-r2/color-math.json",
           "command": "node scripts/verify-round2.mjs AC-14",
           "exitCode": 0,
-          "recordedAt": "2026-10-20T18:06:01.178Z"
+          "recordedAt": "2026-10-20T20:22:11.651Z"
         }
       ]
     },
@@ -475,14 +475,14 @@
           "path": "evidence/dashboard-r2/ar-dark/dashboard-1440.png",
           "command": "node scripts/verify-round2.mjs AC-15",
           "exitCode": 0,
-          "recordedAt": "2026-10-20T18:06:01.258Z"
+          "recordedAt": "2026-10-20T20:22:11.721Z"
         },
         {
           "type": "static-analysis",
           "path": "evidence/dashboard-r2/color-math.json",
           "command": "node scripts/verify-round2.mjs AC-15",
           "exitCode": 0,
-          "recordedAt": "2026-10-20T18:06:01.358Z"
+          "recordedAt": "2026-10-20T20:22:11.791Z"
         }
       ]
     },
@@ -508,14 +508,14 @@
           "path": "evidence/dashboard-r2/en-light/dashboard-1440.png",
           "command": "node scripts/verify-round2.mjs AC-16",
           "exitCode": 0,
-          "recordedAt": "2026-10-20T18:06:01.448Z"
+          "recordedAt": "2026-10-20T20:22:11.859Z"
         },
         {
           "type": "integration-test",
           "path": "evidence/dashboard-r2/measurements.json",
           "command": "node scripts/verify-round2.mjs AC-16",
           "exitCode": 0,
-          "recordedAt": "2026-10-20T18:06:01.529Z"
+          "recordedAt": "2026-10-20T20:22:11.931Z"
         }
       ]
     },
@@ -542,14 +542,14 @@
           "path": "evidence/dashboard-r2/en-light/dashboard-1440.png",
           "command": "node scripts/verify-round2.mjs AC-17",
           "exitCode": 0,
-          "recordedAt": "2026-10-20T18:06:01.611Z"
+          "recordedAt": "2026-10-20T20:22:12.000Z"
         },
         {
           "type": "integration-test",
           "path": "evidence/dashboard-r2/measurements.json",
           "command": "node scripts/verify-round2.mjs AC-17",
           "exitCode": 0,
-          "recordedAt": "2026-10-20T18:06:01.689Z"
+          "recordedAt": "2026-10-20T20:22:12.068Z"
         }
       ]
     },
@@ -575,14 +575,14 @@
           "path": "evidence/dashboard-r2/en-light/dashboard-1440.png",
           "command": "node scripts/verify-round2.mjs AC-18",
           "exitCode": 0,
-          "recordedAt": "2026-10-20T18:06:01.764Z"
+          "recordedAt": "2026-10-20T20:22:12.142Z"
         },
         {
           "type": "integration-test",
           "path": "evidence/dashboard-r2/measurements.json",
           "command": "node scripts/verify-round2.mjs AC-18",
           "exitCode": 0,
-          "recordedAt": "2026-10-20T18:06:01.843Z"
+          "recordedAt": "2026-10-20T20:22:12.224Z"
         }
       ]
     },
@@ -609,21 +609,21 @@
           "path": "evidence/dashboard-r2/en-light/dashboard-1440.png",
           "command": "node scripts/verify-round2.mjs AC-19",
           "exitCode": 0,
-          "recordedAt": "2026-10-20T18:06:01.927Z"
+          "recordedAt": "2026-10-20T20:22:12.295Z"
         },
         {
           "type": "integration-test",
           "path": "evidence/dashboard-r2/measurements.json",
           "command": "node scripts/verify-round2.mjs AC-19",
           "exitCode": 0,
-          "recordedAt": "2026-10-20T18:06:02.004Z"
+          "recordedAt": "2026-10-20T20:22:12.363Z"
         },
         {
           "type": "unit-test",
           "path": ".quality/runs/dashboard-r2/unit-tests.log",
           "command": "npm run test:unit",
           "exitCode": 0,
-          "recordedAt": "2026-10-20T18:06:13.014Z"
+          "recordedAt": "2026-10-20T20:22:21.710Z"
         }
       ]
     },
@@ -649,14 +649,14 @@
           "path": "evidence/dashboard-r2/en-light/dashboard-1440.png",
           "command": "node scripts/verify-round2.mjs AC-20",
           "exitCode": 0,
-          "recordedAt": "2026-10-20T18:06:02.087Z"
+          "recordedAt": "2026-10-20T20:22:12.430Z"
         },
         {
           "type": "integration-test",
           "path": "evidence/dashboard-r2/measurements.json",
           "command": "node scripts/verify-round2.mjs AC-20",
           "exitCode": 0,
-          "recordedAt": "2026-10-20T18:06:02.172Z"
+          "recordedAt": "2026-10-20T20:22:12.503Z"
         }
       ]
     },
@@ -683,14 +683,14 @@
           "path": "evidence/dashboard-r2/en-light/dashboard-1440.png",
           "command": "node scripts/verify-round2.mjs AC-21",
           "exitCode": 0,
-          "recordedAt": "2026-10-20T18:06:02.253Z"
+          "recordedAt": "2026-10-20T20:22:12.575Z"
         },
         {
           "type": "integration-test",
           "path": "evidence/dashboard-r2/measurements.json",
           "command": "node scripts/verify-round2.mjs AC-21",
           "exitCode": 0,
-          "recordedAt": "2026-10-20T18:06:02.333Z"
+          "recordedAt": "2026-10-20T20:22:12.645Z"
         }
       ]
     },
@@ -716,14 +716,14 @@
           "path": "evidence/dashboard-r2/en-light/dashboard-1440.png",
           "command": "node scripts/verify-round2.mjs AC-22",
           "exitCode": 0,
-          "recordedAt": "2026-10-20T18:06:02.425Z"
+          "recordedAt": "2026-10-20T20:22:12.717Z"
         },
         {
           "type": "integration-test",
           "path": "evidence/dashboard-r2/measurements.json",
           "command": "node scripts/verify-round2.mjs AC-22",
           "exitCode": 0,
-          "recordedAt": "2026-10-20T18:06:02.502Z"
+          "recordedAt": "2026-10-20T20:22:12.790Z"
         }
       ]
     },
@@ -749,14 +749,14 @@
           "path": "evidence/dashboard-r2/ar-dark/dashboard-1440.png",
           "command": "node scripts/verify-round2.mjs AC-23",
           "exitCode": 0,
-          "recordedAt": "2026-10-20T18:06:02.585Z"
+          "recordedAt": "2026-10-20T20:22:12.867Z"
         },
         {
           "type": "integration-test",
           "path": "evidence/dashboard-r2/measurements.json",
           "command": "node scripts/verify-round2.mjs AC-23",
           "exitCode": 0,
-          "recordedAt": "2026-10-20T18:06:02.666Z"
+          "recordedAt": "2026-10-20T20:22:12.941Z"
         }
       ]
     },
@@ -785,14 +785,14 @@
           "path": "evidence/dashboard-r2/results.json",
           "command": "node scripts/verify-round2.mjs AC-24",
           "exitCode": 0,
-          "recordedAt": "2026-10-20T18:05:59.257Z"
+          "recordedAt": "2026-10-20T20:22:10.280Z"
         },
         {
           "type": "screenshot",
           "path": "evidence/dashboard-r2/en-light/dashboard-1440.png",
           "command": "node scripts/verify-round2.mjs AC-24",
           "exitCode": 0,
-          "recordedAt": "2026-10-20T18:05:59.354Z"
+          "recordedAt": "2026-10-20T20:22:10.354Z"
         }
       ]
     },
@@ -819,35 +819,28 @@
           "path": "evidence/dashboard-r2/en-light/dashboard-1440.png",
           "command": "node scripts/verify-round2.mjs AC-25",
           "exitCode": 0,
-          "recordedAt": "2026-10-20T18:06:02.743Z"
+          "recordedAt": "2026-10-20T20:22:13.016Z"
         },
         {
           "type": "integration-test",
           "path": "evidence/dashboard-r2/results.json",
           "command": "node scripts/verify-round2.mjs AC-25",
           "exitCode": 0,
-          "recordedAt": "2026-10-20T18:06:02.819Z"
+          "recordedAt": "2026-10-20T20:22:13.089Z"
         },
         {
           "type": "unit-test",
           "path": ".quality/runs/dashboard-r2/unit-tests.log",
           "command": "npm run test:unit",
           "exitCode": 0,
-          "recordedAt": "2026-10-20T18:06:22.400Z"
+          "recordedAt": "2026-10-20T20:22:30.273Z"
         },
         {
           "type": "e2e",
           "path": ".quality/runs/dashboard-r2/e2e-round2.log",
           "command": "npx playwright test e2e/dashboard-round2.spec.ts --reporter=line",
-          "exitCode": 1,
-          "recordedAt": "2026-10-20T18:09:23.477Z"
-        },
-        {
-          "type": "e2e",
-          "path": ".quality/runs/dashboard-r2/e2e-round2.log",
-          "command": "npx playwright test e2e/dashboard-round2.spec.ts --reporter=line",
-          "exitCode": 1,
-          "recordedAt": "2026-10-20T18:14:11.868Z"
+          "exitCode": 0,
+          "recordedAt": "2026-10-20T20:23:23.424Z"
         }
       ]
     }

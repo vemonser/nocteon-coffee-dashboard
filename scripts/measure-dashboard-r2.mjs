@@ -80,6 +80,17 @@ const dashboardSet = byPaymentStatus('PAID');
 const refundedOrders = byPaymentStatus('REFUNDED');
 const cancelledAndRefunded = refundedOrders.filter((o) => o.status === 'CANCELLED');
 
+// The money: the order totals against the line items, and what the
+// difference between them IS.
+const moneyDelta = {
+  orderTotals: sum(dashboardSet, (o) => Number(o.totalAmount ?? 0)),
+  lineItems: itemRevenue(dashboardSet),
+  shipping: sum(dashboardSet, (o) => Number(o.shippingCost ?? 0)),
+  discount: sum(dashboardSet, (o) => Number(o.discountAmount ?? 0)),
+  shippingMinusDiscount: 0,
+};
+moneyDelta.shippingMinusDiscount = moneyDelta.shipping - moneyDelta.discount;
+
 const reconciliation = {
   generatedAt: new Date().toISOString(),
   endpointUnderTest: `GET /api/dashboard/stats/overview?days=${DAYS}`,
@@ -262,7 +273,32 @@ const reconciliation = {
     },
   ],
   rootCauseOfTheMismatch:
-    'The two revenue figures are two DIFFERENT formulas over (in this dataset) the same set of ten paid orders. The Total revenue card sums order.totalAmount — the number the backend stores on the order — and the breakdown widgets sum orderItem.totalPrice, the line items. The seeded order.total_amount does not match the order\'s own items: 1,176.25 against 20,826.50, a factor of 17.7. Nothing in the frontend can reconcile them, because the frontend never sees the two numbers in the same place. The backend\'s own percentages are computed against the order-total sum while the values are the item sum, which is why the category donut reports 1,770.6 % for a single category. The fix is in the data (SEED_PROPOSAL.md): order.total_amount must equal SUM(items) + shipping - discount, exactly as the runtime formula does.',
+    'The two revenue figures are two DIFFERENT formulas over the same set of ' +
+    'paid orders, and they are NOT supposed to be equal. The Total revenue card ' +
+    'sums order.totalAmount — the amount the store recorded for the order, ' +
+    'which is SUM(line items) + shipping - discount. The breakdown widgets sum ' +
+    'orderItem.totalPrice — the LINE ITEMS, with no shipping and no discount. ' +
+    'The difference between the two is therefore exactly the shipping minus the ' +
+    'discount (' +
+    moneyDelta.shippingMinusDiscount +
+    ' on this seed), and the backend\'s own percentages are computed against ' +
+    'the same line-item sum, which is why they now add up. What the round found ' +
+    'was the earlier seed, where order.total_amount did not match the order\'s ' +
+    'own items at all (a factor of 17.7) — a DATA bug, not a formula bug; it has ' +
+    'since been fixed in the seed, and the contract is now: one endpoint, one ' +
+    'revenue definition per figure, and the card says which one it is. ' +
+    'A frontend cannot reconcile the two, because it never sees them in the ' +
+    'same place — which is why the breakdown card carries a note saying that it ' +
+    'sums the line items.',
+  theTwoFigures: {
+    orderTotals: moneyDelta.orderTotals,
+    lineItems: moneyDelta.lineItems,
+    shipping: moneyDelta.shipping,
+    discount: moneyDelta.discount,
+    difference: moneyDelta.orderTotals - moneyDelta.lineItems,
+    shippingMinusDiscount: moneyDelta.shippingMinusDiscount,
+    theDifferenceIsTheShipping: moneyDelta.orderTotals - moneyDelta.lineItems === moneyDelta.shippingMinusDiscount,
+  },
   contractFix:
     'The backend must publish ONE revenue definition and use it everywhere: either the breakdown sums the order totals (proportionally allocated to the product) or the KPI sums the line items. The endpoint also needs to document what `days` bounds, and the device breakdown needs to say what a row is.',
 };

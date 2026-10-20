@@ -36,10 +36,11 @@ tree. The committed artefacts are the measurement scripts
 (`.quality/runs/dashboard-r2/`), and the reports.
 
 **A note on the figures:** the seed is re-run from time to time, so the
-numbers move (during one run the revenue was 1,055.75 over 9 paid orders
-instead of 1,176.25 over 10). Every figure below is a snapshot of the seed
-that was live when the measurement ran; the RECONCILIATION holds for any
-seed, because it is computed from the payload, not typed in. The e2e
+numbers move (during this work the revenue was 1,176.25, then 1,055.75,
+then 21,326.50 — the last one because the seed was fixed so that the order
+totals match their own items). Every figure below is a snapshot of the
+seed that was live when the measurement ran; the RECONCILIATION holds for
+any seed, because it is computed from the payload, not typed in. The e2e
 asserts the FORM of every amount, never its value, for the same reason.
 
 **The headline:** the numbers now reconcile as far as the data allows, there
@@ -50,12 +51,16 @@ readable, the dark status palette no longer prints the same colour twice
 14.6 is the ceiling), and the four KPI cards share one padding and one
 baseline.
 
-**What is NOT fixed, and cannot be, in the frontend:** the Total revenue
-card and the revenue breakdowns are two different formulas over the same
-ten orders, and they differ by a factor of 17.7 because the seeded
-`order.total_amount` does not match the order's own items. That is a data
-problem (SEED_PROPOSAL.md), and no frontend change can reconcile it. Every
-widget now says what it measures instead of implying that it adds up.
+**What is NOT a frontend fix:** the Total revenue card and the revenue
+breakdowns are two DIFFERENT measures over the same ten paid orders, and
+they are not supposed to be equal. The card sums `order.totalAmount` (the
+items + the shipping − the discount = 21,326.50); the breakdowns sum the
+line items only (20,826.50). The difference is exactly the shipping
+(500) — measured, not asserted (`reconciliation.theTwoFigures`). The
+earlier 17.7× gap was a DATA bug (the seeded `total_amount` did not match
+the order's own items); the seed has since been fixed, and what is left is
+a labelling problem, which is what the round fixed: every widget now says
+what it measures instead of implying that it adds up.
 
 ---
 
@@ -70,7 +75,7 @@ Status: **done** = implemented and verified with the evidence named;
 | # | Item | Status | Files changed | Evidence | Measured |
 |---|---|---|---|---|---|
 | 1.1 | The reconciliation table for every revenue/orders widget | done | `scripts/measure-dashboard-r2.mjs` | `evidence/dashboard-r2/measurements.json` → `reconciliation` (15 widgets) | every widget: endpoint, "sends the selected range", the formula, the observed value |
-| 1.1 | The root cause of the mismatch, in one paragraph | done | — | same file → `rootCauseOfTheMismatch` | 1,176.25 (order totals) vs 20,826.50 (line items) — a factor of 17.7, on the same 10 paid orders |
+| 1.1 | The root cause of the mismatch, in one paragraph | done | — | same file → `rootCauseOfTheMismatch` + `theTwoFigures` | the order totals (21,326.50) against the line items (20,826.50): the difference is **exactly the shipping** (500) — the two figures are different measures, not a broken one |
 | 1.1 | The range: does the frontend send it, does the backend honour it | done | `src/app/core/dashboard/period-fetch.ts` (unchanged, re-verified) | `reconciliation.rangeProof` | the client sends `?days=N`; the same endpoint returns `[]` for `days=0`, so the breakdowns are range-filtered too |
 | 1.1 | The label must be truthful per widget | done | `revenue-breakdown-card.component.ts/.html`, `orders-breakdown-card.component.ts/.html`, `widget-header.component.ts` | `reconciliation[].uiLabel` | the breakdowns keep "Last 30 days" (true) and carry a note that they sum the line items; "All time" stays on Recent orders and Low stock |
 | 1.2 | One shared order-count scope, used by the dashboard and the Orders page | done | **new** `src/app/core/dashboard/order-scope.ts`, `dashboard.component.ts/.html`, `orders-list.component.ts/.html` | `orderScope.scopeTable` (5 rows) + `orderScope.computed` | the dashboard counts the 10 orders whose PAYMENT status is PAID; the page counts all 17. The excluded set is COMPUTED from the payload: 7 orders (5 cancelled, 1 confirmed, 1 delivered-and-refunded) → 10 + 7 = 17 ✓. The excluded PAYMENT statuses (FAILED, PENDING, REFUNDED) are exactly the ones the shared definition names ✓ |
