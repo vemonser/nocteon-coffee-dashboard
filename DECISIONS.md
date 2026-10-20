@@ -1115,7 +1115,67 @@ cards in a row share their height, and nothing is clipped at any width
 (the clipping check in the matrix reports 0 real findings — the only hits
 are the `sr-only` elements, which are 1 px by design).
 
-## ORDERS PHASE 5 — Tracking, history and notes (STOPPED FOR APPROVAL)
+## ORDERS PHASE 5 — The backend contract, then the frontend
+
+### 5.0 The contract was approved — and the backend came first
+
+`ORDERS_CONTRACT.md` was approved with the instruction to build the BACKEND
+first. The backend lives in a separate repository
+(`../nocteon-backend`, Spring Boot), so the work landed there.
+
+### 5.1 The backend: one state machine, one history, the counts
+
+| What | Where | What it does |
+|---|---|---|
+| The strict transitions | `OrderStatusService` (already existed, no controller called it) | The controller calls it now. The endpoint used to refuse only DELIVERED and CANCELLED as the CURRENT status, so `PENDING → DELIVERED` was accepted. A refused transition answers **409** with what it refused |
+| `order_status_history` | a new table | Written in the SAME TRANSACTION as every status change: the checkout records the order being placed, the admin's change records who moved it and why, the expiry sweep records its own cancellation. An order can never carry a status its history does not explain |
+| `order_notes` | a new table | The team's notes about the order, always attributed. NOT `orders.notes` — that one is the customer's |
+| The shipment | five columns on `orders` | The carrier, the tracking number, the tracking URL and the two timestamps. There is still no carrier API: the admin pastes what the carrier told them |
+| `order_refunds` | a new table | The AMOUNT, which is what makes the net paid computable. The gateway call is still not integrated, so the row says the refund is MANUAL |
+| `GET /dashboard/orders/stats` | the counts of the FILTERED set | The cards and the rows describe the same set |
+| The list filters | `paymentStatus`, `paymentMethod`, `dateFrom`, `dateTo`, `search` | The browser stopped filtering a page of rows it happened to have: the API filters, and the counts are the API's |
+
+**579 backend tests pass**, including an integration test for the transition
+validation, the totals and the history written atomically.
+
+**Two bugs the tests caught, both real:**
+
+- the expiry sweep released the stock AND the state machine released it again
+  — the units came back TWICE;
+- a PostgreSQL parameter that appears in an `is null` test has no type there,
+  so the date bounds could not be inferred ("could not determine data type of
+  parameter"). The bounds are now never null: an absent filter is a range
+  that covers everything.
+
+The gateway refund is still NOT implemented: Paymob's refund API is not wired
+in, so the refund is recorded and the money is returned by hand. The dialog
+on the order page therefore stays DISABLED, and says so.
+
+### 5.2 The frontend, against the contract
+
+- the list asks the API for its rows AND for its counts, in one round trip,
+  so a card can never contradict the rows below it;
+- the search, the payment status, the payment method and the date range are
+  SERVER-SIDE filters now;
+- the detail page shows the **activity timeline** — the status history, the
+  notes and the refunds, newest first, under the progress tracker;
+- the notes card has a composer that writes to the API;
+- the shipment card shows what the store recorded and lets the admin record
+  it;
+- the payment card shows the transaction reference, the paid-at time, the
+  refunds and the net paid.
+
+**A net paid of nothing is not zero.** An order that was never paid has a
+net paid of `null`, not of its total: the backend only computes one when
+money came in, and the page says "not known" instead of printing a number
+that is not true.
+
+### 5.3 The old contract text is history
+
+The section below is the contract as it was WRITTEN, before the approval. It
+is kept because the decisions in it are the decisions that were taken.
+
+## ORDERS PHASE 5 (as proposed) — Tracking, history and notes
 
 `ORDERS_CONTRACT.md` is written and the work is **stopped there**, as the
 ticket asks: the DTOs, the endpoints, the migrations and the permissions

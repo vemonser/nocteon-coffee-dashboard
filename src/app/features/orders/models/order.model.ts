@@ -61,6 +61,20 @@ export interface OrderResponse {
   shippingCost: number;
   discountAmount: number;
   notes: string | null;
+  /**
+   * Why the order was cancelled, when it was.
+   *
+   * <p>Null for every order that was not cancelled.
+   */
+  cancellationReason?: string | null;
+  /** The shipment: the carrier, the tracking number and the times. */
+  shipment?: {
+    carrier: string | null;
+    trackingNumber: string | null;
+    trackingUrl: string | null;
+    shippedAt: string | null;
+    deliveredAt: string | null;
+  } | null;
   items: OrderItemResponse[];
   createdAt: string;
   address?: OrderAddressResponse | null;

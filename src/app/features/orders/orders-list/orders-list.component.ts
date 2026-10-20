@@ -1,19 +1,16 @@
-﻿import { Component, computed, effect, inject, signal } from '@angular/core';
+﻿import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { forkJoin } from 'rxjs';
 import { ColumnDef, createColumnHelper } from '@tanstack/table-core';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
   lucideSearch,
-  lucidePackage,
   lucideDownload,
-  lucideRefreshCw,
-  lucidePrinter,
-  lucideCircleSlash,
+  lucideX,
   lucideCreditCard,
   lucideBanknote,
-  lucideX,
 } from '@ng-icons/lucide';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
@@ -29,9 +26,9 @@ import { NotifyService } from '../../../core/notify/notify.service';
 import { LanguageService } from '../../../core/i18n/language.service';
 import { LocalizedNameService } from '../../../core/i18n/localized-name.service';
 import { StoreSettingsService } from '../../../core/settings/store-settings.service';
-import { formatCurrency } from '../../../shared/utils/locale-format';
 import { OrderService } from '../services/order.service';
 import {
+  OrderFilterRequest,
   OrderResponse,
   OrderStatus,
   PaymentMethod,
@@ -44,15 +41,7 @@ import {
   orderStatusKind,
   paymentStatusKind,
 } from '../models/order-status.model';
-import {
-  DEFAULT_ORDER_FILTERS,
-  OPEN_STATUSES,
-  applyFilters,
-  countByPaymentMethod,
-  countByPaymentStatus,
-  countByStatus,
-  type OrderFilters,
-} from '../utils/order-filters';
+import { formatCurrency } from '../../../shared/utils/locale-format';
 import { formatOrderNumber } from '../utils/order-number';
 import { ORDER_COUNT_SCOPES } from '../../../core/dashboard/order-scope';
 import type { RowMenuAction } from '../../../shared/ui/actions-cell/actions-cell.component';
@@ -61,16 +50,16 @@ import type { RowMenuAction } from '../../../shared/ui/actions-cell/actions-cell
  * The orders list.
  *
  * The whole page state — the status tab, the filters, the sort, the page —
- * lives in the URL, so a link is shareable, a refresh keeps the view, and the
- * browser's back button walks back through the changes.
+ * lives in the URL, so a link is shareable, a refresh keeps the view, and
+ * the browser's back button walks back through the changes.
  *
- * The NUMBERS are the point of this page. Two rules:
+ * The NUMBERS are the point of this page, and they come from the API:
  *
- *  1. The API is the source of truth for the totals. The list shows the
- *     stored `totalAmount`, never a re-derived number.
- *  2. Every COUNT comes from the whole set, never from the rows on the
- *     current page. The cards used to read the dashboard's 30-day overview,
- *     which is why "Cancelled" said 0 while seven rows said "Cancelled".
+ *  - the ROWS are the API's page of the filtered set;
+ *  - the CARDS and the TAB COUNTS are the API's counts of the same set.
+ *
+ * So a card can never contradict the rows below it, and the browser never
+ * filters a page of rows it happens to have.
  */
 @Component({
   selector: 'app-orders-list',
@@ -78,12 +67,12 @@ import type { RowMenuAction } from '../../../shared/ui/actions-cell/actions-cell
   imports: [
     CommonModule,
     FormsModule,
+    BrnTooltip,
     DataTableComponent,
     HlmButtonImports,
     HlmInputImports,
     HlmNativeSelectImports,
     HlmTooltipImports,
-    BrnTooltip,
     NgIcon,
     PagerComponent,
     PluralPipe,
@@ -92,14 +81,10 @@ import type { RowMenuAction } from '../../../shared/ui/actions-cell/actions-cell
   providers: [
     provideIcons({
       lucideSearch,
-      lucidePackage,
       lucideDownload,
-      lucideRefreshCw,
-      lucidePrinter,
-      lucideCircleSlash,
+      lucideX,
       lucideCreditCard,
       lucideBanknote,
-      lucideX,
     }),
   ],
   templateUrl: './orders-list.component.html',
@@ -114,29 +99,37 @@ export class OrdersListComponent {
   private readonly storeSettings = inject(StoreSettingsService);
   private readonly transloco = inject(TranslocoService);
 
-  /** Every order the API returned. The filters are applied to THIS. */
-  protected readonly allOrders = signal<OrderResponse[]>([]);
+  /** The rows of the current page, straight from the API. */
+  protected readonly rows = signal<OrderResponse[]>([]);
   protected readonly loading = signal(false);
   protected readonly error = signal<string | null>(null);
-  /** True when the store has more orders than the list fetched. */
-  protected readonly truncated = signal(false);
-  /** True when the data on screen is older than the newest request. */
-  protected readonly stale = signal(false);
+
+  /** How many orders the filter selects, across every page. */
+  protected readonly pageTotal = signal(0);
+
+  /** The counts of the filtered set, and of the whole store. */
+  protected readonly filteredTotal = signal(0);
+  protected readonly allTotal = signal(0);
+  protected readonly statusCounts = signal<Record<string, number>>({});
 
   protected readonly status = signal<OrderStatus | 'ALL'>('ALL');
-  protected readonly filters = signal<OrderFilters>({ ...DEFAULT_ORDER_FILTERS });
-  protected readonly sort = signal<string>('createdAt');
+  protected readonly paymentStatus = signal<PaymentStatus | 'ALL'>('ALL');
+  protected readonly paymentMethod = signal<PaymentMethod | 'ALL'>('ALL');
+  protected readonly range = signal<'today' | '7d' | '30d' | 'all' | 'custom'>('all');
+  protected readonly dateFrom = signal<string | null>(null);
+  protected readonly dateTo = signal<string | null>(null);
+  /** What is in the search field. */
+  protected readonly searchField = signal('');
+  /** What is REQUESTED — the URL's search term. */
+  protected readonly searchTerm = signal('');
+
+  protected readonly sort = signal('createdAt');
   protected readonly direction = signal<'asc' | 'desc'>('desc');
   protected readonly page = signal(0);
   protected readonly size = signal(20);
   protected readonly selectedIds = signal<ReadonlySet<number>>(new Set());
 
   protected readonly pageSizeOptions = [10, 20, 50] as const;
-
-  /** Translate with an English fallback — never a raw key. */
-  protected t(key: string, fallback: string): string {
-    return this.notify.t(key, fallback);
-  }
 
   protected readonly statuses = ORDER_STATUSES;
   protected readonly paymentStatuses = PAYMENT_STATUSES;
@@ -151,95 +144,31 @@ export class OrdersListComponent {
 
   /** ── the derived view ───────────────────────────────────────────────── */
 
-  /** The orders that match the FILTERS (the status tab is a separate axis). */
-  protected readonly matching = computed(() => applyFilters(this.allOrders(), this.filters()));
+  /** The rows the API returned. */
+  protected readonly visibleRows = computed(() => this.rows());
 
-  /** The status counts, within the matching set. */
-  protected readonly statusCounts = computed(() => countByStatus(this.matching()));
+  protected readonly selectedCount = computed(() => this.selectedIds().size);
 
-  /** The payment-status counts, within the matching set. */
-  protected readonly paymentStatusCounts = computed(() => countByPaymentStatus(this.matching()));
-
-  /** The payment-method counts, within the matching set. */
-  protected readonly paymentMethodCounts = computed(() => countByPaymentMethod(this.matching()));
-
-  /** The rows the table shows: the matching set, narrowed by the status tab. */
-  protected readonly rows = computed(() => {
-    const status = this.status();
-    const filtered =
-      status === 'ALL' ? this.matching() : this.matching().filter((o) => o.status === status);
-    const start = this.page() * this.size();
-    return filtered.slice(start, start + this.size());
+  /**
+   * What the count covers.
+   *
+   * <p>The dashboard counts the PAID orders and this page counts every
+   * order, so the page says which set it is showing — one definition, in
+   * one place, for both surfaces.
+   */
+  protected readonly scopeNote = computed(() => {
+    const help = ORDER_COUNT_SCOPES.all.helpKey;
+    const value = this.transloco.translate(help);
+    return typeof value === 'string' && value !== help ? value : help;
   });
 
-  /** How many rows the status tab selects. */
-  protected readonly visibleTotal = computed(() => {
-    const status = this.status();
-    return status === 'ALL'
-      ? this.matching().length
-      : this.matching().filter((o) => o.status === status).length;
-  });
-
+  /** How many pages the filtered set has. */
   protected readonly totalPages = computed(() =>
-    Math.max(1, Math.ceil(this.visibleTotal() / this.size())),
+    Math.max(1, Math.ceil(this.pageTotal() / this.size())),
   );
 
   protected readonly first = computed(() => this.page() === 0);
   protected readonly last = computed(() => this.page() >= this.totalPages() - 1);
-
-  /** The count in the page header — what the table actually shows. */
-  protected readonly headerCount = computed(() => this.visibleTotal());
-
-  /**
-   * What the counts on this page cover.
-   *
-   * The page counts EVERY order — the cancelled, the pending and the
-   * refunded ones included. The dashboard counts the PAID orders only, so
-   * the two numbers are different, and the page says which set it is
-   * showing. One definition, shared with the dashboard
-   * (core/dashboard/order-scope.ts).
-   */
-  protected readonly scopeNote = computed(() => {
-    this.language.language();
-    return this.transloco.translate(ORDER_COUNT_SCOPES.all.helpKey);
-  });
-
-  /** The cards. Each one says exactly what it counts. */
-  protected readonly allCount = computed(() => this.allOrders().length);
-  protected readonly matchingCount = computed(() => this.matching().length);
-  protected readonly openCount = computed(
-    () => this.matching().filter((o) => OPEN_STATUSES.includes(o.status)).length,
-  );
-  protected readonly deliveredCount = computed(
-    () => this.matching().filter((o) => o.status === 'DELIVERED').length,
-  );
-  protected readonly cancelledCount = computed(
-    () => this.matching().filter((o) => o.status === 'CANCELLED').length,
-  );
-
-  /** Is a filter other than the status tab active? */
-  protected readonly hasActiveFilters = computed(() => {
-    const f = this.filters();
-    return (
-      f.paymentStatus !== 'ALL' ||
-      f.paymentMethod !== 'ALL' ||
-      f.range !== 'all' ||
-      f.search.trim() !== ''
-    );
-  });
-
-  protected readonly selectedCount = computed(() => this.selectedIds().size);
-
-  /** The row id the table keys its selection on. */
-  protected readonly rowId = (row: OrderResponse): number | null => row?.id ?? null;
-
-  /**
-   * The order number is the row's link to its own page.
-   *
-   * A real anchor, so middle-click and open-in-new-tab work.
-   */
-  protected readonly cellHref = (columnId: string, row: OrderResponse): any[] | null =>
-    columnId === 'orderNumber' ? ['/dashboard/orders', row.id] : null;
 
   /**
    * The empty state says WHICH emptiness it is: a store with no orders, or
@@ -247,12 +176,37 @@ export class OrdersListComponent {
    * different way out.
    */
   protected readonly emptyMessage = computed(() => {
-    if (this.allOrders().length === 0) return this.t('orders.emptyState.noOrders', 'No orders yet');
+    if (this.allTotal() === 0) return this.t('orders.emptyState.noOrders', 'No orders yet');
     if (this.hasActiveFilters() || this.status() !== 'ALL') {
       return this.t('orders.emptyState.noResults', 'No orders match these filters');
     }
     return this.t('orders.empty', 'No orders found');
   });
+
+  /** Translate with an English fallback — never a raw key. */
+  protected t(key: string, fallback: string): string {
+    const value = this.transloco.translate(key);
+    return typeof value === 'string' && value.length > 0 && value !== key ? value : fallback;
+  }
+
+  /** The counts per status, within the filtered set. */
+  protected readonly counts = computed(() => this.statusCounts());
+
+  protected readonly openCount = computed(() => {
+    const c = this.counts();
+    return (c['PENDING'] ?? 0) + (c['CONFIRMED'] ?? 0) + (c['PROCESSING'] ?? 0);
+  });
+  protected readonly deliveredCount = computed(() => this.counts()['DELIVERED'] ?? 0);
+  protected readonly cancelledCount = computed(() => this.counts()['CANCELLED'] ?? 0);
+
+  /** Is a filter other than the status tab active? */
+  protected readonly hasActiveFilters = computed(
+    () =>
+      this.paymentStatus() !== 'ALL' ||
+      this.paymentMethod() !== 'ALL' ||
+      this.range() !== 'all' ||
+      this.searchTerm().trim() !== '',
+  );
 
   /** ── the columns ────────────────────────────────────────────────────── */
 
@@ -261,18 +215,15 @@ export class OrdersListComponent {
   /**
    * The column order (ticket 3.1): select, order #, customer, items, order
    * status, payment status, method, total, created at, actions.
-   *
-   * The raw id column is NOT here — it is reference noise for a reader, and
-   * the order number is the identifier a customer quotes.
    */
   protected readonly columns: ColumnDef<OrderResponse, any>[] = [
     this.columnHelper.accessor(
       (row) => formatOrderNumber(row.orderNumber, row.id),
-      { id: 'orderNumber', header: 'Order #', enableSorting: false, meta: { width: '166px' } },
+      { id: 'orderNumber', header: 'Order #', enableSorting: false, meta: { width: '165px' } },
     ),
     this.columnHelper.accessor(
       (row) => ({ name: row.customer?.name ?? null, email: row.customer?.email ?? null }),
-      { id: 'customer', header: 'Customer', enableSorting: false, meta: { width: '95px' } },
+      { id: 'customer', header: 'Customer', enableSorting: false, meta: { width: '92px' } },
     ),
     this.columnHelper.accessor('items', {
       id: 'items',
@@ -282,24 +233,24 @@ export class OrdersListComponent {
     }),
     this.columnHelper.accessor(
       (row) => orderStatusKind(row.status),
-      { id: 'orderStatus', header: 'Order status', enableSorting: true, meta: { width: '124px' } },
+      { id: 'orderStatus', header: 'Order status', enableSorting: true, meta: { width: '118px' } },
     ),
     this.columnHelper.accessor(
       (row) => paymentStatusKind(row.paymentStatus),
-      { id: 'paymentStatus', header: 'Payment status', enableSorting: true, meta: { width: '132px' } },
+      { id: 'paymentStatus', header: 'Payment status', enableSorting: true, meta: { width: '134px' } },
     ),
     this.columnHelper.accessor(
       (row) => ({
         icon: row.paymentMethod === 'ONLINE' ? 'lucideCreditCard' : 'lucideBanknote',
         method: row.paymentMethod,
       }),
-      { id: 'paymentMethod', header: 'Method', enableSorting: false, meta: { width: '179px' } },
+      { id: 'paymentMethod', header: 'Method', enableSorting: false, meta: { width: '168px' } },
     ),
     this.columnHelper.accessor('totalAmount', {
       id: 'totalAmount',
       header: 'Total',
       enableSorting: true,
-      meta: { width: '110px', align: 'end' },
+      meta: { width: '112px', align: 'end' },
     }),
     this.columnHelper.accessor('createdAt', {
       id: 'createdAtTime',
@@ -311,11 +262,10 @@ export class OrdersListComponent {
   ];
 
   /**
-   * The sort property the BACKEND understands.
+   * The display column id -> the `Order` entity's own property.
    *
-   * The table's column ids are display ids; the API sorts by the Order
-   * entity's own property names. A mismatch here is a 400 from the API, so
-   * the mapping is explicit.
+   * The sort is the BACKEND's: the table uses `manualSorting`, and a
+   * display id the API does not know is a 400.
    */
   private static readonly SORT_PROPERTY: Record<string, string> = {
     orderNumber: 'orderNumber',
@@ -328,15 +278,12 @@ export class OrdersListComponent {
     createdAtTime: 'createdAt',
   };
 
-  /** The display column id for a backend sort property. */
-  private static readonly SORT_COLUMN: Record<string, string> = {
-    orderNumber: 'orderNumber',
-    status: 'orderStatus',
-    paymentStatus: 'paymentStatus',
-    paymentMethod: 'paymentMethod',
-    totalAmount: 'totalAmount',
-    createdAt: 'createdAtTime',
-  };
+  /** The row id the table keys its selection on. */
+  protected readonly rowId = (row: OrderResponse): number | null => row?.id ?? null;
+
+  /** The order number is the row's link to its own page. */
+  protected readonly cellHref = (columnId: string, row: OrderResponse): any[] | null =>
+    columnId === 'orderNumber' ? ['/dashboard/orders', row.id] : null;
 
   /** The row's overflow menu. */
   protected readonly menuActions: RowMenuAction[] = [
@@ -365,7 +312,12 @@ export class OrdersListComponent {
   private currentState() {
     return {
       status: this.status(),
-      filters: this.filters(),
+      paymentStatus: this.paymentStatus(),
+      paymentMethod: this.paymentMethod(),
+      range: this.range(),
+      dateFrom: this.dateFrom(),
+      dateTo: this.dateTo(),
+      search: this.searchTerm(),
       sort: this.sort(),
       direction: this.direction(),
       page: this.page(),
@@ -375,28 +327,26 @@ export class OrdersListComponent {
 
   private stateFromParams(params: import('@angular/router').ParamMap) {
     const status = (params.get('status') ?? 'ALL').toUpperCase();
-    const range = (params.get('range') ?? 'all') as OrderFilters['range'];
-    const sort = params.get('sort') ?? 'createdAt';
-    const direction = (params.get('direction') ?? 'desc') as 'asc' | 'desc';
-    const page = Number(params.get('page') ?? 0) || 0;
-    const size = Number(params.get('size') ?? 20) || 20;
+    const range = params.get('range') ?? 'all';
 
     return {
       status: (ORDER_STATUSES as readonly string[]).includes(status)
         ? (status as OrderStatus)
         : ('ALL' as const),
-      filters: {
-        paymentStatus: (params.get('paymentStatus') ?? 'ALL').toUpperCase() as PaymentStatus | 'ALL',
-        paymentMethod: (params.get('paymentMethod') ?? 'ALL').toUpperCase() as PaymentMethod | 'ALL',
-        range: (['today', '7d', '30d', 'all', 'custom'] as const).includes(range) ? range : 'all',
-        from: params.get('from'),
-        to: params.get('to'),
-        search: params.get('q') ?? '',
-      } as OrderFilters,
-      sort,
-      direction,
-      page: Math.max(0, page),
-      size: [10, 20, 50].includes(size) ? size : 20,
+      paymentStatus: (params.get('paymentStatus') ?? 'ALL').toUpperCase() as PaymentStatus | 'ALL',
+      paymentMethod: (params.get('paymentMethod') ?? 'ALL').toUpperCase() as PaymentMethod | 'ALL',
+      range: (['today', '7d', '30d', 'all', 'custom'] as const).includes(range as never)
+        ? (range as 'today' | '7d' | '30d' | 'all' | 'custom')
+        : 'all',
+      dateFrom: params.get('from'),
+      dateTo: params.get('to'),
+      search: params.get('q') ?? '',
+      sort: params.get('sort') ?? 'createdAt',
+      direction: (params.get('direction') ?? 'desc') as 'asc' | 'desc',
+      page: Math.max(0, Number(params.get('page') ?? 0) || 0),
+      size: [10, 20, 50].includes(Number(params.get('size') ?? 20))
+        ? Number(params.get('size') ?? 20)
+        : 20,
     };
   }
 
@@ -406,7 +356,13 @@ export class OrdersListComponent {
 
   private applyState(state: ReturnType<OrdersListComponent['stateFromParams']>): void {
     this.status.set(state.status);
-    this.filters.set(state.filters);
+    this.paymentStatus.set(state.paymentStatus);
+    this.paymentMethod.set(state.paymentMethod);
+    this.range.set(state.range);
+    this.dateFrom.set(state.dateFrom);
+    this.dateTo.set(state.dateTo);
+    this.searchTerm.set(state.search);
+    this.searchField.set(state.search);
     this.sort.set(state.sort);
     this.direction.set(state.direction);
     this.page.set(state.page);
@@ -415,21 +371,34 @@ export class OrdersListComponent {
 
   /** Write the state back to the URL. */
   private writeUrl(replace = false): void {
-    const status = this.status();
-    const f = this.filters();
-    const params: Record<string, string> = {};
+    const f = {
+      status: this.status(),
+      paymentStatus: this.paymentStatus(),
+      paymentMethod: this.paymentMethod(),
+      range: this.range(),
+      dateFrom: this.dateFrom(),
+      dateTo: this.dateTo(),
+      search: this.searchTerm().trim(),
+      sort: this.sort(),
+      direction: this.direction(),
+      page: this.page(),
+      size: this.size(),
+    };
 
-    if (status !== 'ALL') params['status'] = status;
+    const params: Record<string, string> = {};
+    if (f.status !== 'ALL') params['status'] = f.status;
     if (f.paymentStatus !== 'ALL') params['paymentStatus'] = f.paymentStatus;
     if (f.paymentMethod !== 'ALL') params['paymentMethod'] = f.paymentMethod;
     if (f.range !== 'all') params['range'] = f.range;
-    if (f.from) params['from'] = f.from;
-    if (f.to) params['to'] = f.to;
-    if (f.search.trim()) params['q'] = f.search.trim();
-    if (this.sort() !== 'createdAt') params['sort'] = this.sort();
-    if (this.direction() !== 'desc') params['direction'] = this.direction();
-    if (this.page() > 0) params['page'] = `${this.page()}`;
-    if (this.size() !== 20) params['size'] = `${this.size()}`;
+    if (f.dateFrom) params['from'] = f.dateFrom;
+    if (f.dateTo) params['to'] = f.dateTo;
+    // What the field holds is what is asked for: the URL write is the
+    // request, and the field is what the admin typed.
+    if (this.searchField().trim()) params['q'] = this.searchField().trim();
+    if (f.sort !== 'createdAt') params['sort'] = f.sort;
+    if (f.direction !== 'desc') params['direction'] = f.direction;
+    if (f.page > 0) params['page'] = `${f.page}`;
+    if (f.size !== 20) params['size'] = `${f.size}`;
 
     void this.router.navigate([], {
       relativeTo: this.route,
@@ -438,37 +407,103 @@ export class OrdersListComponent {
     });
   }
 
+  // ── the API filters ─────────────────────────────────────────────────────
+
+  /**
+   * The date range as the API takes it: two inclusive calendar days.
+   *
+   * The days are CALENDAR days in the browser's own time zone, which is the
+   * store's time zone — so an order placed at 23:30 belongs to that day.
+   */
+  private apiRange(): { dateFrom?: string; dateTo?: string } {
+    const range = this.range();
+    if (range === 'all') return {};
+    if (range === 'custom') {
+      return {
+        ...(this.dateFrom() ? { dateFrom: this.dateFrom()! } : {}),
+        ...(this.dateTo() ? { dateTo: this.dateTo()! } : {}),
+      };
+    }
+    const today = this.today();
+    const days = range === 'today' ? 1 : range === '7d' ? 7 : 30;
+    const from = new Date();
+    from.setDate(from.getDate() - (days - 1));
+    return { dateFrom: this.toIso(from), dateTo: today };
+  }
+
+  private today(): string {
+    const now = new Date();
+    return this.toIso(now);
+  }
+
+  private toIso(date: Date): string {
+    const y = date.getFullYear();
+    const m = `${date.getMonth() + 1}`.padStart(2, '0');
+    const d = `${date.getDate()}`.padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  }
+
+  /** The filters, WITHOUT the status tab: the counts describe the whole set. */
+  private apiFilter(): OrderFilterRequest {
+    const range = this.apiRange();
+    return {
+      paymentStatus:
+        this.paymentStatus() === 'ALL' ? undefined : (this.paymentStatus() as PaymentStatus),
+      paymentMethod:
+        this.paymentMethod() === 'ALL' ? undefined : (this.paymentMethod() as PaymentMethod),
+      search: this.searchTerm().trim() || undefined,
+      ...range,
+    };
+  }
+
   // ── loading ──────────────────────────────────────────────────────────────
 
   /**
-   * Load the orders.
+   * Load the page and the counts.
    *
-   * The whole set is fetched (the API caps a page at 100), so the filters
-   * the API does not support and the counts the cards show are exact.
+   * Three requests in one round trip: the rows, the counts of the filtered
+   * set, and the counts of the whole store. They answer together or not at
+   * all, so the cards and the rows are always of the same vintage.
    */
   protected load(): void {
     const requestId = ++this.requestId;
     this.loading.set(true);
     this.error.set(null);
 
-    this.orderService
-      .getAllOrders({ sort: this.sort(), direction: this.direction() })
-      .subscribe({
-        next: (res) => {
-          // A response that is not the newest is dropped: the page can never
-          // show the data of an older request.
-          if (requestId !== this.requestId) return;
-          this.allOrders.set(res.orders);
-          this.truncated.set(res.truncated);
-          this.stale.set(false);
-          this.loading.set(false);
-        },
-        error: (err) => {
-          if (requestId !== this.requestId) return;
-          this.loading.set(false);
-          this.error.set(err?.error?.message ?? 'orders.errorState.title');
-        },
-      });
+    const filter = this.apiFilter();
+    const status = this.status();
+
+    forkJoin({
+      rows: this.orderService.getAll({
+        page: this.page(),
+        size: this.size(),
+        sort: this.sort(),
+        direction: this.direction(),
+        status: status === 'ALL' ? undefined : status,
+        ...filter,
+      }),
+      stats: this.orderService.getStats(filter),
+      all: this.orderService.getStats({}),
+    }).subscribe({
+      next: ({ rows, stats, all }) => {
+        if (requestId !== this.requestId) return;
+        this.rows.set(rows.data?.content ?? []);
+        this.pageTotal.set(rows.data?.totalElements ?? 0);
+        this.filteredTotal.set(stats.data?.total ?? 0);
+        this.allTotal.set(all.data?.total ?? 0);
+        const counts: Record<string, number> = {};
+        for (const entry of stats.data?.byStatus ?? []) {
+          counts[entry.status] = entry.count;
+        }
+        this.statusCounts.set(counts);
+        this.loading.set(false);
+      },
+      error: (err) => {
+        if (requestId !== this.requestId) return;
+        this.loading.set(false);
+        this.error.set(err?.error?.message ?? 'orders.errorState.title');
+      },
+    });
   }
 
   protected retry(): void {
@@ -486,51 +521,56 @@ export class OrdersListComponent {
   }
 
   protected setPaymentStatus(value: string): void {
-    this.filters.update((f) => ({ ...f, paymentStatus: value as PaymentStatus | 'ALL' }));
+    this.paymentStatus.set(value as PaymentStatus | 'ALL');
     this.page.set(0);
     this.writeUrl();
   }
 
   protected setPaymentMethod(value: string): void {
-    this.filters.update((f) => ({ ...f, paymentMethod: value as PaymentMethod | 'ALL' }));
+    this.paymentMethod.set(value as PaymentMethod | 'ALL');
     this.page.set(0);
     this.writeUrl();
   }
 
   protected setRange(value: string): void {
-    this.filters.update((f) => ({ ...f, range: value as OrderFilters['range'] }));
+    this.range.set(value as 'today' | '7d' | '30d' | 'all' | 'custom');
     this.page.set(0);
     this.writeUrl();
   }
 
   protected setCustomFrom(value: string): void {
-    this.filters.update((f) => ({ ...f, range: 'custom', from: value || null }));
+    this.dateFrom.set(value || null);
+    this.range.set('custom');
     this.page.set(0);
     this.writeUrl();
   }
 
   protected setCustomTo(value: string): void {
-    this.filters.update((f) => ({ ...f, range: 'custom', to: value || null }));
+    this.dateTo.set(value || null);
+    this.range.set('custom');
     this.page.set(0);
     this.writeUrl();
   }
 
-  protected readonly searchTerm = signal('');
+  private searchTimeout: ReturnType<typeof setTimeout> | undefined;
 
   protected onSearch(value: string): void {
-    this.searchTerm.set(value);
+    this.searchField.set(value);
     clearTimeout(this.searchTimeout);
     this.searchTimeout = setTimeout(() => {
-      this.filters.update((f) => ({ ...f, search: value }));
       this.page.set(0);
+      // The URL is the request: writing it is what makes the list ask the
+      // API again.
       this.writeUrl(true);
     }, 350);
   }
 
-  private searchTimeout: ReturnType<typeof setTimeout> | undefined;
-
   protected clearFilters(): void {
-    this.filters.set({ ...DEFAULT_ORDER_FILTERS });
+    this.paymentStatus.set('ALL');
+    this.paymentMethod.set('ALL');
+    this.range.set('all');
+    this.dateFrom.set(null);
+    this.dateTo.set(null);
     this.searchTerm.set('');
     this.page.set(0);
     this.writeUrl();
@@ -538,8 +578,7 @@ export class OrdersListComponent {
 
   protected onSortChange(event: { column: string; direction: 'asc' | 'desc' } | null): void {
     const column = event?.column ?? 'createdAtTime';
-    const property = OrdersListComponent.SORT_PROPERTY[column] ?? 'createdAt';
-    this.sort.set(property);
+    this.sort.set(OrdersListComponent.SORT_PROPERTY[column] ?? 'createdAt');
     this.direction.set(event?.direction ?? 'desc');
     this.page.set(0);
     this.writeUrl();
@@ -547,7 +586,11 @@ export class OrdersListComponent {
 
   /** The column id the table shows the sort arrow on. */
   protected get sortColumnId(): string {
-    return OrdersListComponent.SORT_COLUMN[this.sort()] ?? 'createdAtTime';
+    const property = this.sort();
+    const entry = Object.entries(OrdersListComponent.SORT_PROPERTY).find(
+      ([, value]) => value === property,
+    );
+    return entry ? entry[0] : 'createdAtTime';
   }
 
   protected goToPage(page: number): void {
@@ -574,8 +617,6 @@ export class OrdersListComponent {
         break;
       case 'changeStatus':
       case 'cancel':
-        // The status dialog lives on the order's own page, where the
-        // consequence of the change is visible next to the order.
         void this.router.navigate(['/dashboard/orders', order.id], {
           queryParams: { action: event.id },
         });
@@ -625,7 +666,7 @@ export class OrdersListComponent {
    * page are the same number written the same way.
    */
   protected exportCsv(): void {
-    const rows = this.matching();
+    const rows = this.rows();
     if (!rows.length) return;
 
     const money = (value: number): string =>
@@ -657,7 +698,7 @@ export class OrdersListComponent {
       const subtotal = (order.items ?? []).reduce((sum, i) => sum + Number(i.totalPrice ?? 0), 0);
       lines.push(
         [
-          formatOrderNumber(order.orderNumber, order.id),
+          order.orderNumber ?? `#${order.id}`,
           order.createdAt,
           order.status,
           order.paymentStatus,

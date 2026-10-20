@@ -1384,7 +1384,13 @@
       "tagsGap": "The store does not have tags for orders yet.",
       "notesGap": "The store has no place to keep an internal note yet.",
       "historyGap": "The store does not record the order's history yet.",
-      "variantGap": "The store does not record the chosen variant on an order line yet."
+      "variantGap": "The store does not record the chosen variant on an order line yet.",
+      "activityUnavailable": "The order's history could not be loaded. The page still shows what it has.",
+      "noActivity": "No recorded events yet.",
+      "noteAdded": "Note added",
+      "shipmentSaved": "Shipment saved",
+      "resendEmailGap": "The store sends order e-mails automatically, but it cannot send one on demand.",
+      "editShipment": "Record the shipment"
     },
     "dialogs": {
       "status": {
@@ -1425,7 +1431,8 @@
       "delivered": "Delivered",
       "cancelled": "Order cancelled",
       "reason": "Reason",
-      "by": "by {{actor}}"
+      "by": "by {{actor}}",
+      "notify": "the customer is to be told"
     },
     "orderScope": {
       "all": "All orders",

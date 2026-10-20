@@ -10,51 +10,29 @@ import {
   PaymentMethod,
   PaymentStatus,
 } from '../models/order.model';
+import {
+  OrderNote,
+  OrderPaymentDetails,
+  OrderRefund,
+  OrderShipment,
+  OrderStats,
+  OrderStatusHistoryEntry,
+} from '../models/order-activity.model';
 
 /**
  * The orders service.
  *
- * What the API accepts today (backend `OrderFilterRequest` extends
- * `BaseFilterRequest`): `page`, `size`, `sort`, `direction`, `status`,
- * `userId`.
- *
- * What it does NOT accept: `search`, `paymentStatus`, `paymentMethod`,
- * `dateFrom`, `dateTo`. There is also no stats endpoint. Those gaps are
- * written up in ORDERS_CONTRACT.md; until they exist, the list fetches the
- * whole set and filters it here, so the numbers on screen are still exact.
+ * The list and the counts take the SAME filters, so the cards and the rows
+ * always describe the same set — the API filters server-side, and the
+ * browser never filters a page of rows it happens to have.
  */
-
-/** The API refuses a page size above 100 (BaseFilterRequest: @Max(100)). */
-export const API_MAX_PAGE_SIZE = 100;
-
-/**
- * The cap on how many orders the list pulls for the client-side filters.
- *
- * The list fetches the whole set so that the filters the API does not
- * support (payment status, payment method, date range, search) and the
- * counts the cards show are EXACT, not "the rows on this page". A store with
- * more orders than this hits the cap, and the list says so instead of
- * quietly showing a partial count.
- */
-export const CLIENT_FILTER_FETCH_CAP = 1000;
-
-export interface OrderStatusUpdate {
-  status: OrderStatus;
-  /** Optional note. The backend ignores it today (see ORDERS_CONTRACT.md). */
-  note?: string;
-  /** Whether the customer should be notified. Also ignored by the backend. */
-  notifyCustomer?: boolean;
-  /** Required when the new status is CANCELLED. */
-  reason?: string;
-}
-
 @Injectable({ providedIn: 'root' })
 export class OrderService {
   private http = inject(HttpClient);
   private base = `${environment.apiUrl}/api/dashboard/orders`;
 
   /**
-   * One page of orders, exactly as the API returns it.
+   * One page of orders.
    *
    * `sort` and `direction` are sent to the server — the table uses
    * `manualSorting`, so the ORDERING is the backend's, never the browser's.
@@ -67,53 +45,30 @@ export class OrderService {
     if (params.status) p = p.set('status', params.status);
     if (params.userId) p = p.set('userId', params.userId.toString());
     if (params.search) p = p.set('search', params.search);
+    if (params.paymentStatus) p = p.set('paymentStatus', params.paymentStatus);
+    if (params.paymentMethod) p = p.set('paymentMethod', params.paymentMethod);
+    if (params.dateFrom) p = p.set('dateFrom', params.dateFrom);
+    if (params.dateTo) p = p.set('dateTo', params.dateTo);
 
     return this.http.get<ApiResponse<PageResponse<OrderResponse>>>(this.base, { params: p });
   }
 
   /**
-   * EVERY order, paged through.
+   * The counts of the filtered set.
    *
-   * The pages are requested with the SAME sort and direction, so the
-   * concatenation is globally ordered by the server — a client that pages
-   * through a sorted list gets the sorted list.
-   *
-   * The set is capped (see `CLIENT_FILTER_FETCH_CAP`); `truncated` says
-   * whether the cap was reached, so the caller can tell the reader that the
-   * numbers cover only part of the store.
+   * The same filters as the list, so a card can never contradict the rows
+   * below it.
    */
-  getAllOrders(
-    params: { sort?: string; direction?: string; status?: OrderStatus } = {},
-  ): Observable<{ orders: OrderResponse[]; truncated: boolean; totalElements: number }> {
-    return this.getAll({ page: 0, size: API_MAX_PAGE_SIZE, ...params }).pipe(
-      switchMap((res) => {
-        const page = res.data;
-        const totalElements = page?.totalElements ?? 0;
-        const totalPages = page?.totalPages ?? 1;
-        const maxPages = Math.max(1, Math.ceil(CLIENT_FILTER_FETCH_CAP / API_MAX_PAGE_SIZE));
-        const extraPages = Math.min(totalPages - 1, maxPages - 1);
+  getStats(params: OrderFilterRequest = {}): Observable<ApiResponse<OrderStats>> {
+    let p = new HttpParams();
+    if (params.status) p = p.set('status', params.status);
+    if (params.search) p = p.set('search', params.search);
+    if (params.paymentStatus) p = p.set('paymentStatus', params.paymentStatus);
+    if (params.paymentMethod) p = p.set('paymentMethod', params.paymentMethod);
+    if (params.dateFrom) p = p.set('dateFrom', params.dateFrom);
+    if (params.dateTo) p = p.set('dateTo', params.dateTo);
 
-        const first = page?.content ?? [];
-        if (extraPages <= 0) {
-          return of({ pages: [first], totalElements });
-        }
-
-        const requests = Array.from({ length: extraPages }, (_, i) =>
-          this.getAll({ page: i + 1, size: API_MAX_PAGE_SIZE, ...params }).pipe(
-            map((r) => r.data?.content ?? []),
-          ),
-        );
-        return forkJoin(requests).pipe(map((pages) => ({ pages: [first, ...pages], totalElements })));
-      }),
-      map(({ pages, totalElements }) => {
-        const orders = pages.flat();
-        return {
-          orders: orders.slice(0, CLIENT_FILTER_FETCH_CAP),
-          truncated: totalElements > CLIENT_FILTER_FETCH_CAP,
-          totalElements,
-        };
-      }),
-    );
+    return this.http.get<ApiResponse<OrderStats>>(`${this.base}/stats`, { params: p });
   }
 
   /** One order, with its items, its address and its customer. */
@@ -124,32 +79,106 @@ export class OrderService {
   /**
    * Change an order's status.
    *
-   * The endpoint is `PUT /api/dashboard/orders/{id}/status`. The body it
-   * accepts today is `{ status }`; the note, the notify flag and the cancel
-   * reason are part of the contract this work proposes (ORDERS_CONTRACT.md)
-   * and are sent only when the backend declares support for them.
+   * The note, the notify flag and the cancellation reason travel with the
+   * request; the backend writes them to the history in the same transaction
+   * as the change.
    */
   updateStatus(
     id: number,
-    update: OrderStatusUpdate,
-    options: { supportsNote?: boolean } = {},
+    update: { status: OrderStatus; note?: string; notifyCustomer?: boolean; reason?: string },
   ): Observable<ApiResponse<OrderResponse>> {
     const body: Record<string, unknown> = { status: update.status };
-    if (options.supportsNote && update.note) body['note'] = update.note;
-    if (options.supportsNote && update.notifyCustomer) body['notifyCustomer'] = true;
-    if (options.supportsNote && update.reason) body['reason'] = update.reason;
+    if (update.note) body['note'] = update.note;
+    if (update.notifyCustomer) body['notifyCustomer'] = true;
+    if (update.reason) body['reason'] = update.reason;
 
     return this.http.put<ApiResponse<OrderResponse>>(`${this.base}/${id}/status`, body);
   }
 
+  /** The status history of an order, oldest first. */
+  getHistory(id: number): Observable<ApiResponse<OrderStatusHistoryEntry[]>> {
+    return this.http.get<ApiResponse<OrderStatusHistoryEntry[]>>(`${this.base}/${id}/history`);
+  }
+
+  /** The internal notes of an order, newest first. */
+  getNotes(id: number): Observable<ApiResponse<OrderNote[]>> {
+    return this.http.get<ApiResponse<OrderNote[]>>(`${this.base}/${id}/notes`);
+  }
+
+  /** Add an internal note. */
+  addNote(id: number, body: string): Observable<ApiResponse<OrderNote>> {
+    return this.http.post<ApiResponse<OrderNote>>(`${this.base}/${id}/notes`, { body, internal: true });
+  }
+
+  /** The shipment of an order. */
+  getShipment(id: number): Observable<ApiResponse<OrderShipment>> {
+    return this.http.get<ApiResponse<OrderShipment>>(`${this.base}/${id}/shipment`);
+  }
+
+  /** Record (or change) the shipment of an order. */
+  updateShipment(
+    id: number,
+    payload: { carrier?: string; trackingNumber?: string; trackingUrl?: string },
+  ): Observable<ApiResponse<OrderShipment>> {
+    return this.http.put<ApiResponse<OrderShipment>>(`${this.base}/${id}/shipment`, payload);
+  }
+
+  /** The payment of an order, with the refunds and the net paid. */
+  getPaymentDetails(id: number): Observable<ApiResponse<OrderPaymentDetails>> {
+    return this.http.get<ApiResponse<OrderPaymentDetails>>(`${this.base}/${id}/payment`);
+  }
+
   /**
-   * The filters the API does not support today.
+   * Record a refund.
    *
-   * The list shows them and applies them itself, so the numbers are right
-   * even though the API cannot filter. The list uses this list to say, in
-   * the contract report, exactly what the API is missing.
+   * The money is NOT returned by this call: the gateway has no refund wired
+   * in, so the refund is recorded and the row says it is manual.
    */
-  static readonly UNSUPPORTED_FILTERS: ReadonlyArray<
-    keyof OrderFilterRequest & ('paymentStatus' | 'paymentMethod' | 'dateFrom' | 'dateTo' | 'search')
-  > = ['paymentStatus', 'paymentMethod', 'dateFrom', 'dateTo', 'search'];
+  refund(id: number, amount: number, reason: string): Observable<ApiResponse<OrderRefund>> {
+    return this.http.post<ApiResponse<OrderRefund>>(`${this.base}/${id}/refund`, { amount, reason });
+  }
+
+  /**
+   * Everything the order page shows about what HAPPENED to the order: the
+   * status history, the notes and the payment, in one round trip.
+   *
+   * One of the three failing must not blank the others, so each is caught
+   * and the page still shows what it has.
+   */
+  getActivity(id: number): Observable<{
+    history: OrderStatusHistoryEntry[];
+    notes: OrderNote[];
+    payment: OrderPaymentDetails | null;
+    errors: string[];
+  }> {
+    const errors: string[] = [];
+    const safe = <T>(source: Observable<ApiResponse<T>>, fallback: T) =>
+      source.pipe(
+        map((res) => res.data),
+        switchMap((data) => of(data)),
+        catchTo(fallback, errors),
+      );
+
+    return forkJoin({
+      history: safe(this.getHistory(id), [] as OrderStatusHistoryEntry[]),
+      notes: safe(this.getNotes(id), [] as OrderNote[]),
+      payment: safe(this.getPaymentDetails(id), null as OrderPaymentDetails | null),
+    }).pipe(map((result) => ({ ...result, errors })));
+  }
+}
+
+/** A failing request must not take the whole page down with it. */
+function catchTo<T>(fallback: T, errors: string[]) {
+  return (source: Observable<T>) =>
+    new Observable<T>((subscriber) =>
+      source.subscribe({
+        next: (value) => subscriber.next(value),
+        error: (err) => {
+          errors.push(err?.error?.message ?? 'The order activity could not be loaded');
+          subscriber.next(fallback);
+          subscriber.complete();
+        },
+        complete: () => subscriber.complete(),
+      }),
+    );
 }

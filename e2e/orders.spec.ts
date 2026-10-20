@@ -449,6 +449,26 @@ test.describe('order detail', () => {
     expect(await page.locator('[data-testid="detail-card-title"]').first().innerText()).toBe(enTitle);
   });
 
+  test('the page shows the history, the notes, the payment and the shipment', async () => {
+    // The four sections the backend contract added.
+    await expect(page.locator('[data-card="timeline"]')).toBeVisible();
+    await expect(page.locator('[data-card="notes"]')).toBeVisible();
+    await expect(page.locator('[data-card="payment"]')).toBeVisible();
+    await expect(page.locator('[data-card="shipment"]')).toBeVisible();
+
+    // The progress tracker reads the CURRENT status.
+    const steps = await page.locator('[data-step]').allInnerTexts();
+    expect(steps.length).toBe(5);
+
+    // The notes composer is there and it is empty.
+    await expect(page.locator('[data-testid="order-note-input"]')).toBeVisible();
+    await expect(page.locator('[data-testid="order-note-input"]')).toHaveValue('');
+
+    // The payment card names the method.
+    const payment = page.locator('[data-card="payment"]');
+    await expect(payment).toContainText(/Online|Cash on delivery/);
+  });
+
   test('the customer phone is a tel: link, and the address is copyable', async () => {
     const tel = page.locator('[data-testid="order-customer-phone"]');
     if (await tel.count()) {
