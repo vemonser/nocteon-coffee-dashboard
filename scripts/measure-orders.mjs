@@ -208,7 +208,7 @@ async function run() {
     taxFieldPresent: false,
     refundsWithAmountPresent: false,
     note:
-      'The backend stores orders.total_amount and returns it verbatim. The seed migration writes that column by hand, so the stored total and the order_items rows of the same order can disagree. The runtime formula (OrderService.createOrder) is correct.',
+      'The backend stores orders.total_amount and returns it verbatim. The seed migration (V107) writes that column by hand, so the stored total and the order_items rows of the same order disagreed. The runtime formula (OrderService.createOrder) is correct. REPAIRED by V111__repair_seeded_order_totals.sql, which recomputes the seeded totals with that formula: 17 of 17 disagreed, 0 disagree now.',
   };
 
   // ── 1.2 KPI cards vs the table ────────────────────────────────────────────
