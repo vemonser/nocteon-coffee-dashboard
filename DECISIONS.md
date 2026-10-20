@@ -1214,6 +1214,24 @@ because they shaped how the work was done:
   against that build, and `results.json` records the server it ran
   against (`harness.server`).
 
+## ORDERS — One flaky test, classified
+
+The suite passed 30/30 on the final run, but an earlier run had one
+failure: "a failing endpoint shows the error state on the page" timed out
+waiting for the error state.
+
+**Classification: TEST DEFECT (a fixed sleep), not a product bug.** The
+test waited a fixed 1500 ms for the error state, and the app's boot time
+varies with the API's load (the backend rate-limits at 200 requests per
+minute, and the suite had just been running against it). The test passes
+in isolation and in the full suite on every re-run.
+
+**The fix:** the fixed wait is gone — the assertion's own timeout does the
+waiting — and the interception now COUNTS the aborted requests, so a
+failure says whether the request was aborted at all or the page simply had
+not rendered yet. The same fixed wait was removed from the list's error
+test.
+
 ## ORDERS PHASE 7 — Responsive and final
 
 The evidence matrix was re-run end to end over the six targets in all 20

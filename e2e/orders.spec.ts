@@ -348,7 +348,6 @@ test.describe('orders list', () => {
   test('a failing endpoint shows an error state with a retry, and the retry recovers', async () => {
     await page.route('**/api/dashboard/orders**', (route) => route.abort('failed'));
     await page.reload({ waitUntil: 'domcontentloaded' });
-    await page.waitForTimeout(1500);
     await expect(page.locator('[data-testid="orders-error"]')).toBeVisible();
     await expect(page.locator('[data-testid="orders-error"]')).toHaveAttribute('role', 'alert');
     // The retry is a real control, not a decoration.
@@ -458,10 +457,17 @@ test.describe('order detail', () => {
   });
 
   test('a failing endpoint shows the error state on the page', async () => {
-    await page.route('**/api/dashboard/orders/1', (route) => route.abort('failed'));
+    // The interception is COUNTED, so a failure says whether the request
+    // was aborted at all or the page simply had not rendered yet. A fixed
+    // sleep was the flake: the app's boot time varies with the API's load.
+    let aborted = 0;
+    await page.route('**/api/dashboard/orders/1', (route) => {
+      aborted += 1;
+      return route.abort('failed');
+    });
     await page.reload({ waitUntil: 'domcontentloaded' });
-    await page.waitForTimeout(1500);
     await expect(page.locator('[data-testid="order-detail-error"]')).toBeVisible();
+    expect(aborted, 'the order request was not aborted').toBeGreaterThan(0);
     await page.unroute('**/api/dashboard/orders/1');
   });
 });
