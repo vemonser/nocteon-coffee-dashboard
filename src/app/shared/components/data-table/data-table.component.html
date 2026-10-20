@@ -357,13 +357,19 @@
                 <!-- The payment method: an icon and a SHORT label. The column
                      is wide enough for the label, so it is never truncated. -->
                 @case ('paymentMethod') {
+                  <!--
+                    The label is translated HERE, at render time. A label
+                    translated in the column accessor froze in the language
+                    that was active when the data arrived, so a runtime
+                    language switch left the method in the old language.
+                  -->
                   <span class="flex items-center gap-1.5 whitespace-nowrap text-start">
                     <ng-icon
                       [name]="$any(cell.getValue())?.icon"
                       class="size-4 shrink-0 text-muted-foreground"
                       aria-hidden="true"
                     />
-                    <span class="truncate">{{ $any(cell.getValue())?.label }}</span>
+                    <span class="truncate">{{ names.paymentMethod($any(cell.getValue())?.method) }}</span>
                   </span>
                 }
 

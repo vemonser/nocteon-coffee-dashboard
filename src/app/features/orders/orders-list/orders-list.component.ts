@@ -275,7 +275,7 @@ export class OrdersListComponent {
     this.columnHelper.accessor(
       (row) => ({
         icon: row.paymentMethod === 'ONLINE' ? 'lucideCreditCard' : 'lucideBanknote',
-        label: this.names.paymentMethod(row.paymentMethod),
+        method: row.paymentMethod,
       }),
       { id: 'paymentMethod', header: 'Method', enableSorting: false, meta: { width: '179px' } },
     ),
