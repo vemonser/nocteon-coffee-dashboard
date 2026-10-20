@@ -75,10 +75,10 @@ proved with the data that exists.
 
 | # | Item | Status | Files | Evidence | Measured |
 |---|---|---|---|---|---|
-| 5.0 | `ORDERS_CONTRACT.md` written; **STOPPED for approval** | done | `ORDERS_CONTRACT.md` | the document | The DTOs, the endpoints, the migrations, the permissions, the defects in the API, the features that must not be faked, and the 6 decisions that need an answer |
-| 5 (backend) | `order_status_history`, `order_notes`, the shipment, the payment details, the stats endpoint, the strict transitions | not done | — | `ORDERS_CONTRACT.md` §2, §3 | **Not started** — the contract is waiting for the approval |
-| 5 (frontend) | The activity timeline, the note composer, the shipment form, the enabled refund dialog | not done | — | `ORDERS_CONTRACT.md` §5 | **Not started** — the same reason |
-| 5 (frontend, no backend needed) | The progress tracker | done | `features/orders/components/order-progress/**` | `results.json` → `own.steps` | Delivered: PENDING✓ CONFIRMED✓ PROCESSING✓ SHIPPED✓ DELIVERED(current). Mid-flow: CONFIRMED(current), the rest future |
+| 5.0 | `ORDERS_CONTRACT.md` written, then **approved** | done | `ORDERS_CONTRACT.md` | the document | The DTOs, the endpoints, the migrations, the permissions, the defects in the API, the features that must not be faked, and the 6 decisions |
+| 5 (backend) | The strict transitions, `order_status_history`, `order_notes`, the shipment, the refunds, the order stats, the list filters | done | `../nocteon-backend` (a separate repository) | the backend's own suite: **579 tests pass** | The endpoint now refuses what the state machine forbids (**409**); the history is written in the same transaction; the counts are the API's |
+| 5 (frontend) | The activity timeline, the note composer, the shipment form, the payment card | done | `features/orders/order-detail/**`, `features/orders/services/order.service.ts` | `results.json`, `verification.json` | The timeline mixes the history, the notes and the refunds, newest first; the net paid is `null` until money comes in |
+| 5 (frontend) | The refund dialog | partial | `features/orders/components/order-refund-dialog/**` | the captures | **Still disabled**, as the ticket requires: the gateway refund is not integrated. The backend records a MANUAL refund, and the dialog says so |
 
 ### Phase 6 — States, interactions, accessibility
 
@@ -189,7 +189,20 @@ The matrix is 20 cells: `{en, ar} × {light, dark} × {375, 768, 1024, 1440, 192
 | The **method label** froze in the language the data arrived in (the label was translated in the column accessor, and an accessor is evaluated once) | The before/after contact sheet: the English cell showed an Arabic method | The cell translates it at render time; an e2e test pins it |
 | The **truncation detectors were too forgiving** (`scrollWidth > clientWidth + 1`), so a ONE-pixel overflow was invisible — and "Cash on delivery" was one pixel too wide and DID draw an ellipsis | The contact sheet, read by eye, against a detector that said "no truncation" | The tolerance is gone; the method label and the money are at the body size (14 px) |
 
-## 7. The two things to decide
+## 7. What the backend still needs
+
+The contract is implemented except for the parts that need a decision or a
+gateway:
+
+| Gap | Why it is still open |
+|---|---|
+| The **gateway refund** | Paymob's refund API is not wired in. The refund is RECORDED (the amount, the reason, who did it) and the row says it is manual until a gateway reference is written. The order page's refund dialog therefore stays disabled |
+| **`SHIPPED → CANCELLED`** | The strict map forbids it; a store usually wants to cancel an order that has shipped but not arrived. It is decision 1 in the contract |
+| The **status-change e-mail** | The status change records `notifyCustomer`, but nothing sends an e-mail yet. The order page says so |
+| The **seed's broken totals** | 17 of 17 orders disagree with their own items. Fixing them is a data repair that changes what the store believes it charged |
+| The **seed's order numbers** | The seed writes them by hand, so they can collide with the runtime sequence |
+
+## 8. The two things to decide
 
 1. **The backend contract** (`ORDERS_CONTRACT.md`) — approve it, and the six questions in its last section.
 2. **The money glyph** — the shared formatter now renders "EGP 120.50" / "120.50 ج.م", which is what the ticket describes. If the trailing dot in "ج.م." should come back, it is one line in `shared/utils/locale-format.ts` — but it would change the dashboard too.
