@@ -1558,3 +1558,18 @@ forever. The page says "Queued" and shows what HAS been sent rather than
 pretending the delivery is done. The backend needs a sender: a `POST
 /api/dashboard/broadcasts/{id}/send`, or a scheduled job that walks the
 `PENDING` recipient rows through the existing `EmailService`.
+
+### Global search command palette (ui/global-search-v2)
+
+- Replaced the anchored autocomplete dropdown with a centered command palette modal.
+- Opens via Ctrl/Cmd+K, "/", or clicking the top-bar trigger; trigger shows "Ctrl K" hint.
+- Surface uses `--card` token (warm) instead of cool bluish-white popover tint.
+- Added `--search-highlight` token for `<mark>` matched text.
+- Active row uses `--accent` background + `--primary` start-edge accent.
+- Group order: Orders, Products, Customers, Categories, Reviews, Contact messages, Carts, then Pages and Actions. Max 5 rows per data group; max 3 Pages/Actions.
+- Backend aggregated endpoint `GET /api/admin/search?q=&limitPerType=` proposed; frontend behind `GLOBAL_SEARCH_USE_MOCK = true` flag until backend ships (see API_GAPS.md).
+- Order identifiers use full order number (`ORD-2026-000002`); group named "Customers" not "Users".
+- Arabic normalization rules (backend): strip tashkeel; unify alef variants (أ إ آ -> ا), ي/ى, ة/ه. Ranking: exact match, then prefix, then substring.
+- Recent searches in localStorage (max 5, clearable); quick links Orders/Reviews/Contact/Carts; quick actions Add product/Add category.
+- Minimum 2 characters, debounce 250ms, stale requests cancelled via switchMap.
+- Roles: combobox/listbox/option, aria-activedescendant.
