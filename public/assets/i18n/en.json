@@ -212,7 +212,8 @@
       "enabled": "Enabled",
       "disabled": "Disabled",
       "confirmed": "Confirmed",
-      "unknown": "Unknown"
+      "unknown": "Unknown",
+      "approved": "Approved"
     },
     "toggleSidebar": "Toggle sidebar",
     "total": "total",
@@ -1128,7 +1129,63 @@
     "adjustSearch": "Adjust your search or filters",
     "deleteTitle": "Delete Review",
     "deleteConfirm": "Are you sure you want to delete this review?",
-    "unapproved": "Unapproved"
+    "unapproved": "Unapproved",
+    "countReviews_one": "{{count}} review",
+    "countReviews_other": "{{count}} reviews",
+    "countApproved_one": "{{count}} approved",
+    "countApproved_other": "{{count}} approved",
+    "countPending_one": "{{count}} pending",
+    "countPending_other": "{{count}} pending",
+    "tabs": {
+      "label": "Review status",
+      "pending": "Pending",
+      "approved": "Approved",
+      "all": "All"
+    },
+    "status": {
+      "approved": "Approved",
+      "pending": "Pending"
+    },
+    "withdrawApproval": "Withdraw approval",
+    "emptyState": {
+      "noReviews": "No reviews yet",
+      "noResults": "No reviews match these filters"
+    },
+    "bulk": {
+      "selected": "{{count}} selected",
+      "approve": "Approve selected",
+      "clear": "Clear selection",
+      "approved": "Reviews approved"
+    },
+    "columns": {
+      "product": "Product",
+      "reviewer": "Reviewer",
+      "rating": "Rating",
+      "comment": "Comment",
+      "verifiedPurchase": "Verified purchase"
+    },
+    "filters": {
+      "status": "Status",
+      "statusAll": "Status: All",
+      "product": "Product",
+      "dateRange": "Date range",
+      "rating": "Minimum rating",
+      "verification": "Verification",
+      "clear": "Clear filters"
+    },
+    "stats": {
+      "averageRating": "Average rating",
+      "distribution": "Star distribution",
+      "pending": "Pending",
+      "total": "Total"
+    },
+    "dateRange": {
+      "all": "All time",
+      "today": "Today",
+      "7d": "Last 7 days",
+      "30d": "Last 30 days",
+      "custom": "Custom range"
+    }
   },
   "users": {
     "title": "Users",
@@ -1736,7 +1793,42 @@
     "empty": "No contact messages yet.",
     "reply": "Reply",
     "replyContent": "Reply",
-    "sendReply": "Send reply"
+    "sendReply": "Send reply",
+    "countMessages_one": "{{count}} message",
+    "countMessages_other": "{{count}} messages",
+    "countUnread_one": "{{count}} unread",
+    "countUnread_other": "{{count}} unread",
+    "unread": "Unread",
+    "read": "Read",
+    "replied": "Replied",
+    "yourReply": "Your reply",
+    "copyEmail": "Copy email",
+    "emailSent": "Email sent",
+    "emailNotSent": "Email not sent",
+    "emailQueued": "Queued for retry",
+    "sendAgain": "Send again",
+    "replyPlaceholder": "Reply to {{email}}",
+    "replyNotice": "The reply is emailed to {{email}} and saved here.",
+    "replySent": "Reply sent",
+    "replySavedNotSent": "Reply saved, but the email could not be sent",
+    "tabs": {
+      "label": "Message state",
+      "all": "All",
+      "unread": "Unread",
+      "replied": "Replied"
+    },
+    "dateRange": {
+      "all": "All time",
+      "today": "Today",
+      "7d": "Last 7 days",
+      "30d": "Last 30 days",
+      "custom": "Custom range"
+    },
+    "filters": {
+      "status": "Status",
+      "dateRange": "Date range",
+      "clear": "Clear filters"
+    }
   },
   "unauthorized": {
     "title": "Access Denied",

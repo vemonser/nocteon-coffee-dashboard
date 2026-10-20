@@ -212,7 +212,8 @@
       "enabled": "مفعّل",
       "disabled": "معطّل",
       "confirmed": "مؤكد",
-      "unknown": "غير معروف"
+      "unknown": "غير معروف",
+      "approved": "معتمد"
     },
     "toggleSidebar": "إظهار/إخفاء القائمة",
     "total": "إجمالي",
@@ -1128,7 +1129,75 @@
     "adjustSearch": "عدّل البحث أو الفلاتر",
     "deleteTitle": "حذف التقييم",
     "deleteConfirm": "هل أنت متأكد من حذف هذا التقييم؟",
-    "unapproved": "غير معتمدة"
+    "unapproved": "غير معتمدة",
+    "countReviews_zero": "{{count}} تقييم",
+    "countReviews_one": "تقييم واحد",
+    "countReviews_two": "تقييمان",
+    "countReviews_few": "{{count}} تقييمات",
+    "countReviews_many": "{{count}} تقييمًا",
+    "countReviews_other": "{{count}} تقييم",
+    "countApproved_zero": "لا معتمد",
+    "countApproved_one": "معتمد واحد",
+    "countApproved_two": "معتمدان",
+    "countApproved_few": "{{count}} معتمد",
+    "countApproved_many": "{{count}} معتمدًا",
+    "countApproved_other": "{{count}} معتمد",
+    "countPending_zero": "لا قيد للمراجعة",
+    "countPending_one": "قيد المراجعة واحد",
+    "countPending_two": "قيد المراجعة اثنان",
+    "countPending_few": "{{count}} قيد المراجعة",
+    "countPending_many": "{{count}} قيد المراجعة",
+    "countPending_other": "{{count}} قيد المراجعة",
+    "tabs": {
+      "label": "حالة التقييم",
+      "pending": "قيد المراجعة",
+      "approved": "معتمد",
+      "all": "الكل"
+    },
+    "status": {
+      "approved": "معتمد",
+      "pending": "قيد المراجعة"
+    },
+    "withdrawApproval": "سحب الاعتماد",
+    "emptyState": {
+      "noReviews": "لا توجد تقييمات بعد",
+      "noResults": "لا توجد تقييمات مطابقة للفلاتر"
+    },
+    "bulk": {
+      "selected": "تم اختيار {{count}}",
+      "approve": "اعتماد المحدد",
+      "clear": "مسح التحديد",
+      "approved": "تم اعتماد التقييمات"
+    },
+    "columns": {
+      "product": "المنتج",
+      "reviewer": "المراجع",
+      "rating": "التقييم",
+      "comment": "التعليق",
+      "verifiedPurchase": "شراء موثق"
+    },
+    "filters": {
+      "status": "الحالة",
+      "statusAll": "الحالة: الكل",
+      "product": "المنتج",
+      "dateRange": "الفترة",
+      "rating": "الحد الأدنى للتقييم",
+      "verification": "التحقق",
+      "clear": "مسح الفلاتر"
+    },
+    "stats": {
+      "averageRating": "متوسط التقييم",
+      "distribution": "توزيع النجوم",
+      "pending": "قيد المراجعة",
+      "total": "الإجمالي"
+    },
+    "dateRange": {
+      "all": "كل الفترات",
+      "today": "اليوم",
+      "7d": "آخر ٧ أيام",
+      "30d": "آخر ٣٠ يومًا",
+      "custom": "فترة مخصصة"
+    }
   },
   "users": {
     "title": "المستخدمين",
@@ -1780,7 +1849,50 @@
     "empty": "لا توجد رسائل تواصل بعد.",
     "reply": "رد",
     "replyContent": "رد",
-    "sendReply": "إرسال رد"
+    "sendReply": "إرسال رد",
+    "countMessages_zero": "لا رسالة",
+    "countMessages_one": "رسالة واحدة",
+    "countMessages_two": "رسالتان",
+    "countMessages_few": "{{count}} رسائل",
+    "countMessages_many": "{{count}} رسالة",
+    "countMessages_other": "{{count}} رسالة",
+    "countUnread_zero": "لا غير مقروءة",
+    "countUnread_one": "غير مقروءة واحدة",
+    "countUnread_two": "غير مقروءتان",
+    "countUnread_few": "{{count}} غير مقروءة",
+    "countUnread_many": "{{count}} غير مقروءة",
+    "countUnread_other": "{{count}} غير مقروءة",
+    "unread": "غير مقروءة",
+    "read": "مقروءة",
+    "replied": "تم الرد عليها",
+    "yourReply": "ردّك",
+    "copyEmail": "نسخ البريد الإلكتروني",
+    "emailSent": "تم إرسال الإيميل",
+    "emailNotSent": "لم يتم إرسال الإيميل",
+    "emailQueued": "في الانتظار",
+    "sendAgain": "إعادة الإرسال",
+    "replyPlaceholder": "رد على {{email}}",
+    "replyNotice": "الرد بيتبعت إيميل على {{email}} وبيتحفظ هنا.",
+    "replySent": "تم إرسال الرد",
+    "replySavedNotSent": "تم حفظ الرد، بس الإيميل ما اتبعتش",
+    "tabs": {
+      "label": "حالة الرسالة",
+      "all": "الكل",
+      "unread": "غير مقروءة",
+      "replied": "تم الرد عليها"
+    },
+    "dateRange": {
+      "all": "كل الفترات",
+      "today": "اليوم",
+      "7d": "آخر ٧ أيام",
+      "30d": "آخر ٣٠ يومًا",
+      "custom": "فترة مخصصة"
+    },
+    "filters": {
+      "status": "الحالة",
+      "dateRange": "الفترة",
+      "clear": "مسح الفلاتر"
+    }
   },
   "unauthorized": {
     "title": "الوصول مرفوض",

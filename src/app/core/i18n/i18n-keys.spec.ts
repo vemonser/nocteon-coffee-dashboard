@@ -560,3 +560,81 @@ describe('dashboard glossary (docs/glossary.md)', () => {
     expect(missing).toEqual([]);
   });
 });
+
+/**
+ * The reviews and messages vocabulary.
+ *
+ * One concept, one term, in both languages, in every surface. The AR
+ * review status is "قيد المراجعة" and NOT the order status "قيد الانتظار":
+ * two different concepts, two different words, and the same word for two
+ * concepts is the drift this test exists to catch.
+ */
+const REVIEWS_MESSAGES_GLOSSARY = [
+  {
+    concept: 'Review approved',
+    keys: ['reviews.status.approved'],
+    en: 'Approved',
+    ar: 'معتمد',
+    forbiddenAr: [/موافق عليه/],
+    forbiddenEn: [/\bapproved by\b/i],
+  },
+  {
+    concept: 'Review pending',
+    keys: ['reviews.status.pending'],
+    en: 'Pending',
+    ar: 'قيد المراجعة',
+    forbiddenAr: [/غير معتمدة/, /مُفعّل/, /معطّل/],
+    forbiddenEn: [/unapproved/i],
+  },
+  {
+    concept: 'Message unread',
+    keys: ['contactMessages.unread'],
+    en: 'Unread',
+    ar: 'غير مقروءة',
+    forbiddenAr: [/^رد$/],
+    forbiddenEn: [/^not read$/i],
+  },
+  {
+    concept: 'Message replied',
+    keys: ['contactMessages.replied'],
+    en: 'Replied',
+    ar: 'تم الرد عليها',
+    forbiddenAr: [/^رد$/],
+    forbiddenEn: [/^replied to$/i],
+  },
+] as const;
+
+describe('reviews and messages glossary', () => {
+  it('a concept maps to ONE term — the approved word, in both locales', () => {
+    const drift: string[] = [];
+    for (const entry of REVIEWS_MESSAGES_GLOSSARY) {
+      for (const key of entry.keys) {
+        const en = catValue(key, 'en');
+        const ar = catValue(key, 'ar');
+        if (en !== entry.en) drift.push(`en:${key} → "${en}" (expected "${entry.en}")`);
+        if (ar !== entry.ar) drift.push(`ar:${key} → "${ar}" (expected "${entry.ar}")`);
+      }
+    }
+    expect(drift).toEqual([]);
+  });
+
+  it('a concept never drifts to a second word', () => {
+    const drift: string[] = [];
+    for (const entry of REVIEWS_MESSAGES_GLOSSARY) {
+      for (const pattern of entry.forbiddenAr) {
+        if (pattern.test(entry.ar)) drift.push(`ar:${entry.concept} → "${entry.ar}"`);
+      }
+      for (const pattern of entry.forbiddenEn) {
+        if (pattern.test(entry.en)) drift.push(`en:${entry.concept} → "${entry.en}"`);
+      }
+    }
+    expect(drift).toEqual([]);
+  });
+
+  it('the review status is not the order status', () => {
+    // "قيد الانتظار" is the ORDER status; the review's is "قيد المراجعة".
+    expect(catValue('common.statuses.pending', 'ar')).not.toBe(
+      catValue('reviews.status.pending', 'ar'),
+    );
+  });
+});
