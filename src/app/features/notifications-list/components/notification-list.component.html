@@ -71,7 +71,7 @@
               }
             </div>
             <p class="text-sm text-muted-foreground truncate">{{ n.message }}</p>
-            <p class="text-xs text-muted-foreground mt-1">{{ n.createdAt | date: 'short' }}</p>
+            <p class="text-xs text-muted-foreground mt-1"><app-localized-date [value]="n.createdAt" /></p>
           </div>
 
           @if (!n.read) {
@@ -145,7 +145,7 @@
           </div>
           <div>
             <p class="font-semibold">{{ viewing()!.title }}</p>
-            <p class="text-xs text-gray-500">{{ viewing()!.createdAt | date: 'medium' }}</p>
+            <p class="text-xs text-gray-500"><app-localized-date [value]="viewing()!.createdAt" variant="long" /></p>
           </div>
         </div>
 

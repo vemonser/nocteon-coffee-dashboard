@@ -206,13 +206,17 @@
             <div class="space-y-1.5">
               <label hlmLabel>{{ 'common.joined' | transloco }}</label>
               <div class="px-3 py-2 rounded-md bg-muted/50">
-                {{ user()!.createdAt | date: 'medium' }}
+                <app-localized-date [value]="user()!.createdAt" variant="long" />
               </div>
             </div>
             <div class="space-y-1.5">
               <label hlmLabel>{{ 'common.lastActive' | transloco }}</label>
               <div class="px-3 py-2 rounded-md bg-muted/50">
-                {{ user()!.lastActiveAt ? (user()!.lastActiveAt | date: 'medium') : '—' }}
+                @if (user()!.lastActiveAt) {
+                  <app-localized-date [value]="user()!.lastActiveAt" variant="long" />
+                } @else {
+                  —
+                }
               </div>
             </div>
           </div>

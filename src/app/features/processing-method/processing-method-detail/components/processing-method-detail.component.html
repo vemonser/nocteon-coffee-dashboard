@@ -73,7 +73,9 @@
               {{ method()!.slug }}
             </hlm-badge>
             <span class="text-xs text-muted-foreground">
-              {{ method()!.createdAt ? (method()!.createdAt | date:'mediumDate') : '' }}
+              @if (method()!.createdAt) {
+                <app-localized-date [value]="method()!.createdAt" variant="long" />
+              }
             </span>
           </div>
         </div>

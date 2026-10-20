@@ -1,47 +1,62 @@
 <app-order-dialog
   [open]="open()"
   [title]="title()"
-  [description]="unavailableHint()"
+  [description]="gatewayNote()"
   [confirmLabel]="confirmLabel()"
   [cancelLabel]="cancelLabel()"
-  [confirmDisabled]="true"
+  [confirmDisabled]="!canConfirm()"
   [pending]="pending()"
+  [danger]="true"
   testId="refund-dialog"
   (confirmed)="confirm()"
   (closed)="closed.emit()"
 >
-  <p
-    class="mt-4 rounded-md border border-warning/40 bg-warning-soft px-3 py-2 text-sm text-warning"
-    data-testid="refund-unavailable"
-  >
-    {{ unavailable() }}
-  </p>
+  <div class="mt-4 space-y-3">
+    <div class="flex items-center justify-between gap-3">
+      <span class="text-sm text-muted-foreground">{{ remainingLine() }}</span>
+      <button
+        hlmBtn
+        variant="outline"
+        size="sm"
+        type="button"
+        data-testid="refund-full"
+        (click)="useFullAmount()"
+      >
+        {{ fullRefund() }}
+      </button>
+    </div>
 
-  <div class="mt-4 space-y-1.5">
-    <label for="order-refund-amount" class="text-sm font-medium">{{ amountLabel() }}</label>
-    <input
-      id="order-refund-amount"
-      hlmInput
-      type="number"
-      disabled
-      dir="ltr"
-      data-testid="refund-amount"
-      [ngModel]="amount()"
-      (ngModelChange)="amount.set($event)"
-    />
-  </div>
+    <div class="space-y-1.5">
+      <label for="order-refund-amount" class="text-sm font-medium">{{ amountLabel() }}</label>
+      <input
+        id="order-refund-amount"
+        hlmInput
+        type="number"
+        inputmode="decimal"
+        step="0.01"
+        min="0.01"
+        dir="ltr"
+        data-testid="refund-amount"
+        [ngModel]="amount()"
+        (ngModelChange)="amount.set($event)"
+      />
+      @if (amountNumber() > remaining()) {
+        <p class="text-xs text-destructive" data-testid="refund-too-much">{{ tooMuch() }}</p>
+      }
+    </div>
 
-  <div class="mt-3 space-y-1.5">
-    <label for="order-refund-reason" class="text-sm font-medium">{{ reasonLabel() }}</label>
-    <input
-      id="order-refund-reason"
-      hlmInput
-      type="text"
-      disabled
-      dir="auto"
-      data-testid="refund-reason"
-      [ngModel]="reason()"
-      (ngModelChange)="reason.set($event)"
-    />
+    <div class="space-y-1.5">
+      <label for="order-refund-reason" class="text-sm font-medium">{{ reasonLabel() }}</label>
+      <input
+        id="order-refund-reason"
+        hlmInput
+        type="text"
+        dir="auto"
+        data-testid="refund-reason"
+        [placeholder]="reasonPlaceholder()"
+        [ngModel]="reason()"
+        (ngModelChange)="reason.set($event)"
+      />
+    </div>
   </div>
 </app-order-dialog>

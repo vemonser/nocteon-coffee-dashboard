@@ -76,7 +76,9 @@
               {{ level()!.slug }}
             </hlm-badge>
             <span class="text-xs text-muted-foreground">
-              {{ level()!.createdAt ? (level()!.createdAt | date:'mediumDate') : '' }}
+              @if (level()!.createdAt) {
+                <app-localized-date [value]="level()!.createdAt" variant="long" />
+              }
             </span>
           </div>
         </div>
@@ -162,7 +164,8 @@
 
           @if (level()!.updatedAt) {
             <p class="text-xs text-muted-foreground">
-              {{ 'roastLevels.detail.lastUpdated' | transloco }} {{ level()!.updatedAt | date:'medium' }}
+              {{ 'roastLevels.detail.lastUpdated' | transloco }}
+              <app-localized-date [value]="level()!.updatedAt" variant="long" />
             </p>
           }
         </div>

@@ -73,7 +73,9 @@
               {{ note()!.slug }}
             </hlm-badge>
             <span class="text-xs text-muted-foreground">
-              {{ note()!.createdAt ? (note()!.createdAt | date:'mediumDate') : '' }}
+              @if (note()!.createdAt) {
+                <app-localized-date [value]="note()!.createdAt" variant="long" />
+              }
             </span>
           </div>
         </div>

@@ -199,6 +199,12 @@ export class OrderDetailComponent {
     return !!order && nextStatuses(order.status).includes('CANCELLED');
   });
 
+  /** How much has already been given back. */
+  protected readonly alreadyRefunded = computed(() => {
+    const refunds = this.payment()?.refunds ?? [];
+    return refunds.reduce((sum, refund) => sum + Number(refund.amount ?? 0), 0);
+  });
+
   /** The absolute date and time, for the tooltip. */
   protected readonly createdAtTitle = computed(() =>
     this.dates.formatDateAndTime(this.order()?.createdAt),
@@ -359,12 +365,16 @@ export class OrderDetailComponent {
    * <p>The note and the reason travel with the request: the backend writes
    * them to the history in the same transaction as the change.
    */
-  protected applyStatus(update: { status: OrderStatus; note: string }): void {
+  protected applyStatus(update: { status: OrderStatus; note: string; notifyCustomer: boolean }): void {
     const order = this.order();
     if (!order) return;
     this.updating.set(true);
     this.orderService
-      .updateStatus(order.id, { status: update.status, note: update.note })
+      .updateStatus(order.id, {
+        status: update.status,
+        note: update.note,
+        notifyCustomer: update.notifyCustomer,
+      })
       .subscribe({
         next: (res) => {
           this.order.set(res.data);
@@ -382,7 +392,7 @@ export class OrderDetailComponent {
   }
 
   protected applyCancel(cancel: { reason: string }): void {
-    this.applyStatus({ status: 'CANCELLED', note: cancel.reason });
+    this.applyStatus({ status: 'CANCELLED', note: cancel.reason, notifyCustomer: false });
   }
 
   protected printInvoice(): void {
@@ -405,6 +415,31 @@ export class OrderDetailComponent {
       error: (err) => {
         this.savingNote.set(false);
         this.notify.apiError(err, 'notify.errorFallback', 'Could not add the note');
+      },
+    });
+  }
+
+  /**
+   * Refund the order.
+   *
+   * <p>The money goes back through the PAYMENT GATEWAY: the backend calls
+   * Paymob first and records the refund only when the gateway has accepted
+   * it. A gateway refusal is shown as it is, and nothing is recorded.
+   */
+  protected refund(refund: { amount: number; reason: string }): void {
+    const order = this.order();
+    if (!order) return;
+    this.updating.set(true);
+    this.orderService.refund(order.id, refund.amount, refund.reason).subscribe({
+      next: () => {
+        this.updating.set(false);
+        this.refundDialogOpen.set(false);
+        this.loadActivity(order.id);
+        this.notify.success('orders.detail.refundRecorded', 'Refund sent to the payment gateway');
+      },
+      error: (err) => {
+        this.updating.set(false);
+        this.notify.apiError(err, 'notify.errorFallback', 'The refund was refused');
       },
     });
   }

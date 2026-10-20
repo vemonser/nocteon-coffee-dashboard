@@ -76,7 +76,9 @@
               {{ zone()!.name }}
             </hlm-badge>
             <span class="text-xs text-muted-foreground">
-              {{ zone()!.createdAt ? (zone()!.createdAt | date:'mediumDate') : '' }}
+              @if (zone()!.createdAt) {
+                <app-localized-date [value]="zone()!.createdAt" variant="long" />
+              }
             </span>
           </div>
         </div>
@@ -157,7 +159,8 @@
 
           @if (zone()!.updatedAt) {
             <p class="text-xs text-muted-foreground">
-              {{ 'shippingZones.detail.lastUpdated' | transloco }} {{ zone()!.updatedAt | date:'medium' }}
+              {{ 'shippingZones.detail.lastUpdated' | transloco }}
+              <app-localized-date [value]="zone()!.updatedAt" variant="long" />
             </p>
           }
         </div>

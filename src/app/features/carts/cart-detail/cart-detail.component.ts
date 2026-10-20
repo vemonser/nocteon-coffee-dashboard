@@ -10,11 +10,13 @@ import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideArrowLeft, lucidePackage, lucideUser, lucideShoppingCart, lucideDollarSign, lucideClock } from '@ng-icons/lucide';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { MoneyPipe } from '../../../shared/pipes/money.pipe';
+import { LocalizedDateComponent } from '../../../shared/ui/localized-date/localized-date.component';
 
 @Component({
   selector: 'app-cart-detail',
   standalone: true,
-  imports: [CommonModule, HlmCardImports, HlmCardContent, HlmButtonImports, HlmBadgeImports, NgIcon, TranslocoPipe, MoneyPipe],
+  imports: [
+    LocalizedDateComponent,CommonModule, HlmCardImports, HlmCardContent, HlmButtonImports, HlmBadgeImports, NgIcon, TranslocoPipe, MoneyPipe],
   providers: [provideIcons({ lucideArrowLeft, lucidePackage, lucideUser, lucideShoppingCart, lucideDollarSign, lucideClock })],
   templateUrl: './cart-detail.component.html',
 })

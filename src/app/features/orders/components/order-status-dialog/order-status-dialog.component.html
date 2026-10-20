@@ -43,5 +43,23 @@
         [placeholder]="notePlaceholder()"
       />
     </div>
+
+    <!--
+      The customer is told AFTER the change is saved, and only when the
+      admin ticks it. The e-mail is enqueued once the transaction has
+      committed, so nobody is told about a change that was rolled back.
+    -->
+    <div class="mt-4 flex items-start gap-3">
+      <hlm-switch
+        id="order-status-notify"
+        data-testid="status-notify"
+        [checked]="notifyCustomer()"
+        (checkedChange)="notifyCustomer.set($event)"
+      />
+      <label for="order-status-notify" class="flex flex-col gap-0.5">
+        <span class="text-sm font-medium">{{ notifyLabel() }}</span>
+        <span class="text-xs text-muted-foreground">{{ notifyHint() }}</span>
+      </label>
+    </div>
   }
 </app-order-dialog>

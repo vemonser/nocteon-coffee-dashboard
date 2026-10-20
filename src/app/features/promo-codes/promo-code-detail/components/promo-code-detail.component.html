@@ -256,7 +256,7 @@
                 </div>
               } @else {
                 <div class="px-3 py-2 rounded-md bg-muted/50">
-                  {{ promoCode()!.validFrom | date: 'medium' }}
+                  <app-localized-date [value]="promoCode()!.validFrom" variant="long" />
                 </div>
               }
             </div>
@@ -273,7 +273,7 @@
                 </div>
               } @else {
                 <div class="px-3 py-2 rounded-md bg-muted/50">
-                  {{ promoCode()!.validUntil | date: 'medium' }}
+                  <app-localized-date [value]="promoCode()!.validUntil" variant="long" />
                 </div>
               }
             </div>

@@ -731,7 +731,9 @@
       [open]="refundDialogOpen()"
       [orderNumber]="plainOrderNumber()"
       [orderTotal]="totals().total"
+      [alreadyRefunded]="alreadyRefunded()"
       [pending]="updating()"
+      (confirmed)="refund($event)"
       (closed)="closeRefundDialog()"
     />
   }

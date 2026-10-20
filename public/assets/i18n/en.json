@@ -1447,7 +1447,8 @@
       "noteAdded": "Note added",
       "shipmentSaved": "Shipment saved",
       "resendEmailGap": "The store sends order e-mails automatically, but it cannot send one on demand.",
-      "editShipment": "Record the shipment"
+      "editShipment": "Record the shipment",
+      "refundRecorded": "Refund sent to the payment gateway"
     },
     "dialogs": {
       "status": {
@@ -1474,7 +1475,13 @@
         "unavailableHint": "The store has no payment-gateway refund endpoint, so a refund cannot be issued from the dashboard.",
         "reason": "Reason",
         "amount": "Amount",
-        "confirm": "Refund"
+        "confirm": "Refund",
+        "reasonPlaceholder": "Why is the money going back?",
+        "full": "Full refund",
+        "partial": "Partial refund",
+        "remaining": "Remaining to refund: {{amount}}",
+        "tooMuch": "The amount is more than what is left to refund.",
+        "gatewayNote": "The money goes back through the payment gateway, to the same card the customer paid with."
       }
     },
     "timeline": {

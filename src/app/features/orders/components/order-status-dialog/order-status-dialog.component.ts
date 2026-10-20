@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { TranslocoService } from '@jsverse/transloco';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmInputImports } from '@spartan-ng/helm/input';
+import { HlmSwitchImports } from '@spartan-ng/helm/switch';
 import { OrderDialogComponent } from '../order-dialog/order-dialog.component';
 import type { OrderStatus } from '../../models/order.model';
 import { nextStatuses } from '../../models/order-status.model';
@@ -24,7 +25,7 @@ import { nextStatuses } from '../../models/order-status.model';
 @Component({
   selector: 'app-order-status-dialog',
   standalone: true,
-  imports: [FormsModule, HlmButtonImports, HlmInputImports, OrderDialogComponent],
+  imports: [FormsModule, HlmButtonImports, HlmInputImports, HlmSwitchImports, OrderDialogComponent],
   templateUrl: './order-status-dialog.component.html',
 })
 export class OrderStatusDialogComponent {
@@ -35,12 +36,14 @@ export class OrderStatusDialogComponent {
   readonly currentStatus = input<OrderStatus>('PENDING');
   readonly pending = input<boolean>(false);
 
-  readonly confirmed = output<{ status: OrderStatus; note: string }>();
+  readonly confirmed = output<{ status: OrderStatus; note: string; notifyCustomer: boolean }>();
   readonly closed = output<void>();
 
   /** The status the admin picked. */
   readonly selected = signal<OrderStatus | null>(null);
   readonly note = signal<string>('');
+  /** Whether the customer is to be told about the change. */
+  readonly notifyCustomer = signal(false);
 
   /** The transitions the backend allows from the current status. */
   protected readonly options = computed(() =>
@@ -80,6 +83,15 @@ export class OrderStatusDialogComponent {
   protected readonly notePlaceholder = computed(() =>
     this.t('orders.dialogs.status.notePlaceholder', 'Why is the status changing?'),
   );
+  protected readonly notifyLabel = computed(() =>
+    this.t('orders.dialogs.status.notify', 'Notify the customer by email'),
+  );
+  protected readonly notifyHint = computed(() =>
+    this.t(
+      'orders.dialogs.status.notifyHint',
+      'The customer is told after the change is saved.',
+    ),
+  );
 
   protected readonly canConfirm = computed(() => this.selected() !== null);
 
@@ -94,13 +106,18 @@ export class OrderStatusDialogComponent {
   protected confirm(): void {
     const status = this.selected();
     if (!status) return;
-    this.confirmed.emit({ status, note: this.note().trim() });
+    this.confirmed.emit({
+      status,
+      note: this.note().trim(),
+      notifyCustomer: this.notifyCustomer(),
+    });
   }
 
   /** Reset when the dialog opens, so a previous attempt never carries over. */
   reset(): void {
     this.selected.set(null);
     this.note.set('');
+    this.notifyCustomer.set(false);
   }
 
   private t(key: string, fallback: string, params?: Record<string, unknown>): string {

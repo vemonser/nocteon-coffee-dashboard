@@ -72,7 +72,7 @@
                 <span class="text-destructive ms-2">{{ item.failedCount }} {{ 'broadcasts.failed' | transloco }}</span>
               }
             </span>
-            <span>{{ item.createdAt | date:'short' }}</span>
+            <span><app-localized-date [value]="item.createdAt" /></span>
           </div>
 
           @if (item.status === 'IN_PROGRESS' && item.totalRecipients > 0) {

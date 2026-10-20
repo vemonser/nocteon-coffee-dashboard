@@ -24,11 +24,13 @@ import { map, Observable } from 'rxjs';
 import { PageResponse } from '../../../core/models/api-response.model';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { PagerComponent } from '../../../shared/components/pager/pager.component';
+import { LocalizedDateComponent } from '../../../shared/ui/localized-date/localized-date.component';
 
 @Component({
   selector: 'app-broadcast-list',
   standalone: true,
   imports: [
+    LocalizedDateComponent,
     PagerComponent,
     CommonModule,
     FormsModule,

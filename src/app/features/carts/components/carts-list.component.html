@@ -85,11 +85,11 @@
         <div class="grid grid-cols-2 gap-4">
           <div class="rounded-md border p-4">
             <p class="text-sm font-medium text-muted-foreground mb-1">{{ 'carts.created' | transloco }}</p>
-            <p class="text-sm">{{ viewing()!.createdAt | date:'medium' }}</p>
+            <p class="text-sm"><app-localized-date [value]="viewing()!.createdAt" variant="long" /></p>
           </div>
           <div class="rounded-md border p-4">
             <p class="text-sm font-medium text-muted-foreground mb-1">{{ 'carts.lastUpdated' | transloco }}</p>
-            <p class="text-sm">{{ viewing()!.updatedAt | date:'medium' }}</p>
+            <p class="text-sm"><app-localized-date [value]="viewing()!.updatedAt" variant="long" /></p>
           </div>
         </div>
 

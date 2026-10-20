@@ -28,10 +28,12 @@ import { NotifyService } from '../../../core/notify/notify.service';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { MoneyPipe } from '../../../shared/pipes/money.pipe';
 import { PagerComponent } from '../../../shared/components/pager/pager.component';
+import { LocalizedDateComponent } from '../../../shared/ui/localized-date/localized-date.component';
 @Component({
   selector: 'app-carts-list',
   standalone: true,
   imports: [
+    LocalizedDateComponent,
     PagerComponent,
     CommonModule,
     FormsModule,

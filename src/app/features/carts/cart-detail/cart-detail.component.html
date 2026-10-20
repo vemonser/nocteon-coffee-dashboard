@@ -22,7 +22,7 @@
           </div>
           <div class="flex items-center gap-2">
             <ng-icon name="lucideClock" class="size-4 text-muted-foreground" />
-            <span>{{ cart()!.createdAt | date:'medium' }}</span>
+            <span><app-localized-date [value]="cart()!.createdAt" variant="long" /></span>
           </div>
           <div class="flex items-center gap-2">
             <ng-icon name="lucideShoppingCart" class="size-4 text-muted-foreground" />
@@ -54,7 +54,7 @@
           <h3 hlmCardTitle>{{ 'carts.detail.updatedAt' | transloco }}</h3>
         </hlm-card-header>
         <div hlmCardContent>
-          <div class="text-sm text-muted-foreground">{{ cart()!.updatedAt | date:'medium' }}</div>
+          <div class="text-sm text-muted-foreground"><app-localized-date [value]="cart()!.updatedAt" variant="long" /></div>
         </div>
       </hlm-card>
     </div>
