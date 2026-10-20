@@ -1,137 +1,218 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, signal } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { HlmCardImports } from '@spartan-ng/helm/card';
+import { ActivatedRoute, Router } from '@angular/router';
+
 import { HlmButtonImports } from '@spartan-ng/helm/button';
-import { HlmBadgeImports } from '@spartan-ng/helm/badge';
 import { HlmInputImports } from '@spartan-ng/helm/input';
+import { HlmNativeSelectImports } from '@spartan-ng/helm/native-select';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
-  lucideChevronLeft,
-  lucideChevronRight,
+  lucideArchive,
+  lucideCopy,
   lucideInbox,
   lucideMail,
   lucideSearch,
+  lucideSend,
+  lucideTrash2,
   lucideX,
 } from '@ng-icons/lucide';
-import { ContactMessageService } from '../services/contact-message.service';
-import { ContactResponse } from '../models/contact-message.model';
-import { LanguageService } from '../../../core/i18n/language.service';
-import { PageResponse } from '../../../core/models/api-response.model';
-import { NotifyService } from '../../../core/notify/notify.service';
 import { TranslocoPipe } from '@jsverse/transloco';
-import { PagerComponent } from '../../../shared/components/pager/pager.component';
 
+import { LanguageService } from '../../../core/i18n/language.service';
+import { NotifyService } from '../../../core/notify/notify.service';
+import { formatRelativeTime } from '../../../core/i18n/relative-time';
+import { formatDateAndTime } from '../../../shared/utils/locale-format';
+import { LocalizedDateComponent } from '../../../shared/ui/localized-date/localized-date.component';
+import { PluralPipe } from '../../../shared/pipes/plural.pipe';
+import { HlmTextareaImports } from '@spartan-ng/helm/textarea';
+import { UserAvatarComponent } from '../../../shared/ui/user-avatar/user-avatar.component';
+import { OrderDialogComponent } from '../../orders/components/order-dialog/order-dialog.component';
+import { ContactResponse } from '../models/contact-message.model';
+import { ContactMessageService } from '../services/contact-message.service';
+
+type MessageTab = 'all' | 'unread' | 'replied';
+
+/**
+ * The contact messages console: see what has not been read, open it, write
+ * a reply, move on.
+ *
+ * <p>The reply really emails the customer. The success toast says "Reply
+ * sent" ONLY when the recorded email status is SENT — every other status
+ * says what happened and offers "Send again". The typed text stays in the
+ * box when the send fails: the admin's words are never lost.
+ */
 @Component({
   selector: 'app-contact-messages-list',
   standalone: true,
   imports: [
-    PagerComponent,
     CommonModule,
     FormsModule,
-    HlmCardImports,
     HlmButtonImports,
-    HlmBadgeImports,
     HlmInputImports,
+    HlmNativeSelectImports,
+    PluralPipe,
+    LocalizedDateComponent,
+    HlmTextareaImports,
+    UserAvatarComponent,
+    OrderDialogComponent,
     NgIcon,
     TranslocoPipe,
   ],
   providers: [
     provideIcons({
-      lucideChevronLeft,
-      lucideChevronRight,
+      lucideArchive,
+      lucideCopy,
       lucideInbox,
       lucideMail,
       lucideSearch,
+      lucideSend,
+      lucideTrash2,
       lucideX,
     }),
   ],
   templateUrl: './contact-messages-list.component.html',
 })
 export class ContactMessagesListComponent {
-  private notify = inject(NotifyService);
-  private route = inject(ActivatedRoute);
-  private service = inject(ContactMessageService);
+  private readonly notify = inject(NotifyService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly service = inject(ContactMessageService);
   protected readonly language = inject(LanguageService);
 
-  protected readonly Math = Math;
+  readonly items = signal<ContactResponse[]>([]);
+  readonly loading = signal(false);
+  readonly total = signal(0);
+  readonly unreadTotal = signal(0);
+  readonly tab = signal<MessageTab>('all');
+  readonly search = signal('');
+  readonly range = signal('all');
+  readonly selected = signal<ContactResponse | null>(null);
+  readonly replyText = signal('');
+  readonly replying = signal(false);
+  readonly deleting = signal<ContactResponse | null>(null);
+  readonly deletingBusy = signal(false);
 
-  items = signal<ContactResponse[]>([]);
-  loading = signal(false);
-  /** The dashboard's "unread messages" drill-down asks for unread only. */
-  readonly unreadOnly = signal(false);
-  pageData = signal<PageResponse<ContactResponse> | null>(null);
-  currentPage = signal(0);
-  pageSize = signal(20);
-  readonly pageSizeOptions = [10, 20, 50] as const;
-  searchQuery = '';
   private searchTimeout: ReturnType<typeof setTimeout> | undefined;
 
-  selected = signal<ContactResponse | null>(null);
-  replyText = signal('');
-  replying = signal(false);
-
   constructor() {
-    // The dashboard's "unread messages" drill-down asks for the unread list.
-    this.unreadOnly.set(this.route.snapshot.queryParamMap.get('status') === 'unread');
+    const status = this.route.snapshot.queryParamMap.get('status');
+    if (status === 'unread') this.tab.set('unread');
     this.loadPage();
+    this.loadUnreadCount();
   }
 
-  loadPage(): void {
+  // ── the data ──────────────────────────────────────────────────────────────
+
+  private loadPage(): void {
     this.loading.set(true);
-    const request = this.unreadOnly()
-      ? this.service.getAllUnread({
-          page: this.currentPage(),
-          size: this.pageSize(),
-          search: this.searchQuery || undefined,
-          sort: 'createdAt',
-          direction: 'desc',
-        })
-      : this.service
-      .getAll({
-        page: this.currentPage(),
-        size: this.pageSize(),
-        search: this.searchQuery || undefined,
-        sort: 'createdAt',
-        direction: 'desc',
-      });
+    const request =
+      this.tab() === 'unread'
+        ? this.service.getAllUnread({ page: 0, size: 100 })
+        : this.service.getAll({ page: 0, size: 100 });
+
     request.subscribe({
-        next: (res) => {
-          this.pageData.set(res.data);
-          this.items.set(res.data.content);
-          this.loading.set(false);
-        },
-        error: (err) => {
-          this.loading.set(false);
-          this.notify.apiError(err, 'notify.errorFallback', 'Could not load messages');
-        },
-      });
+      next: (res) => {
+        const content = res.data?.content ?? [];
+        this.total.set(res.data?.totalElements ?? content.length);
+        this.items.set(this.applyFilters(content));
+        this.loading.set(false);
+      },
+      error: (err) => {
+        this.loading.set(false);
+        this.notify.apiError(err, 'notify.errorFallback', 'Could not load messages');
+      },
+    });
   }
 
-  onSearch(): void {
+  /** The unread count comes from the server's own list, so the badge is
+   *  never an estimate over what happened to be loaded. */
+  private loadUnreadCount(): void {
+    this.service.getAllUnread({ page: 0, size: 1 }).subscribe({
+      next: (res) => this.unreadTotal.set(res.data?.totalElements ?? 0),
+      error: () => {
+        /* the badge stays at zero; the list still works */
+      },
+    });
+  }
+
+  /**
+   * The search, the date range and the Replied tab are client-side: the
+   * endpoint takes no status filter and no dates, so the page loads the
+   * whole set (up to the API's maximum) and narrows it here.
+   */
+  private applyFilters(content: ContactResponse[]): ContactResponse[] {
+    const search = this.search().trim().toLowerCase();
+    const from = this.rangeStart();
+    const to = this.rangeEnd();
+
+    return content.filter((message) => {
+      if (this.tab() === 'replied' && !message.isReplied) return false;
+      if (from && new Date(message.createdAt) < from) return false;
+      if (to && new Date(message.createdAt) > to) return false;
+      if (!search) return true;
+      return (
+        message.subject.toLowerCase().includes(search) ||
+        message.name.toLowerCase().includes(search) ||
+        message.email.toLowerCase().includes(search) ||
+        message.message.toLowerCase().includes(search)
+      );
+    });
+  }
+
+  private rangeStart(): Date | null {
+    const now = Date.now();
+    switch (this.range()) {
+      case 'today':
+        return new Date(new Date(now).toISOString().slice(0, 10) + 'T00:00:00Z');
+      case '7d':
+        return new Date(now - 7 * 86400000);
+      case '30d':
+        return new Date(now - 30 * 86400000);
+      default:
+        return null;
+    }
+  }
+
+  private rangeEnd(): Date | null {
+    return null;
+  }
+
+  // ── the tabs ──────────────────────────────────────────────────────────────
+
+  protected setTab(tab: MessageTab): void {
+    this.tab.set(tab);
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: tab === 'all' ? {} : { status: tab },
+      replaceUrl: true,
+    });
+    this.loadPage();
+  }
+
+  protected readonly tabs = computed(() => [
+    { id: 'all' as MessageTab, label: 'contactMessages.tabs.all', count: this.total() },
+    { id: 'unread' as MessageTab, label: 'contactMessages.tabs.unread', count: this.unreadTotal() },
+    { id: 'replied' as MessageTab, label: 'contactMessages.tabs.replied', count: this.repliedCount() },
+  ]);
+
+  private readonly repliedCount = computed(() => this.items().filter((m) => m.isReplied).length);
+
+  protected onSearch(value: string): void {
+    this.search.set(value);
     clearTimeout(this.searchTimeout);
-    this.searchTimeout = setTimeout(() => {
-      this.currentPage.set(0);
-      this.loadPage();
-    }, 400);
+    this.searchTimeout = setTimeout(() => this.loadPage(), 350);
   }
 
-  goToPage(page: number): void {
-    this.currentPage.set(page);
+  protected onRangeChange(): void {
     this.loadPage();
   }
 
-  onPageSizeChange(size: number): void {
-    if (size === this.pageSize()) return;
-    this.pageSize.set(size);
-    this.currentPage.set(0);
-    this.loadPage();
-  }
+  // ── the message ───────────────────────────────────────────────────────────
 
-  openMessage(item: ContactResponse): void {
+  protected openMessage(item: ContactResponse): void {
     this.selected.set(item);
-    this.replyText.set(item.replyContent ?? '');
+    this.replyText.set('');
     if (!item.isRead) {
       this.service.markAsRead(item.id).subscribe({
         next: (res) => {
@@ -144,28 +225,124 @@ export class ContactMessagesListComponent {
     }
   }
 
-  closeMessage(): void {
+  protected closeMessage(): void {
     this.selected.set(null);
     this.replyText.set('');
   }
 
-  sendReply(): void {
+  /**
+   * Save the reply and email the customer.
+   *
+   * <p>The typed text stays in the box when the send fails: the admin's
+   * words are never lost. And the success toast says "Reply sent" ONLY
+   * when the email really went out.
+   */
+  protected sendReply(): void {
     const item = this.selected();
-    if (!item || !this.replyText().trim()) return;
+    const text = this.replyText().trim();
+    if (!item || !text) return;
+
     this.replying.set(true);
-    this.service.reply(item.id, this.replyText().trim()).subscribe({
+    this.service.reply(item.id, text).subscribe({
       next: (res) => {
         this.replying.set(false);
         if (res?.data) {
           this.selected.set(res.data);
           this.items.update((list) => list.map((m) => (m.id === item.id ? res.data! : m)));
-          this.notify.success('notify.updated', 'Reply sent');
+          this.replyText.set('');
+          if (res.data.emailStatus === 'SENT') {
+            this.notify.success('contactMessages.replySent', 'Reply sent');
+          } else {
+            this.notify.warning(
+              'contactMessages.replySavedNotSent',
+              'Reply saved, but the email could not be sent',
+            );
+          }
         }
       },
       error: (err) => {
         this.replying.set(false);
-        this.notify.apiError(err, 'notify.errorFallback', 'Could not send reply');
+        this.notify.apiError(err, 'notify.errorFallback', 'Could not send the reply');
       },
     });
   }
+
+  /** Send the stored reply again, without changing it. */
+  protected resend(item: ContactResponse): void {
+    this.service.resendEmail(item.id).subscribe({
+      next: (res) => {
+        if (res?.data) {
+          this.selected.set(res.data);
+          this.items.update((list) => list.map((m) => (m.id === item.id ? res.data! : m)));
+          if (res.data.emailStatus === 'SENT') {
+            this.notify.success('contactMessages.replySent', 'Reply sent');
+          } else {
+            this.notify.warning(
+              'contactMessages.replySavedNotSent',
+              'Reply saved, but the email could not be sent',
+            );
+          }
+        }
+      },
+      error: (err) =>
+        this.notify.apiError(err, 'notify.errorFallback', 'Could not resend the email'),
+    });
+  }
+
+  protected copyEmail(email: string): void {
+    void navigator.clipboard?.writeText(email);
+    this.notify.success('contactMessages.copyEmail', 'Email copied');
+  }
+
+  protected confirmDelete(item: ContactResponse): void {
+    this.deleting.set(item);
+  }
+
+  protected submitDelete(): void {
+    const item = this.deleting();
+    if (!item) return;
+    this.deletingBusy.set(true);
+    this.service.delete(item.id).subscribe({
+      next: () => {
+        this.deletingBusy.set(false);
+        this.deleting.set(null);
+        this.selected.set(null);
+        this.notify.success('notify.deleted', 'Deleted successfully');
+        this.loadPage();
+        this.loadUnreadCount();
+      },
+      error: (err) => {
+        this.deletingBusy.set(false);
+        this.notify.apiError(err, 'notify.errorFallback', 'Could not delete the message');
+      },
+    });
+  }
+
+  // ── the labels ────────────────────────────────────────────────────────────
+
+  protected relativeTime(value: string): string {
+    return formatRelativeTime(value, this.language.language());
+  }
+
+  protected absoluteTime(value: string): string {
+    return formatDateAndTime(value, this.language.language());
+  }
+
+  protected emailStatusLabel(status: string | undefined): string {
+    switch (status) {
+      case 'SENT':
+        return 'contactMessages.emailSent';
+      case 'PENDING':
+        return 'contactMessages.emailQueued';
+      case 'FAILED':
+      case 'DEAD':
+        return 'contactMessages.emailNotSent';
+      default:
+        return 'contactMessages.emailNotSent';
+    }
+  }
+
+  protected readonly emptyMessage = computed(() =>
+    this.items().length === 0 ? 'No messages' : 'No messages match these filters',
+  );
 }

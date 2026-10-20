@@ -1,53 +1,46 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+
 import { ApiResponse, PageResponse } from '../../../core/models/api-response.model';
 import { environment } from '../../../../environments/environment';
-import { ContactResponse } from '../models/contact-message.model';
+import { ContactListParams, ContactResponse } from '../models/contact-message.model';
 
 @Injectable({ providedIn: 'root' })
 export class ContactMessageService {
   private http = inject(HttpClient);
   private basePath = '/api/dashboard/contact-messages';
 
-  getAll(params: {
-    page?: number;
-    size?: number;
-    search?: string;
-    sort?: string;
-    direction?: 'asc' | 'desc';
-  }): Observable<ApiResponse<PageResponse<ContactResponse>>> {
-    let httpParams = new HttpParams().set('page', params.page ?? 0).set('size', params.size ?? 20);
-    if (params.search?.trim()) httpParams = httpParams.set('search', params.search.trim());
-    if (params.sort) httpParams = httpParams.set('sort', params.sort);
-    if (params.direction) httpParams = httpParams.set('direction', params.direction);
+  getAll(params: ContactListParams = {}): Observable<ApiResponse<PageResponse<ContactResponse>>> {
     return this.http.get<ApiResponse<PageResponse<ContactResponse>>>(
       `${environment.apiUrl}${this.basePath}`,
-      { params: httpParams },
+      { params: this.toParams(params) },
     );
   }
 
-  getAllUnread(params: {
-    page?: number;
-    size?: number;
-    search?: string;
-    sort?: string;
-    direction?: 'asc' | 'desc';
-  }): Observable<ApiResponse<PageResponse<ContactResponse>>> {
-    let httpParams = new HttpParams().set('page', params.page ?? 0).set('size', params.size ?? 20);
-    if (params.search?.trim()) httpParams = httpParams.set('search', params.search.trim());
-    if (params.sort) httpParams = httpParams.set('sort', params.sort);
-    if (params.direction) httpParams = httpParams.set('direction', params.direction);
+  /** The unread list comes from its own endpoint, so the count and the rows
+   *  are the server's, not an estimate over what happened to be loaded. */
+  getAllUnread(
+    params: ContactListParams = {},
+  ): Observable<ApiResponse<PageResponse<ContactResponse>>> {
     return this.http.get<ApiResponse<PageResponse<ContactResponse>>>(
       `${environment.apiUrl}${this.basePath}/unread`,
-      { params: httpParams },
+      { params: this.toParams(params) },
     );
+  }
+
+  private toParams(params: ContactListParams): HttpParams {
+    let httpParams = new HttpParams()
+      .set('page', params.page ?? 0)
+      .set('size', params.size ?? 100)
+      .set('sort', params.sort ?? 'createdAt')
+      .set('direction', params.direction ?? 'desc');
+    if (params.search?.trim()) httpParams = httpParams.set('search', params.search.trim());
+    return httpParams;
   }
 
   getById(id: number): Observable<ApiResponse<ContactResponse>> {
-    return this.http.get<ApiResponse<ContactResponse>>(
-      `${environment.apiUrl}${this.basePath}/${id}`,
-    );
+    return this.http.get<ApiResponse<ContactResponse>>(`${environment.apiUrl}${this.basePath}/${id}`);
   }
 
   markAsRead(id: number): Observable<ApiResponse<ContactResponse>> {
@@ -61,6 +54,14 @@ export class ContactMessageService {
     return this.http.post<ApiResponse<ContactResponse>>(
       `${environment.apiUrl}${this.basePath}/${id}/reply`,
       { replyContent },
+    );
+  }
+
+  /** Send the stored reply again, without changing it. */
+  resendEmail(id: number): Observable<ApiResponse<ContactResponse>> {
+    return this.http.post<ApiResponse<ContactResponse>>(
+      `${environment.apiUrl}${this.basePath}/${id}/resend-email`,
+      null,
     );
   }
 

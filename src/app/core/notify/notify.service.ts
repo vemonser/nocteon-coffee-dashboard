@@ -26,6 +26,16 @@ export class NotifyService {
     toast.success(this.t(messageKey, fallback));
   }
 
+  /**
+   * A warning: the work happened, but not the way the reader expected.
+   * A reply that was saved but NOT emailed is exactly this — it is neither
+   * a success (the customer did not hear back) nor an error (the admin's
+   * words are safe).
+   */
+  warning(messageKey: string, fallback: string): void {
+    toast.warning(this.t(messageKey, fallback));
+  }
+
   /** Backend message first, translated fallback second — never silent. */
   apiError(err: unknown, fallbackKey: string, fallback: string): void {
     toast.error(this.backendMessage(err) ?? this.t(fallbackKey, fallback));
