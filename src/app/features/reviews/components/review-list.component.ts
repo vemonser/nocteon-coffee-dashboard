@@ -350,7 +350,14 @@ export class ReviewListComponent {
           imageUrl: row.primaryImageUrl,
           otherName: '',
         }),
-        { id: `main_${langCode}`, header: 'Product', enableSorting: false },
+        {
+          id: `main_${langCode}`,
+          header: 'Product',
+          enableSorting: false,
+          // A budget, because the COMMENT is this table's flex column: the
+          // comment is what a moderator reads, and it takes the remainder.
+          meta: { width: '145px' },
+        },
       ),
       this.columnHelper.accessor(
         (row) => ({
@@ -371,6 +378,8 @@ export class ReviewListComponent {
         id: 'comment',
         header: 'Comment',
         enableSorting: false,
+        // The comment is what a moderator reads, so it gets the width.
+        meta: { width: '225px' },
       }),
       this.columnHelper.accessor(
         (row) => ({
@@ -383,12 +392,34 @@ export class ReviewListComponent {
         id: 'createdAtTime',
         header: 'Created at',
         enableSorting: true,
+        // The date and the time stack, so it needs room for both: a
+        // truncated "Cre" header is a bug, not a layout.
+        meta: { width: '125px' },
       }),
-      this.columnHelper.display({ id: 'actions', header: 'Actions' }),
+      this.columnHelper.display({
+        id: 'actions',
+        header: 'Actions',
+        // The Approve button plus the menu: the shared 116px budget fits an
+        // icon row, not a labelled button.
+        meta: { width: '135px' },
+      }),
     ]);
   }
 
   protected readonly rowId = (row: ReviewResponse): number | null => row?.id ?? null;
+
+  /**
+   * The row's primary action: Approve, LABELLED.
+   *
+   * <p>design.md §10 — one visible action, plus a kebab menu when there are
+   * more than two. An unlabelled icon makes the reader guess, and a review
+   * approved by mistake reaches a customer.
+   */
+  protected readonly primaryAction = computed(() =>
+    this.status() === 'approved'
+      ? null
+      : { id: 'approve', label: 'reviews.approve' },
+  );
 
   protected readonly menuActions: RowMenuAction[] = [
     { id: 'view', label: 'reviews.view', icon: 'lucideEye' },
@@ -399,6 +430,9 @@ export class ReviewListComponent {
   protected onMenuAction(event: { id: string; item: ReviewResponse }): void {
     const review = event.item;
     switch (event.id) {
+      case 'approve':
+        this.approve(review);
+        break;
       case 'view':
         this.openView(review);
         break;

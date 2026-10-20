@@ -31,6 +31,9 @@ test('the four cells of both pages', async ({ page }) => {
   await submitLogin(page);
 
   for (const cell of CELLS) {
+    // The API rate-limits too: a sweep of eight page loads in a row trips
+    // it, and the evidence would capture the ERROR state instead of the page.
+    await page.waitForTimeout(4_000);
     await applyCell(page, cell.lang, cell.theme);
 
     await page.goto('/dashboard/reviews', { waitUntil: 'domcontentloaded' });

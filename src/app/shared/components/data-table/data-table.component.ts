@@ -213,6 +213,22 @@ export class DataTableComponent {
    * kebab menu, so the actions column stays narrow.
    */
   menuActions = input<RowMenuAction[]>([]);
+
+  /**
+   * The row's PRIMARY action — a LABELLED button, not an icon.
+   *
+   * <p>An unlabelled icon makes the reader guess what it does, and a review
+   * approved by mistake reaches a customer.
+   */
+  primaryAction = input<{ id: string; label: string } | null>(null);
+
+  /**
+   * Hides the slug under the name in the main cell.
+   *
+   * The slug is a technical handle. A table whose main column IS the
+   * identifier — the reviews console shows the PRODUCT — does not want it.
+   */
+  hideSlug = input(false);
   /** The chosen menu entry, with the row it belongs to. */
   menuAction = output<{ id: string; item: any }>();
 
@@ -490,9 +506,9 @@ export class DataTableComponent {
     // The reviews console. `main_en`/`main_ar` (the product cell) stays
     // UNSIZED — it is the table's one flex column and takes the remainder,
     // so the comment and the dates stay compact.
-    reviewer: '180px',
-    rating: '120px',
-    comment: '320px',
+    reviewer: '125px',
+    rating: '85px',
+    statusReview: '95px',
   };
 
   /** Resolves the width for a column id: explicit meta wins over the defaults. */

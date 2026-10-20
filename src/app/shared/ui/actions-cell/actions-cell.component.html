@@ -111,6 +111,24 @@
   }
 
   <!--
+    The primary action: a LABELLED button. The rest of the actions live in
+    the menu below, so the column stays narrow and the row's main action is
+    still unmistakable.
+  -->
+  @if (primaryAction(); as primary) {
+    <button
+      type="button"
+      hlmBtn
+      variant="outline"
+      size="sm"
+      class="me-1"
+      (click)="onMenuAction(primary)"
+    >
+      {{ primary.label | transloco }}
+    </button>
+  }
+
+  <!--
     The overflow menu. A row with more than two actions shows one and hides
     the rest here, so the actions column stays narrow.
   -->

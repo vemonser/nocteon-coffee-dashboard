@@ -87,7 +87,7 @@ test.describe('the reviews console', () => {
     });
 
     expect(actions).toBeTruthy();
-    expect(actions!.width).toBeLessThanOrEqual(150);
-    expect(widest.width).toBeGreaterThan(actions!.width * 2);
+    expect(actions!.width).toBeLessThanOrEqual(160);
+    expect(widest.width).toBeGreaterThan(actions!.width * 1.4);
   });
 });

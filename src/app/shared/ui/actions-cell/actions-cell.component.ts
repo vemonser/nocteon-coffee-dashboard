@@ -116,6 +116,16 @@ export class ActionsCellComponent {
   /** The chosen menu entry, with the row it belongs to. */
   readonly menuAction = output<{ id: string; item: any }>();
 
+  /**
+   * The row's PRIMARY action — a LABELLED button, not an icon.
+   *
+   * <p>design.md §10: one visible action, plus a kebab menu when there are
+   * more than two. An unlabelled icon makes the reader GUESS what the
+   * yellow cross means, and a reviewer approved by mistake is a review
+   * shown to a customer that should not have been.
+   */
+  readonly primaryAction = input<{ id: string; label: string } | null>(null);
+
   onMenuAction(action: RowMenuAction): void {
     this.menuAction.emit({ id: action.id, item: this.item() });
   }
