@@ -10,6 +10,7 @@ const BASE = process.env.E2E_BASE_URL ?? 'http://localhost:4200';
 const url = process.argv[2] ?? '/dashboard/orders';
 
 const browser = await chromium.launch({ channel: 'chromium' });
+const WIDTHS = [375, 768, 1024, 1440, 1920];
 const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
 const page = await context.newPage();
 
@@ -21,10 +22,12 @@ await page.click('button[type="submit"]');
 await rp;
 await page.waitForURL('**/dashboard', { timeout: 20_000 });
 
-await page.goto(`${BASE}${url}`, { waitUntil: 'domcontentloaded' });
-await page.waitForTimeout(2500);
-
-const out = await page.evaluate(() => {
+const results = [];
+for (const width of WIDTHS) {
+  await page.setViewportSize({ width, height: 900 });
+  await page.goto(`${BASE}${url}`, { waitUntil: 'domcontentloaded' });
+  await page.waitForTimeout(2500);
+  results.push({ width, ...(await page.evaluate(() => {
   const table = document.querySelector('app-data-table table');
   if (!table) return { error: 'no table' };
   const headers = Array.from(table.querySelectorAll('thead th')).map((th) => ({
@@ -74,7 +77,18 @@ const out = await page.evaluate(() => {
     headers,
     truncated,
   };
-});
+  })) });
+}
 
-console.log(JSON.stringify(out, null, 2));
+for (const r of results) {
+  console.log(
+    `\n=== ${r.width}px === table ${r.tableWidth} (scroll ${r.tableScroll}/${r.tableClient}) pageOverflow ${r.pageOverflow}`,
+  );
+  console.log('  headers:', r.headers.map((h) => `${h.text}:${h.width}`).join(' | '));
+  for (const c of r.perCell) {
+    const flag = c.tdScroll > c.tdClient + 1 || c.innerScroll > c.innerClient + 1 ? '  <-- OVER' : '';
+    console.log(`  ${c.column.padEnd(20)} cell=${String(c.cellWidth).padStart(4)} inner=${c.innerScroll}/${c.innerClient} ${c.text.slice(0, 22)}${flag}`);
+  }
+  console.log('  truncated:', r.truncated.map((t) => `${t.column}: ${t.text}`).join(' | ') || 'none');
+}
 await browser.close();

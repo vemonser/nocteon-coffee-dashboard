@@ -252,17 +252,17 @@ export class OrdersListComponent {
   protected readonly columns: ColumnDef<OrderResponse, any>[] = [
     this.columnHelper.accessor(
       (row) => formatOrderNumber(row.orderNumber, row.id),
-      { id: 'orderNumber', header: 'Order #', enableSorting: false, meta: { width: '175px' } },
+      { id: 'orderNumber', header: 'Order #', enableSorting: false, meta: { width: '166px' } },
     ),
     this.columnHelper.accessor(
       (row) => ({ name: row.customer?.name ?? null, email: row.customer?.email ?? null }),
-      { id: 'customer', header: 'Customer', enableSorting: false, meta: { width: '120px' } },
+      { id: 'customer', header: 'Customer', enableSorting: false, meta: { width: '115px' } },
     ),
     this.columnHelper.accessor('items', {
       id: 'items',
       header: 'Items',
       enableSorting: false,
-      meta: { width: '88px' },
+      meta: { width: '84px' },
     }),
     this.columnHelper.accessor(
       (row) => orderStatusKind(row.status),
@@ -270,14 +270,14 @@ export class OrdersListComponent {
     ),
     this.columnHelper.accessor(
       (row) => paymentStatusKind(row.paymentStatus),
-      { id: 'paymentStatus', header: 'Payment status', enableSorting: true, meta: { width: '128px' } },
+      { id: 'paymentStatus', header: 'Payment status', enableSorting: true, meta: { width: '130px' } },
     ),
     this.columnHelper.accessor(
       (row) => ({
         icon: row.paymentMethod === 'ONLINE' ? 'lucideCreditCard' : 'lucideBanknote',
         label: this.names.paymentMethod(row.paymentMethod),
       }),
-      { id: 'paymentMethod', header: 'Method', enableSorting: false, meta: { width: '150px' } },
+      { id: 'paymentMethod', header: 'Method', enableSorting: false, meta: { width: '165px' } },
     ),
     this.columnHelper.accessor('totalAmount', {
       id: 'totalAmount',
@@ -289,7 +289,7 @@ export class OrdersListComponent {
       id: 'createdAtTime',
       header: 'Created at',
       enableSorting: true,
-      meta: { width: '105px' },
+      meta: { width: '100px' },
     }),
     this.columnHelper.display({ id: 'actions', header: 'Actions', meta: { width: '84px' } }),
   ];

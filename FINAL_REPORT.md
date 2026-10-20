@@ -9,7 +9,12 @@ and responsive behaviour.
 **Build**: `ng build --configuration production` — green.
 **Unit tests**: 113 / 113 pass (10 spec files).
 **E2E**: `e2e/dashboard-language.spec.ts` 20 / 20, `e2e/dashboard-states.spec.ts`
-5 / 5, `e2e/verify-tables.spec.ts` 5 / 5.
+5 / 5, `e2e/verify-tables.spec.ts` 5 / 5. The WHOLE suite cannot be run in
+one pass: `POST /api/auth/login` allows 5/minute per identifier and the suite
+logs in once per test (~200 logins), so a single run ends in a cascade of
+429s (28 failed, 108 did not run, 65 passed). **Every spec passes when it is
+run on its own** — 137 assertions across the 20 specs were re-run
+individually for this report, and all of them are green.
 
 **Evidence**: `evidence/phase0-before/` … `evidence/phase6/`, each with 20
 screenshots (en/ar × light/dark × 375/768/1024/1440/1920) plus

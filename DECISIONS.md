@@ -730,3 +730,33 @@ Updated with the new chart tokens and the contrast audit (section 2, 2b and
 the dashboard home pattern (section 10), and the accessibility additions
 (section 11: the focus-ring Tab walk, chart summaries, 200 % zoom).
 
+## Final verification
+
+- Production build: green.
+- Unit tests: **113 / 113** (10 spec files).
+- E2E, per spec (the suite cannot run in one pass — the login endpoint
+  allows 5/minute per identifier and the suite logs in once per test):
+  **dashboard-language 20/20**, dashboard-states 5/5, verify-tables 5/5,
+  auth 10/10, and 137 assertions green across the 20 specs re-run
+  individually.
+- The full report is `FINAL_REPORT.md`.
+
+### One inherited failure found and fixed
+
+`e2e/verify-tables.spec.ts` failed on the carts list: the widest data
+column ("Customer", 225px) had to dominate the actions column (116px) by
+2.5x. The cause was that the carts list's identity column had no width of
+its own, so it shared the leftover with the other unsized columns. Fixed by
+giving it a share of the row (`userFullName: '28%'` in the shared
+`columnWidths` map, the same mechanism the other identity columns use) —
+the guard was NOT relaxed.
+
+### Two guards made more general by this work
+
+- The i18n key-set symmetry test now **discovers** plural families (a key
+  whose base has siblings in other categories) instead of listing four
+  known bases, so a family added later is exempt from the symmetry rule for
+  the right reason.
+- The money-formatter guard now also rejects the built-in `| currency` pipe
+  and the `CurrencyPipe` import, which were a second way of printing money.
+

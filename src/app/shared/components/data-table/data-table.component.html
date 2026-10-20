@@ -304,7 +304,10 @@
 
                 <!-- The order number: the row's identifier, and its link. -->
                 @case ('orderNumber') {
-                  <span class="block truncate text-start text-sm font-medium tabular-nums">
+                  <span
+                    class="block truncate text-start text-[13px] font-medium tabular-nums"
+                    [attr.title]="cell.getValue()"
+                  >
                     <bdi>{{ cell.getValue() }}</bdi>
                   </span>
                 }
@@ -312,11 +315,18 @@
                 <!-- The customer: the name, with the address of that name under it. -->
                 @case ('customer') {
                   <span class="flex min-w-0 flex-col items-start">
-                    <span class="block max-w-full truncate text-start text-sm font-medium">
+                    <span
+                      class="block max-w-full truncate text-start text-sm font-medium"
+                      [attr.title]="$any(cell.getValue())?.name"
+                    >
                       {{ $any(cell.getValue())?.name || '—' }}
                     </span>
                     @if ($any(cell.getValue())?.email) {
-                      <span class="block max-w-full truncate text-start text-xs text-muted-foreground">
+                      <span
+                        class="block max-w-full truncate text-start text-xs text-muted-foreground"
+                        [attr.title]="$any(cell.getValue()).email"
+                        dir="ltr"
+                      >
                         {{ $any(cell.getValue()).email }}
                       </span>
                     }

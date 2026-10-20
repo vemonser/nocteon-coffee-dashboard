@@ -26,13 +26,23 @@ page.on('console', (m) => {
 });
 page.on('pageerror', (e) => errors.push('PAGEERROR: ' + e.message));
 
-await page.goto(`${BASE}/login`, { waitUntil: 'domcontentloaded' });
-await page.fill('#identifier', process.env.E2E_ADMIN_EMAIL);
-await page.fill('#password', process.env.E2E_ADMIN_PASSWORD);
-const rp = page.waitForResponse((r) => r.url().includes('/api/auth/login') && r.request().method() === 'POST');
-await page.click('button[type="submit"]');
-await rp;
-await page.waitForURL('**/dashboard', { timeout: 20_000 });
+// The backend rate-limits the login (5/min per identifier); a 429 is
+// waited out rather than failing the capture.
+for (let attempt = 1; attempt <= 4; attempt += 1) {
+  await page.goto(`${BASE}/login`, { waitUntil: 'domcontentloaded' });
+  await page.fill('#identifier', process.env.E2E_ADMIN_EMAIL);
+  await page.fill('#password', process.env.E2E_ADMIN_PASSWORD);
+  const rp = page.waitForResponse((r) => r.url().includes('/api/auth/login') && r.request().method() === 'POST');
+  await page.click('button[type="submit"]');
+  const res = await rp;
+  if (res.status() === 429) {
+    await page.waitForTimeout(20_000);
+    continue;
+  }
+  if (!res.ok()) throw new Error(`login failed: ${res.status()}`);
+  await page.waitForURL('**/dashboard', { timeout: 20_000 });
+  break;
+}
 
 await page.goto(`${BASE}/__seed`, { waitUntil: 'domcontentloaded' }).catch(() => {});
 await page.evaluate(

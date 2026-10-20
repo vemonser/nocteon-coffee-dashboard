@@ -206,9 +206,9 @@
       "processing": "قيد المعالجة",
       "shipped": "تم الشحن",
       "delivered": "تم التوصيل",
-      "cancelled": "ملغي",
-      "failed": "فشل",
-      "refunded": "مسترد",
+      "cancelled": "ملغى",
+      "failed": "فشل الدفع",
+      "refunded": "تم الاسترداد",
       "enabled": "مفعّل",
       "disabled": "معطّل",
       "confirmed": "مؤكد",
@@ -1236,7 +1236,7 @@
       "PROCESSING": "قيد المعالجة",
       "SHIPPED": "تم الشحن",
       "DELIVERED": "تم التوصيل",
-      "CANCELLED": "ملغاة"
+      "CANCELLED": "ملغى"
     },
     "paymentStatuses": {
       "PENDING": "قيد الانتظار",
@@ -1292,7 +1292,7 @@
       "noOrdersHint": "ستظهر هنا الطلبات التي يتم إنشاؤها في المتجر.",
       "noResults": "لا توجد طلبات مطابقة لهذه الفلاتر",
       "noResultsHint": "جرّب فترة زمنية أوسع، أو امسح الفلاتر.",
-      "noItems": "لا توجد منتجات"
+      "noItems": "لا منتجات"
     },
     "errorState": {
       "title": "تعذّر تحميل الطلبات",
@@ -1657,7 +1657,7 @@
       "DESKTOP": "حاسوب مكتبي"
     },
     "paymentMethods": {
-      "ONLINE": "دفع إلكتروني",
+      "ONLINE": "الدفع الإلكتروني",
       "CASH_ON_DELIVERY": "الدفع عند الاستلام",
       "BANK_TRANSFER": "تحويل بنكي",
       "CARD": "بطاقة"

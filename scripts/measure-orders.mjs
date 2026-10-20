@@ -37,19 +37,29 @@ const money = (n) => Math.round(Number(n ?? 0) * 100) / 100;
  * exactly once and reuses the token.
  */
 async function login() {
-  const res = await fetch(`${API}/api/auth/login`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      identifier: process.env.E2E_ADMIN_EMAIL,
-      password: process.env.E2E_ADMIN_PASSWORD,
-    }),
-  });
-  if (!res.ok) throw new Error(`login failed: ${res.status}`);
-  const body = await res.json();
-  const token = body?.data?.accessToken;
-  if (!token) throw new Error('login response carried no accessToken');
-  return token;
+  // The backend rate-limits the login (5/min per identifier); a 429 is
+  // waited out rather than failing the audit.
+  for (let attempt = 1; attempt <= 5; attempt += 1) {
+    const res = await fetch(`${API}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        identifier: process.env.E2E_ADMIN_EMAIL,
+        password: process.env.E2E_ADMIN_PASSWORD,
+      }),
+    });
+    if (res.status === 429) {
+      console.log('  login 429 — backing off 20s');
+      await new Promise((r) => setTimeout(r, 20_000));
+      continue;
+    }
+    if (!res.ok) throw new Error(`login failed: ${res.status}`);
+    const body = await res.json();
+    const token = body?.data?.accessToken;
+    if (!token) throw new Error('login response carried no accessToken');
+    return token;
+  }
+  throw new Error('login stayed rate-limited (429) after 5 attempts');
 }
 
 async function api(token, path) {

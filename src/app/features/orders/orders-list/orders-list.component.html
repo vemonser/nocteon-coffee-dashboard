@@ -6,6 +6,13 @@
       <p class="text-sm text-muted-foreground" data-testid="orders-total-count">
         {{ headerCount() | plural: 'orders.countOrders' }}
       </p>
+      <!--
+        The count is announced when a filter changes, so the result of a
+        filter is heard and not only drawn.
+      -->
+      <p class="sr-only" role="status" aria-live="polite" data-testid="orders-live-count">
+        {{ headerCount() | plural: 'orders.countOrders' }}
+      </p>
     </div>
 
     <div class="flex items-center gap-2">

@@ -351,11 +351,21 @@ await browser.close();
 // Re-run this phase's measurement script so results.json can never hold a
 // stale copy: the device breakdown changes between loads, so a measurement
 // taken before the capture would not describe the captured page.
+//
+// The measurement is a separate, isolated run. A failure there must not
+// throw away the capture that already succeeded — the error is recorded in
+// results.json instead.
+let measurementError = null;
 const measurementScript = resolve(process.cwd(), `scripts/measure-${PHASE}.mjs`);
 if (existsSync(measurementScript)) {
   console.log(`running measurements -> scripts/measure-${PHASE}.mjs`);
-  const res = await import(`file://${measurementScript}`);
-  if (typeof res.run === 'function') await res.run();
+  try {
+    const res = await import(`file://${measurementScript}`);
+    if (typeof res.run === 'function') await res.run();
+  } catch (err) {
+    measurementError = String(err?.message ?? err);
+    console.error(`measurement failed: ${measurementError}`);
+  }
 }
 
 const measurementsFile = `${OUT}${TAG ? '-' + TAG : ''}/measurements.json`;
@@ -385,6 +395,7 @@ const results = {
   },
   cells,
   measurements,
+  measurementError,
 };
 
 mkdirSync(OUT, { recursive: true });
