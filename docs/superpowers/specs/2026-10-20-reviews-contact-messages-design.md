@@ -94,7 +94,6 @@ column header, empty state). New rows pinned in `docs/glossary.md` and enforced 
 | 25 | The reply — email did not reach the customer | Email not sent | لم يتم إرسال الإيميل | — |
 | 26 | The reply — email is queued for another attempt | Queued | في الانتظار | — |
 | 27 | Action — try the email again | Send again | إعادة الإرسال | — |
-| 28 | The language of the reply | English | الإنجليزية | — |
 
 **Notes.**
 
@@ -189,13 +188,18 @@ the **worker retries it** on the backoff schedule until it is sent or dead. That
 
 | # | Change | Detail |
 |---|---|---|
-| 1 | `EmailType.CONTACT_REPLY_EN` and `EmailType.CONTACT_REPLY_AR` | Two constants, so the language of the wrapper is recorded in `email_log.email_type` and a retry rebuilds the same language. Two types, not one type plus a column — that is what keeps the migration away. |
-| 2 | `ContactReplyDataProvider` | One provider per language, resolving `{ recipientName, originalSubject, originalMessage, replyContent }` from the contact message. `replyContent` comes from `contact_messages.reply_content`, so a retry sends the current answer to that message. |
-| 3 | `BrevoTemplateProperties.contactReplyEn` / `.contactReplyAr` + the `resolveTemplateId` switch + `BREVO_TEMPLATE_CONTACT_REPLY_EN` / `_AR` in `.env` | The two Brevo template ids. **This is the one external step: two templates must be created in the Brevo dashboard.** They render `{{params.recipientName}}`, `{{params.originalSubject}}`, `{{params.originalMessage}}` and `{{params.replyContent}}`. |
-| 4 | `ContactService.reply()` | After saving, call the enqueue with `relatedEntityType = "contact_message"` and `relatedEntityId = message.getId()`. The idempotency key is `"contact-reply:" + id` — **one email row per message**, so a second reply re-sends the current answer rather than queueing a second copy of an old one. The existing `enqueueEmail` skips a key it has already seen, so the resend path needs a small sibling that resets the row to `PENDING`, zeroes `attempt_count` and re-attempts. |
-| 5 | `POST /api/dashboard/contact-messages/{id}/resend-email` | **New.** Re-enqueues the stored reply. `contact:update`. This is the manual escape hatch when the worker is off or the address is wrong. |
-| 6 | `ContactResponse` gains `emailStatus` | `NONE` (never emailed) / `PENDING` / `SENT` / `FAILED` / `DEAD`, read from `email_log` for that message. The list endpoint reads them for the whole page in **one** batched query. |
-| 7 | `nocteon.mail.retry-enabled` | **A separate flag** from `nocteon.mail.scheduling-enabled` (which stays off). The retry worker needs to run for a failed reply email to be retried, but turning on the existing flag would also start `AbandonedCartScheduler` — abandoned-cart reminders to real addresses — which is not a decision this feature gets to make. The new flag gates the retry worker only. |
+| 1 | `EmailType.CONTACT_REPLY` | One constant. **No language in the type** — the wrapper carries no prose (§4.3.4), so one type is enough and the migration stays away. |
+| 2 | `ContactReplyDataProvider` | Resolves `{ recipientName, originalSubject, originalMessage, replyContent }` from the contact message. `replyContent` comes from `contact_messages.reply_content`, so a retry sends the current answer to that message. |
+| 3 | A Thymeleaf template `templates/emails/contact-reply.html` | The body, written in the repo like the other email templates. It renders the customer's name, the original message quoted with `>`, the reply text, and the brand signature — **no sentences that need translating**. |
+| 4 | `BrevoClient` gains a raw-content branch | Brevo's `/smtp/email` takes either a `templateId` + `params`, **or** a `subject` + `htmlContent`. The contact reply uses the second form: the `TemplateEngine` renders the Thymeleaf template and the result goes as `htmlContent`. **No Brevo template has to be created in the Brevo dashboard, and no environment variable has to be set.** |
+| 5 | `ContactService.reply()` | After saving, call the enqueue with `relatedEntityType = "contact_message"` and `relatedEntityId = message.getId()`. The idempotency key is `"contact-reply:" + id` — **one email row per message**, so a second reply re-sends the current answer rather than queueing a second copy of an old one. The existing `enqueueEmail` skips a key it has already seen, so the resend path needs a small sibling that resets the row to `PENDING`, zeroes `attempt_count` and re-attempts. |
+| 6 | `POST /api/dashboard/contact-messages/{id}/resend-email` | **New.** Re-enqueues the stored reply. `contact:update`. This is the manual escape hatch when the worker is off or the address is wrong. |
+| 7 | `ContactResponse` gains `emailStatus` | `NONE` (never emailed) / `PENDING` / `SENT` / `FAILED` / `DEAD`, read from `email_log` for that message. The list endpoint reads them for the whole page in **one** batched query. |
+| 8 | `nocteon.mail.retry-enabled` | **A separate flag** from `nocteon.mail.scheduling-enabled` (which stays off). The retry worker needs to run for a failed reply email to be retried, but turning on the existing flag would also start `AbandonedCartScheduler` — abandoned-cart reminders to real addresses — which is not a decision this feature gets to make. The new flag gates the retry worker only. |
+
+**Nothing in this list needs a human outside the repo.** No Brevo dashboard template, no
+environment variable, no dashboard work, no account. The only environment value is the existing
+`BREVO_API_KEY`.
 
 #### 4.3.3 The honesty rule
 
@@ -213,13 +217,27 @@ The page must tell the truth about what happened, in both directions:
 
 An admin must never walk away believing a customer was answered when the email did not go out.
 
-#### 4.3.4 The reply language
+#### 4.3.4 One language, no toggle
 
-The reply box carries a language toggle — **English / العربية** — defaulting to the dashboard's
-current language. The admin writes the reply, and the toggle says which language the email
-wrapper (greeting, subject) is in. The reply text itself is sent exactly as typed. The choice
-selects the `EmailType` (`CONTACT_REPLY_EN` / `CONTACT_REPLY_AR`), so the language is recorded
-in `email_log` and a retry rebuilds the same one. No new column, no migration.
+There is no language switch, and there is no bilingual system. The reply is written by the
+admin, in the language the customer speaks, and **that text is the email body, verbatim**.
+
+The wrapper around it carries no prose, so it needs no translation and no per-language
+template:
+
+```
+Ahmed,
+
+<the admin's reply, exactly as typed>
+
+> <the customer's original message, quoted with "">
+
+— Nocteon Coffee
+```
+
+The subject is `Re: <the customer's own subject>` — the customer's words again, so it reads
+correctly in whatever language they wrote in. One template, one `EmailType`, one code path, and
+the same email for every customer.
 
 **Quick reply templates** (offered in the reply box, translatable, editable before sending):
 "شكرًا لتواصلك معنا. هنرد عليك خلال ٢٤ ساعة." / "Thanks for reaching out — we'll get back to
@@ -337,8 +355,7 @@ A small console: see what has not been read, open it, write a reply, move on. No
    - the **email state chip** next to the sender: `Email sent` / `Queued` / `Email not sent`,
      read from `email_log` — and a **Send again** action when the email did not go out;
    - the reply box: a textarea with a placeholder (`Reply to ahmed@test.com`), **autofocus**,
-     a **language toggle** (English / العربية, defaulting to the dashboard's language), and
-     quick reply templates;
+     and quick reply templates — one language, the admin's own words;
    - the honesty line under the box: *"The reply is emailed to {email} and saved here."* /
      *"الرد بيتبعت إيميل على {email} وبيتحفظ هنا."*;
    - the **Send reply** button: disabled with an explanation when the box is empty; a loading
@@ -422,9 +439,9 @@ Each criterion is verifiable and is the unit of evidence.
   `Send reply` / `إرسال رد` and a line under the box says the reply is emailed to the customer
   and saved here. The success toast ("Reply sent" / "تم إرسال الرد") appears **only** when the
   email status is `SENT`.
-- **AC-C13** — The reply box has a placeholder, receives focus when the dialog opens, offers an
-  English / العربية language toggle that defaults to the dashboard's language, and the send
-  button is disabled with an explanation while the box is empty.
+- **AC-C13** — The reply box has a placeholder, receives focus when the dialog opens, and the
+  send button is disabled with an explanation while the box is empty. There is no language
+  switch: the reply text is the email body, verbatim, in the language the admin wrote it.
 - **AC-C14** — Opening a message marks it read; the dialog offers Delete; Escape closes it;
   focus is trapped inside and returned to the trigger.
 - **AC-C15** — A failed send shows an explicit warning, keeps the typed text in the box, and
@@ -477,11 +494,11 @@ written against these phases; each phase ends green and is separately revertible
 | Phase | Content | Ends when |
 |---|---|---|
 | **1a — Review backend** | The review stats / bulk-approval / date-filter endpoints and `orderId`/`orderNumber` on `ReviewResponse`. | The new endpoints answer correctly against the running backend; backend tests pass. |
-| **1b — Contact reply email** | `EmailType.CONTACT_REPLY_EN/_AR`, the data provider, the Brevo template ids, the enqueue in `ContactService.reply()`, `emailStatus` on the response, `POST /{id}/resend-email`, and the separate `nocteon.mail.retry-enabled` flag. | A reply produces an `email_log` row; a failed send is picked up by the worker. |
+| **1b — Contact reply email** | `EmailType.CONTACT_REPLY`, the data provider, the Thymeleaf template, the Brevo raw-content branch, the enqueue in `ContactService.reply()`, `emailStatus` on the response, `POST /{id}/resend-email`, and the separate `nocteon.mail.retry-enabled` flag. | A reply produces an `email_log` row; a failed send is picked up by the worker. |
 | **2 — Seed cleanup** | `V110`: Brazil Mogiana's image, reviews moved off the admin account. | The database holds no party photo and no admin-authored review. |
 | **3 — Shared dashboard** | `app-user-avatar`, the shared relative-time helper, `app-data-table` header/width entries and direction isolation, the `approved` status badge, the sidebar focus fix. | The shared components are in place; the sidebar shows no persistent ring. |
 | **4 — Reviews page** | The full rebuild: tabs, toolbar, statistics, table, grid, bulk, drawer. | AC-R1…AC-R18 pass with browser evidence in 4 cells. |
-| **5 — Contact messages page** | The rebuild: tabs, list, preview line, row actions, the dialog, the reply box with its language toggle, the email-state chip. | AC-C1…AC-C17 pass with browser evidence in 4 cells. |
+| **5 — Contact messages page** | The rebuild: tabs, list, preview line, row actions, the dialog, the reply box, the email-state chip. | AC-C1…AC-C17 pass with browser evidence in 4 cells. |
 | **6 — Terminology & gate** | Glossary rows, `i18n-keys.spec.ts` pins, the full i18n set, the Evidence Gate. | The gate exits 0 with every criterion mapped to an artifact. |
 
 ---
@@ -495,7 +512,7 @@ written against these phases; each phase ends green and is separately revertible
 | The pending tab as the default changes what a moderator sees first. | Intended: pending is the work queue. `?status=pending` still lands on the same tab, and the Orders-style URL state makes the tab explicit in the address. |
 | The **Replied** tab and the date-range filter are client-side over the loaded set, so they see only the loaded page(s), not every message. | The page loads with a raised size (100, the API's maximum) and the limitation is recorded in the code. The counts that matter — total and unread — come from the server. |
 | **The reply email reaches real inboxes.** The seed addresses are `@test.com` (reserved, non-routable), but a real message would reach a real person. | The email only fires from an explicit admin action. The seed uses `@test.com`. The `email_log` row records every attempt, so there is a trail. |
-| **The reply email needs two Brevo templates** that have to be created in the Brevo dashboard by hand — the one step that is not in the repo. | Listed as an explicit prerequisite in the plan, with the env var names. Without them the send fails loudly (the `email_log` row goes FAILED) and the UI says the email did not go out. |
+| The reply email is **plain and one-language**: the admin's text, verbatim, with a language-neutral wrapper. | A customer who writes in Arabic gets an Arabic reply, because the admin wrote in Arabic. The wrapper has no translatable prose, so there is no wrong-language greeting. |
 | Turning on the retry worker with the **existing** flag would also start the abandoned-cart emails to real addresses. | The spec gives the retry worker its own flag (`nocteon.mail.retry-enabled`); the existing flag stays off and keeps gating the abandoned-cart job. |
 | A **retry rebuilds the params from the database**, so it sends the *current* `reply_content` — if the admin has since replied again, the earlier failed attempt sends the newer text. | One email row per message, and the row carries the type, so a message never has two divergent emails in flight. The newer text is what should reach the customer anyway. |
 | The `reply_content` column holds one reply; a second reply overwrites the first. | Accepted for a console this small. The dialog labels the stored text "Your reply" so it is never mistaken for a thread. |
@@ -505,9 +522,9 @@ written against these phases; each phase ends green and is separately revertible
 
 - **Backend:** the only changes are additive — a new statistics endpoint, a new bulk endpoint, two
   nullable fields on `ReviewResponse`, one seed migration, and the contact-reply email wiring
-  (a new `EmailType`, a provider, an env var and one new flag). Rolling back is a code revert;
-  the seed migration is guarded and idempotent. The `email_log` rows survive a revert — they are
-  a delivery trail, and deleting them would destroy the record of what was sent.
+  (a new `EmailType`, a provider, a Thymeleaf template, one new flag). Rolling back is a code
+  revert; the seed migration is guarded and idempotent. The `email_log` rows survive a revert —
+  they are a delivery trail, and deleting them would destroy the record of what was sent.
 - **Dashboard:** both pages are behind their routes; reverting the two feature directories
   restores the previous behaviour. The shared components are additive except the sidebar focus
   change, which is a single, separately revertible commit.
