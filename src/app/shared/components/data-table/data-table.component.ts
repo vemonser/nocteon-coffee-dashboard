@@ -16,9 +16,12 @@ import { MoneyPipe } from '../../pipes/money.pipe';
 import { LocalizedDateComponent } from '../../ui/localized-date/localized-date.component';
 import { ImageCellComponent } from '../../ui/image-cell/image-cell.component';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucideStar, lucideCreditCard, lucideBanknote } from '@ng-icons/lucide';
+import { lucideStar, lucideCreditCard, lucideBanknote, lucideBadgeCheck } from '@ng-icons/lucide';
+import { heroStarSolid } from '@ng-icons/heroicons/solid';
+import { heroStar } from '@ng-icons/heroicons/outline';
 import { ColorCellComponent } from '../color-cell/color-cell.component';
 import { MainCellComponent } from './main-cell/main-cell.component';
+import { UserAvatarComponent } from '../../ui/user-avatar/user-avatar.component';
 import { StatusBadgeComponent } from '../../ui/status-badge/status-badge.component';
 import { LocalizedNameService } from '../../../core/i18n/localized-name.service';
 import { LanguageService } from '../../../core/i18n/language.service';
@@ -31,8 +34,8 @@ export interface TableSortEvent {
 
 @Component({
   selector: 'app-data-table',
-  imports: [ImageCellComponent, ActionsCellComponent, StatusCellComponent, DeletedBadgeComponent, LocalizedDateComponent, ColorCellComponent, MainCellComponent, StatusBadgeComponent, NgIcon, TranslocoPipe, RouterModule, MoneyPipe],
-  providers: [provideIcons({ lucideStar, lucideCreditCard, lucideBanknote })],
+  imports: [UserAvatarComponent, ImageCellComponent, ActionsCellComponent, StatusCellComponent, DeletedBadgeComponent, LocalizedDateComponent, ColorCellComponent, MainCellComponent, StatusBadgeComponent, NgIcon, TranslocoPipe, RouterModule, MoneyPipe],
+  providers: [provideIcons({ lucideStar, lucideCreditCard, lucideBanknote, lucideBadgeCheck, heroStarSolid, heroStar })],
   templateUrl: './data-table.component.html',
   styleUrl: './data-table.component.css',
 })
@@ -42,7 +45,7 @@ export class DataTableComponent {
    * translates the shared vocabulary through Transloco (reactive on language
    * change); anything unmapped passes through untouched.
    */
-  private static readonly HEADER_KEYS: Record<string, string> = {
+  static readonly HEADER_KEYS: Record<string, string> = {
     ID: 'common.id',
     Image: 'common.image',
     Slug: 'common.slug',
@@ -114,6 +117,11 @@ export class DataTableComponent {
     'Order #': 'orders.columns.orderNumber',
     'Order status': 'orders.columns.status',
     'Payment status': 'orders.columns.paymentStatus',
+    // The reviews console (a moderation table, not an order table).
+    Product: 'reviews.columns.product',
+    Reviewer: 'reviews.columns.reviewer',
+    Rating: 'reviews.columns.rating',
+    Comment: 'reviews.columns.comment',
   };
 
   headerKey(raw: unknown): string {
@@ -422,7 +430,7 @@ export class DataTableComponent {
    *
    * Widths are validated by `e2e/verify-tables.spec.ts`.
    */
-  readonly columnWidths: Record<string, string> = {
+  static readonly COLUMN_WIDTHS: Record<string, string> = {
     id: '48px',
     image: '56px',
     primaryImageUrl: '56px',
@@ -479,6 +487,12 @@ export class DataTableComponent {
     discountType: '110px',
     discountValue: '100px',
     priceRange: '130px',
+    // The reviews console. `main_en`/`main_ar` (the product cell) stays
+    // UNSIZED — it is the table's one flex column and takes the remainder,
+    // so the comment and the dates stay compact.
+    reviewer: '180px',
+    rating: '120px',
+    comment: '320px',
   };
 
   /** Resolves the width for a column id: explicit meta wins over the defaults. */
@@ -495,8 +509,11 @@ export class DataTableComponent {
       // scroll on every trash view.
       return '264px';
     }
-    return this.columnWidths[columnId] ?? null;
+    return DataTableComponent.COLUMN_WIDTHS[columnId] ?? null;
   }
+
+  /** The five stars of a rating cell. */
+  protected readonly ratingStars = [0, 1, 2, 3, 4];
 
   /** Columns whose values are numbers — end-aligned with tabular figures. */
   private static readonly NUMERIC_COLUMNS = new Set([

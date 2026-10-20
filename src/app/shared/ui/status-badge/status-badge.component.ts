@@ -27,6 +27,7 @@ export type StatusKind =
   | 'refunded'
   | 'enabled'
   | 'disabled'
+  | 'approved'
   | 'unknown';
 
 /**
@@ -83,64 +84,78 @@ export class StatusBadgeComponent {
 
   protected readonly label = computed(() => {
     if (this.customLabel()) return this.customLabel();
-    const labels: Record<StatusKind, string> = {
-      pending: 'common.statuses.pending',
-      confirmed: 'common.statuses.confirmed',
-      paid: 'common.statuses.paid',
-      processing: 'common.statuses.processing',
-      shipped: 'common.statuses.shipped',
-      delivered: 'common.statuses.delivered',
-      cancelled: 'common.statuses.cancelled',
-      failed: 'common.statuses.failed',
-      refunded: 'common.statuses.refunded',
-      enabled: 'common.statuses.enabled',
-      disabled: 'common.statuses.disabled',
-      unknown: 'common.statuses.unknown',
-    };
-    return labels[this.status()];
+    return STATUS_BADGE_LABELS[this.status()];
   });
 
-  protected readonly icon = computed(() => {
-    const icons: Record<StatusKind, string> = {
-      pending: 'lucideClock',
-      confirmed: 'lucideCircleDot',
-      paid: 'lucideCheckCircle',
-      processing: 'lucidePackage',
-      shipped: 'lucideTruck',
-      delivered: 'lucideCheckCircle',
-      cancelled: 'lucideXCircle',
-      failed: 'lucideAlertCircle',
-      refunded: 'lucideRotateCcw',
-      enabled: 'lucideCheckCircle',
-      disabled: 'lucideXCircle',
-      unknown: 'lucideCircleDot',
-    };
-    return icons[this.status()];
-  });
+  protected readonly icon = computed(() => STATUS_BADGE_ICONS[this.status()]);
 
-  protected readonly badgeClass = computed(() => {
-    const base = 'gap-1.5 flex items-center';
-    const variants: Record<StatusKind, string> = {
-      // Pending — warning.
-      pending: 'bg-warning-soft text-warning',
-      // Confirmed — the pale end of the info family (Processing is the full one).
-      confirmed: 'bg-info-soft/60 text-info',
-      // Paid / Delivered — success.
-      paid: 'bg-success-soft text-success',
-      delivered: 'bg-success-soft text-success',
-      // Processing — the full info tint.
-      processing: 'bg-info-soft text-info',
-      // Shipped — the slate chart token, as a tint of itself.
-      shipped: 'bg-chart-5/10 text-chart-5',
-      // Cancelled / Failed — destructive.
-      cancelled: 'bg-destructive-soft text-destructive-text',
-      failed: 'bg-destructive-soft text-destructive-text',
-      // Refunded — muted.
-      refunded: 'bg-muted text-muted-foreground',
-      enabled: 'bg-success-soft text-success',
-      disabled: 'bg-muted text-muted-foreground',
-      unknown: 'bg-muted text-muted-foreground',
-    };
-    return `${base} ${variants[this.status()]}`;
-  });
+  protected readonly badgeClass = computed(() => `${BADGE_BASE} ${STATUS_BADGE_CLASSES[this.status()]}`);
 }
+
+/** The base classes every badge carries. */
+export const BADGE_BASE = 'gap-1.5 flex items-center';
+
+/**
+ * The label of each kind, as a Transloco key.
+ *
+ * A page can override the label with `customLabel` — the review's "Pending"
+ * is "قيد المراجعة", not the order's "قيد الانتظار", and the two are
+ * different concepts that happen to share an English word.
+ */
+export const STATUS_BADGE_LABELS: Record<StatusKind, string> = {
+  pending: 'common.statuses.pending',
+  confirmed: 'common.statuses.confirmed',
+  paid: 'common.statuses.paid',
+  processing: 'common.statuses.processing',
+  shipped: 'common.statuses.shipped',
+  delivered: 'common.statuses.delivered',
+  cancelled: 'common.statuses.cancelled',
+  failed: 'common.statuses.failed',
+  refunded: 'common.statuses.refunded',
+  enabled: 'common.statuses.enabled',
+  disabled: 'common.statuses.disabled',
+  approved: 'common.statuses.approved',
+  unknown: 'common.statuses.unknown',
+};
+
+/** The icon of each kind. */
+export const STATUS_BADGE_ICONS: Record<StatusKind, string> = {
+  pending: 'lucideClock',
+  confirmed: 'lucideCircleDot',
+  paid: 'lucideCheckCircle',
+  processing: 'lucidePackage',
+  shipped: 'lucideTruck',
+  delivered: 'lucideCheckCircle',
+  cancelled: 'lucideXCircle',
+  failed: 'lucideAlertCircle',
+  refunded: 'lucideRotateCcw',
+  enabled: 'lucideCheckCircle',
+  disabled: 'lucideXCircle',
+  approved: 'lucideCheckCircle',
+  unknown: 'lucideCircleDot',
+};
+
+/**
+ * The colour of each kind.
+ *
+ * Pending — warning. Confirmed — the pale end of the info family
+ * (Processing is the full one). Paid / Delivered / Approved — success.
+ * Processing — the full info tint. Shipped — the slate chart token, as a
+ * tint of itself. Cancelled / Failed — destructive. Refunded / Disabled /
+ * Unknown — muted.
+ */
+export const STATUS_BADGE_CLASSES: Record<StatusKind, string> = {
+  pending: 'bg-warning-soft text-warning',
+  confirmed: 'bg-info-soft/60 text-info',
+  paid: 'bg-success-soft text-success',
+  delivered: 'bg-success-soft text-success',
+  processing: 'bg-info-soft text-info',
+  shipped: 'bg-chart-5/10 text-chart-5',
+  cancelled: 'bg-destructive-soft text-destructive-text',
+  failed: 'bg-destructive-soft text-destructive-text',
+  refunded: 'bg-muted text-muted-foreground',
+  enabled: 'bg-success-soft text-success',
+  disabled: 'bg-muted text-muted-foreground',
+  approved: 'bg-success-soft text-success',
+  unknown: 'bg-muted text-muted-foreground',
+};

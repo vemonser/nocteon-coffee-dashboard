@@ -229,6 +229,7 @@
           @for (cell of row.getVisibleCells(); track cell.id) {
             <td
               class="py-3"
+              [attr.data-column]="cell.column.id"
               [class.px-4]="cell.column.id !== 'actions'"
               [class.px-2]="cell.column.id === 'actions'"
               [class.col-narrow-hide]="
@@ -537,6 +538,98 @@
                   }
                 }
 
+                @case ('reviewer') {
+                  <!--
+                    The reviewer: an avatar that falls back to an initial, the
+                    name, and — only when the purchase is CONFIRMED — a small
+                    check that links to the order. Nothing is shown for an
+                    unverified review: a "not verified" chip would be noise,
+                    and the absence of the check IS the message.
+                  -->
+                  @if ($any(cell.getValue()); as reviewer) {
+                    <div class="flex min-w-0 items-center gap-2">
+                      <app-user-avatar
+                        [src]="reviewer.avatarUrl"
+                        [name]="reviewer.name"
+                        size="sm"
+                        class="shrink-0"
+                      />
+                      <span class="truncate text-start">
+                        <bdi>{{ reviewer.name }}</bdi>
+                      </span>
+                      @if (reviewer.verified) {
+                        @if (reviewer.orderId) {
+                          <a
+                            [routerLink]="['/dashboard/orders', reviewer.orderId]"
+                            class="inline-flex shrink-0 items-center text-success hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                            [attr.title]="'reviews.columns.verifiedPurchase' | transloco"
+                            [attr.aria-label]="'reviews.columns.verifiedPurchase' | transloco"
+                          >
+                            <ng-icon name="lucideBadgeCheck" class="size-4" aria-hidden="true" />
+                          </a>
+                        } @else {
+                          <ng-icon
+                            name="lucideBadgeCheck"
+                            class="size-4 shrink-0 text-success"
+                            [attr.title]="'reviews.columns.verifiedPurchase' | transloco"
+                          />
+                        }
+                      }
+                    </div>
+                  }
+                }
+                @case ('rating') {
+                  <!--
+                    Filled stars in the warning token, the empty ones muted,
+                    and the number beside them: "4/5" is what a reader can
+                    quote, and the stars alone cannot be counted at a glance.
+                  -->
+                  @if (cell.getValue() !== null && cell.getValue() !== undefined) {
+                    <div class="flex items-center gap-1.5 text-start">
+                      <span class="inline-flex" aria-hidden="true">
+                        @for (star of ratingStars; track star) {
+                          @if (star < $any(cell.getValue())) {
+                            <ng-icon name="heroStarSolid" class="size-4 text-warning" />
+                          } @else {
+                            <ng-icon name="heroStar" class="size-4 text-muted-foreground/30" />
+                          }
+                        }
+                      </span>
+                      <span class="text-xs tabular-nums text-muted-foreground"
+                        >{{ $any(cell.getValue()) }}/5</span
+                      >
+                    </div>
+                  }
+                }
+                @case ('comment') {
+                  <!--
+                    The review text. Clamped to two lines: a long comment in a
+                    table cell pushes the row to five lines and the page stops
+                    being scannable. The full text opens in the drawer.
+                    <bdi> keeps a Latin comment from having its punctuation
+                    moved to the front inside an Arabic page.
+                  -->
+                  <span
+                    class="block max-w-full text-start text-sm leading-relaxed line-clamp-2"
+                    [attr.title]="$any(cell.getValue())"
+                  >
+                    <bdi>{{ $any(cell.getValue()) }}</bdi>
+                  </span>
+                }
+                @case ('statusReview') {
+                  <!--
+                    The review's moderation state. The shared badge carries the
+                    COLOUR and the icon; the LABEL is the page's, because
+                    "Pending" means "قيد المراجعة" for a review and
+                    "قيد الانتظار" for an order.
+                  -->
+                  @if ($any(cell.getValue()); as reviewStatus) {
+                    <app-status-badge
+                      [status]="reviewStatus.approved ? 'approved' : 'pending'"
+                      [customLabel]="reviewStatus.label"
+                    />
+                  }
+                }
                 @default {
                   @if (cellHref()(cell.column.id, row.original); as href) {
                     <!--
