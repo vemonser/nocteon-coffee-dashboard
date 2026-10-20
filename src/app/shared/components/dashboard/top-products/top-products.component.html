@@ -32,7 +32,7 @@
         class="min-w-0 flex-1"
         [routerLink]="['/dashboard/products', product.slug]"
       >
-        <span class="block truncate text-sm font-medium">{{ product.name }}</span>
+        <span class="block truncate text-sm font-medium" data-allow-latin>{{ product.name }}</span>
       </a>
 
       <!-- The bar AND the number are the same measure: units sold. The bar

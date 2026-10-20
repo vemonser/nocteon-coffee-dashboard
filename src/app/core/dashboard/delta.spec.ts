@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { computeDelta } from './delta';
+import { computeDelta, deltaDisplay } from './delta';
 
 describe('computeDelta', () => {
   it('previous = 0, current > 0 -> "New", no arrow, neutral tone', () => {
@@ -69,5 +69,44 @@ describe('computeDelta', () => {
     const d = computeDelta(1176.25, 1176.25);
     expect(d.isUp).toBe(false);
     expect(d.tone).not.toBe('up');
+  });
+});
+
+/**
+ * What the card SHOWS (Round 2, ticket 1.3).
+ *
+ * "New" means "there was no previous period" for three of the four cards,
+ * which is not news — it is a missing baseline. Only the new-customers
+ * card keeps the badge, because there newness IS the news.
+ */
+describe('deltaDisplay', () => {
+  it('shows nothing when the previous period was 0 (an em dash + the reason)', () => {
+    const d = computeDelta(1176.25, 0);
+    expect(deltaDisplay(d)).toBe('none');
+    expect(deltaDisplay(d, false)).toBe('none');
+  });
+
+  it('keeps the "New" badge on the card where newness is the meaning', () => {
+    const d = computeDelta(9, 0);
+    expect(deltaDisplay(d, true)).toBe('new');
+  });
+
+  it('shows the percentage for a real change', () => {
+    expect(deltaDisplay(computeDelta(120, 100))).toBe('percent');
+    expect(deltaDisplay(computeDelta(80, 100))).toBe('percent');
+  });
+
+  it('shows "No change" for a flat delta', () => {
+    expect(deltaDisplay(computeDelta(10, 10))).toBe('flat');
+  });
+
+  it('shows nothing when the delta is not computable', () => {
+    expect(deltaDisplay(computeDelta(5, undefined))).toBe('none');
+    expect(deltaDisplay(null)).toBe('none');
+    expect(deltaDisplay(undefined)).toBe('none');
+  });
+
+  it('shows "No change" when both periods are 0 — nothing happened, and there is no baseline', () => {
+    expect(deltaDisplay(computeDelta(0, 0))).toBe('flat');
   });
 });

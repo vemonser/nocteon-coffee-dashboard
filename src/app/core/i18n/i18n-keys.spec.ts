@@ -68,6 +68,7 @@ for (const [path, text] of Object.entries(tsSources)) {
  */
 const PLURAL_BASES = [
   'dashboard.countDays',
+  'dashboard.countSessions',
   'dashboard.countSold',
   'dashboard.countOrders',
   'dashboard.countCustomers',

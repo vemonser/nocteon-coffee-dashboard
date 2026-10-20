@@ -58,12 +58,13 @@ export class OrdersBreakdownCardComponent {
   ];
 
   /** The tab items, translated. */
-  readonly tabItems = computed(() =>
-    this.tabs.map((tab) => ({
+  readonly tabItems = computed(() => {
+    this.language.language();
+    return this.tabs.map((tab) => ({
       id: tab.id,
       label: this.transloco.translate(tab.labelKey),
-    })),
-  );
+    }));
+  });
 
   /** Orders by status. */
   readonly statusData = computed(() =>
@@ -110,9 +111,10 @@ export class OrdersBreakdownCardComponent {
    * It says WHAT THE NUMBER IS ("Orders"), not which tab is open
    * ("Status").
    */
-  readonly centerLabel = computed(() =>
-    this.transloco.translate('dashboard.donutOrders'),
-  );
+  readonly centerLabel = computed(() => {
+    this.language.language();
+    return this.transloco.translate('dashboard.donutOrders');
+  });
 
   /** Counts are whole numbers. */
   readonly formatValue = (value: number): string =>
@@ -132,6 +134,7 @@ export class OrdersBreakdownCardComponent {
 
   /** The title of the card — it follows the active tab. */
   readonly title = computed(() => {
+    this.language.language();
     const tab = this.tabs.find((t) => t.id === this.tab());
     return this.transloco.translate(tab?.titleKey ?? 'dashboard.ordersByStatus');
   });
@@ -142,7 +145,8 @@ export class OrdersBreakdownCardComponent {
    * The same sentence the dashboard's order KPI and the Orders page use —
    * one definition, three surfaces.
    */
-  readonly scopeNote = computed(() =>
-    this.transloco.translate(ORDER_COUNT_SCOPES.paid.helpKey),
-  );
+  readonly scopeNote = computed(() => {
+    this.language.language();
+    return this.transloco.translate(ORDER_COUNT_SCOPES.paid.helpKey);
+  });
 }

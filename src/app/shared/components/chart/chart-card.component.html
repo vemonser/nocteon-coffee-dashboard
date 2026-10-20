@@ -122,10 +122,11 @@
             <a
               [routerLink]="target.link"
               [queryParams]="target.params ?? null"
+              data-allow-latin
               class="min-w-0 flex-1 truncate rounded hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >{{ row.label }}</a>
           } @else {
-            <span class="min-w-0 flex-1 truncate" [title]="row.label">{{ row.label }}</span>
+            <span class="min-w-0 flex-1 truncate" data-allow-latin [title]="row.label">{{ row.label }}</span>
           }
           <span class="w-28 shrink-0 text-end tabular-nums text-muted-foreground">
             {{ formatValue()(row.value) }}

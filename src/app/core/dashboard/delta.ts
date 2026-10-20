@@ -85,3 +85,42 @@ export function computeDelta(
   }
   return { percent: rounded, isNew: false, isFlat: false, isUp: false, isDown: true, tone: 'down' };
 }
+
+/**
+ * What the card SHOWS for a delta.
+ *
+ * `new` — the "New" badge, which is only meaningful where newness IS the
+ * news (the new-customers card).
+ *
+ * `percent` — the signed percentage.
+ *
+ * `flat` — "No change".
+ *
+ * `none` — nothing to show: either the delta is not computable, or there
+ * was no previous period to compare against.
+ *
+ * Round 2, ticket 1.3: "New" on every card was wrong. When the previous
+ * period is 0 and the current one is not, there is no percentage to show
+ * — the store simply had no data to compare against — and four cards in a
+ * row saying "New" says nothing. Those cards show an em dash and the
+ * reason ("No data in the previous period") instead.
+ */
+export type DeltaDisplay = 'new' | 'percent' | 'flat' | 'none';
+
+export function deltaDisplay(
+  result: DeltaResult | null | undefined,
+  newMeansNew = false,
+): DeltaDisplay {
+  if (!result) return 'none';
+  switch (result.tone) {
+    case 'new':
+      return newMeansNew ? 'new' : 'none';
+    case 'flat':
+      return 'flat';
+    case 'up':
+    case 'down':
+      return 'percent';
+    default:
+      return 'none';
+  }
+}

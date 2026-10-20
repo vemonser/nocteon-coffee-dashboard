@@ -147,9 +147,10 @@ export class DashboardComponent {
    * One shared definition (core/dashboard/order-scope.ts), so the dashboard
    * and the Orders page say the same thing about the same number.
    */
-  protected readonly orderScopeHelp = computed(() =>
-    this.transloco.translate(ORDER_COUNT_SCOPES.paid.helpKey),
-  );
+  protected readonly orderScopeHelp = computed(() => {
+    this.language.language();
+    return this.transloco.translate(ORDER_COUNT_SCOPES.paid.helpKey);
+  });
 
   /** Last day of a window (its end is exclusive). */
   lastDayOf(window: { end: Date }): Date {

@@ -23,8 +23,18 @@ let raw = '';
 try {
   raw = execFileSync(
     'npx',
-    ['playwright', 'test', ...suites, '--reporter=json'],
-    { encoding: 'utf8', env: { ...process.env, E2E_NO_WEBSERVER: '1' }, maxBuffer: 64 * 1024 * 1024 },
+    ['playwright', 'test', ...suites, '--reporter=json', '--output=evidence/orders/playwright-artifacts'],
+    {
+      encoding: 'utf8',
+      env: {
+        ...process.env,
+        E2E_NO_WEBSERVER: '1',
+        // The artifacts live with the evidence, so a run never cleans the
+        // traces of another run in the same repository.
+        PW_OUTPUT_DIR: 'evidence/orders/playwright-artifacts',
+      },
+      maxBuffer: 64 * 1024 * 1024,
+    },
   );
   exitCode = 0;
 } catch (err) {

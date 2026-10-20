@@ -199,9 +199,10 @@ export class OrdersListComponent {
    * showing. One definition, shared with the dashboard
    * (core/dashboard/order-scope.ts).
    */
-  protected readonly scopeNote = computed(() =>
-    this.transloco.translate(ORDER_COUNT_SCOPES.all.helpKey),
-  );
+  protected readonly scopeNote = computed(() => {
+    this.language.language();
+    return this.transloco.translate(ORDER_COUNT_SCOPES.all.helpKey);
+  });
 
   /** The cards. Each one says exactly what it counts. */
   protected readonly allCount = computed(() => this.allOrders().length);

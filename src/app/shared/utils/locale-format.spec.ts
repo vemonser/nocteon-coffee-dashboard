@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatCurrency } from './locale-format';
+import { formatCompactCurrency, formatCurrency } from './locale-format';
 
 /**
  * Phase 1, ticket 1.3 — ONE money formatter.
@@ -132,5 +132,59 @@ describe('money formatter', () => {
     const signature = source.slice(source.indexOf('export function formatCurrency('));
     expect(signature).toMatch(/currency:\s*string\s*,/);
     expect(signature).not.toMatch(/currency\s*=\s*['"]/);
+  });
+});
+
+/**
+ * The compact money — the chart axes and the donut centres.
+ *
+ * It follows the SAME order as the full form: the code first in English,
+ * the amount first in Arabic. An axis and a card must never disagree
+ * about which side the unit is on.
+ */
+describe('the compact money', () => {
+  it('is the code first in English', () => {
+    expect(formatCompactCurrency(1200, 'en', 'EGP')).toBe('EGP 1.2K');
+  });
+
+  it('is the amount first in Arabic, with the symbol and no trailing dot', () => {
+    const ar = formatCompactCurrency(1200, 'ar', 'EGP');
+    expect(ar).toBe('1.2K ج.م');
+    expect(ar).not.toContain('ج.م.');
+  });
+
+  it('keeps the compact suffixes in both languages', () => {
+    expect(formatCompactCurrency(1_500_000, 'en', 'EGP')).toBe('EGP 1.5M');
+    expect(formatCompactCurrency(999, 'en', 'EGP')).toBe('EGP 999');
+  });
+
+  it('falls back to the code when a currency has no Arabic symbol', () => {
+    expect(formatCompactCurrency(1200, 'ar', 'XYZ')).toContain('XYZ');
+  });
+});
+
+/**
+ * The guard for the compact money: the axes and the centres must not
+ * build their own labels.
+ */
+describe('the compact money is the only compact money', () => {
+  it('no source file builds a compact amount with toFixed', () => {
+    const offenders: string[] = [];
+    for (const [file, text] of Object.entries(sources)) {
+      const lines = text.split('\n');
+      lines.forEach((line: string, i: number) => {
+        if (
+          /toFixed\(/.test(line) &&
+          /(1_000|1000|compact|axis|1e6|1e3)/i.test(line) &&
+          !file.includes('locale-format.ts')
+        ) {
+          offenders.push(`${file}:${i + 1}: ${line.trim()}`);
+        }
+      });
+    }
+    expect(
+      offenders,
+      `a compact amount built by hand instead of formatCompactCurrency:\n${offenders.join('\n')}`,
+    ).toEqual([]);
   });
 });

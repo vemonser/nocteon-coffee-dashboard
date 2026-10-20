@@ -664,7 +664,9 @@ const MEASURE = () => {
         fontWeight: getComputedStyle(el).fontWeight,
       };
     };
-    const spark = card.querySelector('svg');
+    // The sparkline is the SVG with a polyline in it; the info icon is an
+    // SVG too, so the polyline is what tells them apart.
+    const spark = card.querySelector('svg polyline');
     return {
       label: box(label),
       value: box(value),

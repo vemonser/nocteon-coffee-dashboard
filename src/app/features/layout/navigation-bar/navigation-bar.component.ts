@@ -21,6 +21,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AuthService } from '../../../core/auth/auth.service';
 import { NotifyService } from '../../../core/notify/notify.service';
 import { LanguageService } from '../../../core/i18n/language.service';
+import { TranslocoService } from '@jsverse/transloco';
 import { ThemeToggleComponent } from '../../../core/theme/theme-toggle.component';
 
 import { NotificationComponent } from '../../notification/components/notification.component';
@@ -60,6 +61,20 @@ import { SearchResultDto } from './global-search/model/search.model';
 export class NavigationBarComponent {
   protected readonly auth = inject(AuthService);
   protected readonly language = inject(LanguageService);
+  private readonly transloco = inject(TranslocoService);
+
+  /**
+   * The sidebar trigger's label.
+   *
+   * It is a computed, not a transloco pipe, because the pipe in this
+   * position kept the language the page BOOTED in: the label still said
+   * "Toggle Sidebar" after a runtime switch to Arabic. The language signal
+   * is read first, so the computed re-runs when the language changes.
+   */
+  protected readonly toggleSidebarLabel = computed(() => {
+    this.language.language();
+    return this.transloco.translate('common.toggleSidebar');
+  });
   private readonly router = inject(Router);
   private readonly globalSearch = inject(GlobalSearchService);
 

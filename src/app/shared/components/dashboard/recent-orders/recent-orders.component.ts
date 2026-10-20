@@ -160,9 +160,13 @@ export class RecentOrdersComponent implements OnInit {
   }
 
   /** The fallback for an order with no customer. */
-  readonly unknownCustomer = computed(() =>
-    this.transloco.translate('dashboard.recentOrders.unknownCustomer'),
-  );
+  readonly unknownCustomer = computed(() => {
+    // The language is read FIRST: `transloco.translate()` is not reactive on
+    // its own, so a computed that only calls it keeps the language it was
+    // built in.
+    this.language.language();
+    return this.transloco.translate('dashboard.recentOrders.unknownCustomer');
+  });
 
   /** Map API status to StatusBadgeComponent StatusKind. */
   getStatusKind(status: string): import('../../../ui/status-badge/status-badge.component').StatusKind {

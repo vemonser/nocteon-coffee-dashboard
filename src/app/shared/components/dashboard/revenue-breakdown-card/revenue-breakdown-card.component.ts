@@ -74,12 +74,13 @@ export class RevenueBreakdownCardComponent {
   ];
 
   /** The tab items, translated. */
-  readonly tabItems = computed(() =>
-    this.tabs.map((tab) => ({
+  readonly tabItems = computed(() => {
+    this.language.language();
+    return this.tabs.map((tab) => ({
       id: tab.id,
       label: this.transloco.translate(tab.labelKey),
-    })),
-  );
+    }));
+  });
 
   /** The origin breakdown. */
   readonly originData = computed(() =>
@@ -161,9 +162,10 @@ export class RevenueBreakdownCardComponent {
    * title above the card already says which breakdown it is broken down
    * by.
    */
-  readonly centerLabel = computed(() =>
-    this.transloco.translate('dashboard.donutRevenue'),
-  );
+  readonly centerLabel = computed(() => {
+    this.language.language();
+    return this.transloco.translate('dashboard.donutRevenue');
+  });
 
   /** Money, in the store currency. */
   readonly formatValue = (value: number): string =>
@@ -181,6 +183,7 @@ export class RevenueBreakdownCardComponent {
 
   /** The title of the card — it follows the active tab. */
   readonly title = computed(() => {
+    this.language.language();
     const tab = this.tabs.find((t) => t.id === this.tab());
     return this.transloco.translate(tab?.titleKey ?? 'dashboard.revenueByOrigin');
   });
@@ -192,7 +195,8 @@ export class RevenueBreakdownCardComponent {
    * order totals. The two do not add up to each other, and the reader has
    * to be told which one they are looking at.
    */
-  readonly measureNote = computed(() =>
-    this.transloco.translate('dashboard.breakdownNote'),
-  );
+  readonly measureNote = computed(() => {
+    this.language.language();
+    return this.transloco.translate('dashboard.breakdownNote');
+  });
 }

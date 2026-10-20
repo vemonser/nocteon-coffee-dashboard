@@ -8,7 +8,8 @@ import { HlmCardImports } from '@spartan-ng/helm/card';
 import { formatSignedPercent } from '../../../utils/locale-format';
 import { LanguageService } from '../../../../core/i18n/language.service';
 import { TranslocoService } from '@jsverse/transloco';
-import type { DeltaResult } from '../../../../core/dashboard/delta';
+import { deltaDisplay, type DeltaResult } from '../../../../core/dashboard/delta';
+import { sparklineGeometry } from '../../../../core/dashboard/sparkline';
 
 /**
  * A KPI card: label, value, delta chip, and (when the API has the data) a
@@ -96,21 +97,19 @@ export class KpiCardComponent {
    */
   readonly deltaText = computed(() => {
     const d = this.delta();
-    if (!d) return '';
-    if (d.tone === 'new') {
-      // "New" only means something on the card where newness IS the news.
-      if (this.newMeansNew()) return this.transloco.translate('dashboard.delta.new');
-      return '';
-    }
-    if (d.tone === 'flat') return this.transloco.translate('dashboard.delta.noChange');
-    if (d.tone === 'none') return '';
-    return formatSignedPercent(d.percent ?? 0, this.language.language());
+    this.language.language();
+    const display = deltaDisplay(d, this.newMeansNew());
+    if (display === 'new') return this.transloco.translate('dashboard.delta.new');
+    if (display === 'flat') return this.transloco.translate('dashboard.delta.noChange');
+    if (display !== 'percent') return '';
+    return formatSignedPercent(d?.percent ?? 0, this.language.language());
   });
 
   /** The tooltip that explains an empty previous period. */
-  readonly noBaselineTitle = computed(() =>
-    this.transloco.translate('dashboard.delta.noBaseline'),
-  );
+  readonly noBaselineTitle = computed(() => {
+    this.language.language();
+    return this.transloco.translate('dashboard.delta.noBaseline');
+  });
 
   /** The delta's colour. */
   readonly deltaTone = computed(() => {
@@ -140,28 +139,10 @@ export class KpiCardComponent {
   /**
    * The sparkline geometry, or null when there is nothing to draw.
    *
-   * A sparkline needs at least THREE points (a line between two points is
-   * not a trend, and a single point is a stray line in the corner of the
-   * card), and at least three points that CARRY a value: a series of
-   * thirty days in which only one day had revenue drew a flat line with one
-   * spike, which reads as a rendering artefact rather than as data.
+   * The rule lives in `core/dashboard/sparkline.ts`: at least three points,
+   * and at least three of them carrying a value. The revenue card's series
+   * is thirty days in which only one day had revenue, and drawing that was
+   * the "stray line in the corner" the report named.
    */
-  readonly spark = computed(() => {
-    const values = this.sparkline().filter((v) => Number.isFinite(v));
-    if (values.length < 3) return null;
-    if (values.filter((v) => v !== 0).length < 3) return null;
-    const max = Math.max(...values);
-    const min = Math.min(...values);
-    const span = max - min || 1;
-    const w = 100;
-    const h = 24;
-    const points = values
-      .map((v, i) => {
-        const x = (i / (values.length - 1)) * w;
-        const y = h - ((v - min) / span) * h;
-        return `${x.toFixed(2)},${y.toFixed(2)}`;
-      })
-      .join(' ');
-    return { points, area: `0,${h} ${points} ${w},${h}`, w, h };
-  });
+  readonly spark = computed(() => sparklineGeometry(this.sparkline()));
 }

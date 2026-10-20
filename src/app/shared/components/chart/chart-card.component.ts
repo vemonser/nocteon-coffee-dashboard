@@ -12,6 +12,7 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ThemeService } from '../../../core/theme/theme.service';
 import { getCssVarColor } from '../../utils/utils';
+import { formatCompactNumber } from '../../utils/locale-format';
 import { ChartSlice, chartKindFor, withPercents } from './chart-rules';
 
 /**
@@ -108,10 +109,7 @@ export class ChartCardComponent {
 
   /** The number on its own — the last resort for a very long amount. */
   private bareNumber(value: number): string {
-    const abs = Math.abs(value);
-    if (abs >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`;
-    if (abs >= 1_000) return `${(value / 1_000).toFixed(1)}K`;
-    return String(Math.round(value));
+    return formatCompactNumber(value);
   }
 
   /**

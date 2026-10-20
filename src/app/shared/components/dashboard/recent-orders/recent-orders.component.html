@@ -45,7 +45,9 @@
 
             <span class="min-w-0 flex-1">
               <!-- The customer name, from the order. -->
-              <span class="block truncate text-sm font-medium">
+              <!-- The customer's name is DATA: a name is not translated, so
+                   it is not an untranslated string. -->
+              <span class="block truncate text-sm font-medium" data-allow-latin>
                 {{ order.customer?.name || unknownCustomer() }}
               </span>
               <!-- The order number, through the SHARED helper. -->

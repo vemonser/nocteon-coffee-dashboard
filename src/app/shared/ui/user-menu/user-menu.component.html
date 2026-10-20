@@ -19,8 +19,8 @@
           </span>
         </hlm-avatar>
         <div class="grid flex-1 text-start text-sm leading-tight">
-          <span class="truncate font-medium">{{ auth.getFullName() }}</span>
-          <span class="truncate text-xs">{{ auth.currentUser()?.email }}</span>
+          <span class="truncate font-medium" data-allow-latin>{{ auth.getFullName() }}</span>
+          <span class="truncate text-xs" data-allow-latin>{{ auth.currentUser()?.email }}</span>
         </div>
         <ng-icon name="lucideChevronsUpDown" class="ms-auto text-base" />
       </button>
@@ -63,8 +63,8 @@
           </span>
         </hlm-avatar>
         <div class="grid flex-1 text-start text-sm leading-tight">
-          <span class="truncate font-medium">{{ auth.getFullName() }}</span>
-          <span class="truncate text-xs">{{ auth.currentUser()?.email }}</span>
+          <span class="truncate font-medium" data-allow-latin>{{ auth.getFullName() }}</span>
+          <span class="truncate text-xs" data-allow-latin>{{ auth.currentUser()?.email }}</span>
         </div>
       </div>
     </hlm-dropdown-menu-label>
