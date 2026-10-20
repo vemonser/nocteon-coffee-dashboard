@@ -210,43 +210,23 @@
     </div>
   </div>
 
-  <!-- ── The cards. Each one says exactly what it counts. ──────────────── -->
-  <div class="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5">
-    <div class="rounded-[var(--radius-card)] border bg-card p-4" data-testid="orders-stat-card">
-      <p class="text-sm text-muted-foreground" data-testid="stat-label">
-        {{ 'orders.stats.all' | transloco }}
-      </p>
-      <p class="mt-1 text-2xl font-bold tabular-nums" data-testid="stat-value">{{ allTotal() }}</p>
+  <!-- ── KPI strip: 4 compact cards (~72px). Follow the active filters. ── -->
+  <div class="grid grid-cols-2 gap-3 md:grid-cols-4">
+    <div class="flex h-[72px] flex-col justify-center rounded-[var(--radius-card)] border bg-card px-4 py-2" data-testid="orders-stat-card">
+      <p class="text-xs text-muted-foreground" data-testid="stat-label">{{ 'orders.stats.revenue' | transloco }}</p>
+      <p class="mt-0.5 text-lg font-bold tabular-nums" data-testid="stat-value">{{ kpiRevenue() | money }}</p>
     </div>
-    <div class="rounded-[var(--radius-card)] border bg-card p-4" data-testid="orders-stat-card">
-      <p class="text-sm text-muted-foreground" data-testid="stat-label">
-        {{ 'orders.stats.matching' | transloco }}
-      </p>
-      <p class="mt-1 text-2xl font-bold tabular-nums" data-testid="stat-value">
-        {{ filteredTotal() }}
-      </p>
+    <div class="flex h-[72px] flex-col justify-center rounded-[var(--radius-card)] border bg-card px-4 py-2" data-testid="orders-stat-card">
+      <p class="text-xs text-muted-foreground" data-testid="stat-label">{{ 'orders.stats.open' | transloco }}</p>
+      <p class="mt-0.5 text-lg font-bold tabular-nums" data-testid="stat-value">{{ openCount() }}</p>
     </div>
-    <div class="rounded-[var(--radius-card)] border bg-card p-4" data-testid="orders-stat-card">
-      <p class="text-sm text-muted-foreground" data-testid="stat-label">
-        {{ 'orders.stats.open' | transloco }}
-      </p>
-      <p class="mt-1 text-2xl font-bold tabular-nums" data-testid="stat-value">{{ openCount() }}</p>
+    <div class="flex h-[72px] flex-col justify-center rounded-[var(--radius-card)] border bg-card px-4 py-2" data-testid="orders-stat-card">
+      <p class="text-xs text-muted-foreground" data-testid="stat-label">{{ 'orders.stats.avgOrderValue' | transloco }}</p>
+      <p class="mt-0.5 text-lg font-bold tabular-nums" data-testid="stat-value">{{ avgOrderValue() | money }}</p>
     </div>
-    <div class="rounded-[var(--radius-card)] border bg-card p-4" data-testid="orders-stat-card">
-      <p class="text-sm text-muted-foreground" data-testid="stat-label">
-        {{ 'orders.stats.delivered' | transloco }}
-      </p>
-      <p class="mt-1 text-2xl font-bold tabular-nums" data-testid="stat-value">
-        {{ deliveredCount() }}
-      </p>
-    </div>
-    <div class="rounded-[var(--radius-card)] border bg-card p-4" data-testid="orders-stat-card">
-      <p class="text-sm text-muted-foreground" data-testid="stat-label">
-        {{ 'orders.stats.cancelled' | transloco }}
-      </p>
-      <p class="mt-1 text-2xl font-bold tabular-nums" data-testid="stat-value">
-        {{ cancelledCount() }}
-      </p>
+    <div class="flex h-[72px] flex-col justify-center rounded-[var(--radius-card)] border bg-card px-4 py-2" data-testid="orders-stat-card">
+      <p class="text-xs text-muted-foreground" data-testid="stat-label">{{ 'orders.stats.cancelRate' | transloco }}</p>
+      <p class="mt-0.5 text-lg font-bold tabular-nums" data-testid="stat-value">{{ cancelRate() | number:'1.0-1' }}%</p>
     </div>
   </div>
 

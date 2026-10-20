@@ -213,7 +213,10 @@
       "disabled": "Disabled",
       "confirmed": "Confirmed",
       "unknown": "Unknown",
-      "approved": "Approved"
+      "approved": "Approved",
+      "active": "Active",
+      "abandoned": "Abandoned",
+      "converted": "Converted"
     },
     "toggleSidebar": "Toggle sidebar",
     "total": "total",
@@ -1321,11 +1324,10 @@
       "actions": "Actions"
     },
     "stats": {
-      "all": "All orders",
-      "matching": "Matching filters",
-      "open": "Open",
-      "delivered": "Delivered",
-      "cancelled": "Cancelled"
+      "revenue": "Revenue",
+      "open": "Open orders",
+      "avgOrderValue": "Avg order value",
+      "cancelRate": "Cancel rate"
     },
     "filters": {
       "paymentStatus": "Payment status",

@@ -30,4 +30,8 @@ export interface CartResponse {
   itemCount: number;
   createdAt: string;
   updatedAt: string;
+  // --- proposed by Phase 1 / API_GAPS.md (backend may not send these yet) ---
+  status?: 'ACTIVE' | 'ABANDONED' | 'CONVERTED';
+  lastActivityAt?: string;
+  convertedOrderId?: number | null;
 }

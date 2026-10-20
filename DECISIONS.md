@@ -1458,3 +1458,103 @@ page says "Queued" and shows what HAS been sent rather than pretending the
 delivery is done. The backend needs a sender: a `POST
 /api/dashboard/broadcasts/{id}/send`, or a scheduled job that walks the
 `PENDING` recipient rows through the existing `EmailService`.
+
+## NEWSLETTER — a page for the addresses, and an export
+
+The newsletter page is a LIST like every other list — the shared
+`app-data-table`, the search, the pager, the count in the header — with
+one thing it exists for: **the export of the addresses**.
+
+- The audience is the store's CUSTOMERS (`GET
+  /api/dashboard/users?role=CUSTOMER`), because that is the same set a
+  broadcast reaches (`findByRoleAndSubscribedTrue(CUSTOMER)`), so the two
+  pages cannot disagree about who the audience is.
+- The export covers **every** address, not the rows on the page, and it
+  walks the pages: the API caps a page at 100 rows and answers a bigger
+  `size` with a 400. Asking for a thousand rows in one request exports
+  NOTHING — which is what the first version did.
+- The count agrees in number ("1 address in the audience"), through the
+  app's plural family (`<base>_<Intl.PluralRules category>`), because
+  "1 addresses" is the kind of small wrongness the rest of the app does
+  not have.
+- **The page says what the list IS.** The admin `UserResponse` carries no
+  newsletter flag and the list has no `subscribed` filter, so the page
+  cannot tell a subscribed customer from an unsubscribed one. The help
+  line says so instead of pretending the list is a subscription list. The
+  backend needs a subscriber list (or a `subscribed` filter) for that to
+  change.
+
+## BROADCASTS — what the page was missing
+
+- The header printed **the page's row count, the word "of" and a bell**
+  ("2 of 🔔"). It prints the TOTAL, with a label that agrees in number.
+- The status badge printed **the raw enum** ("PENDING") — an untranslated
+  string on the Arabic page. It is "Queued" / "Sending" / "Sent".
+- **The audience is now stated**: the create dialog says the message goes
+  to every customer of the store, and every row carries the recipient
+  count the backend counted.
+- **The broadcast can be deleted.** The backend HAS
+  `DELETE /api/dashboard/broadcasts/{id}` (it removes the broadcast and
+  its recipient rows); the frontend threw instead, so there was no way to
+  get rid of a broadcast.
+- **The broadcasts export** as a CSV, walking the pages like the
+  newsletter export.
+
+**The delivery is still a backend gap.** The deployed backend has no
+sender: its broadcast package is `BroadcastCreationService` and nothing
+else — no sender, no scheduler, no `send` endpoint — so a broadcast is
+created with its recipient rows and stays `PENDING` with `sentCount = 0`
+forever. The page says "Queued" and shows what HAS been sent rather than
+pretending the delivery is done. The backend needs a sender: a `POST
+/api/dashboard/broadcasts/{id}/send`, or a scheduled job that walks the
+`PENDING` recipient rows through the existing `EmailService`.
+
+## NEWSLETTER — a page for the addresses, and an export
+
+The newsletter page is a LIST like every other list — the shared
+`app-data-table`, the search, the pager, the count in the header — with
+one thing it exists for: **the export of the addresses**.
+
+- The audience is the store's CUSTOMERS (`GET
+  /api/dashboard/users?role=CUSTOMER`), because that is the same set a
+  broadcast reaches (`findByRoleAndSubscribedTrue(CUSTOMER)`), so the two
+  pages cannot disagree about who the audience is.
+- The export covers **every** address, not the rows on the page, and it
+  walks the pages: the API caps a page at 100 rows and answers a bigger
+  `size` with a 400. Asking for a thousand rows in one request exports
+  NOTHING — which is what the first version did.
+- The count agrees in number ("1 address in the audience"), through the
+  app's plural family (`<base>_<Intl.PluralRules category>`), because
+  "1 addresses" is the kind of small wrongness the rest of the app does
+  not have.
+- **The page says what the list IS.** The admin `UserResponse` carries no
+  newsletter flag and the list has no `subscribed` filter, so the page
+  cannot tell a subscribed customer from an unsubscribed one. The help
+  line says so instead of pretending the list is a subscription list. The
+  backend needs a subscriber list (or a `subscribed` filter) for that to
+  change.
+
+## BROADCASTS — what the page was missing
+
+- The header printed **the page's row count, the word "of" and a bell**
+  ("2 of 🔔"). It prints the TOTAL, with a label that agrees in number.
+- The status badge printed **the raw enum** ("PENDING") — an untranslated
+  string on the Arabic page. It is "Queued" / "Sending" / "Sent".
+- **The audience is now stated**: the create dialog says the message goes
+  to every customer of the store, and every row carries the recipient
+  count the backend counted.
+- **The broadcast can be deleted.** The backend HAS
+  `DELETE /api/dashboard/broadcasts/{id}` (it removes the broadcast and
+  its recipient rows); the frontend threw instead, so there was no way to
+  get rid of a broadcast.
+- **The broadcasts export** as a CSV, walking the pages like the
+  newsletter export.
+
+**The delivery is still a backend gap.** The deployed backend has no
+sender: its broadcast package is `BroadcastCreationService` and nothing
+else — no sender, no scheduler, no `send` endpoint — so a broadcast is
+created with its recipient rows and stays `PENDING` with `sentCount = 0`
+forever. The page says "Queued" and shows what HAS been sent rather than
+pretending the delivery is done. The backend needs a sender: a `POST
+/api/dashboard/broadcasts/{id}/send`, or a scheduled job that walks the
+`PENDING` recipient rows through the existing `EmailService`.

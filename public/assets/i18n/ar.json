@@ -213,7 +213,10 @@
       "disabled": "معطّل",
       "confirmed": "مؤكد",
       "unknown": "غير معروف",
-      "approved": "معتمد"
+      "approved": "معتمد",
+      "active": "نشط",
+      "abandoned": "مهجور",
+      "converted": "محول"
     },
     "toggleSidebar": "إظهار/إخفاء القائمة",
     "total": "إجمالي",
@@ -1333,11 +1336,10 @@
       "actions": "الإجراءات"
     },
     "stats": {
-      "all": "كل الطلبات",
-      "matching": "المطابقة للفلاتر",
-      "open": "قيد التنفيذ",
-      "delivered": "تم التوصيل",
-      "cancelled": "ملغاة"
+      "revenue": "الإيرادات",
+      "open": "طلبات مفتوحة",
+      "avgOrderValue": "متوسط قيمة الطلب",
+      "cancelRate": "معدل الإلغاء"
     },
     "filters": {
       "paymentStatus": "حالة الدفع",
