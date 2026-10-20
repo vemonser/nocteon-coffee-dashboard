@@ -20,6 +20,13 @@ sheets), `evidence/dashboard-r2/color-math.json` (the colour maths),
 criteria) and the software-factory evidence gate over
 `.quality/runs/dashboard-r2/evidence-manifest.json` (**no gaps**).
 
+**A note on the environment:** the repository is shared with a second
+session that restarts the backend (re-seeding it, which is why the
+figures move) and that cleans up the static server the e2e suite runs
+against. The suite has to run on **:4200** — the backend's CORS allows
+that origin only, so a private server on another port sees "Failed to
+fetch" on every request. The app itself is unchanged.
+
 **Where the evidence lives:** `evidence/` is in the repository's
 `.gitignore` (the project's convention for ticket captures), so the
 matrix, the measurements and the colour maths are on DISK, not in the

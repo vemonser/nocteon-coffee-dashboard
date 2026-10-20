@@ -4,7 +4,7 @@
     <div>
       <h1 class="text-2xl font-medium tracking-tight">{{ 'orders.title' | transloco }}</h1>
       <p class="text-sm text-muted-foreground" data-testid="orders-total-count">
-        {{ headerCount() | plural: 'orders.countOrders' }}
+        {{ filteredTotal() | plural: 'orders.countOrders' }}
         <!--
           What the count covers. The dashboard counts the PAID orders and
           the page counts EVERY order, so the page says which set it is
@@ -25,7 +25,7 @@
         filter is heard and not only drawn.
       -->
       <p class="sr-only" role="status" aria-live="polite" data-testid="orders-live-count">
-        {{ headerCount() | plural: 'orders.countOrders' }}
+        {{ filteredTotal() | plural: 'orders.countOrders' }}
       </p>
     </div>
 
@@ -38,7 +38,7 @@
       <span
         hlmTooltip
         position="top"
-        [brnTooltip]="'orders.export.hint' | transloco: { count: matchingCount() }"
+        [brnTooltip]="'orders.export.hint' | transloco: { count: filteredTotal() }"
         class="inline-flex"
       >
         <button
@@ -47,7 +47,7 @@
           size="sm"
           data-testid="orders-export"
           (click)="exportCsv()"
-          [disabled]="matchingCount() === 0"
+          [disabled]="filteredTotal() === 0"
         >
           <ng-icon name="lucideDownload" class="size-4" aria-hidden="true" />
           {{ 'orders.export.button' | transloco }}
@@ -73,7 +73,7 @@
         (click)="setStatus('ALL')"
       >
         {{ 'orders.statusFilter.all' | transloco }}
-        <span class="ms-1 tabular-nums opacity-80">{{ allCount() }}</span>
+        <span class="ms-1 tabular-nums opacity-80">{{ allTotal() }}</span>
       </button>
       @for (option of statuses; track option) {
         <button
@@ -217,14 +217,14 @@
         <!-- The scope label, from the shared definition. -->
         <span [title]="scopeNote()">{{ 'orders.orderScope.all' | transloco }}</span>
       </p>
-      <p class="mt-1 text-2xl font-bold tabular-nums" data-testid="stat-value">{{ allCount() }}</p>
+      <p class="mt-1 text-2xl font-bold tabular-nums" data-testid="stat-value">{{ allTotal() }}</p>
     </div>
     <div class="rounded-[var(--radius-card)] border bg-card p-4" data-testid="orders-stat-card">
       <p class="text-sm text-muted-foreground" data-testid="stat-label">
         {{ 'orders.stats.matching' | transloco }}
       </p>
       <p class="mt-1 text-2xl font-bold tabular-nums" data-testid="stat-value">
-        {{ matchingCount() }}
+        {{ filteredTotal() }}
       </p>
     </div>
     <div class="rounded-[var(--radius-card)] border bg-card p-4" data-testid="orders-stat-card">

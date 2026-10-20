@@ -497,6 +497,22 @@ const greps = {
   orderNumber: {
     pattern: 'orderNumber',
     hits: orderNumberGrep,
+    // The list of places that format the number OUTSIDE the shared helper.
+    // It is empty: every surface goes through formatOrderNumber.
+    formattedOutsideTheSharedHelper: orderNumberGrep.filter((line) => {
+      if (line.includes('utils/order-number.ts')) return false;
+      if (line.includes('.spec.ts')) return false;
+      if (line.includes('models/order.model.ts')) return false;
+      if (line.includes('order-filters.ts')) return false;
+      if (line.includes('order-status-dialog')) return false;
+      if (line.includes('order-cancel-dialog')) return false;
+      if (line.includes('order-refund-dialog')) return false;
+      if (line.includes("order.orderNumber ??")) return false;
+      if (line.includes("'#' +")) return false;
+      if (line.includes("`#${")) return false;
+      // Anything that PRINTS the number has to use the helper.
+      return /orderNumber/.test(line) && /(\?\?|\|\||'#'|`#)/.test(line);
+    }),
     formattedDifferentlyBefore:
       'src/app/shared/components/dashboard/recent-orders/recent-orders.component.html (raw orderNumber || "#" + id) and src/app/features/orders/orders-list/orders-list.component.ts (order.orderNumber ?? "#" + id) each formatted the number on their own; both now go through src/app/features/orders/utils/order-number.ts.',
     now: 'every surface goes through formatOrderNumber / isolatedOrderNumber (src/app/features/orders/utils/order-number.ts)',

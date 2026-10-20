@@ -130,11 +130,6 @@
     "select": 0,
     "button": 0
   },
-  "src/app/features/reviews/components/review.component.html": {
-    "input": 0,
-    "select": 0,
-    "button": 11
-  },
   "src/app/features/roast-level/components/roast-level-list.component.html": {
     "input": 1,
     "select": 0,

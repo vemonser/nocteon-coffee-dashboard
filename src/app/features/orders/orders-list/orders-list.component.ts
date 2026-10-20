@@ -12,7 +12,7 @@ import {
   lucideCreditCard,
   lucideBanknote,
 } from '@ng-icons/lucide';
-import { TranslocoPipe } from '@jsverse/transloco';
+import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmInputImports } from '@spartan-ng/helm/input';
 import { HlmNativeSelectImports } from '@spartan-ng/helm/native-select';
@@ -43,6 +43,10 @@ import {
 } from '../models/order-status.model';
 import { formatCurrency } from '../../../shared/utils/locale-format';
 import { formatOrderNumber } from '../utils/order-number';
+import {
+  ORDERS_LIST_SCOPE,
+  orderScopeDefinition,
+} from '../../../core/dashboard/order-scope';
 import type { RowMenuAction } from '../../../shared/ui/actions-cell/actions-cell.component';
 
 /**
@@ -96,6 +100,7 @@ export class OrdersListComponent {
   protected readonly language = inject(LanguageService);
   protected readonly names = inject(LocalizedNameService);
   private readonly storeSettings = inject(StoreSettingsService);
+  private readonly transloco = inject(TranslocoService);
 
   /** The rows of the current page, straight from the API. */
   protected readonly rows = signal<OrderResponse[]>([]);
@@ -140,6 +145,91 @@ export class OrdersListComponent {
   protected readonly visibleRows = computed(() => this.rows());
 
   protected readonly selectedCount = computed(() => this.selectedIds().size);
+
+  /**
+   * The filter state, in the shape the template binds to.
+   *
+   * The component keeps the filters as individual signals; the template
+   * reads them through this one object.
+   */
+  protected readonly filters = computed(() => ({
+    paymentStatus: this.paymentStatus(),
+    paymentMethod: this.paymentMethod(),
+    range: this.range(),
+    from: this.dateFrom(),
+    to: this.dateTo(),
+    search: this.searchTerm(),
+  }));
+
+  /**
+   * The empty state.
+   *
+   * Two different emptinesses: a store with no orders, and the filters
+   * excluding everything. They need different words and a different way
+   * out.
+   */
+  protected readonly emptyMessage = computed(() => {
+    if (this.allTotal() === 0) return this.t('orders.emptyState.noOrders', 'No orders yet');
+    if (this.hasActiveFilters() || this.status() !== 'ALL') {
+      return this.t('orders.emptyState.noResults', 'No orders match these filters');
+    }
+    return this.t('orders.empty', 'No orders found');
+  });
+
+  /** Translate with an English fallback (mirrors NotifyService.t). */
+  protected t(key: string, fallback: string): string {
+    if (!key) return fallback;
+    const value = this.transloco.translate(key);
+    return typeof value === 'string' && value.length > 0 && value !== key ? value : fallback;
+  }
+
+  /** The id of a row. */
+  protected readonly rowId = (row: OrderResponse): number => row.id;
+
+  /** The link of a cell: the order number links to the order. */
+  protected readonly cellHref = (columnId: string, row: OrderResponse): string[] | null =>
+    columnId === 'orderNumber' ? ['/dashboard/orders', String(row.id)] : null;
+
+  /**
+   * The counts the TEMPLATE reads.
+   *
+   * The component's own state is `filteredTotal` / `allTotal`; these three
+   * are the same numbers under the names the template uses.
+   */
+  /** The count in the page header — what the table actually shows. */
+  protected readonly headerCount = computed(() => this.filteredTotal());
+  /** The count of the filtered set, across every page. */
+  protected readonly visibleTotal = computed(() => this.filteredTotal());
+
+  /** The pagination, from the filtered set. */
+  protected readonly totalPages = computed(() =>
+    Math.max(1, Math.ceil(this.filteredTotal() / this.size())),
+  );
+  /** The pager's "first page" and "last page" flags. */
+  protected readonly first = computed(() => this.page() === 0);
+  protected readonly last = computed(
+    () => (this.page() + 1) * this.size() >= this.filteredTotal(),
+  );
+  /** The count of the filtered set. */
+  protected readonly matchingCount = computed(() => this.filteredTotal());
+  /** The count of every order the store has. */
+  protected readonly allCount = computed(() => this.allTotal());
+
+  /**
+   * What the counts on this page cover.
+   *
+   * The page counts EVERY order — the cancelled, the pending and the
+   * refunded ones included. The dashboard counts the PAID orders only, so
+   * the two numbers are different, and the page says which set it is
+   * showing. One definition, shared with the dashboard
+   * (core/dashboard/order-scope.ts).
+   */
+  protected readonly scopeNote = computed(() => {
+    this.language.language();
+    return this.transloco.translate(
+      orderScopeDefinition(ORDERS_LIST_SCOPE).helpKey,
+    );
+  });
 
   /** The counts per status, within the filtered set. */
   protected readonly counts = computed(() => this.statusCounts());
@@ -368,7 +458,7 @@ export class OrdersListComponent {
     }
     const today = this.today();
     const days = range === 'today' ? 1 : range === '7d' ? 7 : 30;
-    const from = new Date(today.getTime());
+    const from = new Date(today);
     from.setDate(from.getDate() - (days - 1));
     return { dateFrom: this.toIso(from), dateTo: today };
   }
@@ -389,8 +479,14 @@ export class OrdersListComponent {
   private apiFilter(): OrderFilterRequest {
     const range = this.apiRange();
     return {
-      paymentStatus: this.paymentStatus() === 'ALL' ? undefined : this.paymentStatus(),
-      paymentMethod: this.paymentMethod() === 'ALL' ? undefined : this.paymentMethod(),
+      paymentStatus:
+        this.paymentStatus() === 'ALL'
+          ? undefined
+          : (this.paymentStatus() as PaymentStatus),
+      paymentMethod:
+        this.paymentMethod() === 'ALL'
+          ? undefined
+          : (this.paymentMethod() as PaymentMethod),
       search: this.searchTerm().trim() || undefined,
       ...range,
     };
