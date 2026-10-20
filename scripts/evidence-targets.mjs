@@ -455,6 +455,104 @@ export const TARGET_SETS = {
       },
     },
   ],
+  'contact-reviews': [
+    {
+      id: 'contact-list',
+      url: '/dashboard/contact-messages',
+      measure: async (page) => page.evaluate(() => ({
+        rowCount: document.querySelectorAll('[data-testid="message-row"]').length,
+        horizontalOverflowPx: Math.max(0, document.documentElement.scrollWidth - document.documentElement.clientWidth),
+      })),
+    },
+    {
+      id: 'contact-dialog-empty',
+      url: '/dashboard/contact-messages',
+      action: async (page) => {
+        const row = page.locator('[data-testid="message-row"]').first();
+        if ((await row.count()) === 0) return { present: false, reason: 'no rows' };
+        await row.click();
+        await page.waitForTimeout(600);
+        return { present: await dialogOpen(page, 'dialog-shell'), opened: true };
+      },
+    },
+    {
+      id: 'contact-dialog-thread',
+      url: '/dashboard/contact-messages',
+      action: async (page) => {
+        const row = page.locator('[data-testid="message-row"]').filter({ hasText: /replied/i }).first();
+        if ((await row.count()) === 0) return { present: false, reason: 'no replied rows' };
+        await row.click();
+        await page.waitForTimeout(600);
+        return { present: await dialogOpen(page, 'dialog-shell'), opened: true };
+      },
+    },
+    {
+      id: 'reviews-table',
+      url: '/dashboard/reviews',
+      measure: async (page) => page.evaluate(() => {
+        const table = document.querySelector('app-data-table table');
+        const headers = table ? Array.from(table.querySelectorAll('thead th')).map((th) => ({ text: (th.textContent||'').trim().replace(/\\s+/g,' '), widthPx: Math.round(th.getBoundingClientRect().width) })) : [];
+        const gap = (() => {
+          const ths = table ? Array.from(table.querySelectorAll('thead th')) : [];
+          const ratingIdx = ths.findIndex((th) => /rating|التقييم/i.test((th.textContent||'').trim()));
+          const commentIdx = ths.findIndex((th) => /comment|التعليق/i.test((th.textContent||'').trim()));
+          if (ratingIdx < 0 || commentIdx < 0) return null;
+          const r = ths[ratingIdx].getBoundingClientRect();
+          const c = ths[commentIdx].getBoundingClientRect();
+          return Math.round(c.left - r.right);
+        })();
+        const truncatedProducts = Array.from(document.querySelectorAll('td[data-column^="main_"]')).filter((td) => {
+          const el = td.querySelector('*');
+          return !!el && getComputedStyle(el).textOverflow === 'ellipsis' && el.scrollWidth > el.clientWidth;
+        }).length;
+        return {
+          horizontalOverflowPx: Math.max(0, document.documentElement.scrollWidth - document.documentElement.clientWidth),
+          gapRatingCommentPx: gap,
+          truncatedProductNames: truncatedProducts,
+          headers,
+          rowCount: table ? table.querySelectorAll('tbody tr').length : 0,
+        };
+      }),
+    },
+    {
+      id: 'reviews-grid',
+      url: '/dashboard/reviews',
+      action: async (page) => {
+        const btn = page.locator('button[aria-label*="Grid"], button[title*="Grid"]').first();
+        if ((await btn.count()) === 0) return { present: false, reason: 'no grid toggle' };
+        await btn.click();
+        await page.waitForTimeout(600);
+        return { present: true, opened: true };
+      },
+      measure: async (page) => page.evaluate(() => ({
+        horizontalOverflowPx: Math.max(0, document.documentElement.scrollWidth - document.documentElement.clientWidth),
+      })),
+    },
+    {
+      id: 'review-dialog-pending',
+      url: '/dashboard/reviews',
+      action: async (page) => {
+        const row = page.locator('tr').filter({ hasText: /pending|قيد المراجعة/i }).first();
+        const btn = row.locator('button[aria-label="View"]').first();
+        if ((await btn.count()) === 0) return { present: false, reason: 'no view button' };
+        await btn.click();
+        await page.waitForTimeout(600);
+        return { present: await dialogOpen(page, 'dialog-shell'), opened: true };
+      },
+    },
+    {
+      id: 'review-dialog-approved',
+      url: '/dashboard/reviews',
+      action: async (page) => {
+        const row = page.locator('tr').filter({ hasText: /approved|معتمد/i }).first();
+        const btn = row.locator('button[aria-label="View"]').first();
+        if ((await btn.count()) === 0) return { present: false, reason: 'no view button' };
+        await btn.click();
+        await page.waitForTimeout(600);
+        return { present: await dialogOpen(page, 'dialog-shell'), opened: true };
+      },
+    },
+  ],
 };
 
 /** The target list for a phase, or the legacy single-URL list. */
