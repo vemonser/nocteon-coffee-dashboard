@@ -399,6 +399,13 @@ export class OrderDetailComponent {
     window.print();
   }
 
+  protected onNoteKeydown(event: KeyboardEvent): void {
+    if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+      event.preventDefault();
+      this.addNote();
+    }
+  }
+
   /** Add an internal note. */
   protected addNote(): void {
     const order = this.order();

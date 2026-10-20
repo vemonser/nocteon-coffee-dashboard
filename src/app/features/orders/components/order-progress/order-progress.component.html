@@ -34,7 +34,7 @@
             [attr.data-step]="step"
             [attr.data-state]="isDone(step) ? 'done' : isCurrent(step) ? 'current' : 'future'"
           >
-            @if (isDone(step)) {
+            @if (isDone(step) || (isCurrent(step) && step === 'DELIVERED')) {
               <ng-icon name="lucideCheck" class="size-3.5" aria-hidden="true" />
             } @else {
               {{ $index + 1 }}

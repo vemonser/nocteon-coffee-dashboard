@@ -13,6 +13,7 @@ import {
   lucideRotateCcw,
   lucideClock,
   lucideCircleDot,
+  lucideShoppingCart,
 } from '@ng-icons/lucide';
 
 export type StatusKind =
@@ -28,7 +29,10 @@ export type StatusKind =
   | 'enabled'
   | 'disabled'
   | 'approved'
-  | 'unknown';
+  | 'unknown'
+  | 'active'
+  | 'abandoned'
+  | 'converted';
 
 /**
  * Centralized status badge mapping.
@@ -67,6 +71,7 @@ export type StatusKind =
       lucideRotateCcw,
       lucideClock,
       lucideCircleDot,
+      lucideShoppingCart,
     }),
   ],
   template: `
@@ -116,6 +121,9 @@ export const STATUS_BADGE_LABELS: Record<StatusKind, string> = {
   disabled: 'common.statuses.disabled',
   approved: 'common.statuses.approved',
   unknown: 'common.statuses.unknown',
+  active: 'common.statuses.active',
+  abandoned: 'common.statuses.abandoned',
+  converted: 'common.statuses.converted',
 };
 
 /** The icon of each kind. */
@@ -133,6 +141,9 @@ export const STATUS_BADGE_ICONS: Record<StatusKind, string> = {
   disabled: 'lucideXCircle',
   approved: 'lucideCheckCircle',
   unknown: 'lucideCircleDot',
+  active: 'lucideShoppingCart',
+  abandoned: 'lucideClock',
+  converted: 'lucideCheckCircle',
 };
 
 /**
@@ -158,4 +169,7 @@ export const STATUS_BADGE_CLASSES: Record<StatusKind, string> = {
   disabled: 'bg-muted text-muted-foreground',
   approved: 'bg-success-soft text-success',
   unknown: 'bg-muted text-muted-foreground',
+  active: 'bg-success-soft text-success',
+  abandoned: 'bg-warning-soft text-warning',
+  converted: 'bg-muted text-muted-foreground',
 };

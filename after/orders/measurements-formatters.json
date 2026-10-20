@@ -1,0 +1,22 @@
+{
+  "generatedAt": "2026-10-20T20:32:03.433Z",
+  "theOneFormatter": {
+    "money": [
+      "src/app/shared/utils/locale-format.ts",
+      "src/app/shared/pipes/money.pipe.ts"
+    ],
+    "date": [
+      "src/app/shared/utils/locale-format.ts",
+      "src/app/shared/ui/localized-date/localized-date.component.ts",
+      "src/app/core/i18n/localized-date.service.ts"
+    ],
+    "orderNumber": [
+      "src/app/features/orders/utils/order-number.ts"
+    ]
+  },
+  "note": "The one formatter per concept. A finding is a place that formats the value a second way; the orders pages themselves are clean.",
+  "findings": [],
+  "counts": {},
+  "byFile": {},
+  "ordersPagesClean": true
+}

@@ -23,6 +23,8 @@ import { ColorCellComponent } from '../color-cell/color-cell.component';
 import { MainCellComponent } from './main-cell/main-cell.component';
 import { UserAvatarComponent } from '../../ui/user-avatar/user-avatar.component';
 import { StatusBadgeComponent } from '../../ui/status-badge/status-badge.component';
+import { RatingStarsComponent } from '../../ui/rating-stars/rating-stars.component';
+import { VerifiedBadgeComponent } from '../../ui/verified-badge/verified-badge.component';
 import { LocalizedNameService } from '../../../core/i18n/localized-name.service';
 import { LanguageService } from '../../../core/i18n/language.service';
 import { formatRelativeTime } from '../../../core/i18n/relative-time';
@@ -34,7 +36,7 @@ export interface TableSortEvent {
 
 @Component({
   selector: 'app-data-table',
-  imports: [UserAvatarComponent, ImageCellComponent, ActionsCellComponent, StatusCellComponent, DeletedBadgeComponent, LocalizedDateComponent, ColorCellComponent, MainCellComponent, StatusBadgeComponent, NgIcon, TranslocoPipe, RouterModule, MoneyPipe],
+  imports: [UserAvatarComponent, ImageCellComponent, ActionsCellComponent, StatusCellComponent, DeletedBadgeComponent, LocalizedDateComponent, ColorCellComponent, MainCellComponent, StatusBadgeComponent, RatingStarsComponent, VerifiedBadgeComponent, NgIcon, TranslocoPipe, RouterModule, MoneyPipe],
   providers: [provideIcons({ lucideStar, lucideCreditCard, lucideBanknote, lucideBadgeCheck, heroStarSolid, heroStar })],
   templateUrl: './data-table.component.html',
   styleUrl: './data-table.component.css',

@@ -77,7 +77,23 @@
     "products": "المنتجات",
     "promoCodes": "أكواد الخصم",
     "journalPosts": "مقالات المجلة",
-    "searching": "جارٍ البحث…"
+    "searching": "جارٍ البحث…",
+    "customers": "العملاء",
+    "recentSearches": "عمليات البحث الأخيرة",
+    "quickLinks": "روابط سريعة",
+    "quickActions": "إجراءات سريعة",
+    "viewAll": "عرض الكل {n}",
+    "noResultsFor": "لا توجد نتائج لـ “{q}”",
+    "noResultsHint": "تحقق من الإملاء، أو جرّب رقم طلب أو بريداً.",
+    "hintNavigate": "تصفح",
+    "hintOpen": "فتح",
+    "hintNewTab": "Ctrl+Enter تبويب جديد",
+    "hintClose": "إغلاق",
+    "pages": "الصفحات",
+    "actions": "الإجراءات",
+    "addProduct": "إضافة منتج",
+    "addCategory": "إضافة فئة",
+    "shippingZones": "مناطق الشحن"
   },
   "StoreSettingPage": {
     "title": "إعدادات المتجر"
@@ -251,7 +267,8 @@
     "tastingNote": "ملاحظة تذوق",
     "days": "أيام",
     "errorTitle": "تعذّر التحميل",
-    "processing": "جارٍ التنفيذ…"
+    "processing": "جارٍ التنفيذ…",
+    "clear": "مسح"
   },
   "products": {
     "title": "المنتجات",
@@ -1473,6 +1490,7 @@
       "shipmentSaved": "تم حفظ الشحنة",
       "resendEmailGap": "يرسل المتجر بريد الطلبات تلقائيًا، لكنه لا يستطيع إرسال رسالة عند الطلب.",
       "editShipment": "تسجيل الشحنة",
+      "addShipment": "إضافة تفاصيل الشحنة",
       "refundRecorded": "تم إرسال الاسترداد لبوابة الدفع"
     },
     "dialogs": {

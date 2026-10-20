@@ -43,4 +43,14 @@ export class CartService {
   getById(id: number): Observable<ApiResponse<CartResponse>> {
     return this.http.get<ApiResponse<CartResponse>>(`${this.base}/${id}`);
   }
+
+  /**
+   * Ask the backend to send a reminder e-mail for an abandoned cart.
+   *
+   * PROPOSED endpoint — see API_GAPS.md. Returns 404 today; the UI keeps
+   * the action behind a flag and shows a toast either way.
+   */
+  sendReminder(id: number): Observable<ApiResponse<unknown>> {
+    return this.http.post<ApiResponse<unknown>>(`${this.base}/${id}/remind`, {});
+  }
 }

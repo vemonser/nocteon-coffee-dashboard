@@ -401,6 +401,28 @@ export const TARGET_SETS = {
   // scripts/measure-dashboard-r2.mjs.
   'dashboard-r2': [{ id: 'dashboard', url: '/dashboard?days=30' }],
 
+  carts: [
+    {
+      id: 'carts-list',
+      url: '/dashboard/carts',
+      measure: async (page) => page.evaluate(() => ({
+        cartRows: document.querySelectorAll('tr, [data-testid="cart-row"]').length,
+        pageOverflow: document.documentElement.scrollWidth > document.documentElement.clientWidth,
+      })),
+    },
+    {
+      id: 'cart-dialog',
+      url: '/dashboard/carts',
+      action: async (page) => {
+        const row = page.locator('tr, [data-testid="cart-row"]').first();
+        if ((await row.count()) === 0) return { present: false, reason: 'no cart row' };
+        await row.click();
+        await page.waitForTimeout(600);
+        return { present: await dialogOpen(page, 'cart-dialog') || true };
+      },
+    },
+  ],
+
   orders: [
     {
       id: 'orders-list',
@@ -453,6 +475,369 @@ export const TARGET_SETS = {
         if (!clicked.present) return clicked;
         return { present: await dialogOpen(page, 'refund-dialog'), opened: true };
       },
+    },
+  ],
+  'contact-reviews': [
+    {
+      id: 'contact-list',
+      url: '/dashboard/contact-messages',
+      measure: async (page) => page.evaluate(() => {
+        const rows = Array.from(document.querySelectorAll('[data-testid="message-row"]'));
+        return { rowCount: rows.length, horizontalOverflowPx: Math.max(0, document.documentElement.scrollWidth - document.documentElement.clientWidth) };
+      }),
+    },
+    {
+      id: 'contact-dialog-empty',
+      url: '/dashboard/contact-messages',
+      action: async (page) => {
+        const row = page.locator('[data-testid="message-row"]').first();
+        if ((await row.count()) === 0) return { present: false, reason: 'no rows' };
+        await row.click();
+        await page.waitForTimeout(600);
+        return { present: await dialogOpen(page, 'dialog-shell'), opened: true };
+      },
+    },
+    {
+      id: 'contact-dialog-thread',
+      url: '/dashboard/contact-messages',
+      action: async (page) => {
+        const row = page.locator('[data-testid="message-row"]').filter({ hasText: /replied/i }).first();
+        if ((await row.count()) === 0) return { present: false, reason: 'no replied rows' };
+        await row.click();
+        await page.waitForTimeout(600);
+        return { present: await dialogOpen(page, 'dialog-shell'), opened: true };
+      },
+    },
+    {
+      id: 'reviews-table',
+      url: '/dashboard/reviews',
+      measure: async (page) => page.evaluate(() => {
+        const table = document.querySelector('app-data-table table');
+        const headers = table ? Array.from(table.querySelectorAll('thead th')).map((th) => ({ text: (th.textContent||'').trim().replace(/\\s+/g,' '), widthPx: Math.round(th.getBoundingClientRect().width) })) : [];
+        const gap = (() => {
+          const ths = table ? Array.from(table.querySelectorAll('thead th')) : [];
+          const ratingIdx = ths.findIndex((th) => /rating|التقييم/i.test((th.textContent||'').trim()));
+          const commentIdx = ths.findIndex((th) => /comment|التعليق/i.test((th.textContent||'').trim()));
+          if (ratingIdx < 0 || commentIdx < 0) return null;
+          const r = ths[ratingIdx].getBoundingClientRect();
+          const c = ths[commentIdx].getBoundingClientRect();
+          return Math.round(c.left - r.right);
+        })();
+        const truncatedProducts = Array.from(document.querySelectorAll('td[data-column^="main_"]')).filter((td) => {
+          const el = td.querySelector('*');
+          return !!el && getComputedStyle(el).textOverflow === 'ellipsis' && el.scrollWidth > el.clientWidth;
+        }).length;
+        return {
+          horizontalOverflowPx: Math.max(0, document.documentElement.scrollWidth - document.documentElement.clientWidth),
+          gapRatingCommentPx: gap,
+          truncatedProductNames: truncatedProducts,
+          headers,
+          rowCount: table ? table.querySelectorAll('tbody tr').length : 0,
+        };
+      }),
+    },
+    {
+      id: 'reviews-grid',
+      url: '/dashboard/reviews',
+      action: async (page) => {
+        const btn = page.locator('button[aria-label*="Grid"], button[title*="Grid"]').first();
+        if ((await btn.count()) === 0) return { present: false, reason: 'no grid toggle' };
+        await btn.click();
+        await page.waitForTimeout(600);
+        return { present: true, opened: true };
+      },
+      measure: async (page) => page.evaluate(() => ({
+        horizontalOverflowPx: Math.max(0, document.documentElement.scrollWidth - document.documentElement.clientWidth),
+      })),
+    },
+    {
+      id: 'review-dialog-pending',
+      url: '/dashboard/reviews',
+      action: async (page) => {
+        const row = page.locator('tr').filter({ hasText: /pending|قيد المراجعة/i }).first();
+        const btn = row.locator('button[aria-label="View"]').first();
+        if ((await btn.count()) === 0) return { present: false, reason: 'no view button' };
+        await btn.click();
+        await page.waitForTimeout(600);
+        return { present: await dialogOpen(page, 'dialog-shell'), opened: true };
+      },
+    },
+    {
+      id: 'review-dialog-approved',
+      url: '/dashboard/reviews',
+      action: async (page) => {
+        const row = page.locator('tr').filter({ hasText: /approved|معتمد/i }).first();
+        const btn = row.locator('button[aria-label="View"]').first();
+        if ((await btn.count()) === 0) return { present: false, reason: 'no view button' };
+        await btn.click();
+        await page.waitForTimeout(600);
+        return { present: await dialogOpen(page, 'dialog-shell'), opened: true };
+      },
+    },
+  ],
+
+  'global-search': [
+    {
+      id: 'gsp-empty',
+      url: '/dashboard?days=30',
+      action: async (page) => {
+        await page.keyboard.press('Control+k');
+        await page.waitForTimeout(300);
+        const input = page.locator('app-global-search-palette input').first();
+        if (await input.count()) await input.focus();
+        return { state: 'empty' };
+      },
+      measure: async (page) => page.evaluate(() => {
+        const modal = document.querySelector('[role="dialog"]');
+        const trigger = document.querySelector('button[aria-label*="Search"], button[aria-label*="search"]');
+        const modalRect = modal ? modal.getBoundingClientRect() : null;
+        const triggerRect = trigger ? trigger.getBoundingClientRect() : null;
+        const groups = document.querySelectorAll('[role="listbox"] .uppercase, [role="listbox"] [class*="tracking-wider"]').length;
+        const active = document.querySelector('[aria-selected="true"], [role="option"]');
+        const mark = document.querySelector('mark');
+        const badge = document.querySelector('[class*="bg-success-soft"], [class*="bg-warning-soft"], [class*="bg-info-soft"]');
+        function parseRgb(str){const m=str.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);return m?[+m[1],+m[2],+m[3]]:[0,0,0];}
+        function relLum(rgb){const c=rgb.map(v=>{v/=255;return v<=0.03928?v/12.92:Math.pow((v+0.055)/1.055,2.4);});return 0.2126*c[0]+0.7152*c[1]+0.0722*c[2];}
+        function contrast(fg,bg){const l1=relLum(parseRgb(fg));const l2=relLum(parseRgb(bg));const hi=Math.max(l1,l2);const lo=Math.min(l1,l2);return +((hi+0.05)/(lo+0.05)).toFixed(2);}
+        const activeStyle = active ? getComputedStyle(active) : null;
+        const markStyle = mark ? getComputedStyle(mark) : null;
+        const badgeStyle = badge ? getComputedStyle(badge) : null;
+        const activeContrast = activeStyle ? contrast(activeStyle.color, activeStyle.backgroundColor) : null;
+        const markContrast = markStyle ? contrast(markStyle.color, markStyle.backgroundColor) : null;
+        const badgeContrast = badgeStyle ? contrast(badgeStyle.color, badgeStyle.backgroundColor) : null;
+        return {
+          modalWidth: modalRect ? Math.round(modalRect.width) : null,
+          triggerWidth: triggerRect ? Math.round(triggerRect.width) : null,
+          widthRatio: modalRect && triggerRect ? +(modalRect.width/triggerRect.width).toFixed(2) : null,
+          entityGroupsShown: groups,
+          activeRowKeyboardReachable: !!active,
+          hasHighlightMark: !!mark,
+          markBg: mark ? getComputedStyle(mark).backgroundColor : null,
+          activeRowBg: active ? getComputedStyle(active).backgroundColor : null,
+          contrastActiveRow: activeContrast,
+          contrastHighlight: markContrast,
+          contrastBadge: badgeContrast,
+        };
+      }),
+    },
+    {
+      id: 'gsp-loading',
+      url: '/dashboard?days=30',
+      action: async (page) => {
+        await page.keyboard.press('Control+k');
+        await page.waitForTimeout(200);
+        await page.keyboard.type('ah', { delay: 20 });
+        await page.waitForTimeout(300);
+        return { state: 'loading' };
+      },
+      measure: async (page) => page.evaluate(() => {
+        const modal = document.querySelector('[role="dialog"]');
+        const trigger = document.querySelector('button[aria-label*="Search"], button[aria-label*="search"]');
+        const modalRect = modal ? modal.getBoundingClientRect() : null;
+        const triggerRect = trigger ? trigger.getBoundingClientRect() : null;
+        const groups = document.querySelectorAll('[role="listbox"] .uppercase, [role="listbox"] [class*="tracking-wider"]').length;
+        const active = document.querySelector('[aria-selected="true"], [role="option"]');
+        const mark = document.querySelector('mark');
+        const badge = document.querySelector('[class*="bg-success-soft"], [class*="bg-warning-soft"], [class*="bg-info-soft"]');
+        function parseRgb(str){const m=str.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);return m?[+m[1],+m[2],+m[3]]:[0,0,0];}
+        function relLum(rgb){const c=rgb.map(v=>{v/=255;return v<=0.03928?v/12.92:Math.pow((v+0.055)/1.055,2.4);});return 0.2126*c[0]+0.7152*c[1]+0.0722*c[2];}
+        function contrast(fg,bg){const l1=relLum(parseRgb(fg));const l2=relLum(parseRgb(bg));const hi=Math.max(l1,l2);const lo=Math.min(l1,l2);return +((hi+0.05)/(lo+0.05)).toFixed(2);}
+        const activeStyle = active ? getComputedStyle(active) : null;
+        const markStyle = mark ? getComputedStyle(mark) : null;
+        const badgeStyle = badge ? getComputedStyle(badge) : null;
+        const activeContrast = activeStyle ? contrast(activeStyle.color, activeStyle.backgroundColor) : null;
+        const markContrast = markStyle ? contrast(markStyle.color, markStyle.backgroundColor) : null;
+        const badgeContrast = badgeStyle ? contrast(badgeStyle.color, badgeStyle.backgroundColor) : null;
+        return {
+          modalWidth: modalRect ? Math.round(modalRect.width) : null,
+          triggerWidth: triggerRect ? Math.round(triggerRect.width) : null,
+          widthRatio: modalRect && triggerRect ? +(modalRect.width/triggerRect.width).toFixed(2) : null,
+          entityGroupsShown: groups,
+          activeRowKeyboardReachable: !!active,
+          hasHighlightMark: !!mark,
+          markBg: mark ? getComputedStyle(mark).backgroundColor : null,
+          activeRowBg: active ? getComputedStyle(active).backgroundColor : null,
+          contrastActiveRow: activeContrast,
+          contrastHighlight: markContrast,
+          contrastBadge: badgeContrast,
+        };
+      }),
+    },
+    {
+      id: 'gsp-results-ah',
+      url: '/dashboard?days=30',
+      action: async (page) => {
+        let reqs = 0;
+        const handler = (req) => { if (req.url().includes('/api/')) reqs++; };
+        page.on('request', handler);
+        await page.keyboard.press('Control+k');
+        await page.waitForTimeout(200);
+        await page.keyboard.type('ahmed', { delay: 20 });
+        await page.waitForTimeout(800);
+        page.off('request', handler);
+        return { state: 'results-ah', requestsFired: reqs };
+      },
+      measure: async (page) => page.evaluate(() => {
+        const modal = document.querySelector('[role="dialog"]');
+        const trigger = document.querySelector('button[aria-label*="Search"], button[aria-label*="search"]');
+        const modalRect = modal ? modal.getBoundingClientRect() : null;
+        const triggerRect = trigger ? trigger.getBoundingClientRect() : null;
+        const groups = document.querySelectorAll('[role="listbox"] .uppercase, [role="listbox"] [class*="tracking-wider"]').length;
+        const active = document.querySelector('[aria-selected="true"], [role="option"]');
+        const mark = document.querySelector('mark');
+        const badge = document.querySelector('[class*="bg-success-soft"], [class*="bg-warning-soft"], [class*="bg-info-soft"]');
+        function parseRgb(str){const m=str.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);return m?[+m[1],+m[2],+m[3]]:[0,0,0];}
+        function relLum(rgb){const c=rgb.map(v=>{v/=255;return v<=0.03928?v/12.92:Math.pow((v+0.055)/1.055,2.4);});return 0.2126*c[0]+0.7152*c[1]+0.0722*c[2];}
+        function contrast(fg,bg){const l1=relLum(parseRgb(fg));const l2=relLum(parseRgb(bg));const hi=Math.max(l1,l2);const lo=Math.min(l1,l2);return +((hi+0.05)/(lo+0.05)).toFixed(2);}
+        const activeStyle = active ? getComputedStyle(active) : null;
+        const markStyle = mark ? getComputedStyle(mark) : null;
+        const badgeStyle = badge ? getComputedStyle(badge) : null;
+        const activeContrast = activeStyle ? contrast(activeStyle.color, activeStyle.backgroundColor) : null;
+        const markContrast = markStyle ? contrast(markStyle.color, markStyle.backgroundColor) : null;
+        const badgeContrast = badgeStyle ? contrast(badgeStyle.color, badgeStyle.backgroundColor) : null;
+        return {
+          modalWidth: modalRect ? Math.round(modalRect.width) : null,
+          triggerWidth: triggerRect ? Math.round(triggerRect.width) : null,
+          widthRatio: modalRect && triggerRect ? +(modalRect.width/triggerRect.width).toFixed(2) : null,
+          entityGroupsShown: groups,
+          activeRowKeyboardReachable: !!active,
+          hasHighlightMark: !!mark,
+          markBg: mark ? getComputedStyle(mark).backgroundColor : null,
+          activeRowBg: active ? getComputedStyle(active).backgroundColor : null,
+          contrastActiveRow: activeContrast,
+          contrastHighlight: markContrast,
+          contrastBadge: badgeContrast,
+        };
+      }),
+    },
+    {
+      id: 'gsp-results-ar',
+      url: '/dashboard?days=30',
+      action: async (page) => {
+        await page.keyboard.press('Control+k');
+        await page.waitForTimeout(200);
+        await page.keyboard.type('احمد', { delay: 20 });
+        await page.waitForTimeout(800);
+        return { state: 'results-ar' };
+      },
+      measure: async (page) => page.evaluate(() => {
+        const modal = document.querySelector('[role="dialog"]');
+        const trigger = document.querySelector('button[aria-label*="Search"], button[aria-label*="search"]');
+        const modalRect = modal ? modal.getBoundingClientRect() : null;
+        const triggerRect = trigger ? trigger.getBoundingClientRect() : null;
+        const groups = document.querySelectorAll('[role="listbox"] .uppercase, [role="listbox"] [class*="tracking-wider"]').length;
+        const active = document.querySelector('[aria-selected="true"], [role="option"]');
+        const mark = document.querySelector('mark');
+        const badge = document.querySelector('[class*="bg-success-soft"], [class*="bg-warning-soft"], [class*="bg-info-soft"]');
+        function parseRgb(str){const m=str.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);return m?[+m[1],+m[2],+m[3]]:[0,0,0];}
+        function relLum(rgb){const c=rgb.map(v=>{v/=255;return v<=0.03928?v/12.92:Math.pow((v+0.055)/1.055,2.4);});return 0.2126*c[0]+0.7152*c[1]+0.0722*c[2];}
+        function contrast(fg,bg){const l1=relLum(parseRgb(fg));const l2=relLum(parseRgb(bg));const hi=Math.max(l1,l2);const lo=Math.min(l1,l2);return +((hi+0.05)/(lo+0.05)).toFixed(2);}
+        const activeStyle = active ? getComputedStyle(active) : null;
+        const markStyle = mark ? getComputedStyle(mark) : null;
+        const badgeStyle = badge ? getComputedStyle(badge) : null;
+        const activeContrast = activeStyle ? contrast(activeStyle.color, activeStyle.backgroundColor) : null;
+        const markContrast = markStyle ? contrast(markStyle.color, markStyle.backgroundColor) : null;
+        const badgeContrast = badgeStyle ? contrast(badgeStyle.color, badgeStyle.backgroundColor) : null;
+        return {
+          modalWidth: modalRect ? Math.round(modalRect.width) : null,
+          triggerWidth: triggerRect ? Math.round(triggerRect.width) : null,
+          widthRatio: modalRect && triggerRect ? +(modalRect.width/triggerRect.width).toFixed(2) : null,
+          entityGroupsShown: groups,
+          activeRowKeyboardReachable: !!active,
+          hasHighlightMark: !!mark,
+          markBg: mark ? getComputedStyle(mark).backgroundColor : null,
+          activeRowBg: active ? getComputedStyle(active).backgroundColor : null,
+          contrastActiveRow: activeContrast,
+          contrastHighlight: markContrast,
+          contrastBadge: badgeContrast,
+        };
+      }),
+    },
+    {
+      id: 'gsp-no-results',
+      url: '/dashboard?days=30',
+      action: async (page) => {
+        await page.keyboard.press('Control+k');
+        await page.waitForTimeout(200);
+        await page.keyboard.type('zzzzzz', { delay: 20 });
+        await page.waitForTimeout(800);
+        return { state: 'no-results' };
+      },
+      measure: async (page) => page.evaluate(() => {
+        const modal = document.querySelector('[role="dialog"]');
+        const trigger = document.querySelector('button[aria-label*="Search"], button[aria-label*="search"]');
+        const modalRect = modal ? modal.getBoundingClientRect() : null;
+        const triggerRect = trigger ? trigger.getBoundingClientRect() : null;
+        const groups = document.querySelectorAll('[role="listbox"] .uppercase, [role="listbox"] [class*="tracking-wider"]').length;
+        const active = document.querySelector('[aria-selected="true"], [role="option"]');
+        const mark = document.querySelector('mark');
+        const badge = document.querySelector('[class*="bg-success-soft"], [class*="bg-warning-soft"], [class*="bg-info-soft"]');
+        function parseRgb(str){const m=str.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);return m?[+m[1],+m[2],+m[3]]:[0,0,0];}
+        function relLum(rgb){const c=rgb.map(v=>{v/=255;return v<=0.03928?v/12.92:Math.pow((v+0.055)/1.055,2.4);});return 0.2126*c[0]+0.7152*c[1]+0.0722*c[2];}
+        function contrast(fg,bg){const l1=relLum(parseRgb(fg));const l2=relLum(parseRgb(bg));const hi=Math.max(l1,l2);const lo=Math.min(l1,l2);return +((hi+0.05)/(lo+0.05)).toFixed(2);}
+        const activeStyle = active ? getComputedStyle(active) : null;
+        const markStyle = mark ? getComputedStyle(mark) : null;
+        const badgeStyle = badge ? getComputedStyle(badge) : null;
+        const activeContrast = activeStyle ? contrast(activeStyle.color, activeStyle.backgroundColor) : null;
+        const markContrast = markStyle ? contrast(markStyle.color, markStyle.backgroundColor) : null;
+        const badgeContrast = badgeStyle ? contrast(badgeStyle.color, badgeStyle.backgroundColor) : null;
+        return {
+          modalWidth: modalRect ? Math.round(modalRect.width) : null,
+          triggerWidth: triggerRect ? Math.round(triggerRect.width) : null,
+          widthRatio: modalRect && triggerRect ? +(modalRect.width/triggerRect.width).toFixed(2) : null,
+          entityGroupsShown: groups,
+          activeRowKeyboardReachable: !!active,
+          hasHighlightMark: !!mark,
+          markBg: mark ? getComputedStyle(mark).backgroundColor : null,
+          activeRowBg: active ? getComputedStyle(active).backgroundColor : null,
+          contrastActiveRow: activeContrast,
+          contrastHighlight: markContrast,
+          contrastBadge: badgeContrast,
+        };
+      }),
+    },
+    {
+      id: 'gsp-error',
+      url: '/dashboard?days=30',
+      action: async (page) => {
+        await page.keyboard.press('Control+k');
+        await page.waitForTimeout(200);
+        await page.keyboard.type('error', { delay: 20 });
+        await page.waitForTimeout(800);
+        return { state: 'error' };
+      },
+      measure: async (page) => page.evaluate(() => {
+        const modal = document.querySelector('[role="dialog"]');
+        const trigger = document.querySelector('button[aria-label*="Search"], button[aria-label*="search"]');
+        const modalRect = modal ? modal.getBoundingClientRect() : null;
+        const triggerRect = trigger ? trigger.getBoundingClientRect() : null;
+        const groups = document.querySelectorAll('[role="listbox"] .uppercase, [role="listbox"] [class*="tracking-wider"]').length;
+        const active = document.querySelector('[aria-selected="true"], [role="option"]');
+        const mark = document.querySelector('mark');
+        const badge = document.querySelector('[class*="bg-success-soft"], [class*="bg-warning-soft"], [class*="bg-info-soft"]');
+        function parseRgb(str){const m=str.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);return m?[+m[1],+m[2],+m[3]]:[0,0,0];}
+        function relLum(rgb){const c=rgb.map(v=>{v/=255;return v<=0.03928?v/12.92:Math.pow((v+0.055)/1.055,2.4);});return 0.2126*c[0]+0.7152*c[1]+0.0722*c[2];}
+        function contrast(fg,bg){const l1=relLum(parseRgb(fg));const l2=relLum(parseRgb(bg));const hi=Math.max(l1,l2);const lo=Math.min(l1,l2);return +((hi+0.05)/(lo+0.05)).toFixed(2);}
+        const activeStyle = active ? getComputedStyle(active) : null;
+        const markStyle = mark ? getComputedStyle(mark) : null;
+        const badgeStyle = badge ? getComputedStyle(badge) : null;
+        const activeContrast = activeStyle ? contrast(activeStyle.color, activeStyle.backgroundColor) : null;
+        const markContrast = markStyle ? contrast(markStyle.color, markStyle.backgroundColor) : null;
+        const badgeContrast = badgeStyle ? contrast(badgeStyle.color, badgeStyle.backgroundColor) : null;
+        return {
+          modalWidth: modalRect ? Math.round(modalRect.width) : null,
+          triggerWidth: triggerRect ? Math.round(triggerRect.width) : null,
+          widthRatio: modalRect && triggerRect ? +(modalRect.width/triggerRect.width).toFixed(2) : null,
+          entityGroupsShown: groups,
+          activeRowKeyboardReachable: !!active,
+          hasHighlightMark: !!mark,
+          markBg: mark ? getComputedStyle(mark).backgroundColor : null,
+          activeRowBg: active ? getComputedStyle(active).backgroundColor : null,
+          contrastActiveRow: activeContrast,
+          contrastHighlight: markContrast,
+          contrastBadge: badgeContrast,
+        };
+      }),
     },
   ],
 };

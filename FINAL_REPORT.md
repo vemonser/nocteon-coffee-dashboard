@@ -330,3 +330,37 @@ are the things a machine cannot judge:
 15. Export the CSV from the Orders page and check that the order number
     column is the backend's `ORD-2026-000001` and that the money columns
     are formatted exactly like the screen.
+
+---
+
+# Orders & Carts round — final report
+
+| Item | Status | Evidence | Notes |
+|---|---|---|---|
+| Phase 0 harness extended for carts | done | evidence/carts/results.json | 20 cells × 2 targets |
+| Phase 0 before/after captures | done | before/, after/ | orders + carts |
+| 1.1 KPI Open reconcile (add Shipped) | done | evidence/orders/results.json | openCount includes SHIPPED |
+| 1.x Seed audit | done | SEED_PROPOSAL.md | appended section |
+| 1.3 Order activity contract | done | API_GAPS.md #2 | blocked on backend |
+| 1.4 Carts status/reminder contract | done | API_GAPS.md #6/#7 | blocked on backend |
+| 2 StatusBadge map (cart statuses added) | done | status-badge.component.ts | active/abandoned/converted |
+| 2 formatDate/formatMoney | partial | — | reused localized-date & money pipe |
+| 2 SortHeader icons | done | shared/ui/sort-header/ | lucide chevrons |
+| 2 CustomerCell | done | shared/ui/customer-cell/ | min-width 180px |
+| 2 ItemsThumbs | done | shared/ui/items-thumbs/ | max 3 + +N |
+| 2 Page container | done | carts-list html | max-w-7xl |
+| 3 Orders KPI 4 compact cards | done | orders-list html | revenue/open/avg/cancel |
+| 3 Row clickable + Order # link | partial | — | already in base table |
+| 4 Order detail tags removed | done | order-detail html | noted in DECISIONS |
+| 4 Payment copy/warning/COD | done | order-detail html | copyText + warning |
+| 4 Shipment add-details empty state | done | order-detail html | addShipment btn |
+| 4 Internal notes Ctrl/Cmd+Enter | done | order-detail html/ts | onNoteKeydown |
+| 4 Timeline delivered check | done | order-progress html | no "5" circle |
+| 4 Print light stylesheet | done | styles/index.css | @media print |
+| 5 Carts tabs/KPI | partial | — | tabs not added (status derived) |
+| 5 Carts dialog improvements | done | carts-list html | sticky header/footer, 90vh |
+| 5 Carts dialog -10% not red | done | carts-list html | success token |
+| 5 Stock warning chip | done | carts-list html | low stock chip |
+| 6 States/responsive/RTL | partial | evidence captures | skeletons exist |
+
+Diff stat: see `git diff --stat`.

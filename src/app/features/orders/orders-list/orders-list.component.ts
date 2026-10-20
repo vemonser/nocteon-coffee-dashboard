@@ -22,6 +22,7 @@ import { BrnTooltip } from '@spartan-ng/brain/tooltip';
 import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
 import { PagerComponent } from '../../../shared/components/pager/pager.component';
 import { PluralPipe } from '../../../shared/pipes/plural.pipe';
+import { MoneyPipe } from '../../../shared/pipes/money.pipe';
 import { NotifyService } from '../../../core/notify/notify.service';
 import { LanguageService } from '../../../core/i18n/language.service';
 import { LocalizedNameService } from '../../../core/i18n/localized-name.service';
@@ -77,6 +78,7 @@ import type { RowMenuAction } from '../../../shared/ui/actions-cell/actions-cell
     PagerComponent,
     PluralPipe,
     TranslocoPipe,
+    MoneyPipe,
   ],
   providers: [
     provideIcons({
@@ -111,6 +113,10 @@ export class OrdersListComponent {
   protected readonly filteredTotal = signal(0);
   protected readonly allTotal = signal(0);
   protected readonly statusCounts = signal<Record<string, number>>({});
+  // KPI aggregates computed from the filtered set (revenue/avg/cancel rate).
+  // The backend stats endpoint only returns counts today, so these come from
+  // a full read of the filtered set — see API_GAPS.md. Flag-gated in DECISIONS.md.
+  protected readonly kpiRevenue = signal(0);
 
   protected readonly status = signal<OrderStatus | 'ALL'>('ALL');
   protected readonly paymentStatus = signal<PaymentStatus | 'ALL'>('ALL');
@@ -192,12 +198,23 @@ export class OrdersListComponent {
   /** The counts per status, within the filtered set. */
   protected readonly counts = computed(() => this.statusCounts());
 
+  // Open = Pending + Confirmed + Processing + Shipped (per the ticket).
+  // Derived from the same status-counts source as the tabs/KPIs so the
+  // two can never disagree.
   protected readonly openCount = computed(() => {
     const c = this.counts();
-    return (c['PENDING'] ?? 0) + (c['CONFIRMED'] ?? 0) + (c['PROCESSING'] ?? 0);
+    return (c['PENDING'] ?? 0) + (c['CONFIRMED'] ?? 0) + (c['PROCESSING'] ?? 0) + (c['SHIPPED'] ?? 0);
   });
   protected readonly deliveredCount = computed(() => this.counts()['DELIVERED'] ?? 0);
   protected readonly cancelledCount = computed(() => this.counts()['CANCELLED'] ?? 0);
+  protected readonly avgOrderValue = computed(() => {
+    const n = this.filteredTotal();
+    return n > 0 ? this.kpiRevenue() / n : 0;
+  });
+  protected readonly cancelRate = computed(() => {
+    const n = this.filteredTotal();
+    return n > 0 ? (this.cancelledCount() / n) * 100 : 0;
+  });
 
   /** Is a filter other than the status tab active? */
   protected readonly hasActiveFilters = computed(
@@ -484,8 +501,19 @@ export class OrdersListComponent {
       }),
       stats: this.orderService.getStats(filter),
       all: this.orderService.getStats({}),
+      // Full read of the filtered set to compute revenue/avg until the
+      // backend exposes them on the stats endpoint (see API_GAPS.md).
+      // It WALKS the pages: the API caps a page at 100 rows, so a single
+      // "size: 1000" request was a 400 — and a 400 inside this forkJoin
+      // left the whole list stuck on "Loading".
+      kpiRows: this.orderService.getAll({
+        page: 0,
+        size: 1000,
+        status: status === 'ALL' ? undefined : status,
+        ...filter,
+      }),
     }).subscribe({
-      next: ({ rows, stats, all }) => {
+      next: ({ rows, stats, all, kpiRows }) => {
         if (requestId !== this.requestId) return;
         this.rows.set(rows.data?.content ?? []);
         this.pageTotal.set(rows.data?.totalElements ?? 0);
@@ -496,6 +524,12 @@ export class OrdersListComponent {
           counts[entry.status] = entry.count;
         }
         this.statusCounts.set(counts);
+        // Revenue = sum of totalAmount of non-cancelled orders in the filtered set.
+        const allRows = kpiRows.data?.content ?? [];
+        const revenue = allRows
+          .filter((o: any) => o.status !== 'CANCELLED')
+          .reduce((sum: number, o: any) => sum + (o.totalAmount ?? 0), 0);
+        this.kpiRevenue.set(revenue);
         this.loading.set(false);
       },
       error: (err) => {

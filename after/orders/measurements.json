@@ -1,0 +1,397 @@
+{
+  "generatedAt": "2026-10-20T21:12:24.600Z",
+  "api": {
+    "base": "http://localhost:8080",
+    "currency": "EGP"
+  },
+  "totals": {
+    "currency": "EGP",
+    "ordersAudited": 17,
+    "apiTotalElements": 17,
+    "consistent": 17,
+    "inconsistent": 0,
+    "affectedOrders": [],
+    "itemLineTotalsDisagree": [],
+    "taxFieldPresent": false,
+    "refundsWithAmountPresent": false,
+    "note": "The backend stores orders.total_amount and returns it verbatim. The seed migration (V107) writes that column by hand, so the stored total and the order_items rows of the same order disagreed. The runtime formula (OrderService.createOrder) is correct. REPAIRED by V111__repair_seeded_order_totals.sql, which recomputes the seeded totals with that formula: 17 of 17 disagreed, 0 disagree now."
+  },
+  "kpi": {
+    "sourceOfTruth": "GET /api/dashboard/orders (the list itself) vs GET /api/dashboard/stats/overview (the dashboard)",
+    "listHeaderCount": {
+      "endpoint": "GET /api/dashboard/orders?page=0&size=N",
+      "value": 17,
+      "formula": "ApiResponse<PageResponse<OrderResponse>>.totalElements — the backend count of orders matching the filter (none applied here)",
+      "followsFilters": true
+    },
+    "cards": [
+      {
+        "card": "Total orders",
+        "endpoint": "GET /api/dashboard/stats/overview?days=30",
+        "field": "ordersByStatus (sum of counts)",
+        "formula": "sum(overview.ordersByStatus[].count)",
+        "observed": 10,
+        "observedAt90Days": 10,
+        "actualAllOrders": 17,
+        "followsListFilters": false,
+        "note": "The card counts the DASHBOARD window, not the orders list. It is not a count of \"all orders\" either — it is a count of the last 30 days."
+      },
+      {
+        "card": "Pending",
+        "endpoint": "GET /api/dashboard/stats/overview?days=30",
+        "field": "ordersByStatus",
+        "formula": "PENDING + CONFIRMED + PROCESSING",
+        "observed": 1,
+        "actualAllOrders": 2,
+        "followsListFilters": false
+      },
+      {
+        "card": "Completed",
+        "endpoint": "GET /api/dashboard/stats/overview?days=30",
+        "field": "ordersByStatus",
+        "formula": "DELIVERED + SHIPPED",
+        "observed": 9,
+        "actualAllOrders": 10,
+        "followsListFilters": false
+      },
+      {
+        "card": "Cancelled",
+        "endpoint": "GET /api/dashboard/stats/overview?days=30",
+        "field": "ordersByStatus",
+        "formula": "CANCELLED",
+        "observed": 0,
+        "actualAllOrders": 5,
+        "followsListFilters": false,
+        "note": "The card reads the dashboard window; the table reads the list. That is why the card said 0 while rows said \"Cancelled\"."
+      }
+    ],
+    "requiredContract": {
+      "method": "GET",
+      "path": "/api/dashboard/orders/stats",
+      "query": "the same filters the list uses (status, paymentStatus, paymentMethod, dateFrom, dateTo, search)",
+      "responseShape": {
+        "success": "boolean",
+        "message": "string",
+        "data": {
+          "total": "number",
+          "byStatus": "Array<{ status: string, count: number }>",
+          "byPaymentStatus": "Array<{ paymentStatus: string, count: number }>",
+          "byPaymentMethod": "Array<{ paymentMethod: string, count: number }>"
+        }
+      },
+      "note": "Does not exist. Without it a card that follows the list filters can only be built by paging the whole list, which is wrong for a large store."
+    }
+  },
+  "statusModel": {
+    "orderStatus": {
+      "enumSource": {
+        "file": "src/main/java/com/nocteon/nocteon_api/order/enums/OrderStatus.java",
+        "values": [
+          "PENDING",
+          "CONFIRMED",
+          "PROCESSING",
+          "SHIPPED",
+          "DELIVERED",
+          "CANCELLED"
+        ]
+      },
+      "observedInOrders": [
+        "CANCELLED",
+        "CONFIRMED",
+        "DELIVERED",
+        "PROCESSING",
+        "SHIPPED"
+      ],
+      "counts": {
+        "DELIVERED": 9,
+        "CANCELLED": 5,
+        "SHIPPED": 1,
+        "PROCESSING": 1,
+        "CONFIRMED": 1
+      }
+    },
+    "paymentStatus": {
+      "enumSource": {
+        "file": "src/main/java/com/nocteon/nocteon_api/payment/enums/PaymentStatus.java",
+        "values": [
+          "PENDING",
+          "PAID",
+          "FAILED",
+          "REFUNDED"
+        ]
+      },
+      "observedInOrders": [
+        "FAILED",
+        "PAID",
+        "PENDING",
+        "REFUNDED"
+      ],
+      "counts": {
+        "PAID": 10,
+        "FAILED": 4,
+        "REFUNDED": 2,
+        "PENDING": 1
+      }
+    },
+    "paymentMethod": {
+      "enumSource": {
+        "file": "src/main/java/com/nocteon/nocteon_api/payment/enums/PaymentMethod.java",
+        "values": [
+          "ONLINE",
+          "CASH_ON_DELIVERY"
+        ]
+      },
+      "observedInOrders": [
+        "CASH_ON_DELIVERY",
+        "ONLINE"
+      ],
+      "counts": {
+        "ONLINE": 14,
+        "CASH_ON_DELIVERY": 3
+      }
+    },
+    "refundedIs": {
+      "answer": "a PAYMENT STATUS (a flag), not an order status",
+      "evidence": "PaymentStatus.REFUNDED; OrderStatus has no REFUNDED value. The order status of a refunded order is whatever the fulfilment reached (the seed uses DELIVERED + payment_status REFUNDED, and CANCELLED + payment_status REFUNDED)."
+    },
+    "transitions": {
+      "strict": {
+        "file": "src/main/java/com/nocteon/nocteon_api/order/service/OrderStatusService.java",
+        "note": "OrderStatusService.ALLOWED_TRANSITIONS — but NO controller calls this service; it is only referenced by its own unit test.",
+        "map": {
+          "PENDING": [
+            "CONFIRMED",
+            "CANCELLED"
+          ],
+          "CONFIRMED": [
+            "PROCESSING",
+            "CANCELLED"
+          ],
+          "PROCESSING": [
+            "SHIPPED",
+            "CANCELLED"
+          ],
+          "SHIPPED": [
+            "DELIVERED"
+          ],
+          "DELIVERED": [],
+          "CANCELLED": []
+        }
+      },
+      "actuallyEnforcedByTheEndpoint": {
+        "file": "src/main/java/com/nocteon/nocteon_api/order/service/OrderService.java (updateStatus) + controller OrderController PUT /api/dashboard/orders/{id}/status",
+        "note": "The endpoint the dashboard calls only refuses a change when the CURRENT status is DELIVERED or CANCELLED. Every other pair is accepted, so PENDING -> DELIVERED is allowed.",
+        "map": {
+          "PENDING": [
+            "CONFIRMED",
+            "PROCESSING",
+            "SHIPPED",
+            "DELIVERED",
+            "CANCELLED"
+          ],
+          "CONFIRMED": [
+            "PENDING",
+            "PROCESSING",
+            "SHIPPED",
+            "DELIVERED",
+            "CANCELLED"
+          ],
+          "PROCESSING": [
+            "PENDING",
+            "CONFIRMED",
+            "SHIPPED",
+            "DELIVERED",
+            "CANCELLED"
+          ],
+          "SHIPPED": [
+            "PENDING",
+            "CONFIRMED",
+            "PROCESSING",
+            "DELIVERED",
+            "CANCELLED"
+          ],
+          "DELIVERED": [],
+          "CANCELLED": []
+        }
+      },
+      "mismatch": "The strict map lives in OrderStatusService, which no controller calls. The dashboard endpoint (PUT /api/dashboard/orders/{id}/status -> OrderService.updateStatus) refuses only DELIVERED and CANCELLED as the CURRENT status, so PENDING -> DELIVERED is accepted. The UI must therefore enforce the strict map itself, and the backend should be fixed to use the strict map."
+    },
+    "chartSet": {
+      "endpoint": "GET /api/dashboard/stats/overview?days=30",
+      "statuses": [
+        "PROCESSING",
+        "DELIVERED",
+        "SHIPPED"
+      ],
+      "matchesOrderStatusEnum": false,
+      "note": "The chart reports only the statuses that occur in the window, so a status with a count of 0 is simply absent."
+    },
+    "orderNumberFormat": {
+      "backendFormat": "ORD-YYYY-NNNNNN (OrderService.generateOrderNumber, e.g. ORD-2026-000001)",
+      "observed": [
+        "ORD-2026-000001",
+        "ORD-2026-000002",
+        "ORD-2026-000003"
+      ],
+      "note": "The ticket asked for an \"ORD-0001\" style. The backend already owns the number; the UI displays what the backend gives and never re-formats it."
+    }
+  },
+  "withoutItems": {
+    "apiIncludesItems": true,
+    "apiEvidence": "OrderQueryService.buildResponse always maps order.getItems() into OrderResponse.items, and each item carries productName + primaryImageUrl.",
+    "ordersWithNoItems": 7,
+    "ordersWithNoItemsDetail": [
+      {
+        "id": 6,
+        "orderNumber": "ORD-2026-000006",
+        "cause": "DATA — the order has no order_items rows in the database"
+      },
+      {
+        "id": 7,
+        "orderNumber": "ORD-2026-000007",
+        "cause": "DATA — the order has no order_items rows in the database"
+      },
+      {
+        "id": 9,
+        "orderNumber": "ORD-2026-000009",
+        "cause": "DATA — the order has no order_items rows in the database"
+      },
+      {
+        "id": 10,
+        "orderNumber": "ORD-2026-000010",
+        "cause": "DATA — the order has no order_items rows in the database"
+      },
+      {
+        "id": 12,
+        "orderNumber": "ORD-2026-000012",
+        "cause": "DATA — the order has no order_items rows in the database"
+      },
+      {
+        "id": 14,
+        "orderNumber": "ORD-2026-000014",
+        "cause": "DATA — the order has no order_items rows in the database"
+      },
+      {
+        "id": 15,
+        "orderNumber": "ORD-2026-000015",
+        "cause": "DATA — the order has no order_items rows in the database"
+      }
+    ],
+    "ordersWithItemsButNoImage": 0,
+    "ordersWithAtLeastOneItemMissingImage": 0,
+    "ordersWithItemsButNoImageDetail": [],
+    "causeBreakdown": {
+      "data": 7,
+      "apiOmission": 0,
+      "missingImage": 0
+    }
+  },
+  "backendSource": {
+    "repo": "nocteon-backend (sibling repository)",
+    "orderStatusEnum": {
+      "file": "src/main/java/com/nocteon/nocteon_api/order/enums/OrderStatus.java",
+      "values": [
+        "PENDING",
+        "CONFIRMED",
+        "PROCESSING",
+        "SHIPPED",
+        "DELIVERED",
+        "CANCELLED"
+      ]
+    },
+    "paymentStatusEnum": {
+      "file": "src/main/java/com/nocteon/nocteon_api/payment/enums/PaymentStatus.java",
+      "values": [
+        "PENDING",
+        "PAID",
+        "FAILED",
+        "REFUNDED"
+      ]
+    },
+    "paymentMethodEnum": {
+      "file": "src/main/java/com/nocteon/nocteon_api/payment/enums/PaymentMethod.java",
+      "values": [
+        "ONLINE",
+        "CASH_ON_DELIVERY"
+      ]
+    },
+    "strictTransitions": {
+      "file": "src/main/java/com/nocteon/nocteon_api/order/service/OrderStatusService.java",
+      "note": "OrderStatusService.ALLOWED_TRANSITIONS — but NO controller calls this service; it is only referenced by its own unit test.",
+      "map": {
+        "PENDING": [
+          "CONFIRMED",
+          "CANCELLED"
+        ],
+        "CONFIRMED": [
+          "PROCESSING",
+          "CANCELLED"
+        ],
+        "PROCESSING": [
+          "SHIPPED",
+          "CANCELLED"
+        ],
+        "SHIPPED": [
+          "DELIVERED"
+        ],
+        "DELIVERED": [],
+        "CANCELLED": []
+      }
+    },
+    "endpointTransitions": {
+      "file": "src/main/java/com/nocteon/nocteon_api/order/service/OrderService.java (updateStatus) + controller OrderController PUT /api/dashboard/orders/{id}/status",
+      "note": "The endpoint the dashboard calls only refuses a change when the CURRENT status is DELIVERED or CANCELLED. Every other pair is accepted, so PENDING -> DELIVERED is allowed.",
+      "map": {
+        "PENDING": [
+          "CONFIRMED",
+          "PROCESSING",
+          "SHIPPED",
+          "DELIVERED",
+          "CANCELLED"
+        ],
+        "CONFIRMED": [
+          "PENDING",
+          "PROCESSING",
+          "SHIPPED",
+          "DELIVERED",
+          "CANCELLED"
+        ],
+        "PROCESSING": [
+          "PENDING",
+          "CONFIRMED",
+          "SHIPPED",
+          "DELIVERED",
+          "CANCELLED"
+        ],
+        "SHIPPED": [
+          "PENDING",
+          "CONFIRMED",
+          "PROCESSING",
+          "DELIVERED",
+          "CANCELLED"
+        ],
+        "DELIVERED": [],
+        "CANCELLED": []
+      }
+    },
+    "totalsAtCreation": {
+      "file": "src/main/java/com/nocteon/nocteon_api/order/service/OrderService.java (createOrder)",
+      "formula": "totalAmount = (sum(variant.price * cartItem.quantity) - discountAmount) + shippingCost",
+      "note": "Computed at CREATION and stored in orders.total_amount. The read path (OrderQueryService.buildResponse) returns the stored column unchanged."
+    },
+    "seedData": {
+      "file": "src/main/resources/db/migration/V107__seed_orders_reviews_contacts.sql",
+      "note": "The seed INSERTs orders.total_amount by hand, independently of the order_items rows it inserts later in the same file."
+    },
+    "missingBackendCapabilities": {
+      "tax": "No tax column, field or calculation anywhere in the backend (grep for \"tax\" over src/main/java returns nothing).",
+      "refundAmount": "PaymentStatus.REFUNDED is a flag with no amount. There is no refund entity, no refund amount, no refund endpoint and no gateway refund call (PaymentService only notes that a manual refund may be needed).",
+      "orderStatusHistory": "No order_status_history table, entity, repository or endpoint.",
+      "orderNotes": "No internal-notes entity or endpoint. orders.notes is a single customer-facing TEXT column.",
+      "shipment": "No shipment entity: no carrier, tracking number, tracking URL, shipped_at or delivered_at.",
+      "orderStats": "No GET /api/dashboard/orders/stats (counts grouped by status). The dashboard overview carries ordersByStatus, but it is bounded by the dashboard's date window and ignores the list's filters.",
+      "resendOrderEmail": "Order e-mail is sent on order placed and on order shipped, but there is no endpoint to re-send it on demand.",
+      "transactionReference": "No payment transaction reference, paid_at or per-order refund list is exposed on OrderResponse."
+    }
+  }
+}

@@ -77,7 +77,23 @@
     "products": "Products",
     "promoCodes": "Promo Codes",
     "journalPosts": "Journal Posts",
-    "searching": "Searching…"
+    "searching": "Searching…",
+    "customers": "Customers",
+    "recentSearches": "Recent searches",
+    "quickLinks": "Quick links",
+    "quickActions": "Quick actions",
+    "viewAll": "View all {n}",
+    "noResultsFor": "No results for “{q}”",
+    "noResultsHint": "Check spelling, or try an order number or email.",
+    "hintNavigate": "navigate",
+    "hintOpen": "open",
+    "hintNewTab": "Ctrl+Enter new tab",
+    "hintClose": "close",
+    "pages": "Pages",
+    "actions": "Actions",
+    "addProduct": "Add product",
+    "addCategory": "Add category",
+    "shippingZones": "Shipping zones"
   },
   "StoreSettingPage": {
     "title": "Store Setting"
@@ -251,7 +267,8 @@
     "tastingNote": "Tasting Note",
     "days": "days",
     "errorTitle": "Could not load",
-    "processing": "Processing…"
+    "processing": "Processing…",
+    "clear": "Clear"
   },
   "products": {
     "title": "Products",
@@ -1449,6 +1466,7 @@
       "shipmentSaved": "Shipment saved",
       "resendEmailGap": "The store sends order e-mails automatically, but it cannot send one on demand.",
       "editShipment": "Record the shipment",
+      "addShipment": "Add shipment details",
       "refundRecorded": "Refund sent to the payment gateway"
     },
     "dialogs": {

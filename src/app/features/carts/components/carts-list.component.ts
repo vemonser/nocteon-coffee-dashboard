@@ -19,6 +19,7 @@ import {
 } from '@ng-icons/lucide';
 import { PageResponse } from '../../../core/models/api-response.model';
 import { CartItemResponse, CartResponse } from '../models/cart.model';
+import { StatusKind } from '../../../shared/ui/status-badge/status-badge.component';
 import { CartService } from '../services/cart.service';
 import { LanguageService } from '../../../core/i18n/language.service';
 import { ColumnDef, createColumnHelper } from '@tanstack/table-core';
@@ -29,6 +30,9 @@ import { TranslocoPipe } from '@jsverse/transloco';
 import { MoneyPipe } from '../../../shared/pipes/money.pipe';
 import { PagerComponent } from '../../../shared/components/pager/pager.component';
 import { LocalizedDateComponent } from '../../../shared/ui/localized-date/localized-date.component';
+import { StatusBadgeComponent } from '../../../shared/ui/status-badge/status-badge.component';
+import { CustomerCellComponent } from '../../../shared/ui/customer-cell/customer-cell.component';
+import { ItemsThumbsComponent } from '../../../shared/ui/items-thumbs/items-thumbs.component';
 const IMG = {
   ethiopia: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=800',
   colombia: 'https://images.unsplash.com/photo-1498804103079-a6351b050096?w=800',
@@ -101,6 +105,9 @@ const MOCK_CARTS: CartResponse[] = [
     NgIcon,
     TranslocoPipe,
     MoneyPipe,
+    StatusBadgeComponent,
+    CustomerCellComponent,
+    ItemsThumbsComponent,
   ],
   providers: [
     provideIcons({
@@ -137,6 +144,27 @@ export class CartsListComponent {
   viewMode = signal<ViewMode>('list');
 
   readonly totalItems = computed(() => this.pageData()?.totalElements ?? 0);
+
+  /** Derive a cart status when the backend does not send one (see API_GAPS.md). */
+  cartStatus(cart: CartResponse): StatusKind {
+    if (cart.status) {
+      if (cart.status === 'ACTIVE') return 'active';
+      if (cart.status === 'ABANDONED') return 'abandoned';
+      if (cart.status === 'CONVERTED') return 'converted';
+    }
+    const ref = cart.lastActivityAt ?? cart.updatedAt ?? cart.createdAt;
+    const ageMs = Date.now() - new Date(ref).getTime();
+    const abandonedThresholdMs = 24 * 60 * 60 * 1000;
+    if (ageMs > abandonedThresholdMs) return 'abandoned';
+    return 'active';
+  }
+
+  sendReminder(cart: CartResponse): void {
+    this.cartService.sendReminder(cart.id).subscribe({
+      next: () => this.notify.success('carts.reminderSent', 'Reminder sent'),
+      error: (err) => this.notify.apiError(err, 'notify.errorFallback', 'Could not send reminder'),
+    });
+  }
 
   private columnHelper = createColumnHelper<CartResponse>();
   columns: ColumnDef<CartResponse, any>[] = [

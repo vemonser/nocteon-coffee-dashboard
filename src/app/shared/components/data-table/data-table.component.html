@@ -591,46 +591,19 @@
                       </span>
                       @if (reviewer.verified) {
                         @if (reviewer.orderId) {
-                          <a
-                            [routerLink]="['/dashboard/orders', reviewer.orderId]"
-                            class="inline-flex shrink-0 items-center text-success hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                            [attr.title]="'reviews.columns.verifiedPurchase' | transloco"
-                            [attr.aria-label]="'reviews.columns.verifiedPurchase' | transloco"
-                          >
-                            <ng-icon name="lucideBadgeCheck" class="size-4" aria-hidden="true" />
+                          <a [routerLink]="['/dashboard/orders', reviewer.orderId]" class="inline-flex shrink-0">
+                            <app-verified-badge [verified]="true" />
                           </a>
                         } @else {
-                          <ng-icon
-                            name="lucideBadgeCheck"
-                            class="size-4 shrink-0 text-success"
-                            [attr.title]="'reviews.columns.verifiedPurchase' | transloco"
-                          />
+                          <app-verified-badge [verified]="true" />
                         }
                       }
                     </div>
                   }
                 }
                 @case ('rating') {
-                  <!--
-                    Filled stars in the warning token, the empty ones muted,
-                    and the number beside them: "4/5" is what a reader can
-                    quote, and the stars alone cannot be counted at a glance.
-                  -->
                   @if (cell.getValue() !== null && cell.getValue() !== undefined) {
-                    <div class="flex items-center gap-1.5 text-start">
-                      <span class="inline-flex" aria-hidden="true">
-                        @for (star of ratingStars; track star) {
-                          @if (star < $any(cell.getValue())) {
-                            <ng-icon name="heroStarSolid" class="size-4 text-warning" />
-                          } @else {
-                            <ng-icon name="heroStar" class="size-4 text-muted-foreground/30" />
-                          }
-                        }
-                      </span>
-                      <span class="text-xs tabular-nums text-muted-foreground"
-                        >{{ $any(cell.getValue()) }}/5</span
-                      >
-                    </div>
+                    <app-rating-stars [rating]="$any(cell.getValue())" [showText]="true" />
                   }
                 }
                 @case ('comment') {
