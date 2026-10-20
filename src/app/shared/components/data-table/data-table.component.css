@@ -35,6 +35,14 @@ tbody tr {
   font-variant-numeric: tabular-nums;
 }
 
+/* A column that opts into end alignment (`meta: { align: 'end' }`).
+   The header AND the cell switch together, so the sort label still sits
+   over its values — the mismatch this replaces had the header ~350px away
+   from the numbers it labels. */
+:where(td, th)[data-align-end] {
+  text-align: end;
+}
+
 /* Low/critical value indicator */
 .value-low {
   color: var(--warning);

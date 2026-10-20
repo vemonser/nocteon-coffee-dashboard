@@ -109,4 +109,40 @@
       {{ permanentDeleteLabel() | transloco }}
     </button>
   }
+
+  <!--
+    The overflow menu. A row with more than two actions shows one and hides
+    the rest here, so the actions column stays narrow.
+  -->
+  @if (menuActions().length > 0) {
+    <button
+      type="button"
+      hlmBtn
+      variant="ghost"
+      size="icon"
+      class="text-muted-foreground hover:text-foreground"
+      [hlmDropdownMenuTrigger]="menu"
+      [attr.aria-label]="'common.actions' | transloco"
+    >
+      <ng-icon name="lucideMoreVertical" class="size-4" aria-hidden="true" />
+    </button>
+
+    <ng-template #menu>
+      <hlm-dropdown-menu class="min-w-48 rounded-md">
+        @for (action of menuActions(); track action.id) {
+          <button
+            hlmDropdownMenuItem
+            class="flex items-center gap-2"
+            [class.text-destructive-text]="action.danger"
+            (click)="onMenuAction(action)"
+          >
+            @if (action.icon) {
+              <ng-icon [name]="action.icon" class="size-4 shrink-0" aria-hidden="true" />
+            }
+            <span>{{ action.label | transloco }}</span>
+          </button>
+        }
+      </hlm-dropdown-menu>
+    </ng-template>
+  }
 </div>

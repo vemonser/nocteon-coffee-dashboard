@@ -1,8 +1,13 @@
 @if (parts(); as p) {
-  <span class="inline-flex gap-1 tabular-nums">
+  <span class="inline-flex gap-1 tabular-nums" [class.flex-col]="stackTime()" [class.items-start]="stackTime()">
     <span>{{ p.day }}</span>
     <span>{{ p.month }}</span>
     <span>{{ p.year }}</span>
+    @if (showTime()) {
+      <span class="text-muted-foreground" [class.ms-1]="!stackTime()">{{
+        time()
+      }}</span>
+    }
   </span>
 } @else {
   {{ fallback() }}

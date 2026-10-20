@@ -10,10 +10,30 @@ import {
   lucideRotateCcw,
   lucideTrash,
   lucideTrash2,
+  lucideMoreVertical,
+  lucideRefreshCw,
+  lucidePrinter,
+  lucideCircleSlash,
 } from '@ng-icons/lucide';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmTooltipImports } from '@spartan-ng/helm/tooltip';
+import { HlmDropdownMenuImports } from '@spartan-ng/helm/dropdown-menu';
 import { BrnTooltip } from '@spartan-ng/brain/tooltip';
+
+/**
+ * One entry of a row's overflow menu.
+ *
+ * `label` is a transloco key (or a literal). `icon` is the NAME of an icon
+ * the cell provides — the cell owns the icon registry, so the host does not
+ * have to.
+ */
+export interface RowMenuAction {
+  id: string;
+  label: string;
+  icon?: string;
+  /** Rendered in the destructive colour (a cancel, a delete). */
+  danger?: boolean;
+}
 
 @Component({
   selector: 'app-actions-cell',
@@ -25,6 +45,7 @@ import { BrnTooltip } from '@spartan-ng/brain/tooltip';
     HlmButtonImports,
     BrnTooltip,
     HlmTooltipImports,
+    HlmDropdownMenuImports,
     RouterModule,
   ],
   providers: [
@@ -34,6 +55,10 @@ import { BrnTooltip } from '@spartan-ng/brain/tooltip';
       lucideRotateCcw,
       lucideTrash,
       lucideTrash2,
+      lucideMoreVertical,
+      lucideRefreshCw,
+      lucidePrinter,
+      lucideCircleSlash,
     }),
   ],
   templateUrl: './actions-cell.component.html',
@@ -77,6 +102,23 @@ export class ActionsCellComponent {
   delete = output<any>();
   restore = output<any>();
   permanentDelete = output<any>();
+
+  /**
+   * The row's overflow menu.
+   *
+   * design.md §10: "Row actions: one visible action, plus a kebab menu when
+   * there are more than two." A row with four actions therefore shows one
+   * and hides three in a menu, so the column stays narrow and the actions
+   * stay scannable.
+   */
+  readonly menuActions = input<RowMenuAction[]>([]);
+
+  /** The chosen menu entry, with the row it belongs to. */
+  readonly menuAction = output<{ id: string; item: any }>();
+
+  onMenuAction(action: RowMenuAction): void {
+    this.menuAction.emit({ id: action.id, item: this.item() });
+  }
 
   /**
    * Exactly one text-colour class per action. Binding two competing `text-*`

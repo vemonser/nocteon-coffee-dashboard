@@ -1,0 +1,32 @@
+<app-order-dialog
+  [open]="open()"
+  [title]="title()"
+  [description]="description()"
+  [confirmLabel]="confirmLabel()"
+  [cancelLabel]="cancelLabel()"
+  [confirmDisabled]="!canConfirm()"
+  [pending]="pending()"
+  [danger]="true"
+  testId="cancel-dialog"
+  (confirmed)="confirm()"
+  (closed)="closed.emit()"
+>
+  <div class="mt-4 space-y-1.5">
+    <label for="order-cancel-reason" class="text-sm font-medium">{{ reasonLabel() }}</label>
+    <input
+      id="order-cancel-reason"
+      hlmInput
+      type="text"
+      dir="auto"
+      data-testid="cancel-reason"
+      [attr.aria-required]="'true'"
+      [ngModel]="reason()"
+      (ngModelChange)="reason.set($event)"
+      [placeholder]="reasonPlaceholder()"
+    />
+  </div>
+
+  <p class="mt-4 rounded-md border border-warning/40 bg-warning-soft px-3 py-2 text-sm text-warning">
+    {{ consequence() }}
+  </p>
+</app-order-dialog>

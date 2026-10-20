@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { LanguageService } from './language.service';
-import { dateParts, type DateParts } from '../../shared/utils/locale-format';
+import { dateParts, formatDateAndTime, type DateParts } from '../../shared/utils/locale-format';
 
 /**
  * THE shared helper for a localized date.
@@ -43,5 +43,13 @@ export class LocalizedDateService {
     const p = this.parts(value, 'short');
     if (!p) return '';
     return `${p.day} ${p.month}`;
+  }
+
+  /**
+   * The date AND the time as ONE string — the absolute value behind a
+   * tooltip or a `title` attribute, where no DOM is possible.
+   */
+  formatDateAndTime(value: unknown): string {
+    return formatDateAndTime(value, this.language.current());
   }
 }

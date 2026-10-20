@@ -62,6 +62,7 @@
               [class.bg-card]="header.column.id === 'actions'"
               [style.insetInlineEnd.px]="header.column.id === 'actions' ? 0 : null"
               [attr.data-numeric]="isNumericColumn(header.column.id) ? '' : null"
+              [attr.data-align-end]="isEndAligned(header.column.columnDef) ? '' : null"
             >
               @if (!header.isPlaceholder) {
                 @if (header.column.getCanSort()) {
@@ -197,7 +198,13 @@
       }
 
       @for (row of table().getRowModel().rows; track row.id) {
-        <tr hlmTr class="hover:bg-accent transition-colors" [attr.data-selected]="isSelected(row.original) ? '' : null">
+        <tr
+          hlmTr
+          class="hover:bg-accent transition-colors"
+          [class.cursor-pointer]="clickableRows()"
+          [attr.data-selected]="isSelected(row.original) ? '' : null"
+          (click)="onRowClick($event, row.original)"
+        >
           @if (selectable()) {
             <td class="px-4 py-3">
               <input
@@ -231,6 +238,7 @@
               [class.bg-card]="cell.column.id === 'actions'"
               [style.insetInlineEnd.px]="cell.column.id === 'actions' ? 0 : null"
               [attr.data-numeric]="isNumericColumn(cell.column.id) ? '' : null"
+              [attr.data-align-end]="isEndAligned(cell.column.columnDef) ? '' : null"
               [style.max-width]="(cell.column.id === 'main_en' || cell.column.id === 'main_ar') ? '360px' : (cell.column.id === 'actions' ? widthFor(cell.column.id, cell.column.columnDef) : null)"
             >
               @switch (cell.column.id) {
@@ -269,22 +277,72 @@
                 }
 
                 @case ('items') {
-                  <div class="flex items-center -space-x-2 rtl:space-x-reverse">
-                    @for (item of $any(cell.getValue()).slice(0, 3); track item.id) {
-                      <img
-                        [src]="item.primaryImageUrl ?? ''"
-                        [alt]="item.productName"
-                        class="h-8 w-8 rounded-md border-2 border-card object-cover"
-                      />
+                  @if ($any(cell.getValue()).length === 0) {
+                    <!-- An order with no items is a real state, not a blank cell. -->
+                    <span class="block truncate text-start text-xs text-muted-foreground">
+                      {{ 'orders.emptyState.noItems' | transloco }}
+                    </span>
+                  } @else {
+                    <div class="flex items-center -space-x-2 rtl:space-x-reverse">
+                      @for (item of $any(cell.getValue()).slice(0, 3); track item.id) {
+                        <img
+                          [src]="item.primaryImageUrl ?? ''"
+                          [alt]="item.productName"
+                          class="h-8 w-8 rounded-md border-2 border-card object-cover"
+                        />
+                      }
+                      @if ($any(cell.getValue()).length > 3) {
+                        <div
+                          class="flex h-8 w-8 items-center justify-center rounded-md border-2 border-card bg-muted text-xs font-medium"
+                        >
+                          +{{ $any(cell.getValue()).length - 3 }}
+                        </div>
+                      }
+                    </div>
+                  }
+                }
+
+                <!-- The order number: the row's identifier, and its link. -->
+                @case ('orderNumber') {
+                  <span class="block truncate text-start text-sm font-medium tabular-nums">
+                    <bdi>{{ cell.getValue() }}</bdi>
+                  </span>
+                }
+
+                <!-- The customer: the name, with the address of that name under it. -->
+                @case ('customer') {
+                  <span class="flex min-w-0 flex-col items-start">
+                    <span class="block max-w-full truncate text-start text-sm font-medium">
+                      {{ $any(cell.getValue())?.name || '—' }}
+                    </span>
+                    @if ($any(cell.getValue())?.email) {
+                      <span class="block max-w-full truncate text-start text-xs text-muted-foreground">
+                        {{ $any(cell.getValue()).email }}
+                      </span>
                     }
-                    @if ($any(cell.getValue()).length > 3) {
-                      <div
-                        class="flex h-8 w-8 items-center justify-center rounded-md border-2 border-card bg-muted text-xs font-medium"
-                      >
-                        +{{ $any(cell.getValue()).length - 3 }}
-                      </div>
-                    }
-                  </div>
+                  </span>
+                }
+
+                <!-- The order status and the payment status: a badge each, and
+                     never colour alone — the badge always carries its text. -->
+                @case ('orderStatus') {
+                  <app-status-badge [status]="$any(cell.getValue())" />
+                }
+                @case ('paymentStatus') {
+                  <app-status-badge [status]="$any(cell.getValue())" />
+                }
+
+                <!-- The payment method: an icon and a SHORT label. The column
+                     is wide enough for the label, so it is never truncated. -->
+                @case ('paymentMethod') {
+                  <span class="flex items-center gap-1.5 whitespace-nowrap text-start">
+                    <ng-icon
+                      [name]="$any(cell.getValue())?.icon"
+                      class="size-4 shrink-0 text-muted-foreground"
+                      aria-hidden="true"
+                    />
+                    <span class="truncate">{{ $any(cell.getValue())?.label }}</span>
+                  </span>
                 }
 
                 @case ('avatar') {
@@ -320,13 +378,37 @@
                   </span>
                 }
                 @case ('totalAmount') {
-                  <span class="block text-start tabular-nums">
+                  <span
+                    class="block tabular-nums"
+                    [class.text-start]="!isEndAligned(cell.column.columnDef)"
+                    [class.text-end]="isEndAligned(cell.column.columnDef)"
+                  >
                     {{ $any(cell.getValue()) | money }}
                   </span>
                 }
                 @case ('createdAt') {
                   <span class="block text-xs text-muted-foreground">
                     <app-localized-date [value]="$any(cell.getValue())" />
+                  </span>
+                }
+
+                <!--
+                  The date AND the time, with the relative time in the tooltip.
+                  The absolute value stays in the `datetime` attribute, so
+                  nothing depends on reading the flattened tooltip string.
+                -->
+                @case ('createdAtTime') {
+                  <span
+                    class="block text-xs text-muted-foreground"
+                    [attr.title]="relativeTime($any(cell.getValue()))"
+                  >
+                    <time [attr.datetime]="$any(cell.getValue())">
+                      <app-localized-date
+                        [value]="$any(cell.getValue())"
+                        [showTime]="true"
+                        [stackTime]="true"
+                      />
+                    </time>
                   </span>
                 }
 
@@ -401,11 +483,13 @@
                     [showView]="showView()"
                     [showDelete]="showDelete()"
                     [showRestore]="showRestore()"
+                    [menuActions]="menuActions()"
                     [editHref]="hrefFor(row.original)"
                     (edit)="edit.emit($event)"
                     (delete)="delete.emit($event)"
                     (restore)="restore.emit($event)"
                     (permanentDelete)="permanentDelete.emit($event)"
+                    (menuAction)="menuAction.emit($event)"
                     (view)="rowClick.emit(row.original)"
                   />
                 }
@@ -426,7 +510,20 @@
                 }
 
                 @default {
-                  @if (cell.column.id === navigableColumn()) {
+                  @if (cellHref()(cell.column.id, row.original); as href) {
+                    <!--
+                      A cell the page turned into a real link. The table does
+                      not know what it points at — the page supplies the
+                      command — so middle-click and open-in-new-tab work.
+                    -->
+                    <a
+                      [routerLink]="href"
+                      data-testid="cell-link"
+                      class="inline-block max-w-full truncate text-start hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                    >
+                      <bdi>{{ cell.getValue() }}</bdi>
+                    </a>
+                  } @else if (cell.column.id === navigableColumn()) {
                     <!-- The slug column stays a plain, unclickable handle;
                          the NAME is the row's single link (below). -->
                     <span

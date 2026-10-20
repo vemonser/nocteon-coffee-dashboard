@@ -2,11 +2,17 @@
 //
 //   npm run evidence -- <phase> [--url /dashboard?days=30] [--tag before]
 //
-// Captures the dashboard across the full matrix:
+// Captures the app across the full matrix:
 //   widths   375, 768, 1024, 1440, 1920
 //   themes   light, dark
 //   langs    en, ar
-//   -> evidence/<phase>/<lang>-<theme>/dashboard-<width>.png
+//   -> evidence/<phase>/<lang>-<theme>/<target>-<width>.png
+//
+// A PHASE is a set of TARGETS (see scripts/evidence-targets.mjs). The
+// `dashboard` phase captures one screen; the `orders` phase captures the
+// orders list, the order detail and the three order dialogs. Every target
+// is measured in the page: overflow, clipping, ellipsis, raw i18n keys and
+// the target's own numbers. The measurements land in results.json.
 //
 // Two properties this harness guarantees (both were asked for explicitly):
 //
@@ -40,13 +46,14 @@ import { config as loadEnv } from 'dotenv';
 import { resolve } from 'node:path';
 import { mkdirSync, existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { execSync } from 'node:child_process';
+import { targetsFor, settle, GENERIC_MEASURE } from './evidence-targets.mjs';
 
 loadEnv({ path: resolve(process.cwd(), '.env.local') });
 
 const BASE = process.env.E2E_BASE_URL ?? 'http://localhost:4200';
 const PHASE = process.argv[2] ?? 'phase0';
 const TAG = argValue('--tag') ?? '';
-const URL_PATH = argValue('--url') ?? '/dashboard?days=30';
+const URL_PATH = argValue('--url') ?? null;
 const OUT = resolve(process.cwd(), 'evidence', PHASE);
 const AUTH_STATE = resolve(process.cwd(), 'e2e/.auth/dashboard-admin.json');
 
@@ -54,6 +61,9 @@ const WIDTHS = [375, 768, 1024, 1440, 1920];
 const THEMES = ['light', 'dark'];
 const LANGS = ['en', 'ar'];
 const VIEWPORT_HEIGHT = 900;
+
+/** The screens this phase captures. `--url` keeps the legacy single-screen mode. */
+const TARGETS = targetsFor(PHASE, URL_PATH);
 
 function argValue(flag) {
   const i = process.argv.indexOf(flag);
@@ -244,40 +254,88 @@ for (const width of WIDTHS) {
       const dir = `${OUT}${TAG ? '-' + TAG : ''}/${lang}-${theme}`;
       mkdirSync(dir, { recursive: true });
 
-      // The language is switched AT RUNTIME (through the app's own control)
-      // rather than seeded before load, so a widget that captured the language
-      // once at construction is caught here instead of silently keeping the
-      // old language. The theme is boot-time (the .dark class is applied on
-      // init), so it is seeded through the non-app document.
-      const bootLang = lang === 'ar' ? 'en' : 'ar';
-      await seedCell(page, bootLang, theme);
-      await page.goto(`${BASE}${URL_PATH}`, { waitUntil: 'domcontentloaded' });
-      await page.waitForTimeout(2200);
+      const targetResults = [];
 
-      if (lang === 'ar') {
-        await switchLanguageAtRuntime(page, 'ar');
-      } else {
-        // English cell: switch to Arabic and back, so the English screenshot is
-        // also produced after a runtime transition rather than a cold load.
-        await switchLanguageAtRuntime(page, 'ar');
-        await switchLanguageAtRuntime(page, 'en');
+      for (const target of TARGETS) {
+        // The language is switched AT RUNTIME (through the app's own control)
+        // rather than seeded before load, so a widget that captured the language
+        // once at construction is caught here instead of silently keeping the
+        // old language. The theme is boot-time (the .dark class is applied on
+        // init), so it is seeded through the non-app document.
+        //
+        // EVERY target is booted in the opposite language and switched at
+        // runtime, so a page that only reacts on a cold load is caught.
+        const bootLang = lang === 'ar' ? 'en' : 'ar';
+        await seedCell(page, bootLang, theme);
+        await page.goto(`${BASE}${target.url}`, { waitUntil: 'domcontentloaded' });
+        await settle(page, 1800);
+
+        if (lang === 'ar') {
+          await switchLanguageAtRuntime(page, 'ar');
+        } else {
+          // English cell: switch to Arabic and back, so the English screenshot is
+          // also produced after a runtime transition rather than a cold load.
+          await switchLanguageAtRuntime(page, 'ar');
+          await switchLanguageAtRuntime(page, 'en');
+        }
+
+        // An optional interaction BEFORE the screenshot (open a dialog, …).
+        let action = null;
+        if (target.action) {
+          try {
+            action = await target.action(page);
+          } catch (err) {
+            action = { present: false, error: String(err?.message ?? err) };
+          }
+        }
+
+        const state = await observedState(page);
+        const file = `${dir}/${target.id}-${width}.png`;
+        await page.screenshot({ path: file });
+
+        // Measurements: the generic invariants for every screen, plus the
+        // target's own numbers.
+        let generic = null;
+        try {
+          generic = await page.evaluate(GENERIC_MEASURE);
+        } catch (err) {
+          generic = { error: String(err?.message ?? err) };
+        }
+        let own = null;
+        if (target.measure) {
+          try {
+            own = await target.measure(page);
+          } catch (err) {
+            own = { error: String(err?.message ?? err) };
+          }
+        }
+
+        targetResults.push({
+          id: target.id,
+          url: target.url,
+          file: file.replace(resolve(process.cwd()) + '/', ''),
+          action,
+          observed: state,
+          measurements: generic,
+          own,
+        });
+
+        console.log(
+          `  ${lang}-${theme} @${width}  ${target.id}  lang=${state.lang} dir=${state.dir} dark=${state.dark}` +
+            (generic?.horizontalOverflowPx ? `  OVERFLOW ${generic.horizontalOverflowPx}px` : '') +
+            (generic?.rawI18nKeys?.length ? `  RAW-KEYS ${generic.rawI18nKeys.length}` : '') +
+            (generic?.verticalClipped?.length ? `  VCLIP ${generic.verticalClipped.length}` : ''),
+        );
       }
-
-      const state = await observedState(page);
-      const file = `${dir}/dashboard-${width}.png`;
-      await page.screenshot({ path: file });
 
       cells.push({
         lang,
         theme,
         width,
-        file: file.replace(resolve(process.cwd()) + '/', ''),
         runtimeLanguageSwitch: true,
-        observed: state,
+        observed: targetResults.length ? targetResults[0].observed : null,
+        targets: targetResults,
       });
-      console.log(
-        `  ${lang}-${theme} @${width}  lang=${state.lang} dir=${state.dir} dark=${state.dark}`,
-      );
     }
   }
 }
@@ -314,6 +372,7 @@ const results = {
     command: `npm run evidence -- ${PHASE}${TAG ? ' --tag ' + TAG : ''}`,
     baseUrl: BASE,
     url: URL_PATH,
+    targets: TARGETS.map((t) => t.id),
     widths: WIDTHS,
     themes: THEMES,
     langs: LANGS,

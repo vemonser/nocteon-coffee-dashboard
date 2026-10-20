@@ -71,15 +71,47 @@ const PLURAL_BASES = [
   'dashboard.countSold',
   'dashboard.countOrders',
   'dashboard.countCustomers',
+  // The orders list and the order detail page count orders, items and
+  // results. Arabic counts a noun by the number in front of it, so the
+  // family has all six categories there and two in English.
+  'orders.countItems',
+  'orders.countOrders',
+  'orders.countResults',
 ];
 const EN_SUFFIXES = ['one', 'other'];
 const AR_SUFFIXES = ['zero', 'one', 'two', 'few', 'many', 'other'];
 
-/** A key belongs to a plural family if it is `<base>_<category>`. */
-function isPluralKey(key: string): boolean {
-  return PLURAL_BASES.some(
-    (base) => key.startsWith(`${base}_`) && /_(zero|one|two|few|many|other)$/.test(key),
-  );
+/**
+ * A key belongs to a plural family if it is `<base>_<category>` AND its
+ * siblings carry the OTHER categories.
+ *
+ * The sibling test is what makes this general: English has one/other and
+ * Arabic has all six, so a plural family is legitimately ASYMMETRIC, and
+ * the symmetry check must not treat it as a missing key. Looking for the
+ * sibling (rather than a hardcoded list of bases) means a family added later
+ * is exempt too, instead of failing the symmetry check for a reason that has
+ * nothing to do with the translation.
+ */
+const PLURAL_CATEGORIES = ['zero', 'one', 'two', 'few', 'many', 'other'];
+
+function isPluralKey(key: string, dict: Dict): boolean {
+  const parts = key.split('.');
+  const segment = parts[parts.length - 1];
+  // "<base>_<category>" — the base may itself contain underscores
+  // ("countItems_zero" -> base "countItems", category "zero").
+  const underscore = segment.lastIndexOf('_');
+  if (underscore <= 0) return false;
+  const base = segment.slice(0, underscore);
+  const category = segment.slice(underscore + 1);
+  if (!PLURAL_CATEGORIES.includes(category)) return false;
+  const parent = parts.slice(0, -1).reduce<any>((o, p) => o?.[p], dict);
+  if (!parent || typeof parent !== 'object') return false;
+  // The family has at least one sibling in a different category. A family may
+  // be FLAT (`dashboard.countDays_one`) or NESTED (`dashboard.days.one`).
+  const siblingIn = (c: string): boolean =>
+    typeof parent[`${base}_${c}`] === 'string' ||
+    (typeof parent[base] === 'object' && typeof parent[base][c] === 'string');
+  return PLURAL_CATEGORIES.some((c) => c !== category && siblingIn(c));
 }
 
 const DYNAMIC_BASES: string[] = PLURAL_BASES;
@@ -89,15 +121,29 @@ describe('i18n keys', () => {
     // A plural family is legitimately asymmetric: English has one/other,
     // Arabic has all six Intl.PluralRules categories. Every OTHER key must
     // exist in both locales.
-    const onlyEn = [...enKeys].filter((k) => !arKeys.has(k) && !isPluralKey(k));
-    const onlyAr = [...arKeys].filter((k) => !enKeys.has(k) && !isPluralKey(k));
+    const onlyEn = [...enKeys].filter(
+      (k) => !arKeys.has(k) && !isPluralKey(k, en) && !isPluralKey(k, ar),
+    );
+    const onlyAr = [...arKeys].filter(
+      (k) => !enKeys.has(k) && !isPluralKey(k, en) && !isPluralKey(k, ar),
+    );
     expect({ onlyEn, onlyAr }).toEqual({ onlyEn: [], onlyAr: [] });
   });
 
   it('every plural family is complete for its language', () => {
-    // EN must have one/other; AR must have all six.
+    // EN must have one/other; AR must have all six. EVERY family is checked
+    // — the families are discovered from the locale files, so a family added
+    // later is covered without touching this test.
     const missing: string[] = [];
-    for (const base of PLURAL_BASES) {
+    const families = new Set<string>();
+    for (const key of [...enKeys, ...arKeys]) {
+      const parts = key.split('.');
+      const last = parts[parts.length - 1];
+      if (!PLURAL_CATEGORIES.includes(last)) continue;
+      if (!isPluralKey(key, en) && !isPluralKey(key, ar)) continue;
+      families.add(parts.slice(0, -1).join('.'));
+    }
+    for (const base of families) {
       for (const s of EN_SUFFIXES) if (!enKeys.has(`${base}_${s}`)) missing.push(`en:${base}_${s}`);
       for (const s of AR_SUFFIXES) if (!arKeys.has(`${base}_${s}`)) missing.push(`ar:${base}_${s}`);
     }
@@ -356,7 +402,10 @@ describe('dashboard glossary (docs/glossary.md)', () => {
         ? entry.keys[0].split('.').slice(0, -1).join('.')
         : '';
       const ownKeys = [...enKeys, ...arKeys].filter(
-        (k) => k.startsWith(`${namespace}.`) && !isPluralKey(k),
+        (k) =>
+          k.startsWith(`${namespace}.`) &&
+          !isPluralKey(k, en) &&
+          !isPluralKey(k, ar),
       );
       for (const key of ownKeys) {
         const enV = catValue(key, 'en');

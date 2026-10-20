@@ -105,6 +105,40 @@ export function formatDateTime(value: unknown, lang: Language): string {
   );
 }
 
+/**
+ * The time of day, on its own.
+ *
+ * The same rules as the date: the locale decides the 12/24-hour form, the
+ * digits stay Latin in Arabic, and the value is wrapped in an isolate so a
+ * neutral character (the colon) cannot be reordered inside an RTL
+ * paragraph. "2:30 PM" is a Latin run; without the isolate the "PM" can end
+ * up on the wrong side of the digits.
+ */
+export function formatTime(value: unknown, lang: Language): string {
+  if (value === null || value === undefined || value === '') return '';
+  const d = value instanceof Date ? value : new Date(String(value));
+  if (Number.isNaN(d.getTime())) return '';
+  const s = clean(
+    new Intl.DateTimeFormat(appLocale(lang), {
+      hour: 'numeric',
+      minute: '2-digit',
+    }).format(d),
+  );
+  return `\u2066${s}\u2069`;
+}
+
+/**
+ * The date AND the time as one string — the absolute value behind a
+ * `<time datetime="…">`, for a tooltip or a `title` attribute.
+ */
+export function formatDateAndTime(value: unknown, lang: Language): string {
+  const parts = dateParts(value, lang, 'short');
+  if (!parts) return '';
+  const time = formatTime(value, lang).replace(/[\u2066\u2069]/g, '');
+  const date = `${parts.day} ${parts.month} ${parts.year}`;
+  return time ? `${date}, ${time}` : date;
+}
+
 /** The one and only money formatter. */
 export function formatCurrency(
   value: unknown,

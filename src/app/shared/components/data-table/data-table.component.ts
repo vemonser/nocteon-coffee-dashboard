@@ -8,7 +8,7 @@ import {
   getSortedRowModel,
 } from '@tanstack/angular-table';
 
-import { ActionsCellComponent } from '../../ui/actions-cell/actions-cell.component';
+import { ActionsCellComponent, type RowMenuAction } from '../../ui/actions-cell/actions-cell.component';
 import { StatusCellComponent } from '../../ui/status-cell/status-cell.component';
 import { DeletedBadgeComponent } from '../../ui/deleted-badge/deleted-badge.component';
 import { TranslocoPipe } from '@jsverse/transloco';
@@ -16,9 +16,10 @@ import { MoneyPipe } from '../../pipes/money.pipe';
 import { LocalizedDateComponent } from '../../ui/localized-date/localized-date.component';
 import { ImageCellComponent } from '../../ui/image-cell/image-cell.component';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucideStar } from '@ng-icons/lucide';
+import { lucideStar, lucideCreditCard, lucideBanknote } from '@ng-icons/lucide';
 import { ColorCellComponent } from '../color-cell/color-cell.component';
 import { MainCellComponent } from './main-cell/main-cell.component';
+import { StatusBadgeComponent } from '../../ui/status-badge/status-badge.component';
 import { LanguageService } from '../../../core/i18n/language.service';
 
 export interface TableSortEvent {
@@ -28,8 +29,8 @@ export interface TableSortEvent {
 
 @Component({
   selector: 'app-data-table',
-  imports: [ImageCellComponent, ActionsCellComponent, StatusCellComponent, DeletedBadgeComponent, LocalizedDateComponent, ColorCellComponent, MainCellComponent, NgIcon, TranslocoPipe, RouterModule, MoneyPipe],
-  providers: [provideIcons({ lucideStar })],
+  imports: [ImageCellComponent, ActionsCellComponent, StatusCellComponent, DeletedBadgeComponent, LocalizedDateComponent, ColorCellComponent, MainCellComponent, StatusBadgeComponent, NgIcon, TranslocoPipe, RouterModule, MoneyPipe],
+  providers: [provideIcons({ lucideStar, lucideCreditCard, lucideBanknote })],
   templateUrl: './data-table.component.html',
   styleUrl: './data-table.component.css',
 })
@@ -46,6 +47,10 @@ export class DataTableComponent {
     Status: 'common.status',
     'Created At': 'common.createdAt',
     'created at': 'common.createdAt',
+    // The orders list writes the header in sentence case ("Created at"), and
+    // the map is keyed by the RAW header string — without this entry the
+    // header stayed English in Arabic.
+    'Created at': 'common.createdAt',
     Created: 'common.createdAt',
     'Updated At': 'common.updatedAt',
     'Deleted At': 'common.deletedAt',
@@ -101,6 +106,12 @@ export class DataTableComponent {
     // Trash tail column header (already mapped above).
     'الاسم بالعربية': 'common.nameArabic',
     'الاسم بالإنجليزية': 'common.nameEnglish',
+    // The orders list has its own vocabulary: the order number, the order
+    // status and the method are order concepts, not generic ones, and they
+    // must read the same in the list, the detail page and the export.
+    'Order #': 'orders.columns.orderNumber',
+    'Order status': 'orders.columns.status',
+    'Payment status': 'orders.columns.paymentStatus',
   };
 
   headerKey(raw: unknown): string {
@@ -185,6 +196,16 @@ export class DataTableComponent {
   hasView = output<boolean>();
   initialSort = input<TableSortEvent | null>(null);
 
+  /**
+   * The row's overflow menu (see `RowMenuAction`).
+   *
+   * A list with more than two row actions shows one and hides the rest in a
+   * kebab menu, so the actions column stays narrow.
+   */
+  menuActions = input<RowMenuAction[]>([]);
+  /** The chosen menu entry, with the row it belongs to. */
+  menuAction = output<{ id: string; item: any }>();
+
   // NEW: Generic action permissions & labels
   editPermission = input<string>('category:update');
   deletePermission = input<string>('category:delete');
@@ -241,6 +262,36 @@ export class DataTableComponent {
    * plain span that does nothing would be worse than no control at all.
    */
   navigableHref = input<(row: any) => any[] | null>(() => null);
+
+  /**
+   * A router command for ONE cell of a row, by column id.
+   *
+   * The generic way for a list to make a cell a real link: the table knows
+   * nothing about orders, products or carts — the page says which column is
+   * a link and where it points. A cell with a command renders a real anchor
+   * (middle-click and open-in-new-tab work).
+   */
+  cellHref = input<(columnId: string, row: any) => any[] | null>(() => null);
+
+  /**
+   * The whole row is clickable.
+   *
+   * The click is ignored when it lands on something interactive inside the
+   * row (a link, a button, a checkbox), so the row's own link and its row
+   * actions keep working.
+   */
+  clickableRows = input<boolean>(false);
+
+  /**
+   * A click on a clickable row. Interactive elements inside the row are
+   * left alone.
+   */
+  onRowClick(event: MouseEvent, row: any): void {
+    if (!this.clickableRows()) return;
+    const target = event.target as HTMLElement | null;
+    if (target?.closest('a, button, input, select, textarea, label, [role="button"]')) return;
+    this.rowClick.emit(row);
+  }
 
   /**
    * Detail-page command for a row. Returns null when the table is not
@@ -384,6 +435,10 @@ export class DataTableComponent {
     // lists build a `name_${lang}` column; `name_en` stays unsized so it keeps
     // absorbing the leftover, `name_ar` gets a share of the row instead.
     name_ar: '28%',
+    // The carts list scans the CUSTOMER, not the email. It had no width of
+    // its own, so it shared the leftover with the other unsized columns and
+    // ended up NARROWER than the actions column it is supposed to dominate.
+    userFullName: '28%',
     // 120px, not 104px: "Created at" + its sort arrow needs ~82px inside
     // px-4 padding (32px), so at 104px the header rendered as "Created... ↓".
     // Everything that shares these three ids gets the same fix.
@@ -410,6 +465,12 @@ export class DataTableComponent {
     itemCount: '80px',
     paymentStatus: '120px',
     paymentMethod: '130px',
+    // The orders list needs a WIDER method column: "Cash on delivery" /
+    // "الدفع عند الاستلام" must never be truncated, so the column is budgeted
+    // for the longest label in both languages.
+    orderNumber: '130px',
+    customer: '150px',
+    createdAtTime: '150px',
     scopeType: '110px',
     discountType: '110px',
     discountValue: '100px',
@@ -448,6 +509,22 @@ export class DataTableComponent {
 
   isNumericColumn(columnId: string): boolean {
     return DataTableComponent.NUMERIC_COLUMNS.has(columnId);
+  }
+
+  /**
+   * Is this column end-aligned?
+   *
+   * The default is START alignment for every column, because the header must
+   * sit exactly over its values (see the note in the stylesheet). A column
+   * opts into end alignment with `meta: { align: 'end' }` — the orders list
+   * does that for its Total column, where the numbers read better against a
+   * shared edge.
+   *
+   * The header AND the cell are switched by the same flag; a mismatch is
+   * what the earlier price column had.
+   */
+  isEndAligned(columnDef?: ColumnDef<any, any>): boolean {
+    return (columnDef?.meta as { align?: string } | undefined)?.align === 'end';
   }
 
   /**
