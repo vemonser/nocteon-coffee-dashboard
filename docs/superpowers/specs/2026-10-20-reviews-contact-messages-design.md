@@ -18,21 +18,22 @@ Both pages were screenshotted and reviewed. The findings fall into three buckets
 2. **Workflow** — the reviews that need a decision (pending) are visually indistinguishable
    from the settled ones; there is no bulk approve, no product/date filter, no statistics;
    the card view burns a full page for 15 rows. Contact messages have no read/unread state at
-   all, no thread, no row actions, and the admin must open every single message to know what
-   it says.
-3. **Truthfulness** — the "Send reply" button implies the customer received an email. It does
-   not: `ContactService.reply()` only flips `is_replied` and stores the text. The button must
-   either send a real email or say plainly that it does not.
+   all, no row actions, and the admin must open every single message to know what it says.
+3. **Truthfulness** — the reply button implies the customer received an email. It does not:
+   `ContactService.reply()` only flips `is_replied` and stores the text. The page must say
+   plainly that the reply is saved, not sent.
 
 The two pages are also the only admin lists in the app that are **not** built on the shared
 `app-data-table` / `app-order-dialog` / `app-localized-date` / `app-status-badge` vocabulary
 that the Orders page established. That divergence is the root cause of most of the visual
 findings: the pattern was reinvented, and the reinvented pattern drifted.
 
-**Outcome:** both pages become the same console the Orders page already is — same table, same
-dialog, same tokens, same glossary, same date helper — and the backend gains the endpoints the
-missing workflow requires. Nothing is faked: where the API cannot yet do something, the API
-grows.
+**Outcome:** the reviews page becomes the moderation console the workflow needs — same table,
+same tokens, same glossary, same date helper as the Orders page, with the backend gaining the
+endpoints the missing workflow requires. The contact messages page becomes the same kind of
+console **without touching the backend at all**: the six contact endpoints (plus the
+dashboard's unread-count stat) already carry a read-and-reply loop, and the page's job is to
+make that loop legible, fast and honest.
 
 ---
 
@@ -249,35 +250,44 @@ Rebuilt on `app-data-table`. Structure, top to bottom:
 
 ### 5.3 Contact messages page (`features/contact-messages`)
 
+A small console: see what has not been read, open it, write a reply, move on. No backend work
+(§4.3), no thread, no archive.
+
 1. **Header** — `Contact messages` (sentence case) + subtitle `5 messages · 2 unread`
-   (`5 رسالة · 2 غير مقروءة`).
-2. **Tabs** — `All (5) | Unread (2) | Replied (1) | Archived (0)`. `?status=unread` (the
-   dashboard "Needs attention" link) selects Unread.
-3. **Toolbar** — state select, date range, search.
+   (`5 رسائل · 2 غير مقروءة`). The unread number comes from
+   `GET /api/dashboard/stats/unread-contact-count`, so it is the true count.
+2. **Tabs** — `All (5) | Unread (2) | Replied (1)`. The **Unread** tab loads from
+   `/api/dashboard/contact-messages/unread` (server-side, so the list and the count agree);
+   the others load from the main endpoint. `?status=unread` (the dashboard "Needs attention"
+   link) selects Unread. The **Replied** tab filters the loaded set by `isReplied`.
+3. **Toolbar** — search (server-side, as today), plus a state filter and a date range
+   (client-side over the loaded set, as §4.3 records).
 4. **List** — one clickable row per message:
    - an unread **dot** and a **bold** subject for unread messages; normal weight for read ones;
    - the sender name and email, an initials avatar;
-   - a **one-line preview** of the message under the subject;
-   - the state chip (`Unread` / `Replied` / `Archived`);
+   - a **one-line preview** of the message under the subject — the admin must not have to open
+     every message to know what it says;
+   - the state chip (`Unread` / `Replied`);
    - a **relative** date (`2 hours ago`) with the absolute value in the tooltip.
    The whole row is a button: clickable, keyboard-focusable, with a visible focus ring and a
    hover state.
-5. **Row actions** — Mark as read / Mark as unread, Archive, Delete (confirms), Copy email.
-   Plus a **bulk** selection with the same actions.
+5. **Row actions** — Copy email, Delete (behind a confirmation). Opening a message marks it
+   read, so there is no separate "mark as read" button to press. A **bulk** selection offers
+   one action: **mark as read**, using the existing per-row endpoint.
 6. **Message dialog** — the shared `app-order-dialog` shell:
    - the subject, with the **date as dimmed text under it** (no seconds, not a pill);
-   - the **thread**: the original message, then each reply below it with its date and the
-     admin who sent it;
+   - the sender's name and email, with a copy button;
+   - the original message;
+   - the stored reply, if there is one, as one muted block labelled **"Your reply"** — there
+     is no date and no author to show, because the API does not record them (§4.3);
    - the reply box: a textarea with a placeholder (`Reply to ahmed@test.com`), **autofocus**,
      and quick reply templates;
-   - the **Send reply** button: disabled with an explanation when the box is empty; a loading
-     state while sending; a success toast on success; **on failure the reply stays saved**, an
-     explicit error, and a Retry action. The button's label states that an email is sent.
-   - opening a message marks it read; the dialog header carries Mark as unread, Archive and
-     Delete; **Escape** closes; focus is trapped inside and restored to the trigger on close.
-7. **Customer link** — when `GET /contact-messages/{id}/customer` matches, the dialog shows
-   `Ahmed Hassan · 3 orders` linking to that customer's orders. Nothing is shown when there is
-   no match.
+   - the honesty line under the box: *"The reply is saved in the dashboard. It is not emailed
+     to the customer."* / *"الرد بيتحفظ في الداشبورد، مش بيتبعت إيميل للعميل."*;
+   - the **Save reply** button: disabled with an explanation when the box is empty; a loading
+     state while saving; a success toast ("Reply saved") on success; an explicit error and a
+     Retry action on failure.
+   - **Escape** closes; focus is trapped inside and restored to the trigger on close.
 
 ### 5.4 i18n and glossary
 
@@ -285,7 +295,7 @@ Rebuilt on `app-data-table`. Structure, top to bottom:
   counts, column headers, filter labels, statuses, dialog strings, reply templates, toasts,
   empty and error states.
 - The `contactMessages` namespace grows from 5 keys to a full set.
-- `docs/glossary.md` gains rows 10–20; `src/app/core/i18n/i18n-keys.spec.ts` gains a
+- `docs/glossary.md` gains rows 10–22; `src/app/core/i18n/i18n-keys.spec.ts` gains a
   `REVIEWS_MESSAGES_GLOSSARY` block that fails when a concept drifts to a second term in
   either locale (the pattern `ORDERS_GLOSSARY` already uses).
 - `DataTableComponent.HEADER_KEYS` gains the new headers, so no column header is left in
@@ -336,11 +346,12 @@ Each criterion is verifiable and is the unit of evidence.
 ### Contact messages
 
 - **AC-C1** — Unread messages are marked with a dot and a bold subject; read messages are not.
-- **AC-C2** — The tabs read `All | Unread | Replied | Archived` with live counts.
-- **AC-C3** — The count line reads `5 messages · 2 unread` / `5 رسالة · 2 غير مقروءة`.
+- **AC-C2** — The tabs read `All | Unread | Replied` with live counts; the unread count is the
+  server's, not an estimate.
+- **AC-C3** — The count line reads `5 messages · 2 unread` / `5 رسائل · 2 غير مقروءة`.
 - **AC-C4** — Every row shows a one-line preview of the message under the subject.
-- **AC-C5** — Each row offers mark read/unread, archive, delete (with confirmation) and copy
-  email; the same actions work on a bulk selection.
+- **AC-C5** — Each row offers copy email and delete (with confirmation); a bulk selection offers
+  mark as read.
 - **AC-C6** — The whole row is clickable and keyboard-operable, with a visible focus ring and a
   hover state.
 - **AC-C7** — The English page title is `Contact messages` (sentence case).
@@ -348,17 +359,17 @@ Each criterion is verifiable and is the unit of evidence.
 - **AC-C9** — The date is relative (`2 hours ago`) with the absolute value in the tooltip.
 - **AC-C10** — The dialog shows the date as dimmed text under the subject, with no seconds and
   no pill.
-- **AC-C11** — The dialog shows a thread: the original message, then the replies with their
-  date and the name of the admin who sent them.
-- **AC-C12** — Sending a reply sends an email to the customer; the button and the success
-  message say so. When the email fails, the reply is still saved, the failure is stated
-  explicitly, and a Retry action is offered.
+- **AC-C11** — The dialog shows the original message, and the stored reply (if any) as a block
+  labelled "Your reply" / "ردّك".
+- **AC-C12** — **The page never claims the customer was emailed.** The button reads
+  `Save reply` / `حفظ الرد`, a line under the box states that the reply is saved in the
+  dashboard and is not emailed, and the success toast says "Reply saved" / "تم حفظ الرد".
 - **AC-C13** — The reply box has a placeholder, receives focus when the dialog opens, and the
-  send button is disabled with an explanation while the box is empty.
-- **AC-C14** — Opening a message marks it read; the dialog offers Mark as unread, Archive and
-  Delete; Escape closes it; focus is trapped inside and returned to the trigger.
-- **AC-C15** — When the sender is a known customer, a link `Ahmed Hassan · 3 orders` opens
-  their orders; nothing is shown otherwise.
+  save button is disabled with an explanation while the box is empty.
+- **AC-C14** — Opening a message marks it read; the dialog offers Delete; Escape closes it;
+  focus is trapped inside and returned to the trigger.
+- **AC-C15** — A failed save shows an explicit error and a Retry action, and the typed text is
+  still in the box.
 
 ### Shared
 
@@ -382,17 +393,17 @@ Each criterion is verifiable and is the unit of evidence.
 | Layer | What runs |
 |---|---|
 | Unit (Vitest) | `i18n-keys.spec.ts` (new glossary block), `locale-format.spec.ts`, any new spec for the relative-time helper and `app-user-avatar`. |
-| Integration (backend) | New endpoint tests for the bulk approval, the thread, the archive/unread transitions and the reply-with-failed-email path. |
-| E2E (Playwright) | Reviews: default tab, filter, bulk approve, drawer. Messages: unread tab, open → read, reply → thread, mark unread, archive. |
+| Integration (backend) | New endpoint tests for the review bulk approval, the statistics endpoint and the order linkage. |
+| E2E (Playwright) | Reviews: default tab, filter, bulk approve, drawer. Messages: unread tab, open → read, save a reply, copy email, delete. |
 | Browser evidence | Screenshots of **both pages × 4 cells** (light/dark × EN/AR), the table, the grid, the drawer, the message dialog, and the empty states. |
 | Gate | The Evidence Gate (`/factory/evidence`) must exit 0 with every criterion mapped to a real artifact. |
 
 The backend runs at `localhost:8080` and the dashboard at `localhost:4200`; both are already up
 in this environment, so the browser pass is a live run against real data, not a mock.
 
-**Order of work:** backend schema + endpoints → backend seed → shared dashboard components →
-Reviews page → Contact messages page → i18n/glossary → browser evidence → gate. The dashboard
-work for a page cannot land before the endpoint it consumes exists.
+**Order of work:** backend endpoints → backend seed → shared dashboard components → Reviews page
+→ Contact messages page → i18n/glossary → browser evidence → gate. The dashboard work for a page
+cannot land before the endpoint it consumes exists.
 
 ### Delivery phases
 
@@ -401,11 +412,11 @@ written against these phases; each phase ends green and is separately revertible
 
 | Phase | Content | Ends when |
 |---|---|---|
-| **1 — Backend foundation** | `V110` migration, the contact-message thread/archive/unread/customer endpoints, the review stats/bulk/date endpoints, `orderId`/`orderNumber` on `ReviewResponse`. | The new endpoints answer correctly against the running backend; backend tests pass. |
-| **2 — Seed cleanup** | `V111`: Brazil Mogiana's image, reviews moved off the admin account. | The database holds no party photo and no admin-authored review. |
+| **1 — Backend foundation** | The review stats / bulk-approval / date-filter endpoints and `orderId`/`orderNumber` on `ReviewResponse`. **Nothing for contact messages.** | The new endpoints answer correctly against the running backend; backend tests pass. |
+| **2 — Seed cleanup** | `V110`: Brazil Mogiana's image, reviews moved off the admin account. | The database holds no party photo and no admin-authored review. |
 | **3 — Shared dashboard** | `app-user-avatar`, the shared relative-time helper, `app-data-table` header/width entries and direction isolation, the `approved` status badge, the sidebar focus fix. | The shared components are in place; the sidebar shows no persistent ring. |
 | **4 — Reviews page** | The full rebuild: tabs, toolbar, statistics, table, grid, bulk, drawer. | AC-R1…AC-R18 pass with browser evidence in 4 cells. |
-| **5 — Contact messages page** | The full rebuild: tabs, list, row actions, dialog, thread, customer link, email-sending reply. | AC-C1…AC-C15 pass with browser evidence in 4 cells. |
+| **5 — Contact messages page** | The rebuild: tabs, list, preview line, row actions, the dialog, the reply box, and the honesty line. Frontend only. | AC-C1…AC-C15 pass with browser evidence in 4 cells. |
 | **6 — Terminology & gate** | Glossary rows, `i18n-keys.spec.ts` pins, the full i18n set, the Evidence Gate. | The gate exits 0 with every criterion mapped to an artifact. |
 
 ---
@@ -414,18 +425,18 @@ written against these phases; each phase ends green and is separately revertible
 
 | Risk | Mitigation |
 |---|---|
-| The reply now sends real email to real addresses. The seed addresses are `@test.com` (reserved, non-routable), but a live message would reach a real inbox. | The email only fires from an explicit admin action on a real message. Seed data uses `@test.com`. The failure path is non-destructive. |
-| Adding a replies table changes the shape of `ContactResponse`; other consumers (the dashboard's unread count, notifications) read it. | The legacy `is_replied` flag is kept and kept in sync; the existing endpoints keep their response shape plus an additive `replies` field. |
 | `productSlug` changes from `LIKE` to exact match — any caller relying on partial matching changes behaviour. | The dashboard is the only caller of the dashboard endpoint, and it moves to a dedicated `search` parameter in the same change. |
 | The sidebar focus move touches global navigation behaviour for every admin. | Keyboard focus is moved to the page `<h1>`, which is the documented pattern; the change is covered by an E2E assertion that the active nav item carries no ring. |
-| A new `is_archived` column changes the unarchived default for existing rows. | The column defaults to `FALSE`; the migration backfills nothing because every existing row is unarchived. |
 | The pending tab as the default changes what a moderator sees first. | Intended: pending is the work queue. `?status=pending` still lands on the same tab, and the Orders-style URL state makes the tab explicit in the address. |
+| The **Replied** tab and the date-range filter are client-side over the loaded set, so they see only the loaded page(s), not every message. | The page loads with a raised size (100, the API's maximum) and the limitation is recorded in the code. The counts that matter — total and unread — come from the server. |
+| The reply is stored but never emailed, and an admin might expect otherwise. | This is the whole point of AC-C12: the button, the line under the box and the toast all say the reply is saved, not sent. |
+| The `reply_content` column holds one reply; a second reply overwrites the first. | Accepted for a console this small. The dialog labels the stored text "Your reply" so it is never mistaken for a thread. |
 
 ## 9. Rollback
 
-- **Backend:** the migration is additive. Rolling back means dropping `contact_message_replies`
-  and the three columns; the reply text already in `contact_message_replies` would be lost, so
-  the deployment keeps the previous `reply_content` column in place for one release.
+- **Backend:** the only change is additive — a new statistics endpoint, a new bulk endpoint, two
+  nullable fields on `ReviewResponse` and one seed migration. Rolling back is a code revert; the
+  seed migration is guarded and idempotent.
 - **Dashboard:** both pages are behind their routes; reverting the two feature directories
   restores the previous behaviour. The shared components are additive except the sidebar focus
   change, which is a single, separately revertible commit.
