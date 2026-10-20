@@ -35,9 +35,12 @@ import {
   ProductWithScoreResponse,
 } from '../../models/brewing-method.model';
 import { PageResponse } from '../../../../core/models/api-response.model';
+import { NotifyService } from '../../../../core/notify/notify.service';
 import { catchError, map, of, switchMap, tap } from 'rxjs';
 
 import { TranslocoPipe } from '@jsverse/transloco';
+import { MoneyPipe } from '../../../../shared/pipes/money.pipe';
+import { PagerComponent } from '../../../../shared/components/pager/pager.component';
 type SortField = 'score' | 'createdAt';
 type SortDir = 'asc' | 'desc';
 type EditMode = 'view' | 'edit';
@@ -46,6 +49,7 @@ type EditMode = 'view' | 'edit';
   selector: 'app-brewing-method-detail',
   standalone: true,
   imports: [
+    PagerComponent,
     CommonModule,
     ReactiveFormsModule,
     HlmCardImports,
@@ -59,6 +63,7 @@ type EditMode = 'view' | 'edit';
     HlmSelectImports,
     NgIcon,
     TranslocoPipe,
+    MoneyPipe,
   ],
   providers: [
     provideIcons({
@@ -79,6 +84,7 @@ type EditMode = 'view' | 'edit';
   templateUrl: './brewing-method-detail.component.html',
 })
 export class BrewingMethodDetailComponent implements OnInit {
+  private notify = inject(NotifyService);
   route = inject(ActivatedRoute);
   router = inject(Router);
   private fb = inject(FormBuilder);
@@ -164,8 +170,9 @@ export class BrewingMethodDetailComponent implements OnInit {
         direction: this.sortDir(),
       })
       .pipe(
-        catchError(() =>
-          of({
+        catchError((err) => {
+          this.notify.apiError(err, 'notify.errorFallback', 'Could not load products');
+          return of({
             data: {
               content: [],
               totalElements: 0,
@@ -175,8 +182,8 @@ export class BrewingMethodDetailComponent implements OnInit {
               first: true,
               last: true,
             },
-          } as any),
-        ),
+          } as any);
+        }),
       )
       .subscribe((res) => {
         this.productsLoading.set(false);

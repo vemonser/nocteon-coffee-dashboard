@@ -153,7 +153,7 @@ export class ShippingZoneDetailComponent implements OnInit {
     };
 
     this.shippingZoneService
-      .update(String(id), req)
+      .update(id, req)
       .pipe(
         tap(() => this.saving.set(false)),
         catchError((err) => {
@@ -181,7 +181,7 @@ export class ShippingZoneDetailComponent implements OnInit {
     const id = this.zone()?.id;
     if (id == null) return;
 
-    this.shippingZoneService.delete(String(id)).subscribe({
+    this.shippingZoneService.delete(id).subscribe({
       next: () => this.router.navigate(['/dashboard/shipping-zones']),
       error: (err) => this.error.set(err?.error?.message || 'Failed to delete'),
     });

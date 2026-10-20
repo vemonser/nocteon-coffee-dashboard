@@ -23,11 +23,13 @@ import { BroadcastService } from '../services/broadcast.service';
 import { map, Observable } from 'rxjs';
 import { PageResponse } from '../../../core/models/api-response.model';
 import { TranslocoPipe } from '@jsverse/transloco';
+import { PagerComponent } from '../../../shared/components/pager/pager.component';
 
 @Component({
   selector: 'app-broadcast-list',
   standalone: true,
   imports: [
+    PagerComponent,
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
@@ -64,6 +66,7 @@ export class BroadcastListComponent extends BaseListComponent<BroadcastResponse,
     return this.broadcastService
       .getAll({
         page: this.currentPage(),
+        size: this.pageSize(),
         search: this.searchQuery || undefined,
         sort: this.currentSort,
         direction: this.currentDirection,

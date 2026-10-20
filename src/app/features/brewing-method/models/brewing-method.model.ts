@@ -7,7 +7,7 @@ export interface BrewingMethodTranslation {
 }
 
 export interface BrewingMethodResponse {
-  id: string;
+  id: number;
   slug: string;
   createdAt?: string;
   translations: BrewingMethodTranslation[];
@@ -19,9 +19,10 @@ export interface BrewingMethodRequest {
 }
 
 export interface DashboardBrewingMethodResponse {
-  id: string;
+  id: number;
   slug: string;
   createdAt?: string;
+  deletedAt?: string;
   translations: BrewingMethodTranslation[];
 }
 

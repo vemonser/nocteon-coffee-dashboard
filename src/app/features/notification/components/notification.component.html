@@ -4,40 +4,41 @@
       hlmPopoverTrigger
       (click)="toggleDropdown()"
       hlmBtn
-      variant="outline"
-      class="border-0 hover:text-primary px-0"
+      variant="ghost"
+      size="icon"
+      class="rounded-full! text-muted-foreground hover:text-foreground"
       [attr.aria-label]="'notifications.title' | transloco"
     >
-      <ng-icon name="heroBell" size="20" class="text-foreground" />
+      <ng-icon name="heroBell" size="20" />
       @if (notificationService.unreadCount() > 0) {
-        <span class="absolute top-0 -inset-e-1 w-2 h-2 bg-red-500 rounded-full"></span>
+        <span class="absolute top-0 -inset-e-1 w-2 h-2 bg-primary rounded-full"></span>
       }
     </button>
-    <hlm-popover-content class="w-screen! max-w-80! p-0 right-6!" *hlmPopoverPortal="let ctx">
+    <hlm-popover-content class="w-screen! max-w-80! p-0 end-6!" *hlmPopoverPortal="let ctx">
       <!-- الهيدر ثابت، برّه الـ scroll -->
       <div class="flex justify-between items-center p-3 border-b">
-        <span class="font-semibold">Notifications</span>
+        <span class="font-medium">{{ 'notifications.title' | transloco }}</span>
         @if (notificationService.unreadCount() > 0) {
-          <button (click)="markAllAsRead()" class="text-sm text-blue-600">Mark all as read</button>
+          <button (click)="markAllAsRead()" class="text-sm text-primary">{{ 'notifications.markAllAsRead' | transloco }}</button>
         }
       </div>
 
       <!-- الـ list بس هي اللي بتعمل scroll -->
       <div class="max-h-80 overflow-y-auto" smoothScroll>
         @if (loading()) {
-          <div class="p-4 text-center text-gray-400">{{ 'dashboard.loading' | transloco }}</div>
+          <div class="p-4 text-center text-muted-foreground">{{ 'dashboard.loading' | transloco }}</div>
         } @else if (notifications().length === 0) {
-          <div class="p-4 text-center text-gray-400">{{ 'notifications.noNotifications' | transloco }}</div>
+          <div class="p-4 text-center text-muted-foreground">{{ 'notifications.noNotifications' | transloco }}</div>
         } @else {
           @for (n of notifications(); track n.id; let last = $last) {
             <hlm-popover-header
               class="p-4"
-              [class]="n.read ? 'bg-accent' : 'bg-white'"
+              [class]="n.read ? 'bg-accent' : 'bg-card'"
               (click)="onNotificationClick(n)"
             >
               <div hlmPopoverTitle>{{ n.title }}</div>
               <p hlmPopoverDescription>{{ n.message }}</p>
-              <p hlmPopoverDescription>{{ n.createdAt | date: 'short' }}</p>
+              <p hlmPopoverDescription><app-localized-date [value]="n.createdAt" [fallback]="''" /></p>
             </hlm-popover-header>
             @if (!last) {
               <hlm-separator class="divider" role="separator" aria-label="Divider" />
@@ -49,7 +50,7 @@
         <!-- فوتر ثابت كمان، فيه لينك للصفحة الكاملة -->
         <hlm-separator class="divider" role="separator" aria-label="Divider" />
         <div class="m-1">
-          <button hlmBtn variant="default" class="hover:bg-primary/90 py-2 h-auto w-full">
+          <button hlmBtn variant="default" class="hover:bg-primary/90 w-full">
             <a routerLink="/dashboard/notifications"> View All Notifications </a>
           </button>
         </div>

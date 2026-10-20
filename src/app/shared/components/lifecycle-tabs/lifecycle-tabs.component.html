@@ -1,8 +1,18 @@
 <div
   role="tablist"
   [attr.aria-label]="tablistLabel()"
-  class="inline-flex items-center gap-1 rounded-lg border bg-muted p-1"
+  #tablist
+  class="relative inline-flex h-[var(--control-height)] items-center gap-1 rounded-[var(--radius-control)] border bg-muted p-[3px]"
 >
+  <!--
+    Sliding selected-state pill — the "layoutId" element. One pill travels between
+    the two tabs and resizes to fit each label, so the selection reads as a single
+    persistent element moving rather than two backgrounds cross-fading. Positioned
+    by JS (getBoundingClientRect, so it is RTL-safe) and animated with a CSS
+    transition. `pointer-events: none` keeps it from swallowing clicks.
+  -->
+  <span #pill class="tab-pill" aria-hidden="true"></span>
+
   <button
     #trigger
     role="tab"
@@ -11,25 +21,20 @@
     [attr.aria-selected]="selected() === 'active'"
     [attr.aria-controls]="'lifecycle-panel'"
     [tabIndex]="selected() === 'active' ? 0 : -1"
-    class="inline-flex h-8 items-center gap-2 rounded-md px-3 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-    [class.bg-background]="selected() === 'active'"
+    class="relative z-10 inline-flex h-[var(--control-height-compact)] items-center gap-2 rounded-[var(--radius-control)] px-3 text-[length:var(--control-font-size)] leading-[var(--control-line-height)] font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
     [class.text-foreground]="selected() === 'active'"
-    [class.shadow-sm]="selected() === 'active'"
     [class.text-muted-foreground]="selected() !== 'active'"
     (click)="select('active')"
     (keydown)="onKeydown($event, 0)"
   >
     {{ activeLabel() }}
     <div
-      class="rounded-full bg-muted px-1.5 text-[11px] flex aspect-square items-center justify-center font-semibold tabular-nums"
-      [class.bg-primary]="selected() === 'active'"
-      [class.text-primary-foreground]="selected() === 'active'"
+      class="rounded-full bg-muted px-1.5 text-xs flex aspect-square items-center justify-center font-medium tabular-nums"
     >
-    <span class="leading-1">
-      {{ activeCount() ?? '\u2014' }}
-    </span>
-    
-</div>
+      <span class="leading-1">
+        {{ (activeCount() ?? 0) > 9 ? '9+' : (activeCount() ?? '\u2014') }}
+      </span>
+    </div>
     @if (activeCountLabel()) {
       <div class="">
         <span class="sr-only">{{ activeCountLabel() }}</span>
@@ -45,21 +50,17 @@
     [attr.aria-selected]="selected() === 'trash'"
     [attr.aria-controls]="'lifecycle-panel'"
     [tabIndex]="selected() === 'trash' ? 0 : -1"
-    class="inline-flex h-8 items-center gap-2 rounded-md px-3 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-    [class.bg-background]="selected() === 'trash'"
+    class="relative z-10 inline-flex h-[var(--control-height-compact)] items-center gap-2 rounded-[var(--radius-control)] px-3 text-[length:var(--control-font-size)] leading-[var(--control-line-height)] font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
     [class.text-foreground]="selected() === 'trash'"
-    [class.shadow-sm]="selected() === 'trash'"
     [class.text-muted-foreground]="selected() !== 'trash'"
     (click)="select('trash')"
     (keydown)="onKeydown($event, 1)"
   >
     {{ trashLabel() }}
     <span
-      class="rounded-full bg-muted px-1.5 text-[11px] font-semibold tabular-nums"
-      [class.bg-primary]="selected() === 'trash'"
-      [class.text-primary-foreground]="selected() === 'trash'"
+      class="rounded-full bg-muted px-1.5 text-xs font-medium tabular-nums"
     >
-      {{ trashCount() ?? '\u2014' }}
+      {{ (trashCount() ?? 0) > 9 ? '9+' : (trashCount() ?? '\u2014') }}
     </span>
     @if (trashCountLabel()) {
       <span class="sr-only">{{ trashCountLabel() }}</span>

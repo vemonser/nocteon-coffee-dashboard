@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterModule, RouterOutlet } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { NgIcon, provideIcons } from '@ng-icons/core';
@@ -7,10 +7,10 @@ import { lucideSettings } from '@ng-icons/lucide';
 import { ChangeDetectionStrategy, ViewEncapsulation } from '@angular/core';
 
 import { AuthService } from '../../core/auth/auth.service';
-import { LanguageService } from '../../core/i18n/language.service';
-import { ThemeService } from '../../core/theme/theme.service';
+import { NotifyService } from '../../core/notify/notify.service';
 
 import { HlmSidebarImports } from '@spartan-ng/helm/sidebar';
+import { HlmToaster } from '@spartan-ng/helm/sonner';
 import { AppSidebarComponent } from './sidebar/app-sidebar.component';
 import { NavigationBarComponent } from './navigation-bar/navigation-bar.component';
 
@@ -23,6 +23,7 @@ import { TranslocoPipe } from '@jsverse/transloco';
     FormsModule,
 
     HlmSidebarImports,
+    HlmToaster,
     AppSidebarComponent,
     NavigationBarComponent,
   ],
@@ -41,18 +42,7 @@ import { TranslocoPipe } from '@jsverse/transloco';
 })
 export class LayoutComponent {
   protected readonly auth = inject(AuthService);
-  protected readonly language = inject(LanguageService);
-  private readonly theme = inject(ThemeService);
-
-  readonly isDark = computed(() => this.theme.theme() === 'dark');
-
-  toggleTheme() {
-    this.theme.toggleTheme();
-  }
-
-  toggleLanguage() {
-    this.language.toggle();
-  }
+  private readonly notify = inject(NotifyService);
 
   getInitial(): string {
     const name = this.auth.getFullName();
@@ -60,6 +50,10 @@ export class LayoutComponent {
   }
 
   onLogout() {
-    this.auth.logout().subscribe();
+    // Fire the POST; on failure the session stays alive — say so instead of
+    // navigating the user into the logged-out state as if it worked.
+    this.auth.logout().subscribe({
+      error: (err) => this.notify.apiError(err, 'notify.logoutFailed', 'Logout failed'),
+    });
   }
 }

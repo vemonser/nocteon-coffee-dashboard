@@ -117,7 +117,7 @@ export class PromoCodeDetailComponent implements OnInit {
             return of(null);
           }
           this.loading.set(true);
-          return this.promoCodeService.getById(id).pipe(
+          return this.promoCodeService.getById(Number(id)).pipe(
             catchError((err) => {
               this.error.set(err?.error?.message || 'Failed to load promo code');
               return of(null);
@@ -229,7 +229,7 @@ export class PromoCodeDetailComponent implements OnInit {
     };
 
     this.promoCodeService
-      .update(String(id), req, undefined, 'json')
+      .update(id, req, undefined, 'json')
       .pipe(
         tap(() => this.saving.set(false)),
         catchError((err) => {
@@ -255,7 +255,7 @@ export class PromoCodeDetailComponent implements OnInit {
     const id = this.promoCode()?.id;
     if (!id) return;
 
-    this.promoCodeService.delete(String(id)).subscribe({
+    this.promoCodeService.delete(id).subscribe({
       next: () => this.router.navigate(['/dashboard/promo-codes']),
       error: (err) => this.error.set(err?.error?.message || 'Failed to delete'),
     });

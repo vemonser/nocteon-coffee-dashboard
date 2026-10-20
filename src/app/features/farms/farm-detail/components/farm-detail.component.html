@@ -1,9 +1,9 @@
-<div class="flex flex-col gap-6 p-6 max-w-7xl mx-auto">
+<div class="flex flex-col gap-6 p-6 max-w-[1440px] mx-auto w-full">
   @if (loading()) {
     <div class="space-y-6">
       <div class="h-9 w-24 bg-muted animate-pulse rounded-md"></div>
       <div class="flex flex-col lg:flex-row gap-6">
-        <div class="w-full lg:w-1/3 aspect-square bg-muted animate-pulse rounded-2xl"></div>
+        <div class="w-full lg:w-1/3 aspect-square bg-muted animate-pulse rounded-xl"></div>
         <div class="flex-1 space-y-4">
           <div class="h-8 w-1/3 bg-muted animate-pulse rounded-md"></div>
           <div class="h-4 w-full bg-muted animate-pulse rounded-md"></div>
@@ -14,23 +14,25 @@
 
   @if (error() && !loading()) {
     <div class="flex flex-col items-center justify-center py-20 text-center">
-      <ng-icon name="lucideImage" class="size-16 text-muted-foreground opacity-20 mb-4" />
-      <h2 class="text-xl font-semibold text-destructive">{{ error() }}</h2>
+      <ng-icon name="lucideAlertCircle" class="size-16 text-muted-foreground opacity-20 mb-4" />
+      <h2 class="text-xl font-medium text-destructive">{{ error() }}</h2>
       <button hlmBtn variant="outline" class="mt-4" (click)="goBack()">
-        <ng-icon name="lucideArrowLeft" class="mr-2 size-4" />
+        <ng-icon name="lucideArrowLeft" class="me-2 size-4 rtl:rotate-180" />
         {{ 'farms.detail.backToFarms' | transloco }}
       </button>
     </div>
   }
 
   @if (farm() && !loading() && form) {
-    <div class="flex items-center justify-between">
-      <button hlmBtn variant="ghost" size="sm" (click)="goBack()">
-        <ng-icon name="lucideArrowLeft" class="mr-2 size-4" />
+    <div class="flex flex-wrap items-center gap-3">
+      <button hlmBtn variant="ghost" size="sm" (click)="goBack()" [attr.aria-label]="'farms.detail.back' | transloco">
+        <ng-icon name="lucideArrowLeft" class="size-4 rtl:rotate-180" />
         {{ 'farms.detail.back' | transloco }}
       </button>
 
-      <div class="flex items-center gap-2">
+      <h1 class="text-xl font-medium tracking-tight">{{ getTranslationName('en') }}</h1>
+
+      <div class="ms-auto flex items-center gap-2">
         @if (isEditing()) {
           <button hlmBtn variant="outline" size="sm" (click)="cancelEdit()" [disabled]="saving()">
             <ng-icon name="lucideX" class="mr-2 size-4" />
@@ -42,7 +44,7 @@
             } @else {
               <ng-icon name="lucideCheck" class="mr-2 size-4" />
             }
-            {{ saving() ? ('common.saving' | transloco) : ('common.save' | transloco) }}
+            {{ saving() ? ('common.saving' | transloco) : (isNew() ? ('farms.add' | transloco) : ('common.save' | transloco)) }}
           </button>
         } @else {
           <button hlmBtn variant="outline" size="sm" (click)="startEdit()">
@@ -57,8 +59,8 @@
       </div>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <hlm-card class="overflow-hidden lg:col-span-1">
+    <div class="grid grid-cols-1 items-start gap-4 lg:grid-cols-3">
+      <hlm-card class="overflow-hidden pt-0 self-stretch">
         <div class="aspect-square bg-muted relative">
           @if (farm()!.imageUrl) {
             <img [src]="farm()!.imageUrl" [alt]="getTranslationName('en')" class="h-full w-full object-cover" />
@@ -70,258 +72,195 @@
         </div>
       </hlm-card>
 
-      <hlm-card class="lg:col-span-2">
-        <form [formGroup]="form">
-          <div hlmCardHeader>
-            <div class="flex items-center justify-between">
-              <hlm-badge variant="outline">
-                <ng-icon name="lucideTag" class="mr-1 size-3" />
-                {{ farm()!.slug }}
-              </hlm-badge>
-              <hlm-badge variant="outline">
-                <ng-icon name="lucideMapPin" class="mr-1 size-3" />
-                {{ farm()!.originSlug }}
-              </hlm-badge>
-            </div>
-          </div>
-
-          <div hlmCardContent class="space-y-6">
-            <!-- Origin Slug -->
-            <div class="space-y-1.5">
-              <label hlmLabel>{{ 'farms.detail.originSlug' | transloco }}</label>
-              @if (isEditing()) {
-                <input hlmInput formControlName="originSlug" type="text" class="w-full" />
-              } @else {
-                <div class="text-sm px-3 py-2 rounded-md bg-muted/50">{{ farm()!.originSlug }}</div>
-              }
-            </div>
-
-            <hlm-separator />
-
-            <div formArrayName="translations">
-              @for (group of translationsArray.controls; track $index; let i = $index) {
-                <div [formGroupName]="i" class="space-y-4" [class.mb-6]="$index === 0">
-                  <div class="flex items-center gap-2">
+      <div class="flex flex-col gap-4 lg:col-span-2">
+        <hlm-card>
+          <form [formGroup]="form">
+            <div hlmCardContent class="p-6">
+              <div class="grid gap-6 sm:grid-cols-2" formArrayName="translations">
+                @if ((translationsArray()?.controls?.length ?? 0) > 0) {
+                  @for (group of translationsArray()!.controls; track $index) {
+                  <div [formGroupName]="$index" class="space-y-4">
                     <hlm-badge variant="outline">
                       {{ translationHelper.getLangLabel(group.get('language')?.value) }}
                     </hlm-badge>
-                  </div>
-
-                  <div class="space-y-1.5">
-                    <label hlmLabel>{{ 'common.name' | transloco }}</label>
-                    @if (isEditing()) {
-                      <input hlmInput formControlName="name" type="text" class="w-full" />
-                    } @else {
-                      <div class="text-lg font-medium px-3 py-2 rounded-md bg-muted/50">
-                        {{ group.get('name')?.value || '—' }}
-                      </div>
-                    }
-                  </div>
-
-                  <div class="space-y-1.5">
-                    <label hlmLabel>{{ 'farms.detail.country' | transloco }}</label>
-                    @if (isEditing()) {
-                      <input hlmInput formControlName="country" type="text" class="w-full" />
-                    } @else {
-                      <div class="text-sm px-3 py-2 rounded-md bg-muted/50">
-                        {{ group.get('country')?.value || '—' }}
-                      </div>
-                    }
-                  </div>
-
-                  <div class="space-y-1.5">
-                    <label hlmLabel>{{ 'common.description' | transloco }}</label>
-                    @if (isEditing()) {
-                      <textarea hlmInput formControlName="description" rows="3" class="w-full resize-none"></textarea>
-                    } @else {
-                      <div class="text-muted-foreground leading-relaxed px-3 py-2 rounded-md bg-muted/50 min-h-20">
-                        {{ group.get('description')?.value || ('farms.detail.noDescription' | transloco) }}
-                      </div>
-                    }
-                  </div>
-
-                  @if ($index === 0) { <hlm-separator /> }
-                </div>
-              }
-            </div>
-          </div>
-        </form>
-      </hlm-card>
-    </div>
-
-    <!-- Products section: نفس بنية الكاتيجوري بالحرف -->
-    <div class="space-y-4">
-      <div class="flex items-center justify-between">
-        <h2 class="text-xl font-bold tracking-tight flex items-center gap-2">
-          <ng-icon name="lucidePackage" class="size-5" />
-          {{ 'farms.detail.products' | transloco }}
-          <hlm-badge variant="secondary">{{ productsPage()?.totalElements ?? 0 }}</hlm-badge>
-        </h2>
-        <div class="flex items-center gap-2">
-          <div class="flex items-center rounded-md border bg-card p-1">
-            <button hlmBtn [variant]="productViewMode() === 'list' ? 'default' : 'ghost'" size="icon" class="size-8" (click)="toggleProductView('list')">
-              <ng-icon name="lucideList" class="size-4" />
-            </button>
-            <button hlmBtn [variant]="productViewMode() === 'grid' ? 'default' : 'ghost'" size="icon" class="size-8" (click)="toggleProductView('grid')">
-              <ng-icon name="lucideGrid3x3" class="size-4" />
-            </button>
-          </div>
-        </div>
-      </div>
-
-      @if (productsLoading()) {
-        @if (productViewMode() === 'list') {
-          <div class="rounded-md border">
-            <div class="h-16 border-b bg-muted/50 animate-pulse" *ngFor="let _ of [1,2,3,4]"></div>
-          </div>
-        } @else {
-          <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            <hlm-card *ngFor="let _ of [1,2,3,4]" class="overflow-hidden">
-              <div class="aspect-video bg-muted animate-pulse"></div>
-              <div hlmCardContent class="p-4 space-y-2">
-                <div class="h-4 bg-muted animate-pulse rounded w-3/4"></div>
-                <div class="h-3 bg-muted animate-pulse rounded w-1/2"></div>
-              </div>
-            </hlm-card>
-          </div>
-        }
-      }
-
-      @if (!productsLoading() && productViewMode() === 'list') {
-        @if (products().length > 0) {
-          <div class="rounded-md border bg-card">
-            <table hlmTable>
-              <thead hlmTableHeader>
-                <tr hlmTableRow>
-                  <th hlmTableHead class="w-16">{{ 'farms.detail.image' | transloco }}</th>
-                  <th hlmTableHead>{{ 'common.name' | transloco }}</th>
-                  <th hlmTableHead>{{ 'common.price' | transloco }}</th>
-                  <th hlmTableHead>{{ 'common.type' | transloco }}</th>
-                  <th hlmTableHead>{{ 'common.discount' | transloco }}</th>
-                  <th hlmTableHead>{{ 'common.featured' | transloco }}</th>
-                  <th hlmTableHead>{{ 'common.status' | transloco }}</th>
-                  <th hlmTableHead class="text-right">{{ 'common.actions' | transloco }}</th>
-                </tr>
-              </thead>
-              <tbody hlmTableBody>
-                @for (product of products(); track product.slug) {
-                  <tr hlmTableRow class="cursor-pointer hover:bg-muted/50" (click)="router.navigate(['/dashboard/products', product.slug])">
-                    <td hlmTableCell>
-                      @if (product.primaryImageUrl) {
-                        <img [src]="product.primaryImageUrl" class="w-10 h-10 rounded-md object-cover" />
+                    <div class="space-y-1.5">
+                      <label hlmLabel>{{ 'common.name' | transloco }}</label>
+                      @if (isEditing()) {
+                        <input hlmInput formControlName="name" type="text" class="w-full" [dir]="translationHelper.getLangDir(group.get('language')?.value)" />
                       } @else {
-                        <div class="w-10 h-10 rounded-md bg-muted flex items-center justify-center">
-                          <ng-icon name="lucideImage" class="size-4 text-muted-foreground" />
+                        <div class="text-lg font-medium px-3 py-2 rounded-md bg-muted/50">
+                          {{ group.get('name')?.value || '—' }}
                         </div>
                       }
-                    </td>
-                    <td hlmTableCell class="font-medium">{{ product.name }}</td>
-                    <td hlmTableCell class="text-muted-foreground">
-                      @if (product.minPrice === product.maxPrice) {
-                        {{ product.minPrice | currency }}
+                    </div>
+                    <div class="space-y-1.5">
+                      <label hlmLabel>{{ 'farms.detail.country' | transloco }}</label>
+                      @if (isEditing()) {
+                        <input hlmInput formControlName="country" type="text" class="w-full" [dir]="translationHelper.getLangDir(group.get('language')?.value)" />
                       } @else {
-                        {{ product.minPrice | currency }} - {{ product.maxPrice | currency }}
+                        <div class="text-sm px-3 py-2 rounded-md bg-muted/50">
+                          {{ group.get('country')?.value || '—' }}
+                        </div>
                       }
-                    </td>
-                    <td hlmTableCell class="text-muted-foreground text-sm">{{ product.productType }}</td>
-                    <td hlmTableCell class="text-muted-foreground">
-                      @if (product.discountPercentage) {
-                        <hlm-badge variant="destructive" class="text-xs">-{{ product.discountPercentage }}%</hlm-badge>
-                      } @else { <span>-</span> }
-                    </td>
-                    <td hlmTableCell>
-                      @if (product.featured) {
-                        <hlm-badge variant="default" class="text-xs">★ {{ 'common.featured' | transloco }}</hlm-badge>
-                      } @else { <span>-</span> }
-                    </td>
-                    <td hlmTableCell>
-                      @if (product.isActive) {
-                        <hlm-badge variant="default" class="text-xs">{{ 'common.active' | transloco }}</hlm-badge>
+                    </div>
+                    <div class="space-y-1.5">
+                      <label hlmLabel>{{ 'common.description' | transloco }}</label>
+                      @if (isEditing()) {
+                        <textarea hlmInput formControlName="description" rows="3" class="w-full resize-none" [dir]="translationHelper.getLangDir(group.get('language')?.value)"></textarea>
                       } @else {
-                        <hlm-badge variant="secondary" class="text-xs">{{ 'common.inactive' | transloco }}</hlm-badge>
+                        <div class="text-muted-foreground leading-relaxed px-3 py-2 rounded-md bg-muted/50 min-h-20">
+                          {{ group.get('description')?.value || ('farms.detail.noDescription' | transloco) }}
+                        </div>
                       }
-                    </td>
-                    <td hlmTableCell class="text-right">
-                      <button hlmBtn variant="ghost" size="icon" class="size-8"
-                        (click)="$event.stopPropagation(); router.navigate(['/dashboard/products', product.slug])">
-                        <ng-icon name="lucideEye" class="size-4" />
-                      </button>
-                    </td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
-        } @else {
-          <div class="text-center py-12 text-muted-foreground">
-            <ng-icon name="lucidePackage" class="mx-auto size-12 opacity-20 mb-4" />
-            <p class="text-lg font-medium">{{ 'farms.detail.noProducts' | transloco }}</p>
-          </div>
-        }
-      }
-
-      @if (!productsLoading() && productViewMode() === 'grid') {
-        <div class="grid gap-4 grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
-          @for (product of products(); track product.slug) {
-            <hlm-card class="group overflow-hidden transition-all hover:shadow-lg cursor-pointer"
-              (click)="router.navigate(['/dashboard/products', product.slug])">
-              <div class="relative aspect-video overflow-hidden bg-muted">
-                @if (product.primaryImageUrl) {
-                  <img [src]="product.primaryImageUrl" [alt]="product.name" class="h-full w-full object-cover transition-transform group-hover:scale-105" />
-                } @else {
-                  <div class="flex h-full items-center justify-center text-muted-foreground">
-                    <ng-icon name="lucideImage" class="size-12 opacity-20" />
+                    </div>
                   </div>
                 }
-                @if (!product.isActive) {
-                  <div class="absolute top-2 right-2">                    <hlm-badge variant="secondary">{{ 'common.inactive' | transloco }}</hlm-badge></div>
+              }
+            </div>
+
+            <hlm-separator class="my-6" />
+
+              <div class="space-y-1.5">
+                <label hlmLabel>{{ 'farms.detail.originSlug' | transloco }}</label>
+                @if (isEditing()) {
+                  <input hlmInput formControlName="originSlug" type="text" class="w-full" />
+                } @else {
+                  <div class="text-sm px-3 py-2 rounded-md bg-muted/50">{{ farm()!.originSlug }}</div>
                 }
               </div>
-              <div hlmCardContent class="p-4">
-                <div class="flex items-center justify-between gap-2">
-                  <h3 class="font-semibold text-sm truncate">{{ product.name }}</h3>
-                  @if (product.featured) { <hlm-badge variant="default" class="text-xs shrink-0">★</hlm-badge> }
-                </div>
-                <p class="text-xs text-muted-foreground truncate">{{ product.shortDescription }}</p>
-                <p class="text-sm text-muted-foreground mt-1">
-                  @if (product.minPrice === product.maxPrice) {
-                    {{ product.minPrice | currency }}
-                  } @else {
-                    {{ product.minPrice | currency }} - {{ product.maxPrice | currency }}
-                  }
-                  @if (product.discountPercentage) {
-                    <span class="text-destructive font-medium ml-1">-{{ product.discountPercentage }}%</span>
-                  }
-                </p>
-              </div>
-            </hlm-card>
-          } @empty {
-            <div class="col-span-full text-center py-12 text-muted-foreground">
-              <ng-icon name="lucidePackage" class="mx-auto size-12 opacity-20 mb-4" />
-            <p class="text-lg font-medium">{{ 'farms.detail.noProducts' | transloco }}</p>
             </div>
-          }
-        </div>
-      }
+          </form>
+        </hlm-card>
 
-      @if (productsPage() && !productsLoading() && productsPage()!.totalPages > 1) {
-        <div class="flex items-center justify-between">
-          <span class="text-sm text-muted-foreground">
-            {{ 'common.showing' | transloco }} {{ productsPage()!.page * productsPage()!.size + 1 }} -
-            {{ Math.min((productsPage()!.page + 1) * productsPage()!.size, productsPage()!.totalElements) }}
-            {{ 'common.of' | transloco }} {{ productsPage()!.totalElements }}
-          </span>
-          <div class="flex items-center gap-2">
-            <button hlmBtn variant="outline" size="sm" [disabled]="productsPage()!.first" (click)="goToProductPage(currentProductPage() - 1)">
-              <ng-icon name="lucideChevronLeft" class="size-4" />
-            </button>
-            <span class="text-sm text-muted-foreground px-2">{{ 'common.page' | transloco }} {{ productsPage()!.page + 1 }} {{ 'common.of' | transloco }} {{ productsPage()!.totalPages }}</span>
-            <button hlmBtn variant="outline" size="sm" [disabled]="productsPage()!.last" (click)="goToProductPage(currentProductPage() + 1)">
-              <ng-icon name="lucideChevronRight" class="size-4" />
-            </button>
+        <hlm-card>
+          <div hlmCardHeader class="px-6 pb-0">
+            <h2 class="text-sm font-medium text-muted-foreground">{{ 'farms.detail.infoTitle' | transloco }}</h2>
           </div>
-        </div>
-      }
+          <div hlmCardContent class="grid gap-4 p-6 pt-0 sm:grid-cols-3">
+            <div>
+              <p class="text-xs text-muted-foreground">{{ 'common.slug' | transloco }}</p>
+              <p class="mt-1 text-sm"><bdi class="font-mono">{{ farm()!.slug }}</bdi></p>
+            </div>
+            <div>
+              <p class="text-xs text-muted-foreground">{{ 'farms.detail.originSlug' | transloco }}</p>
+              <p class="mt-1 text-sm"><bdi class="font-mono">{{ farm()!.originSlug }}</bdi></p>
+            </div>
+            <div>
+              <p class="text-xs text-muted-foreground">{{ 'common.id' | transloco }}</p>
+              <p class="mt-1 text-sm tabular-nums"><bdi>{{ farm()!.id }}</bdi></p>
+            </div>
+          </div>
+        </hlm-card>
+      </div>
     </div>
   }
+
+  @if (error() && !loading()) {
+    <div class="flex flex-col items-center justify-center py-20 text-center">
+      <ng-icon name="lucideAlertCircle" class="size-16 text-muted-foreground opacity-20 mb-4" />
+      <h2 class="text-xl font-medium text-destructive">{{ error() }}</h2>
+      <button hlmBtn variant="outline" class="mt-4" (click)="goBack()">
+        <ng-icon name="lucideArrowLeft" class="me-2 size-4 rtl:rotate-180" />
+        {{ 'farms.detail.backToFarms' | transloco }}
+      </button>
+    </div>
+  }
+
+  @if (!loading() && !farm() && !error()) {
+    <div class="flex flex-col items-center justify-center py-20 text-center">
+      <ng-icon name="lucideImage" class="size-16 text-muted-foreground opacity-20 mb-4" />
+      <h2 class="text-xl font-medium text-muted-foreground">{{ 'farms.detail.notFound' | transloco }}</h2>
+      <button hlmBtn variant="outline" class="mt-4" (click)="goBack()">
+        <ng-icon name="lucideArrowLeft" class="me-2 size-4 rtl:rotate-180" />
+        {{ 'farms.detail.backToFarms' | transloco }}
+      </button>
+    </div>
+  }
+
+  <!-- Products -->
+  <div class="space-y-4">
+    <div class="flex items-center justify-between">
+      <h2 class="text-xl font-medium tracking-tight flex items-center gap-2">
+        <ng-icon name="lucidePackage" class="size-5" />
+        {{ 'farms.detail.products' | transloco }}
+        <hlm-badge variant="secondary" class="tabular-nums">{{ productsPage()?.totalElements ?? 0 }}</hlm-badge>
+      </h2>
+
+      @if (productsPage()?.totalElements) {
+        <button
+          hlmBtn
+          variant="link"
+          size="sm"
+          [routerLink]="['/dashboard/products']"
+          [queryParams]="{ farm: farm()?.slug }"
+        >
+          {{ 'farms.detail.viewAllProducts' | transloco }}
+        </button>
+      }
+    </div>
+
+    @if (productsLoading()) {
+      <div class="rounded-md border">
+        <div class="h-16 border-b bg-muted/50 animate-pulse" *ngFor="let _ of [1, 2, 3, 4]"></div>
+      </div>
+    } @else if (productsError()) {
+      <div
+        role="alert"
+        class="view-fade rounded-lg border border-destructive/40 bg-destructive-soft px-4 py-6 text-center"
+      >
+        <p class="font-medium text-destructive">
+          {{ 'farms.detail.productsError' | transloco }}
+        </p>
+        <button hlmBtn variant="outline" size="sm" class="mt-3" (click)="retryProducts()">
+          {{ 'common.retry' | transloco }}
+        </button>
+      </div>
+    } @else if (products().length > 0) {
+      <app-data-table
+        [data]="products()"
+        [columns]="columns()"
+        [showId]="false"
+        [loading]="productsLoading()"
+        [selectable]="false"
+        [navigableColumn]="'slug'"
+        [navigableHref]="productHref"
+        [showEdit]="false"
+        [showView]="false"
+        [showDelete]="false"
+        [showRestore]="false"
+        [showPermanentDelete]="false"
+      />
+    } @else {
+      <div class="col-span-full text-center py-12 text-muted-foreground">
+        <ng-icon name="lucidePackage" class="mx-auto size-12 opacity-20 mb-4" />
+        <p class="text-lg font-medium">{{ 'farms.detail.noProducts' | transloco }}</p>
+        <button
+          *hasPermission="'product:create'"
+          hlmBtn
+          variant="outline"
+          size="sm"
+          class="mt-4"
+          [routerLink]="['/dashboard/products/new']"
+        >
+          <ng-icon name="lucidePlus" class="me-2 size-4" />
+          {{ 'products.add' | transloco }}
+        </button>
+      </div>
+    }
+
+    @if (productsPage() && !productsLoading()) {
+      <app-pager
+        [page]="productsPage()!.page"
+        [size]="productsPage()!.size"
+        [totalElements]="productsPage()!.totalElements"
+        [totalPages]="productsPage()!.totalPages"
+        [first]="productsPage()!.first"
+        [last]="productsPage()!.last"
+        [showPageSize]="true"
+        [sizeOptions]="productPageSizeOptions"
+        (sizeChange)="onProductPageSizeChange($event)"
+        (pageChange)="goToProductPage($event)"
+      />
+    }
+  </div>
 </div>

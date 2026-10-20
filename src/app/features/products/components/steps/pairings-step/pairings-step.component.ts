@@ -5,7 +5,8 @@ import { ProductWizardStateService } from '../../product-wizard/product-wizard-s
 import { PairingService } from '../../../../pairing/services/pairing.service';
 import { PairingResponse } from '../../../../pairing/models/pairing.model';
 import { TranslocoPipe } from '@jsverse/transloco';
- 
+import { NotifyService } from '../../../../../core/notify/notify.service';
+
 /**
  * Step 5 — Pairings (multi-select from existing lookup entity).
  * Identical pattern to TastingNotesStepComponent — kept as a separate
@@ -23,12 +24,15 @@ import { TranslocoPipe } from '@jsverse/transloco';
 export class PairingsStepComponent {
   protected state = inject(ProductWizardStateService);
   private pairingService = inject(PairingService);
+  private notify = inject(NotifyService);
 
   allPairings = signal<PairingResponse[]>([]);
 
   constructor() {
     this.pairingService.getAll({ size: 200 }).subscribe({
       next: (res) => this.allPairings.set(res.data.content),
+      error: (err) =>
+        this.notify.apiError(err, 'notify.errorFallback', 'Could not load pairings'),
     });
   }
 

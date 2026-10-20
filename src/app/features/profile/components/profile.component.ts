@@ -12,6 +12,7 @@ import { HlmLabelImports } from '@spartan-ng/helm/label';
 import { TranslocoPipe } from '@jsverse/transloco';
 
 import { AuthService } from '../../../core/auth/auth.service';
+import { NotifyService } from '../../../core/notify/notify.service';
 
 @Component({
   selector: 'app-profile',
@@ -41,6 +42,7 @@ export class ProfileComponent {
   protected readonly auth = inject(AuthService);
   private readonly fb = inject(FormBuilder);
   private readonly router = inject(Router);
+  private readonly notify = inject(NotifyService);
 
   protected readonly saving = signal(false);
   protected readonly successMessage = signal('');
@@ -83,8 +85,9 @@ export class ProfileComponent {
         this.saving.set(false);
         this.successMessage.set('Profile updated successfully');
       },
-      error: () => {
+      error: (err) => {
         this.saving.set(false);
+        this.notify.apiError(err, 'notify.errorFallback', 'Could not update profile');
       },
     });
   }
@@ -109,8 +112,9 @@ export class ProfileComponent {
         this.successMessage.set('Password changed successfully');
         this.passwordForm.reset();
       },
-      error: () => {
+      error: (err) => {
         this.saving.set(false);
+        this.notify.apiError(err, 'notify.errorFallback', 'Could not change password');
       },
     });
   }
@@ -129,8 +133,9 @@ export class ProfileComponent {
           this.saving.set(false);
           this.successMessage.set('Avatar updated successfully');
         },
-        error: () => {
+        error: (err) => {
           this.saving.set(false);
+          this.notify.apiError(err, 'notify.errorFallback', 'Could not update avatar');
         },
       });
     };

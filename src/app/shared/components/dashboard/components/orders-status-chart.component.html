@@ -1,4 +1,9 @@
-﻿<div class="bg-surface rounded-md p-4 shadow">
-  <h3 class="font-semibold mb-2">{{ 'dashboard.charts.ordersByStatus' | transloco }}</h3>
-  <apx-chart #chartObj [series]="series" [chart]="chart" [labels]="labels" [colors]="colors" />
+﻿<div class="bg-card rounded-md border p-4">
+  <div class="mb-2">
+    <app-widget-header
+      [title]="'dashboard.paidByStatus' | transloco"
+      [infoTitle]="'dashboard.refundedIsFlag' | transloco"
+    />
+  </div>
+  <apx-chart #chartObj [series]="series" [chart]="chart" [labels]="labels" [colors]="colors" [legend]="legend" />
 </div>

@@ -1,0 +1,6 @@
+/* The chart card draws with SVG; the only thing the stylesheet owns is
+   the direct-label legibility (white on a coloured slice) and the fact
+   that the hole is the card colour, never a darker disc. */
+:host {
+  display: block;
+}

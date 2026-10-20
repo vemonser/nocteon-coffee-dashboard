@@ -28,7 +28,9 @@ import { CategoryResponse } from '../../categories/models/category.model';
 import { JournalPostRequest, JournalPostResponse } from '../models/journal.model';
 import { QuillEditorComponent, QuillModule } from 'ngx-quill';
 
-import { TranslocoPipe } from '@jsverse/transloco';type Lang = 'en' | 'ar';
+import { TranslocoPipe } from '@jsverse/transloco';
+import { NotifyService } from '../../../core/notify/notify.service';
+type Lang = 'en' | 'ar';
 
 @Component({
   selector: 'app-journal-form',
@@ -84,19 +86,29 @@ export class JournalFormComponent implements OnInit {
     return this.form.get('translations') as FormArray;
   }
 
+  private notify = inject(NotifyService);
+
   ngOnInit(): void {
     const slug = this.route.snapshot.paramMap.get('slug');
     this.editingSlug.set(slug);
 
     this.buildForm();
 
+    let preloadError = false;
+    const warnPreload = () => {
+      // Only the POST load reports its own not-found; a failed categories/products
+      // preload must not look like an empty store — say so once.
+      if (preloadError) return;
+      preloadError = true;
+      this.notify.apiError(null, 'notify.errorFallback', 'Could not load categories or products');
+    };
     forkJoin({
       categories: this.categoryService
         .getAll({ isActive: true })
-        .pipe(catchError(() => of({ data: { content: [] } }))),
+        .pipe(catchError(() => (warnPreload(), of({ data: { content: [] } })))),
       products: this.productService
         .getAll({ size: 200 })
-        .pipe(catchError(() => of({ data: { content: [] } }))),
+        .pipe(catchError(() => (warnPreload(), of({ data: { content: [] } })))),
       post: slug ? this.journalService.getBySlug(slug).pipe(catchError(() => of(null))) : of(null),
     }).subscribe(({ categories, products, post }) => {
       this.categories.set(categories.data.content);

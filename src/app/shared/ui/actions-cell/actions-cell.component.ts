@@ -1,6 +1,7 @@
 import { Component, input, output } from '@angular/core';
 import { HasPermissionDirective } from '../../../core/auth/permission.directive';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
@@ -24,6 +25,7 @@ import { BrnTooltip } from '@spartan-ng/brain/tooltip';
     HlmButtonImports,
     BrnTooltip,
     HlmTooltipImports,
+    RouterModule,
   ],
   providers: [
     provideIcons({
@@ -62,6 +64,14 @@ export class ActionsCellComponent {
   showRestore = input<boolean>(false);
   showPermanentDelete = input<boolean>(false);
   hasView = input<boolean>(true);
+
+  /**
+   * RouterLink command for the row's detail page. When set, the edit action
+   * renders as a real anchor (middle-click / open-in-new-tab work) instead of a
+   * button — used by lists whose detail page is the single edit surface.
+   */
+  editHref = input<any[] | null>(null);
+
   view = output<any>();
   edit = output<any>();
   delete = output<any>();

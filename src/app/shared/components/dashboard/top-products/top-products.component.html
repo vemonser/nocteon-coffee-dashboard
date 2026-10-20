@@ -1,29 +1,49 @@
-﻿<div class="flex flex-col gap-3">
+<!-- The column header says what the number IS. -->
+<div class="mb-2 flex items-baseline justify-between gap-2 text-xs text-muted-foreground">
+  <span>{{ 'dashboard.topProducts.product' | transloco }}</span>
+  <span>{{ 'dashboard.topProducts.units' | transloco }}</span>
+</div>
+
+<ul class="flex flex-col gap-2">
   @for (product of products; track product.name; let i = $index) {
-    <div class="flex items-center gap-3 rounded-md p-2 hover:bg-accent/50 transition-colors">
-      <span class="text-sm font-medium text-muted-foreground w-4">{{ i + 1 }}</span>
-      
-      <hlm-avatar class="size-10 rounded-md">
-        @if (product.imageUrl) {
-          <img [src]="product.imageUrl" [alt]="product.name" hlmAvatarImage />
-        }
-        <span class="bg-primary/10 text-primary text-xs font-bold" hlmAvatarFallback>
+    <li class="flex items-center gap-3">
+      <span class="w-4 shrink-0 text-xs text-muted-foreground tabular-nums">{{ i + 1 }}</span>
+
+      @if (product.imageUrl) {
+        <img
+          [src]="product.imageUrl"
+          [alt]="product.name"
+          class="size-9 shrink-0 rounded-md object-cover"
+        />
+      } @else {
+        <span
+          class="flex size-9 shrink-0 items-center justify-center rounded-md bg-primary/10 text-xs font-medium text-primary"
+        >
           {{ product.name.charAt(0) }}
         </span>
-      </hlm-avatar>
-      
-      <div class="flex-1 min-w-0">
-        <p class="text-sm font-medium truncate">{{ product.name }}</p>
-        <p class="text-xs text-muted-foreground">{{ product.quantitySold | number }} {{ 'common.sold' | transloco }}</p>
-      </div>
-      
-      <div class="text-right">
-        <p class="text-sm font-medium">${{ product.price | number:'1.2-2' }}</p>
-      </div>
-    </div>
+      }
+
+      <a
+        class="min-w-0 flex-1"
+        [routerLink]="['/dashboard/products', product.slug]"
+      >
+        <span class="block truncate text-sm font-medium">{{ product.name }}</span>
+        <!-- The share bar: units, relative to the best seller. -->
+        <span class="mt-1 block h-1.5 w-full rounded-full bg-muted">
+          <span
+            class="block h-full rounded-full bg-chart-1"
+            [style.width.%]="share(product.quantitySold)"
+          ></span>
+        </span>
+      </a>
+
+      <span class="shrink-0 text-sm tabular-nums text-muted-foreground">
+        {{ product.quantitySold | plural: 'dashboard.countSold' }}
+      </span>
+    </li>
   } @empty {
-    <div class="text-center py-8 text-muted-foreground">
+    <li class="py-8 text-center text-muted-foreground">
       {{ 'dashboard.topProducts.noProducts' | transloco }}
-    </div>
+    </li>
   }
-</div>
+</ul>

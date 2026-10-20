@@ -14,9 +14,9 @@
   @if (error() && !loading()) {
     <div class="flex flex-col items-center justify-center py-20 text-center">
       <ng-icon name="lucideTag" class="size-16 text-muted-foreground opacity-20 mb-4" />
-      <h2 class="text-xl font-semibold text-destructive">{{ error() }}</h2>
+      <h2 class="text-xl font-medium text-destructive">{{ error() }}</h2>
       <button hlmBtn variant="outline" class="mt-4" (click)="goBack()">
-        <ng-icon name="lucideArrowLeft" class="mr-2 size-4" />
+        <ng-icon name="lucideArrowLeft" class="me-2 size-4 rtl:rotate-180" />
         {{ 'common.backTo' | transloco }} {{ 'processingMethods.title' | transloco }}
       </button>
     </div>
@@ -27,7 +27,7 @@
     <!-- Top Bar -->
     <div class="flex items-center  justify-between">
       <button class="cursor-pointer" hlmBtn variant="ghost" size="sm" (click)="goBack()">
-        <ng-icon name="lucideArrowLeft" class="mr-2 size-4" />
+        <ng-icon name="lucideArrowLeft" class="me-2 size-4 rtl:rotate-180" />
         {{ 'processingMethods.detail.back' | transloco }}
       </button>
 

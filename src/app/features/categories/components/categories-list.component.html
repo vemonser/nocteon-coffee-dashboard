@@ -1,5 +1,5 @@
 <div
-  class="flex flex-col gap-4 p-6"
+  class="flex flex-col gap-4 p-6 max-w-[1440px] mx-auto w-full"
   id="lifecycle-panel"
   role="tabpanel"
   [attr.aria-labelledby]="'lifecycle-tab-' + listView()"
@@ -139,14 +139,14 @@
       </span>
       <div class="ms-auto flex items-center gap-2">
         @if (!isTrash()) {
-          <button hlmBtn variant="outline" size="sm" (click)="bulkSoftDelete()">
+          <button hlmBtn variant="outline" size="sm" (click)="requestBulkTrash()">
             {{ 'categories.trash.bulkMoveToTrash' | transloco }}
           </button>
         } @else {
           <button hlmBtn variant="outline" size="sm" (click)="bulkRestore()">
             {{ 'categories.trash.bulkRestore' | transloco }}
           </button>
-          <button hlmBtn variant="destructive" size="sm" (click)="bulkPermanentDelete()">
+          <button hlmBtn variant="destructive" size="sm" (click)="requestBulkPermanentDelete()">
             {{ 'categories.trash.deletePermanently' | transloco }}
           </button>
         }
@@ -180,7 +180,7 @@
       the empty state repeats underneath it.
     -->
     @if (loading() || items().length > 0) {
-      <div class="view-fade rounded-md border bg-card overflow-hidden" [class.opacity-60]="loading()">
+      <div class="view-fade rounded-md border bg-card overflow-hidden">
         <!--
           `navigableColumn` is what makes a row's slug open that entity's detail
           page. It stays empty in the Trash tab on purpose: `Category` extends
@@ -195,7 +195,7 @@
           [data]="items()"
           [columns]="columns()"
           [showId]="showId()"
-          [loading]="false"
+          [loading]="loading()"
           [selectable]="isTrashAllowed()"
           [selectedIds]="selection()"
           [rowId]="rowIdOf"
@@ -203,6 +203,7 @@
           [selectRowLabel]="'categories.trash.selectRow' | transloco"
           [initialSort]="{ column: currentSort, direction: currentDirection }"
           [navigableColumn]="isTrash() ? '' : 'slug'"
+          [navigableHref]="rowHref.bind(this)"
           [minWidth]="isTrash() ? '760px' : '720px'"
           [showEdit]="!isTrash()"
           [showView]="false"
@@ -215,8 +216,8 @@
           [permanentDeleteLabel]="'categories.trash.deletePermanently'"
           (selectionChange)="onSelectionChange($event)"
           (toggleAllChange)="toggleAll($event)"
-          (edit)="openEditDialog($event)"
-          (delete)="softDelete($event)"
+          (edit)="onEditAction($event)"
+          (delete)="confirmDelete($event)"
           (restore)="restore($event)"
           (permanentDelete)="openPermanentDelete($event)"
           (sortChange)="onSortChange($event)"
@@ -273,19 +274,13 @@
       </div>
     }
 
-    <!-- Loading skeleton (first load only — never blanks content already on screen) -->
-    @if (loading() && items().length === 0) {
-      <div class="view-fade rounded-md border bg-card p-4" aria-hidden="true">
-        @for (row of [1, 2, 3, 4, 5]; track row) {
-          <div class="mb-3 h-9 animate-pulse rounded bg-muted last:mb-0"></div>
-        }
-      </div>
-      <p class="sr-only" role="status">{{ 'common.loading' | transloco }}</p>
-    }
+    <!-- Loading skeleton: the data-table renders stub rows in the table's own
+         shape (see data-table.component.html); no separate skeleton block here. -->
   }
 
-  <!-- Pagination: hidden when everything fits on one page -->
-  @if (pageData() && !loading() && pageData()!.totalPages > 1) {
+  <!-- Pagination: numbered pages + per-page select; pager hides itself when
+       there is nothing to page (totalElements 0) or the strip (totalPages 1) -->
+  @if (pageData() && !loading()) {
     <app-pager
       class="view-fade"
       [page]="pageData()!.page"
@@ -294,29 +289,150 @@
       [totalPages]="pageData()!.totalPages"
       [first]="pageData()!.first"
       [last]="pageData()!.last"
+      [showPageSize]="true"
+      [sizeOptions]="pageSizeOptions"
       (pageChange)="goToPage($event)"
+      (sizeChange)="onPageSizeChange($event)"
     />
   }
 </div>
 
-<!-- Permanent delete: type the slug to confirm. The backend contract
-     DELETE /dashboard/{entity}/{id}/permanent (204 on success) is wired in
-     BaseCrudService.deletePermanently → BaseListComponent.confirmPermanentDelete. -->
-<app-confirm-typed-dialog
-  [open]="!!permanentDeleteTarget()"
-  [expected]="permanentDeleteTarget() ? confirmToken(permanentDeleteTarget()!) : ''"
-  [title]="'categories.trash.deletePermanently' | transloco"
-  [description]="'categories.trash.permanentDescription' | transloco"
-  [typedLabel]="'categories.trash.typeSlugToConfirm' | transloco"
-  [mismatchMessage]="'categories.trash.slugMismatch' | transloco"
-  [confirmLabel]="'categories.trash.deletePermanently' | transloco"
-  [notice]="'categories.trash.permanentUnavailable' | transloco"
-  [pending]="permanentDeletePending()"
-  (confirmed)="confirmPermanentDelete($event)"
-  (closed)="closePermanentDelete()"
-/>
+<!-- ══════════════════════════════════════════════════════════
+     Confirm dialogs (3)
 
-<!-- Create / Edit dialog (unchanged behaviour) -->
+     Every destructive action is confirmed first, replacing the old
+     no-confirm Undo toast and the type-the-slug permanent-delete dialog:
+
+     1. Move to trash          — row delete button (list tab)
+     2. Delete permanently     — trash tab row action
+     3. Bulk (trash or destroy) — the bulk toolbar
+     The backend may still refuse (409: the category has products); the toast
+     then shows the backend's own reason.
+══════════════════════════════════════════════════════════ -->
+
+@if (deleting()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+    <div
+      class="w-full max-w-sm rounded-xl border bg-card p-6 shadow-2xl"
+      role="alertdialog"
+      aria-modal="true"
+      [attr.aria-label]="'categories.trash.moveToTrash' | transloco"
+    >
+      <h2 class="mb-2 text-lg font-medium">
+        {{ 'categories.trash.moveToTrash' | transloco }}
+      </h2>
+      <p class="mb-6 text-muted-foreground">
+        {{ 'categories.deleteConfirm' | transloco: { name: rowName(deleting()!) } }}
+      </p>
+      <div class="flex gap-3">
+        <button hlmBtn variant="outline" class="flex-1" (click)="deleting.set(null)">
+          {{ 'common.cancel' | transloco }}
+        </button>
+        <button hlmBtn class="flex-1" [disabled]="submitting()" (click)="submitDelete()">
+          @if (submitting()) {
+            <ng-icon name="lucideLoader2" class="me-2 size-4 animate-spin" />
+          }
+          {{ 'categories.trash.moveToTrash' | transloco }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (permanentDeleteTarget()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+    <div
+      class="w-full max-w-sm rounded-xl border bg-card p-6 shadow-2xl"
+      role="alertdialog"
+      aria-modal="true"
+      [attr.aria-label]="'categories.trash.deletePermanently' | transloco"
+    >
+      <h2 class="mb-2 text-lg font-medium">
+        {{ 'categories.trash.deletePermanently' | transloco }}
+      </h2>
+      <p class="mb-2 text-muted-foreground">
+        {{
+          'categories.trash.permanentConfirm'
+            | transloco: { name: rowName(permanentDeleteTarget()!) }
+        }}
+      </p>
+      <p class="mb-6 text-sm font-medium text-destructive">
+        {{ 'common.actionCannotBeUndone' | transloco }}
+      </p>
+      <div class="flex gap-3">
+        <button hlmBtn variant="outline" class="flex-1" (click)="closePermanentDelete()">
+          {{ 'common.cancel' | transloco }}
+        </button>
+        <button
+          hlmBtn
+          variant="destructive"
+          class="flex-1"
+          [disabled]="permanentDeletePending()"
+          (click)="confirmPermanentDelete()"
+        >
+          @if (permanentDeletePending()) {
+            <ng-icon name="lucideLoader2" class="me-2 size-4 animate-spin" />
+          }
+          {{ 'categories.trash.deletePermanently' | transloco }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (bulkConfirm()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+    <div
+      class="w-full max-w-sm rounded-xl border bg-card p-6 shadow-2xl"
+      role="alertdialog"
+      aria-modal="true"
+      [attr.aria-label]="
+        bulkConfirm() === 'trash'
+          ? ('categories.trash.moveToTrash' | transloco)
+          : ('categories.trash.deletePermanently' | transloco)
+      "
+    >
+      @if (bulkConfirm() === 'trash') {
+        <h2 class="mb-2 text-lg font-medium">
+          {{ 'categories.trash.bulkMoveToTrash' | transloco }}
+        </h2>
+        <p class="mb-6 text-muted-foreground">
+          {{ 'categories.trash.bulkDeleteConfirm' | transloco: { count: selectionCount() } }}
+        </p>
+        <div class="flex gap-3">
+          <button hlmBtn variant="outline" class="flex-1" (click)="cancelBulkConfirm()">
+            {{ 'common.cancel' | transloco }}
+          </button>
+          <button hlmBtn class="flex-1" (click)="submitBulkConfirm()">
+            {{ 'categories.trash.bulkMoveToTrash' | transloco }}
+          </button>
+        </div>
+      } @else {
+        <h2 class="mb-2 text-lg font-medium">
+          {{ 'categories.trash.deletePermanently' | transloco }}
+        </h2>
+        <p class="mb-2 text-muted-foreground">
+          {{ 'categories.trash.bulkPermanentConfirm' | transloco: { count: selectionCount() } }}
+        </p>
+        <p class="mb-6 text-sm font-medium text-destructive">
+          {{ 'common.actionCannotBeUndone' | transloco }}
+        </p>
+        <div class="flex gap-3">
+          <button hlmBtn variant="outline" class="flex-1" (click)="cancelBulkConfirm()">
+            {{ 'common.cancel' | transloco }}
+          </button>
+          <button hlmBtn variant="destructive" class="flex-1" (click)="submitBulkConfirm()">
+            {{ 'categories.trash.deletePermanently' | transloco }}
+          </button>
+        </div>
+      }
+    </div>
+  </div>
+}
+
+<!-- Add dialog (Categories create only — editing happens on the detail page).
+     Footer buttons sit on the inline end; the primary is the last child in LTR
+     (rightmost) and, with the row reversed under RTL, the first on the left. -->
 @if (showDialog()) {
   <div
     class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
@@ -330,7 +446,7 @@
     >
       <div class="flex items-center justify-between p-6 border-b sticky top-0 bg-card">
         <h2 id="category-dialog-title" class="text-lg font-medium">
-          {{ (editing() ? 'categories.editTitle' : 'categories.addTitle') | transloco }}
+          {{ 'categories.addDialogTitle' | transloco }}
         </h2>
         <button
           hlmBtn
@@ -344,36 +460,45 @@
       </div>
 
       <form [formGroup]="form" (ngSubmit)="onSubmit()" class="p-6 space-y-5">
-        <!-- Language sections rendered by app-category-form; spacing and a subtle
-     divider instead of a nested bordered card. -->
         <app-category-form [translations]="translationsArray" />
 
-        <div class="space-y-1.5">
+        <div class="space-y-1.5 pt-4">
           <label hlmLabel>{{ 'categories.image' | transloco }}</label>
-          <app-image-upload />
+          <!-- The picker's models MUST be bound here: otherwise the chosen File
+               lives inside the component only, `selectedImage` stays null and
+               onSubmit() saves without an image part — the edit looked like it
+               worked but the image never changed. -->
+          <app-image-upload [(image)]="selectedImage" [(preview)]="imagePreview" />
         </div>
 
         <div class="flex items-center gap-3">
-          <!--
-            Native checkbox styled like the table and Columns menu checkboxes
-            (.table-check), matching the form-boolean decision: booleans in
-            forms are checkboxes, not switches.
-          -->
-          <label class="flex cursor-pointer items-center gap-3 text-sm font-medium">
-            <input type="checkbox" formControlName="isActive" class="table-check" />
-            {{ 'categories.activeLabel' | transloco }}
+          <hlm-switch
+            formControlName="isActive"
+            inputId="isActive"
+            [attr.aria-label]="'categories.detail.visibleInStore' | transloco"
+          />
+          <label for="isActive" class="text-sm font-medium">
+            {{ 'categories.detail.visibleInStore' | transloco }}
           </label>
         </div>
 
+        <!-- Inline backend/validation error — above the buttons, so the
+             reason sits where the user is looking (the toast is secondary). -->
+        @if (dialogError()) {
+          <p role="alert" class="text-sm font-medium text-destructive">
+            {{ dialogError() }}
+          </p>
+        }
+
         <div class="flex gap-3 pt-2 justify-end">
-          <button type="button" hlmBtn variant="outline" class="flex-1" (click)="closeDialog()">
+          <button type="button" hlmBtn variant="outline" (click)="closeDialog()">
             {{ 'common.cancel' | transloco }}
           </button>
-          <button type="submit" hlmBtn class="flex-1" [disabled]="submitting()">
+          <button type="submit" hlmBtn [disabled]="submitting()">
             @if (submitting()) {
-              <span class="animate-spin me-2">⟳</span>
+              <ng-icon name="lucideLoader2" class="me-2 size-4 animate-spin" />
             }
-            {{ submitting() ? ('common.saving' | transloco) : ('common.save' | transloco) }}
+            {{ 'categories.addTitle' | transloco }}
           </button>
         </div>
       </form>

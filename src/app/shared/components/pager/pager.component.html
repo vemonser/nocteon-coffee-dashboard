@@ -1,0 +1,70 @@
+@if (totalElements() > 0) {
+  <div class="flex items-center justify-between gap-4 flex-wrap">
+    <div class="flex items-center gap-1.5 text-sm text-muted-foreground">
+      <span class="tabular-nums">
+        {{ rangeStart() }} - {{ rangeEnd() }}
+        {{ 'common.of' | transloco }} {{ totalElements() }}
+      </span>
+
+      @if (showPageSize()) {
+        <label class="ms-2 flex items-center gap-2">
+          <span class="hidden sm:inline">{{ 'common.perPage' | transloco }}</span>
+          <hlm-native-select
+            selectClass="w-[4.5rem]"
+            [ngModel]="size()"
+            (ngModelChange)="onSizeChange($event)"
+            [attr.aria-label]="'common.perPage' | transloco"
+          >
+            @for (option of sizeOptions(); track option) {
+              <option hlmNativeSelectOption [value]="option">{{ option }}</option>
+            }
+          </hlm-native-select>
+        </label>
+      }
+    </div>
+
+    @if (totalPages() > 1) {
+      <div class="flex items-center gap-1.5">
+        <button
+          hlmBtn
+          variant="outline"
+          size="sm"
+          [disabled]="first()"
+          (click)="jump(page() - 1)"
+          [attr.aria-label]="'common.previousPage' | transloco"
+        >
+          <ng-icon name="lucideChevronLeft" class="size-4 rtl:rotate-180" />
+        </button>
+
+        @for (entry of pageStrip(); track $index) {
+          @if (entry === 'ellipsis') {
+            <span class="px-1.5 select-none text-muted-foreground" aria-hidden="true">…</span>
+          } @else {
+            <button
+              hlmBtn
+              [variant]="entry === page() ? 'default' : 'outline'"
+              size="sm"
+              class="min-w-9 px-2.5 tabular-nums"
+              (click)="jump(entry)"
+              [attr.aria-label]="('common.page' | transloco) + ' ' + (entry + 1)"
+              [attr.aria-current]="entry === page() ? 'page' : null"
+            >
+              {{ entry + 1 }}
+            </button>
+          }
+        }
+
+        <button
+          hlmBtn
+          variant="outline"
+          size="sm"
+          [disabled]="last()"
+          (click)="jump(page() + 1)"
+          [attr.aria-label]="'common.nextPage' | transloco"
+        >
+          <ng-icon name="lucideChevronRight" class="size-4 rtl:rotate-180" />
+        </button>
+      </div>
+    }
+  </div>
+}

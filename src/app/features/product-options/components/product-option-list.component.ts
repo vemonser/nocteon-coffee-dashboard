@@ -23,6 +23,7 @@ import {
   lucidePencil,
   lucideSlidersHorizontal,
   lucideCirclePlus,
+  lucideLoader2,
 } from '@ng-icons/lucide';
 
 import { BaseListComponent } from '../../../core/crud/base-list.component';
@@ -37,11 +38,13 @@ import {
   ProductOptionValue,
 } from '../models/product-option.model';
 import { ProductOptionService } from '../services/product-option.service';
+import { PagerComponent } from '../../../shared/components/pager/pager.component';
 
 @Component({
   selector: 'app-product-option-list',
   standalone: true,
   imports: [
+    PagerComponent,
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
@@ -56,8 +59,7 @@ import { ProductOptionService } from '../services/product-option.service';
     TranslocoPipe,
   ],
   providers: [
-    provideIcons({
-      lucidePlus,
+    provideIcons({ lucideLoader2, lucidePlus,
       lucideSearch,
       lucideX,
       lucideChevronLeft,
@@ -95,6 +97,7 @@ export class ProductOptionListComponent extends BaseListComponent<
     return this.optionService
       .getAll({
         page: this.currentPage(),
+        size: this.pageSize(),
         search: this.searchQuery || undefined,
         sort: this.currentSort,
         direction: this.currentDirection,

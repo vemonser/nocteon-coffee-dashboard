@@ -5,7 +5,8 @@ import { ProductWizardStateService } from '../../product-wizard/product-wizard-s
 import { TastingNoteService } from '../../../../tasting-note/services/tasting-note.service';
 import { TastingNoteResponse } from '../../../../tasting-note/models/tasting-note.model';
 import { TranslocoPipe } from '@jsverse/transloco';
- 
+import { NotifyService } from '../../../../../core/notify/notify.service';
+
 /**
  * Step 4 — Tasting Notes (multi-select from existing lookup entity).
  * Simplified model: product just stores an array of tasting-note slugs,
@@ -21,12 +22,15 @@ import { TranslocoPipe } from '@jsverse/transloco';
 export class TastingNotesStepComponent {
   protected state = inject(ProductWizardStateService);
   private tastingNoteService = inject(TastingNoteService);
+  private notify = inject(NotifyService);
 
   allNotes = signal<TastingNoteResponse[]>([]);
 
   constructor() {
     this.tastingNoteService.getAll({ size: 200 }).subscribe({
       next: (res) => this.allNotes.set(res.data.content),
+      error: (err) =>
+        this.notify.apiError(err, 'notify.errorFallback', 'Could not load tasting notes'),
     });
   }
 

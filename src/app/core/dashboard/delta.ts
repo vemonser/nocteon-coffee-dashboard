@@ -1,0 +1,87 @@
+/**
+ * Period-over-period delta.
+ *
+ * The rule set is fixed by the product decision:
+ *
+ *   - previous = 0, current > 0  -> "New"   (no baseline to compare against)
+ *   - previous = 0, current = 0  -> "—"     (nothing happened, and no baseline)
+ *   - current = previous         -> "No change" (neutral gray, no arrow)
+ *   - current > previous         -> "+x%"  (positive)
+ *   - current < previous         -> "-x%"  (negative)
+ *
+ * A zero change is NOT a positive change. The earlier implementation used
+ * `pct >= 0` to decide "positive", so a 0.0% change rendered a green up
+ * arrow — four KPIs on the dashboard showed "+0.0%" with an upward arrow
+ * because the previous period happened to be identical to the current one.
+ *
+ * The result carries a `tone` instead of a raw boolean, because "New" is not
+ * a warning and "no change" is not a direction:
+ *
+ *   'up'      positive change  -> success colour, up arrow
+ *   'down'    negative change  -> destructive colour, down arrow
+ *   'flat'    no change        -> muted colour, NO arrow
+ *   'new'     no baseline      -> neutral colour, NO arrow
+ *   'none'    not computable   -> muted, NO arrow
+ */
+
+export type DeltaTone = 'up' | 'down' | 'flat' | 'new' | 'none';
+
+export interface DeltaResult {
+  /** Raw percentage change, rounded to 1 decimal. `null` when not computable. */
+  percent: number | null;
+  /** True when there is no previous value to compare against. */
+  isNew: boolean;
+  /** True when the value did not change. */
+  isFlat: boolean;
+  /** True when the change is a real increase. */
+  isUp: boolean;
+  /** True when the change is a real decrease. */
+  isDown: boolean;
+  /** Visual treatment. */
+  tone: DeltaTone;
+}
+
+/** Below this magnitude a change is indistinguishable from no change. */
+export const FLAT_THRESHOLD_PERCENT = 0.05;
+
+export function computeDelta(
+  current: number,
+  previous: number | undefined | null,
+): DeltaResult {
+  const none: DeltaResult = {
+    percent: null,
+    isNew: false,
+    isFlat: true,
+    isUp: false,
+    isDown: false,
+    tone: 'none',
+  };
+
+  if (previous === undefined || previous === null) return none;
+  if (!Number.isFinite(current) || !Number.isFinite(previous)) return none;
+
+  // No baseline at all.
+  if (previous === 0) {
+    if (current === 0) {
+      // Nothing before, nothing now.
+      return { percent: null, isNew: false, isFlat: true, isUp: false, isDown: false, tone: 'flat' };
+    }
+    // Something exists now where nothing existed before.
+    return { percent: null, isNew: true, isFlat: false, isUp: false, isDown: false, tone: 'new' };
+  }
+
+  const pct = ((current - previous) / previous) * 100;
+  if (!Number.isFinite(pct)) return none;
+
+  const rounded = Math.round(pct * 10) / 10;
+
+  if (Math.abs(rounded) < FLAT_THRESHOLD_PERCENT) {
+    // Equal values (and anything that rounds to zero) — neutral, no arrow.
+    return { percent: 0, isNew: false, isFlat: true, isUp: false, isDown: false, tone: 'flat' };
+  }
+
+  if (rounded > 0) {
+    return { percent: rounded, isNew: false, isFlat: false, isUp: true, isDown: false, tone: 'up' };
+  }
+  return { percent: rounded, isNew: false, isFlat: false, isUp: false, isDown: true, tone: 'down' };
+}

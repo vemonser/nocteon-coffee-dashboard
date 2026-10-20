@@ -10,19 +10,19 @@
         align="end"
         [attr.aria-label]="'navigationBar.accountMenu.account' | transloco"
       >
-        <hlm-avatar class="rounded-md">
+        <hlm-avatar class="size-8 rounded-full">
           @if (auth.currentUser()?.avatarUrl) {
             <img [src]="auth.currentUser()!.avatarUrl" alt="avatar" hlmAvatarImage />
           }
-          <span class="rounded-md bg-[#FD005B] text-white" hlmAvatarFallback>
+          <span class="bg-primary text-primary-foreground" hlmAvatarFallback>
             {{ getInitial() }}
           </span>
         </hlm-avatar>
-        <div class="grid flex-1 text-left text-sm leading-tight">
+        <div class="grid flex-1 text-start text-sm leading-tight">
           <span class="truncate font-medium">{{ auth.getFullName() }}</span>
           <span class="truncate text-xs">{{ auth.currentUser()?.email }}</span>
         </div>
-        <ng-icon name="lucideChevronsUpDown" class="ml-auto text-base" />
+        <ng-icon name="lucideChevronsUpDown" class="ms-auto text-base" />
       </button>
     </li>
   </ul>
@@ -30,7 +30,7 @@
   <div class="relative">
     <button
       [hlmDropdownMenuTrigger]="menu"
-      class="flex items-center gap-2 rounded-md p-1 hover:bg-accent transition-colors"
+      class="flex items-center gap-2 rounded-full p-1 hover:bg-accent transition-colors"
       [attr.aria-label]="'navigationBar.accountMenu.account' | transloco"
     >
       <hlm-avatar class="size-8 rounded-full">
@@ -53,7 +53,7 @@
 <ng-template #menu>
   <hlm-dropdown-menu class="min-w-56 rounded-md">
     <hlm-dropdown-menu-label>
-      <div class="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
+      <div class="flex items-center gap-2 px-1 py-1.5 text-start text-sm">
         <hlm-avatar class="size-8 rounded-full">
           @if (auth.currentUser()?.avatarUrl) {
             <img [src]="auth.currentUser()!.avatarUrl" alt="avatar" hlmAvatarImage />
@@ -62,7 +62,7 @@
             {{ getInitial() }}
           </span>
         </hlm-avatar>
-        <div class="grid flex-1 text-left text-sm leading-tight">
+        <div class="grid flex-1 text-start text-sm leading-tight">
           <span class="truncate font-medium">{{ auth.getFullName() }}</span>
           <span class="truncate text-xs">{{ auth.currentUser()?.email }}</span>
         </div>
@@ -75,9 +75,6 @@
         <ng-icon name="lucideUser" class="me-2 size-4" />
         {{ 'navigationBar.accountMenu.account' | transloco }}
       </button>
-
-      <!-- Theme + accent (sun/moon toggle stays in the header) -->
-      <app-appearance-sheet />
 
       <!-- Language used to be a third header control; one settings surface now. -->
       <button hlmDropdownMenuItem class="flex" (click)="language.toggle()">

@@ -16,7 +16,7 @@ export class HlmCard {
   constructor() {
     classes(
       () =>
-        'ring-foreground/10 bg-card text-card-foreground gap-(--card-spacing) overflow-hidden rounded-md py-(--card-spacing) text-sm ring-1 [--card-spacing:--spacing(4)] has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(3)] data-[size=sm]:has-data-[slot=card-footer]:pb-0 *:[img:first-child]:rounded-t-xl *:[img:last-child]:rounded-b-xl group/card flex flex-col',
+        'ring-foreground/10 bg-card text-card-foreground gap-(--card-spacing) overflow-hidden rounded-[var(--radius-card)] py-(--card-spacing) text-sm ring-1 [--card-spacing:--spacing(4)] has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(3)] data-[size=sm]:has-data-[slot=card-footer]:pb-0 *:[img:first-child]:rounded-t-[var(--radius-card)] *:[img:last-child]:rounded-b-[var(--radius-card)] group/card flex flex-col pb-0',
     );
   }
 }

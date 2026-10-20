@@ -12,6 +12,7 @@ export interface RoastLevelResponse {
   color: string;
   createdAt?: string;
   updatedAt?: string;
+  deletedAt?: string;
   translations: RoastLevelTranslation[];
 }
 

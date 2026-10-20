@@ -14,7 +14,8 @@ import {
 @Injectable({ providedIn: 'root' })
 export class ShippingZoneService extends BaseCrudService<
   ShippingZoneResponse,
-  ShippingZoneRequest
+  ShippingZoneRequest,
+  number
 > {
   protected override basePath = '/api/dashboard/shipping-zones';
 

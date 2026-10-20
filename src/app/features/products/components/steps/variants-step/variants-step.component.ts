@@ -21,6 +21,7 @@ import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucidePlus, lucideX } from '@ng-icons/lucide';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { LanguageService } from '../../../../../core/i18n/language.service';
+import { NotifyService } from '../../../../../core/notify/notify.service';
 
 @Component({
   selector: 'app-variants-step',
@@ -51,6 +52,7 @@ export class VariantsStepComponent implements OnInit {
   protected state = inject(ProductWizardStateService);
   private optionService = inject(ProductOptionService);
   private language = inject(LanguageService);
+  private notify = inject(NotifyService);
 
   loadingOptions = signal(false);
 
@@ -65,7 +67,10 @@ export class VariantsStepComponent implements OnInit {
         this.state.setProductOptions(res.data.content);
         this.loadingOptions.set(false);
       },
-      error: () => this.loadingOptions.set(false),
+      error: (err) => {
+        this.loadingOptions.set(false);
+        this.notify.apiError(err, 'notify.errorFallback', 'Could not load product options');
+      },
     });
   }
 

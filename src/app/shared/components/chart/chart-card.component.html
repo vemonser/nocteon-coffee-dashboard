@@ -1,0 +1,128 @@
+<div #chartHost class="w-full" [attr.aria-label]="ariaLabel()" role="img">
+  @switch (kind()) {
+    @case ('stat') {
+      <!-- One slice is a number, not a chart. -->
+      <div class="flex flex-col items-center justify-center py-8 text-center">
+        <p class="text-3xl font-medium tabular-nums" [style.color]="centerColor()">
+          {{ centerValue() }}
+        </p>
+        @if (prepared()[0]; as only) {
+          <p class="mt-1 text-sm text-muted-foreground">{{ only.label }}</p>
+        }
+      </div>
+    }
+    @case ('bars') {
+      <!-- Sorted horizontal bars: the value and the percentage are both on
+           the row, so the colour is never the only signal. -->
+      <ul class="flex flex-col gap-2">
+        @for (row of prepared(); track row.label) {
+          <li class="flex items-center gap-3">
+            <span
+              class="shrink-0 truncate text-sm"
+              [style.width.px]="barTrack()"
+              [title]="row.label"
+            >{{ row.label }}</span>
+            <span class="h-2 flex-1 rounded-full bg-muted overflow-hidden">
+              <span
+                class="block h-full rounded-full"
+                [style.width.%]="barWidth(row)"
+                [style.background]="row.color"
+              ></span>
+            </span>
+            <span class="w-24 shrink-0 text-end text-sm tabular-nums text-muted-foreground">
+              {{ formatValue()(row.value) }}
+            </span>
+            <span class="w-12 shrink-0 text-end text-sm tabular-nums text-muted-foreground">
+              {{ row.percent }}%
+            </span>
+          </li>
+        }
+      </ul>
+    }
+    @default {
+      <!-- Donut: 3-5 slices, at least 160px. -->
+      <div class="flex justify-center">
+        <svg
+          [attr.width]="size()"
+          [attr.height]="size()"
+          [attr.viewBox]="'0 0 ' + size() + ' ' + size()"
+          class="overflow-visible"
+        >
+          @for (arc of arcs(); track arc.slice.label) {
+            <path
+              [attr.d]="arc.path"
+              fill="none"
+              [attr.stroke]="arc.slice.color"
+              [attr.stroke-width]="ringWidth()"
+              stroke-linecap="butt"
+            />
+            @if (showDirectLabels() && arc.fitsDirectLabel) {
+              <text
+                [attr.x]="arc.labelX"
+                [attr.y]="arc.labelY"
+                text-anchor="middle"
+                dominant-baseline="middle"
+                class="pointer-events-none fill-white text-[11px] font-medium"
+              >{{ arc.slice.percent }}%</text>
+            }
+          }
+          <!-- The centre: foreground token, compact when long, never outside
+               the ring. -->
+          <text
+            data-testid="donut-center-label"
+            [attr.x]="center()"
+            [attr.y]="center() - 6"
+            text-anchor="middle"
+            dominant-baseline="middle"
+            class="text-sm font-medium"
+            [attr.fill]="centerColor()"
+          >{{ centerLabel() }}</text>
+          <text
+            data-testid="donut-center-value"
+            [attr.x]="center()"
+            [attr.y]="center() + 14"
+            text-anchor="middle"
+            dominant-baseline="middle"
+            class="text-lg font-medium tabular-nums"
+            [attr.fill]="centerColor()"
+          >{{ centerValue() }}</text>
+        </svg>
+      </div>
+    }
+  }
+
+  <!-- The legend is ALWAYS below the chart, and it always carries the
+       colour, the name, the value and the percentage. -->
+  @if (prepared().length > 0) {
+    <ul
+      class="mt-3 grid gap-x-4 gap-y-1"
+      [class.grid-cols-1]="prepared().length <= 2"
+      [class.grid-cols-2]="prepared().length > 2"
+    >
+      @for (row of prepared(); track row.label) {
+        <li class="flex items-center gap-2 text-sm">
+          <span
+            class="size-2.5 shrink-0 rounded-[3px]"
+            [style.background]="row.color"
+            aria-hidden="true"
+          ></span>
+          @if (sliceLinks()[row.label]; as target) {
+            <a
+              [routerLink]="target.link"
+              [queryParams]="target.params ?? null"
+              class="min-w-0 flex-1 truncate rounded hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >{{ row.label }}</a>
+          } @else {
+            <span class="min-w-0 flex-1 truncate">{{ row.label }}</span>
+          }
+          <span class="shrink-0 tabular-nums text-muted-foreground">
+            {{ formatValue()(row.value) }}
+          </span>
+          <span class="w-12 shrink-0 text-end tabular-nums text-muted-foreground">
+            {{ row.percent }}%
+          </span>
+        </li>
+      }
+    </ul>
+  }
+</div>

@@ -2,7 +2,7 @@
   <!-- Header -->
   <div class="flex items-center justify-between">
     <div>
-      <h1 class="text-2xl font-bold tracking-tight">{{ 'productOptions.title' | transloco }}</h1>
+      <h1 class="text-2xl font-medium tracking-tight">{{ 'productOptions.title' | transloco }}</h1>
       <p class="text-muted-foreground">{{ items().length }} {{ 'common.total' | transloco }}</p>
     </div>
     <button *hasPermission="'product_option:create'" hlmBtn (click)="openCreateDialog()">
@@ -71,14 +71,14 @@
               </div>
             </div>
             <div class="flex items-center gap-1 shrink-0">
-              <button hlmBtn variant="ghost" size="icon" class="size-8" (click)="openEditDialog(option)">
+              <button hlmBtn variant="ghost" size="icon" (click)="openEditDialog(option)">
                 <ng-icon name="lucidePencil" class="size-4" />
               </button>
               <button
                 hlmBtn
                 variant="ghost"
                 size="icon"
-                class="size-8 text-muted-foreground hover:text-destructive"
+                class="text-muted-foreground hover:text-destructive"
                 (click)="confirmDelete(option)"
               >
                 <ng-icon name="lucideTrash2" class="size-4" />
@@ -156,7 +156,7 @@
                   [disabled]="valueForm.invalid || valueSubmitting()"
                 >
                   @if (valueSubmitting()) {
-                    <span class="animate-spin me-2">⟳</span>
+                    <ng-icon name="lucideLoader2" class="me-2 size-4 animate-spin" />
                   }
                   {{ valueSubmitting() ? ('common.saving' | transloco) : ('productOptions.addValue' | transloco) }}
                 </button>
@@ -182,36 +182,18 @@
 
   <!-- Pagination -->
   @if (pageData() && !loading()) {
-    <div class="flex items-center justify-between">
-      <span class="text-sm text-muted-foreground">
-        {{ 'common.showing' | transloco }} {{ pageData()!.page * pageData()!.size + 1 }} -
-        {{ Math.min((pageData()!.page + 1) * pageData()!.size, pageData()!.totalElements) }}
-        {{ 'common.of' | transloco }} {{ pageData()!.totalElements }}
-      </span>
-      <div class="flex items-center gap-2">
-        <button
-          hlmBtn
-          variant="outline"
-          size="sm"
-          [disabled]="pageData()!.first"
-          (click)="goToPage(currentPage() - 1)"
-        >
-          <ng-icon name="lucideChevronLeft" class="size-4" />
-        </button>
-        <span class="text-sm text-muted-foreground px-2">
-          {{ 'common.page' | transloco }} {{ pageData()!.page + 1 }} {{ 'common.of' | transloco }} {{ pageData()!.totalPages }}
-        </span>
-        <button
-          hlmBtn
-          variant="outline"
-          size="sm"
-          [disabled]="pageData()!.last"
-          (click)="goToPage(currentPage() + 1)"
-        >
-          <ng-icon name="lucideChevronRight" class="size-4" />
-        </button>
-      </div>
-    </div>
+    <app-pager
+      [page]="pageData()!.page"
+      [size]="pageData()!.size"
+      [totalElements]="pageData()!.totalElements"
+      [totalPages]="pageData()!.totalPages"
+      [first]="pageData()!.first"
+      [last]="pageData()!.last"
+      [showPageSize]="true"
+      [sizeOptions]="pageSizeOptions"
+      (pageChange)="goToPage($event)"
+      (sizeChange)="onPageSizeChange($event)"
+    />
   }
 </div>
 
@@ -220,12 +202,12 @@
 ═════════════════════════════════════════════════════════════ -->
 @if (showDialog()) {
   <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-    <div class="w-full max-w-md max-h-[90vh] overflow-y-auto rounded-2xl bg-card shadow-2xl border">
+    <div class="w-full max-w-md max-h-[90vh] overflow-y-auto rounded-xl bg-card shadow-2xl border">
       <div class="flex items-center justify-between p-6 border-b sticky top-0 bg-card">
-        <h2 class="text-lg font-bold">
+        <h2 class="text-lg font-medium">
           {{ (editing() ? 'productOptions.editTitle' : 'productOptions.addTitle') | transloco }}
         </h2>
-        <button hlmBtn variant="ghost" size="icon" class="size-8" (click)="closeDialog()">
+        <button hlmBtn variant="ghost" size="icon" (click)="closeDialog()">
           <ng-icon name="lucideX" class="size-4" />
         </button>
       </div>
@@ -262,13 +244,20 @@
           <input hlmInput formControlName="sortOrder" type="number" class="w-full" />
         </div>
 
+        <!-- Inline backend/validation error — above the buttons -->
+        @if (dialogError()) {
+          <p role="alert" class="text-sm font-medium text-destructive">
+            {{ dialogError() }}
+          </p>
+        }
+
         <div class="flex gap-3 pt-2">
           <button type="button" hlmBtn variant="outline" class="flex-1" (click)="closeDialog()">
             {{ 'common.cancel' | transloco }}
           </button>
           <button type="submit" hlmBtn class="flex-1" [disabled]="form.invalid || submitting()">
             @if (submitting()) {
-              <span class="animate-spin me-2">⟳</span>
+              <ng-icon name="lucideLoader2" class="me-2 size-4 animate-spin" />
             }
             {{ submitting() ? ('common.saving' | transloco) : ('common.save' | transloco) }}
           </button>
@@ -283,8 +272,8 @@
 ═════════════════════════════════════════════════════════════ -->
 @if (deleting()) {
   <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-    <div class="w-full max-w-sm rounded-2xl bg-card shadow-2xl border p-6">
-      <h2 class="text-lg font-bold mb-2">{{ 'productOptions.deleteTitle' | transloco }}</h2>
+    <div class="w-full max-w-sm rounded-xl bg-card shadow-2xl border p-6">
+      <h2 class="text-lg font-medium mb-2">{{ 'productOptions.deleteTitle' | transloco }}</h2>
       <p class="text-muted-foreground mb-6">
         {{ 'common.confirmDelete' | transloco }}
         <strong class="text-foreground">{{ deleting()!.slug }}</strong>?
@@ -301,7 +290,7 @@
           (click)="submitDelete()"
         >
           @if (submitting()) {
-            <span class="animate-spin me-2">⟳</span>
+            <ng-icon name="lucideLoader2" class="me-2 size-4 animate-spin" />
           }
           {{ submitting() ? ('common.deleting' | transloco) : ('common.delete' | transloco) }}
         </button>
@@ -315,8 +304,8 @@
 ═════════════════════════════════════════════════════════════ -->
 @if (deletingValue()) {
   <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-    <div class="w-full max-w-sm rounded-2xl bg-card shadow-2xl border p-6">
-      <h2 class="text-lg font-bold mb-2">{{ 'productOptions.deleteValueTitle' | transloco }}</h2>
+    <div class="w-full max-w-sm rounded-xl bg-card shadow-2xl border p-6">
+      <h2 class="text-lg font-medium mb-2">{{ 'productOptions.deleteValueTitle' | transloco }}</h2>
       <p class="text-muted-foreground mb-6">
         {{ 'productOptions.deleteValueConfirm' | transloco }}
         <strong class="text-foreground">
@@ -335,7 +324,7 @@
           (click)="submitDeleteValue()"
         >
           @if (valueSubmitting()) {
-            <span class="animate-spin me-2">⟳</span>
+            <ng-icon name="lucideLoader2" class="me-2 size-4 animate-spin" />
           }
           {{ valueSubmitting() ? ('common.deleting' | transloco) : ('common.delete' | transloco) }}
         </button>

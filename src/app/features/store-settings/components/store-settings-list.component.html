@@ -2,7 +2,7 @@
   <!-- Header -->
   <div class="flex items-center justify-between">
     <div>
-      <h1 class="text-2xl font-bold tracking-tight">{{ 'StoreSettingPage.title' | transloco }}</h1>
+      <h1 class="text-2xl font-medium tracking-tight">{{ 'StoreSettingPage.title' | transloco }}</h1>
     </div>
   </div>
 
@@ -40,11 +40,11 @@
 ══════════════════════════════════════════════════════════ -->
 @if (showDialog()) {
   <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-    <div class="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl bg-card shadow-2xl border">
+    <div class="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-xl bg-card shadow-2xl border">
       <!-- Dialog Header -->
       <div class="flex items-center justify-between p-6 border-b sticky top-0 bg-card">
-        <h2 class="text-lg font-bold">Edit Store Setting</h2>
-        <button hlmBtn variant="ghost" size="icon" class="size-8" (click)="closeDialog()">
+        <h2 class="text-lg font-medium">Edit Store Setting</h2>
+        <button hlmBtn variant="ghost" size="icon" (click)="closeDialog()">
           <ng-icon name="lucideX" class="size-4" />
         </button>
       </div>
@@ -65,6 +65,29 @@
           }
         </div>
 
+        <div class="space-y-1.5">
+          <label hlmLabel>Currency (ISO 4217, 3 letters) *</label>
+          <input
+            hlmInput
+            formControlName="currency"
+            type="text"
+            maxlength="3"
+            placeholder="EGP"
+            class="w-full uppercase"
+          />
+          @if (form.get('currency')?.invalid && form.get('currency')?.touched) {
+            <p class="text-xs text-destructive">Currency must be 3 uppercase letters</p>
+          }
+        </div>
+
+        <div class="flex items-center justify-between rounded-md border p-3">
+          <div class="space-y-0.5">
+            <label hlmLabel class="mb-0">Free Shipping Enabled</label>
+            <p class="text-xs text-muted-foreground">Toggle free shipping on or off for the storefront</p>
+          </div>
+          <hlm-checkbox formControlName="isFreeShippingActive" />
+        </div>
+
         <!-- Buttons -->
         <div class="flex gap-3 pt-2">
           <button type="button" hlmBtn variant="outline" class="flex-1" (click)="closeDialog()">
@@ -72,7 +95,7 @@
           </button>
           <button type="submit" hlmBtn class="flex-1" [disabled]="form.invalid || submitting()">
             @if (submitting()) {
-              <span class="animate-spin mr-2">⟳</span>
+              <ng-icon name="lucideLoader2" class="mr-2 size-4 animate-spin" />
             }
             {{ submitting() ? 'Saving...' : 'Save' }}
           </button>

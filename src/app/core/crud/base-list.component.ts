@@ -5,6 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { PageResponse } from '../models/api-response.model';
 import { TableSortEvent } from '../../shared/components/data-table/data-table.component';
 import { SoftDeleteFailure, classifyRestoreError } from './soft-delete.contract';
+import { NotifyService } from '../notify/notify.service';
 import { TranslocoService } from '@jsverse/transloco';
 import { toast } from '@spartan-ng/brain/sonner';
 
@@ -13,10 +14,25 @@ export type ViewMode = 'list' | 'grid';
 /** Lifecycle of a row: active rows are live, trashed rows are soft-deleted. */
 export type ListView = 'active' | 'trash';
 
+/** Progress of an Active <-> Trash swap: idle, animating out, animating in. */
+export type ViewPhase = 'idle' | 'out' | 'in';
+
+/** Animation names the host stylesheets own (see `styles/index.css`). */
+const VIEW_OUT_ANIMATION = 'lifecycle-view-out';
+const VIEW_IN_ANIMATION = 'lifecycle-view-in';
+
+/**
+ * Backstop only: if the out animation never reports back (animations disabled by
+ * something `prefers-reduced-motion` cannot see) the swap must still happen. Not
+ * the real duration — that lives in CSS.
+ */
+const VIEW_SWITCH_FALLBACK_MS = 700;
+
 @Directive()
 export abstract class BaseListComponent<TResponse, TRequest, TId = string>
   implements OnInit
 {
+  protected readonly notify = inject(NotifyService);
   protected fb = inject(FormBuilder);
   protected Math = Math;
   // Named to avoid colliding with page-level `router` fields (e.g. UsersListComponent).
@@ -34,6 +50,16 @@ export abstract class BaseListComponent<TResponse, TRequest, TId = string>
   imagePreview  = signal<string | null>(null);
   selectedImage = signal<File | null>(null);
   currentPage   = signal(0);
+
+  /**
+   * Rows per page. The pager's per-page select feeds this and the concrete
+   * `loadPage()` implementations pass it to the backend as `size`.
+   * Default 20 (project convention); SQLite-backed endpoints cap similarly.
+   */
+  readonly pageSize = signal(20);
+
+  /** Choices for the pager's per-page select. */
+  readonly pageSizeOptions = [10, 20, 50] as const;
   viewMode = signal<ViewMode>('list');
 
   // ─── Sort state ───────────────────────────────────────────────────────────────
@@ -101,6 +127,14 @@ export abstract class BaseListComponent<TResponse, TRequest, TId = string>
   /** Status filter (enabled/disabled) — active tab only, entity-specific. */
   protected statusFilterValue: boolean | undefined = undefined;
 
+  /**
+   * How a row is edited. `'dialog'` (the default) opens the shared create/edit
+   * dialog; `'page'` navigates to the row's own detail page instead. Lists that
+   * keep their detail page as the single edit surface set `'page'` and override
+   * `goToDetail()`. The dialog path is never removed — it stays the default.
+   */
+  protected editMode: 'dialog' | 'page' = 'dialog';
+
   readonly listView = signal<ListView>('active');
   readonly activeCount = signal<number | null>(null);
   readonly trashCount = signal<number | null>(null);
@@ -109,8 +143,12 @@ export abstract class BaseListComponent<TResponse, TRequest, TId = string>
   /** Row awaiting permanent-delete confirmation. */
   readonly permanentDeleteTarget = signal<TResponse | null>(null);
   readonly permanentDeletePending = signal(false);
+  /** Pending bulk action behind a confirm dialog: 'trash' | 'permanent' | none. */
+  readonly bulkConfirm = signal<'trash' | 'permanent' | null>(null);
   /** Undo window for a soft delete; keeps the row to put back. */
   private readonly undoStack = signal<{ item: TResponse; restore: () => void } | null>(null);
+  /** Ids with an in-flight trash request — blocks double-click double DELETEs. */
+  private readonly trashPending = new Set<TId>();
 
   readonly isTrash = computed(() => this.listView() === 'trash');
   readonly hasSelection = computed(() => this.selection().size > 0);
@@ -222,7 +260,22 @@ export abstract class BaseListComponent<TResponse, TRequest, TId = string>
   }
 
   goToPage(page: number): void {
-    this.currentPage.set(page);
+    const clamped = Math.max(0, page);
+    if (clamped === this.currentPage()) return;
+    this.currentPage.set(clamped);
+    this.writeUrlState();
+    this.load();
+  }
+
+  /**
+   * Rows-per-page change from the pager select: reset to the first page and
+   * reload. Kept in one place so every list behaves identically.
+   */
+  onPageSizeChange(size: number): void {
+    if (size === this.pageSize()) return;
+    this.pageSize.set(size);
+    this.currentPage.set(0);
+    this.writeUrlState();
     this.load();
   }
 
@@ -230,16 +283,26 @@ export abstract class BaseListComponent<TResponse, TRequest, TId = string>
     this.currentSort      = event?.column ?? 'createdAt';
     this.currentDirection = event?.direction ?? 'desc';
     this.currentPage.set(0);
+    this.writeUrlState();
     this.load();
   }
 
   // ─── Dialog ───────────────────────────────────────────────────────────────────
+
+  /**
+   * Inline error for the create/edit dialog — backend messages (a duplicate
+   * identifier, a rejected field) rendered ABOVE the submit button so the
+   * reason sits where the user is looking, not only in a corner toast.
+   * Cleared whenever the dialog opens, closes or is re-submitted.
+   */
+  readonly dialogError = signal<string | null>(null);
 
   openCreateDialog(): void {
     this.editing.set(null);
     this.form = this.buildForm();
     this.imagePreview.set(null);
     this.selectedImage.set(null);
+    this.dialogError.set(null);
     this.showDialog.set(true);
   }
 
@@ -248,12 +311,39 @@ export abstract class BaseListComponent<TResponse, TRequest, TId = string>
     this.form = this.buildForm();
     this.selectedImage.set(null);
     this.onEditOpen(item);
+    this.dialogError.set(null);
     this.showDialog.set(true);
   }
+
+  /**
+   * Entry point for a row's edit action. With `editMode === 'page'` this hands
+   * off to `goToDetail()`; otherwise it opens the shared dialog. Kept in one
+   * place so every list routes its edit action identically.
+   */
+  protected onEditAction(item: TResponse): void {
+    if (this.editMode === 'page') {
+      this.goToDetail(item);
+      return;
+    }
+    this.openEditDialog(item);
+  }
+
+  /**
+   * Navigate to a row's detail page. No-op by default — a list opts in by
+   * overriding it (Categories routes by slug; trash rows stay inert because a
+   * trashed entity has no reachable detail page).
+   */
+  protected goToDetail(_item: TResponse): void {}
+
+  /** Navigate after a successful create. No-op by default. */
+  protected afterCreate(_item: TResponse): void {}
 
   closeDialog(): void {
     this.showDialog.set(false);
     this.editing.set(null);
+    this.imagePreview.set(null);
+    this.selectedImage.set(null);
+    this.dialogError.set(null);
   }
 
   onImageSelected(event: Event): void {
@@ -268,7 +358,19 @@ export abstract class BaseListComponent<TResponse, TRequest, TId = string>
   // ─── Submit ───────────────────────────────────────────────────────────────────
 
   onSubmit(): void {
-    if (this.form.invalid) return;
+    if (this.form.invalid) {
+      // Show inline errors and focus the first invalid control.
+      this.form.markAllAsTouched();
+      const firstInvalid = this._firstInvalidControl(this.form.controls);
+      if (firstInvalid) {
+        firstInvalid.focus();
+      }
+      // Also state the block reason above the submit button — the focused
+      // field may sit outside the visible part of a long dialog.
+      this.dialogError.set(this.t('common.fixErrors', 'Please fix the highlighted fields to continue.'));
+      return;
+    }
+    this.dialogError.set(null);
     this.submitting.set(true);
 
     const request = this.toRequest();
@@ -279,14 +381,63 @@ export abstract class BaseListComponent<TResponse, TRequest, TId = string>
       ? this.callUpdate(this.getId(current), request, image)
       : this.callCreate(request, image);
 
+    const wasEditing = !!current;
+
     call$.subscribe({
-      next: () => {
+      next: (res) => {
         this.closeDialog();
         this.load();
         this.submitting.set(false);
+        // Page-edit lists go straight to the new entity's detail page.
+        if (!wasEditing) {
+          const created = (res as { data?: TResponse } | null)?.data;
+          if (created) this.afterCreate(created);
+        }
+        this.notify.success(
+          wasEditing ? 'notify.updated' : 'notify.created',
+          wasEditing ? 'Updated successfully' : 'Created successfully',
+        );
       },
-      error: () => this.submitting.set(false),
+      error: (err) => {
+        this.submitting.set(false);
+        const msg = this.notify.backendMessage(err) ?? this.notify.t('notify.errorFallback', 'Something went wrong. Please try again.');
+        this.dialogError.set(msg);
+        this.notify.apiError(err, 'notify.errorFallback', 'Something went wrong. Please try again.');
+      },
     });
+  }
+
+  /** Walk form controls and return the first one that is invalid + touched. */
+  private _firstInvalidControl(controls: { [key: string]: unknown }): { focus(): void } | null {
+    for (const key of Object.keys(controls)) {
+      const control = controls[key];
+      if (typeof control === 'object' && control !== null && 'invalid' in control && 'touched' in control) {
+        const c = control as { invalid: boolean; touched: boolean; focus(): void };
+        if (c.invalid && c.touched) {
+          return typeof c.focus === 'function' ? c : null;
+        }
+      }
+      if (control && typeof control === 'object' && 'controls' in control) {
+        const result = this._firstInvalidControl(
+          (control as { controls: { [key: string]: unknown } }).controls,
+        );
+        if (result) return result;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Keys for the confirm-first delete flow. The base toasts "Deleted
+   * successfully"; soft-delete lists override this — for them "delete" means
+   * "move to trash" and the toast says so.
+   */
+  protected deleteToastKey(): string {
+    return 'notify.deleted';
+  }
+
+  protected deleteToastFallback(): string {
+    return 'Deleted successfully';
   }
 
   // ─── Delete ───────────────────────────────────────────────────────────────────
@@ -295,6 +446,7 @@ export abstract class BaseListComponent<TResponse, TRequest, TId = string>
     this.deleting.set(item);
   }
 
+  /** Dialog confirm → the real call. Errors surface the backend's reason. */
   submitDelete(): void {
     const item = this.deleting();
     if (!item) return;
@@ -305,8 +457,16 @@ export abstract class BaseListComponent<TResponse, TRequest, TId = string>
         this.deleting.set(null);
         this.load();
         this.submitting.set(false);
+        this.notify.success(this.deleteToastKey(), this.deleteToastFallback());
       },
-      error: () => this.submitting.set(false),
+      error: (err) => {
+        this.submitting.set(false);
+        // Close the dialog either way — the 409 reason ("still used
+        // elsewhere") is in the toast; leaving the modal open traps the
+        // user in a dead dialog.
+        this.deleting.set(null);
+        this.notify.apiError(err, 'notify.errorFallback', 'Something went wrong. Please try again.');
+      },
     });
   }
   
@@ -317,18 +477,80 @@ export abstract class BaseListComponent<TResponse, TRequest, TId = string>
   // ─── Soft delete: tabs ────────────────────────────────────────────────────────
 
   /**
+   * Progress of the Active <-> Trash swap. Hosts paint it on the panel root
+   * (`[attr.data-view-phase]`) and mark the parts that change with `.view-fade`,
+   * so the swap crosses over instead of cutting.
+   */
+  readonly viewPhase = signal<ViewPhase>('idle');
+
+  private pendingView: ListView | null = null;
+  private viewSwitchTimer: ReturnType<typeof setTimeout> | null = null;
+
+  /**
    * Switching tabs resets page + selection and keeps the search text. The view is
    * mirrored into the URL so refresh, back/forward and shared links land on the
    * same tab.
+   *
+   * Active and Trash live on one page, so the swap is faded rather than cut: the
+   * region animates out, the state flips, then it animates in. Durations live in
+   * CSS (`styles/index.css`); the phase advances on `animationend`, so there is
+   * no second copy of them here.
    */
   setListView(view: ListView): void {
     if (this.listView() === view) return;
+
+    if (this.prefersReducedMotion()) {
+      this.applyListView(view);
+      return;
+    }
+
+    // A second switch mid-flight just re-targets: the out animation is already
+    // running, so the phase value does not change and the CSS does not restart.
+    this.pendingView = view;
+    this.viewPhase.set('out');
+    this.clearViewSwitchTimer();
+    this.viewSwitchTimer = setTimeout(() => this.finishViewSwitch(), VIEW_SWITCH_FALLBACK_MS);
+  }
+
+  /** Bind on the panel root: `(animationend)="onViewAnimationEnd($event)"`. */
+  onViewAnimationEnd(event: AnimationEvent): void {
+    if (event.animationName === VIEW_OUT_ANIMATION) {
+      this.finishViewSwitch();
+    } else if (event.animationName === VIEW_IN_ANIMATION) {
+      this.clearViewSwitchTimer();
+      this.viewPhase.set('idle');
+    }
+  }
+
+  private finishViewSwitch(): void {
+    const view = this.pendingView;
+    if (!view || this.viewPhase() !== 'out') return;
+    this.clearViewSwitchTimer();
+    this.pendingView = null;
+    this.applyListView(view);
+    this.viewPhase.set('in');
+  }
+
+  private applyListView(view: ListView): void {
     this.listView.set(view);
     this.currentPage.set(0);
     this.clearSelection();
     this.viewMode.set('list');
     this.writeUrlState();
     this.load();
+  }
+
+  private clearViewSwitchTimer(): void {
+    if (this.viewSwitchTimer) {
+      clearTimeout(this.viewSwitchTimer);
+      this.viewSwitchTimer = null;
+    }
+  }
+
+  private prefersReducedMotion(): boolean {
+    return (
+      typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches
+    );
   }
 
   toggleListView(): void {
@@ -343,11 +565,7 @@ export abstract class BaseListComponent<TResponse, TRequest, TId = string>
    * a row the user let expire is genuinely in the trash.
    */
   softDelete(item: TResponse): void {
-    if (!this.canManageTrash) return;
-
-    const previous = this.items();
-    this.items.set(previous.filter((row) => row !== item));
-    this.adjustCount('active', -1);
+    if (!this.canManageTrash || !this.trashRow(item)) return;
 
     let undo = () => {};
     const toastId = toast(this.t(this.undoMessage(), 'Moved to trash'), {
@@ -357,18 +575,61 @@ export abstract class BaseListComponent<TResponse, TRequest, TId = string>
 
     undo = () => {
       toast.dismiss(toastId);
-      const id = this.restoreIdOf?.(item) ?? null;
-      if (id === null || !this.callRestore) {
-        this.load();
-        return;
-      }
-      this.callRestore(id).subscribe({
-        next: () => this.load(),
-        error: () => this.load(),
-      });
+      this.restoreByItem(item);
     };
 
     this.undoStack.set({ item, restore: undo });
+  }
+
+  /**
+   * Optimistic removal + backend persist, shared by single and bulk paths.
+   * Compared by id (not reference) so refetches/sorts can't orphan rows.
+   * Returns false when there is nothing to do (no permission or already in flight).
+   */
+  private trashRow(item: TResponse): boolean {
+    if (!this.canManageTrash) return false;
+    const key = this.getId(item);
+    if (this.trashPending.has(key)) return false;
+    this.trashPending.add(key);
+
+    const previous = this.items();
+    this.items.set(previous.filter((row) => this.getId(row) !== key));
+    this.adjustCount('active', -1);
+
+    // Persist the move — the row above is optimistic. On failure the row
+    // comes back with a loud error, never a silent refresh surprise.
+    this.callDelete(key).subscribe({
+      next: () => {
+        this.trashPending.delete(key);
+        this.adjustCount('trash', 1);
+      },
+      error: (err) => {
+        this.trashPending.delete(key);
+        this.items.set(previous);
+        this.adjustCount('active', 1);
+        // The backend's reason wins (e.g. 409 "this item is still used
+        // elsewhere" when a category still has products) — never a generic
+        // "please try again" over a precise refusal.
+        this.notify.apiError(err, this.deleteFailedTitle(), 'Could not move to trash');
+      },
+    });
+    return true;
+  }
+
+  /** Restore backing a trashed item object (toast undo paths). Reloads after. */
+  private restoreByItem(item: TResponse): void {
+    const id = this.restoreIdOf?.(item) ?? null;
+    if (id === null || !this.callRestore) {
+      this.load();
+      return;
+    }
+    this.callRestore(id).subscribe({
+      next: () => this.load(),
+      error: (err) => {
+        this.notify.apiError(err, 'notify.errorFallback', 'Restore failed. Please try again.');
+        this.load();
+      },
+    });
   }
 
   /** Count changes immediately after every action — no full refetch for the badge. */
@@ -394,9 +655,11 @@ export abstract class BaseListComponent<TResponse, TRequest, TId = string>
     this.callRestore(id).subscribe({
       next: () => {
         this.submitting.set(false);
-        this.items.set(this.items().filter((row) => row !== item));
+        const key = this.getId(item);
+        this.items.set(this.items().filter((row) => this.getId(row) !== key));
         this.adjustCount('trash', -1);
         this.adjustCount('active', 1);
+        this.notify.success('notify.restored', 'Restored successfully');
       },
       error: (err: unknown) => {
         this.submitting.set(false);
@@ -439,30 +702,63 @@ export abstract class BaseListComponent<TResponse, TRequest, TId = string>
     this.permanentDeleteTarget.set(item);
   }
 
+  /** Bulk toolbar gate: remember which destructive action asked for confirmation. */
+  requestBulkTrash(): void {
+    if (this.selectionCount() > 0) this.bulkConfirm.set('trash');
+  }
+
+  requestBulkPermanentDelete(): void {
+    if (this.selectionCount() > 0) this.bulkConfirm.set('permanent');
+  }
+
+  cancelBulkConfirm(): void {
+    this.bulkConfirm.set(null);
+  }
+
+  /** Dialog confirm → run the bulk action that asked for it. */
+  submitBulkConfirm(): void {
+    const action = this.bulkConfirm();
+    this.bulkConfirm.set(null);
+    if (action === 'trash') this.bulkSoftDelete();
+    else if (action === 'permanent') this.bulkPermanentDelete();
+  }
+
   closePermanentDelete(): void {
     if (!this.permanentDeletePending()) this.permanentDeleteTarget.set(null);
   }
 
   /**
-   * The typed value matched, so the request can go out — except the backend has no
-   * permanent-delete endpoint (see soft-delete.contract.ts). Until it exists this
-   * reports the gap instead of calling an invented route; the dialog itself is
-   * complete and will work as soon as `deletePermanently` is implemented.
+   * Dialog confirm → the request goes out: DELETE /{id}/permanent → 204.
+   * Backend verified for the soft-deletable entities; 404 = not found or not
+   * trashed; 409 = still referenced elsewhere.
    */
-  confirmPermanentDelete(_token: string): void {
+  confirmPermanentDelete(): void {
     const item = this.permanentDeleteTarget();
     if (!item || this.permanentDeletePending()) return;
-    this.permanentDeletePending.set(false);
-    toast.error(
-      this.t(this.permanentDeleteUnsupportedTitle(), 'Permanent delete unavailable'),
-      {
-        description: this.t(
-          this.permanentDeleteUnsupportedBody(),
-          'The API does not expose a permanent-delete endpoint yet.',
-        ),
-        duration: 8000,
+    const id = this.restoreIdOf?.(item) ?? null;
+    if (id === null || id === undefined) {
+      this.notify.apiError(null, 'common.permanentDeleteFailed', 'Could not delete permanently');
+      return;
+    }
+    this.permanentDeletePending.set(true);
+    this.permanentDeleteSrv().deletePermanently(id).subscribe({
+      next: () => {
+        this.permanentDeletePending.set(false);
+        this.permanentDeleteTarget.set(null);
+        this.adjustCount('trash', -1);
+        this.notify.success('common.deletedPermanently', 'Deleted permanently');
+        this.load();
       },
-    );
+      error: (err) => {
+        this.permanentDeletePending.set(false);
+        this.notify.apiError(err, 'common.permanentDeleteFailed', 'Could not delete permanently');
+      },
+    });
+  }
+
+  /** Convenience hook so subclasses can point at the right service. */
+  protected permanentDeleteSrv(): { deletePermanently(id: number): Observable<void> } {
+    throw new Error('permanentDeleteSrv() not implemented — set it in the subclass');
   }
 
   protected confirmToken(item: TResponse): string {
@@ -500,12 +796,16 @@ export abstract class BaseListComponent<TResponse, TRequest, TId = string>
     this.selection.set(new Set());
   }
 
-  /** Bulk soft delete — same undo toast semantics, one call per row (no batch API). */
+  /** Bulk soft delete — one toast for the whole batch (no Undo: the confirm dialog is the safety gate). */
   bulkSoftDelete(): void {
     if (!this.canManageTrash) return;
     const rows = this.selectedRows();
-    for (const row of rows) this.softDelete(row);
     this.clearSelection();
+    if (rows.length === 0) return;
+
+    const trashed = rows.filter((row) => this.trashRow(row));
+    if (trashed.length === 0) return;
+    this.notify.success(this.undoMessage(), 'Moved to trash');
   }
 
   bulkRestore(): void {
@@ -513,20 +813,34 @@ export abstract class BaseListComponent<TResponse, TRequest, TId = string>
     this.clearSelection();
   }
 
+  /**
+   * Bulk hard delete: one DELETE /{id}/permanent per selected row (no bulk
+   * endpoint exists). Per-row failures surface individually; counts resync after.
+   */
   bulkPermanentDelete(): void {
     const rows = this.selectedRows();
     this.clearSelection();
     if (rows.length === 0) return;
-    toast.error(
-      this.t(this.permanentDeleteUnsupportedTitle(), 'Permanent delete unavailable'),
-      {
-        description: this.t(
-          this.permanentDeleteUnsupportedBody(),
-          'The API does not expose a permanent-delete endpoint yet.',
-        ),
-        duration: 8000,
-      },
-    );
+    const ids = rows
+      .map((row) => this.restoreIdOf?.(row))
+      .filter((id): id is number => id !== null && id !== undefined);
+    let pending = ids.length;
+    if (pending === 0) return;
+    const done = () => {
+      if (--pending === 0) this.load();
+    };
+    for (const id of ids) {
+      this.permanentDeleteSrv().deletePermanently(id).subscribe({
+        next: () => {
+          this.adjustCount('trash', -1);
+          done();
+        },
+        error: (err) => {
+          this.notify.apiError(err, 'common.permanentDeleteFailed', 'Could not delete permanently');
+          done();
+        },
+      });
+    }
   }
 
   private selectedRows(): TResponse[] {
@@ -551,6 +865,11 @@ export abstract class BaseListComponent<TResponse, TRequest, TId = string>
     const page = params.get('page');
     if (page) this.currentPage.set(Math.max(0, Number(page) || 0));
 
+    const size = Number(params.get('size') || 0);
+    if ((this.pageSizeOptions as readonly number[]).includes(size)) {
+      this.pageSize.set(size);
+    }
+
     const status = params.get('status');
     if (status === 'enabled') this.statusFilterValue = true;
     else if (status === 'disabled') this.statusFilterValue = false;
@@ -562,10 +881,15 @@ export abstract class BaseListComponent<TResponse, TRequest, TId = string>
     if (this.softDeleteEnabled && this.listView() === 'trash') params['view'] = 'trash';
     if (this.searchQuery.trim()) params['q'] = this.searchQuery.trim();
     if (this.currentPage() > 0) params['page'] = String(this.currentPage());
+    if (this.pageSize() !== 20) params['size'] = String(this.pageSize());
     if (!this.isTrash() && this.statusFilterValue !== undefined) {
       params['status'] = this.statusFilterValue ? 'enabled' : 'disabled';
     }
-    this.listRouter.navigate([], { queryParams: params, replaceUrl: true });
+    this.listRouter.navigate([], {
+      queryParams: params,
+      replaceUrl: true,
+      relativeTo: this.listRoute,
+    });
   }
 
   // ─── Copy (overridden per page; values are i18n keys, resolved through Transloco) ─
@@ -587,6 +911,12 @@ export abstract class BaseListComponent<TResponse, TRequest, TId = string>
   }
   protected undoMessage(): string {
     return 'common.movedToTrash';
+  }
+  protected deleteFailedTitle(): string {
+    return 'common.deleteFailed';
+  }
+  protected deleteFailedBody(): string {
+    return 'common.deleteFailedBody';
   }
   /** Short label for the trashed item inside the toast. */
   protected undoItemLabel(_item: TResponse): string {

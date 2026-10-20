@@ -1,6 +1,6 @@
 ﻿<div class="space-y-4">
   <div class="flex justify-between items-center mb-4">
-    <h2 class="text-lg font-bold">{{ 'products.variants.title' | transloco }}</h2>
+    <h2 class="text-lg font-medium">{{ 'products.variants.title' | transloco }}</h2>
     <button hlmBtn size="sm" type="button" (click)="addVariant()">
       <ng-icon name="lucidePlus" class="mr-1 size-4" />
       {{ 'products.variants.add' | transloco }}
@@ -34,7 +34,7 @@
           size="icon"
           type="button"
           (click)="removeVariant(i)"
-          class="absolute top-3 right-3 size-8 text-muted-foreground hover:text-destructive"
+          class="absolute top-3 right-3 text-muted-foreground hover:text-destructive"
         >
           <ng-icon name="lucideX" class="size-4" />
         </button>
@@ -76,11 +76,11 @@
             />
             @if (group.get('compareAtPrice')?.value && group.get('price')?.value) {
               @if (group.get('compareAtPrice')!.value <= group.get('price')!.value) {
-                <p class="text-amber-600 text-xs mt-1">
+                <p class="text-warning text-xs mt-1">
                   {{ 'products.variants.compareAtPriceWarning' | transloco }}
                 </p>
               } @else {
-                <p class="text-green-600 text-xs mt-1">
+                <p class="text-success text-xs mt-1">
                   {{ 'products.variants.onSale' | transloco }}
                   {{ group.get('price')!.value }} ({{ 'products.variants.was' | transloco }}
                   {{ group.get('compareAtPrice')!.value }})
@@ -89,10 +89,29 @@
             }
           </div>
           <div class="space-y-1.5">
+            <label hlmLabel>{{ 'products.variants.costPrice' | transloco }}</label>
+            <input
+              hlmInput
+              formControlName="costPrice"
+              type="number"
+              step="0.01"
+              class="w-full"
+            />
+          </div>
+          <div class="space-y-1.5">
             <label hlmLabel>{{ 'products.variants.stockQuantity' | transloco }} *</label>
             <input
               hlmInput
               formControlName="stockQuantity"
+              type="number"
+              class="w-full"
+            />
+          </div>
+          <div class="space-y-1.5">
+            <label hlmLabel>{{ 'products.variants.reorderThreshold' | transloco }}</label>
+            <input
+              hlmInput
+              formControlName="reorderThreshold"
               type="number"
               class="w-full"
             />

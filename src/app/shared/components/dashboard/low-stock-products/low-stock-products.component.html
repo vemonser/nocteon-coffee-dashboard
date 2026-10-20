@@ -1,0 +1,33 @@
+@if (products.length === 0) {
+  <!-- An empty widget is ONE line. A 160 px card saying "nothing to report"
+       is a card that shouts about nothing. -->
+  <div class="flex items-center gap-2 py-1 text-sm text-muted-foreground">
+    <ng-icon name="lucideCheckCircle" class="size-4 shrink-0 text-success" />
+    <span>{{ 'dashboard.lowStock.noAlerts' | transloco }}</span>
+  </div>
+} @else {
+  <ul class="divide-y divide-border">
+    @for (p of products; track p.id) {
+      <li class="flex items-center gap-3 py-2">
+        @if (p.imageUrl) {
+          <img [src]="p.imageUrl" [alt]="p.name" class="size-9 rounded-md object-cover border" />
+        } @else {
+          <div class="size-9 rounded-md border bg-muted flex items-center justify-center">
+            <ng-icon name="lucidePackage" class="size-4 text-muted-foreground" />
+          </div>
+        }
+        <div class="flex-1 min-w-0">
+          <p class="text-sm font-medium truncate">{{ p.name }}</p>
+          <p class="text-xs text-muted-foreground">{{ 'dashboard.lowStock.stock' | transloco }}: {{ p.stockQuantity }} ({{ 'dashboard.lowStock.reserved' | transloco }}: {{ p.reservedQuantity ?? 0 }})</p>
+        </div>
+        <a
+          [routerLink]="['/dashboard/products', p.slug]"
+          class="flex size-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          [attr.aria-label]="'dashboard.lowStock.openProduct' | transloco"
+        >
+          <ng-icon name="lucideChevronRight" class="size-4" />
+        </a>
+      </li>
+    }
+  </ul>
+}

@@ -15,9 +15,9 @@ import { HlmDropdownMenuImports } from '@spartan-ng/helm/dropdown-menu';
 import { TranslocoPipe } from '@jsverse/transloco';
 
 import { AuthService } from '../../../core/auth/auth.service';
+import { NotifyService } from '../../../core/notify/notify.service';
 import { LanguageService } from '../../../core/i18n/language.service';
 import { HlmSidebarService } from '@spartan-ng/helm/sidebar';
-import { AppearanceSheetComponent } from '../../components/appearance-sheet/appearance-sheet.component';
 
 @Component({
   selector: 'app-user-menu',
@@ -29,7 +29,6 @@ import { AppearanceSheetComponent } from '../../components/appearance-sheet/appe
     HlmAvatarImports,
     HlmSidebarImports,
     HlmDropdownMenuImports,
-    AppearanceSheetComponent,
     TranslocoPipe,
   ],
   providers: [
@@ -49,9 +48,10 @@ export class UserMenuComponent {
   protected readonly auth = inject(AuthService);
   protected readonly language = inject(LanguageService);
   private readonly _sidebarService = inject(HlmSidebarService);
+  private readonly notify = inject(NotifyService);
 
   protected readonly _menuSide = computed(() =>
-    this._sidebarService.isMobile() ? 'top' : 'right',
+    this._sidebarService.isMobile() ? 'top' : this.currentDir() === 'rtl' ? 'left' : 'right',
   );
 
   readonly currentDir = computed(() =>
@@ -64,6 +64,8 @@ export class UserMenuComponent {
   }
 
   onLogout(): void {
-    this.auth.logout().subscribe();
+    this.auth.logout().subscribe({
+      error: (err) => this.notify.apiError(err, 'notify.logoutFailed', 'Logout failed'),
+    });
   }
 }

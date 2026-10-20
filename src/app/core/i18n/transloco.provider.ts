@@ -16,6 +16,9 @@ export function provideAppTransloco(): EnvironmentProviders {
         availableLangs: AvailableLangs,
         reRenderOnLangChange: true,
         prodMode: !isDevMode(),
+        // §11/§12: a missing key must fail loudly in development — raw keys
+        // must never reach the screen silently.
+        missingHandler: { logMissingKey: true, useFallbackTranslation: false },
       },
       loader: TranslocoHttpLoader,
     }),

@@ -7,6 +7,7 @@ export interface TastingNoteResponse {
   id: number;
   slug: string;
   createdAt?: string;
+  deletedAt?: string;
   translations: TastingNoteTranslation[];
 }
 

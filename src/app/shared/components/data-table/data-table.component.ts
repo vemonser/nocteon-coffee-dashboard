@@ -1,4 +1,5 @@
-import { Component, computed, effect, input, output, signal } from '@angular/core';
+import { Component, computed, effect, inject, input, output, signal } from '@angular/core';
+import { RouterModule } from '@angular/router';
 import {
   ColumnDef,
   getCoreRowModel,
@@ -11,12 +12,14 @@ import { ActionsCellComponent } from '../../ui/actions-cell/actions-cell.compone
 import { StatusCellComponent } from '../../ui/status-cell/status-cell.component';
 import { DeletedBadgeComponent } from '../../ui/deleted-badge/deleted-badge.component';
 import { TranslocoPipe } from '@jsverse/transloco';
+import { MoneyPipe } from '../../pipes/money.pipe';
 import { LocalizedDateComponent } from '../../ui/localized-date/localized-date.component';
 import { ImageCellComponent } from '../../ui/image-cell/image-cell.component';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideStar } from '@ng-icons/lucide';
 import { ColorCellComponent } from '../color-cell/color-cell.component';
 import { MainCellComponent } from './main-cell/main-cell.component';
+import { LanguageService } from '../../../core/i18n/language.service';
 
 export interface TableSortEvent {
   column: string;
@@ -25,7 +28,7 @@ export interface TableSortEvent {
 
 @Component({
   selector: 'app-data-table',
-  imports: [ImageCellComponent, ActionsCellComponent, StatusCellComponent, DeletedBadgeComponent, LocalizedDateComponent, ColorCellComponent, MainCellComponent, NgIcon, TranslocoPipe],
+  imports: [ImageCellComponent, ActionsCellComponent, StatusCellComponent, DeletedBadgeComponent, LocalizedDateComponent, ColorCellComponent, MainCellComponent, NgIcon, TranslocoPipe, RouterModule, MoneyPipe],
   providers: [provideIcons({ lucideStar })],
   templateUrl: './data-table.component.html',
   styleUrl: './data-table.component.css',
@@ -67,6 +70,13 @@ export class DataTableComponent {
     'Shipping Cost': 'common.shippingCost',
     Items: 'common.items',
     Origin: 'common.origin',
+    'منشأ': 'common.origin',
+    Farm: 'common.farm',
+    'مزرعة': 'common.farm',
+    Restore: 'common.restore',
+    'استعادة': 'common.restore',
+    'Delete permanently': 'common.deletePermanently',
+    'حذف نهائي': 'common.deletePermanently',
     Method: 'common.paymentMethod',
     Payment: 'common.paymentStatus',
     'Price Range': 'common.priceRange',
@@ -77,6 +87,20 @@ export class DataTableComponent {
     Scope: 'common.scope',
     Avatar: 'common.avatar',
     Joined: 'common.joined',
+    // Categories list (main-cell + other-language name column headers).
+    // Both UI languages' literals map to the same keys, so 'Category' /
+    // 'فئة' and 'Arabic name' / 'الاسم بالعربية' resolve instead of leaking
+    // raw strings into the transloco pipe ("Missing translation for ...").
+    Category: 'common.categoryHeader',
+    فئة: 'common.categoryHeader',
+    // Converted soft-delete pages: entity column headers (singular).
+    'Roast Level': 'common.roastLevel',
+    'Processing Method': 'common.processingMethod',
+    'Coffee Variety': 'common.coffeeVariety',
+    'Tasting Note': 'common.tastingNote',
+    // Trash tail column header (already mapped above).
+    'الاسم بالعربية': 'common.nameArabic',
+    'الاسم بالإنجليزية': 'common.nameEnglish',
   };
 
   headerKey(raw: unknown): string {
@@ -98,9 +122,15 @@ export class DataTableComponent {
    * Content-language direction for a column. Latin-text columns (slug,
    * English name) are always ltr; the Arabic name column is always rtl — in
    * BOTH UI languages. Language-neutral content (numeric id) follows the page
-   * direction ('' = inherit), so it sits on the UI edge in each language.
-   * The template binds the same value to th and td so the header and its
-   * cells share one edge.
+   * direction (null = inherit).
+   *
+   * Correction C: this value is pinned on the <bdi> INSIDE the cell, never on
+   * the th/td themselves — the cell keeps no dir of its own, so its
+   * `text-align: start` resolves against the table dir (the UI direction) and
+   * every column's text sits on one shared edge. A dir on the cell would make
+   * `start` follow content language instead, pushing the other language's
+   * name to the far edge of its column and leaving hundreds of px of dead
+   * space for the reader to cross.
    */
   contentDir(columnId: string): string {
     if (columnId === 'name_ar') return 'rtl';
@@ -132,6 +162,18 @@ export class DataTableComponent {
 
   /** Column count actually rendered — used for the empty-state `colspan`. */
   readonly renderedColumnCount = computed(() => this.renderedColumns().length);
+
+  /**
+   * Render-order column ids for the first-load skeleton: the stub rows must
+   * mirror the real column layout (same td padding, same visual/narrow
+   * collapses), so the shape the user sees is the shape that fills in.
+   */
+  readonly skeletonColumns = computed(() =>
+    this.renderedColumns().map(
+      (column) => (column.id ?? (column as { accessorKey?: unknown }).accessorKey) as string,
+    ),
+  );
+
   loading = input<boolean>(false);
   emptyMessage = input<string>('No data found');
   sortChange = output<TableSortEvent | null>();
@@ -167,18 +209,48 @@ export class DataTableComponent {
    *
    * Two shapes, because the two kinds of column carry their value differently:
    *
-   *  - A real column id (e.g. `slug` on the 8 catalog lists) renders that cell's
-   *    value as the control.
-   *  - `main_en` / `main_ar` render through `app-main-cell`, which has no single
-   *    value to wrap, so any non-empty value makes the slug line inside the cell
-   *    the control instead — this is how `categories` links out, its slug having
-   *    no column of its own.
+   *  - `main_en` / `main_ar` render through `app-main-cell`: the NAME becomes
+   *    the row's single clickable control (real anchor when the host supplies
+   *    an href builder).
+   *  - A real column id (e.g. `slug` on the catalog lists) is unaffected: the
+   *    slug stays a plain handle. One clickable control per row — the name.
    *
    * Empty (the default) leaves every cell inert. Pages that cannot reach a
    * detail view for a row (the trash tab) pass `''` so nothing looks clickable
    * and then does nothing.
    */
   navigableColumn = input<string>('');
+
+  private readonly language = inject(LanguageService);
+
+  /**
+   * The entity-identity name column of the CURRENT UI language (`name_en` /
+   * `name_ar`, the 8 catalog lists). Only that cell is the row's single
+   * clickable control; the other language's name stays plain text with its
+   * tooltip, exactly like the categories main-cell pattern.
+   */
+  isNameCell(columnId: string): boolean {
+    return this.navigableColumn() !== '' && columnId === `name_${this.language.language()}`;
+  }
+
+  /**
+   * Returns the routerLink command for a row's detail page, when the table
+   * should expose real anchors on the name (middle-click / open-in-new-tab
+   * work). The Categories list supplies it; lists that navigate through a
+   * click handler leave it unset — their name then renders inert, because a
+   * plain span that does nothing would be worse than no control at all.
+   */
+  navigableHref = input<(row: any) => any[] | null>(() => null);
+
+  /**
+   * Detail-page command for a row. Returns null when the table is not
+   * navigable (e.g. the trash tab) or the list supplied no href builder — so
+   * no dead-looking control is ever rendered.
+   */
+  hrefFor(row: any): any[] | null {
+    if (!this.navigableColumn()) return null;
+    return this.navigableHref()(row);
+  }
 
   /**
    * Floor width for the table. Set it to the sum of the page's column widths so
@@ -230,12 +302,21 @@ export class DataTableComponent {
   /**
    * "3 days ago" for the Deleted column. Uses Intl.RelativeTimeFormat with the
    * document language, so Arabic renders "قبل 3 أيام" without extra keys.
+   * For very recent times (< 1 minute), returns "Just now" / "الآن" instead of "now".
    */
   relativeTime(value: unknown): string {
     if (!value) return '';
     const then = new Date(value as string).getTime();
     if (Number.isNaN(then)) return '';
     const locale = document.documentElement.lang || 'en';
+    const diff = then - Date.now();
+    const absDiff = Math.abs(diff);
+
+    // Less than 1 minute -> "Just now" / "الآن"
+    if (absDiff < 60_000) {
+      return locale.startsWith('ar') ? 'الآن' : 'Just now';
+    }
+
     const units: Array<[Intl.RelativeTimeFormatUnit, number]> = [
       ['year', 365 * 24 * 3600e3],
       ['month', 30 * 24 * 3600e3],
@@ -244,12 +325,11 @@ export class DataTableComponent {
       ['hour', 3600e3],
       ['minute', 60e3],
     ];
-    const diff = then - Date.now();
     const rtf = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' });
     for (const [unit, ms] of units) {
-      if (Math.abs(diff) >= ms) return rtf.format(Math.round(diff / ms), unit);
+      if (absDiff >= ms) return rtf.format(Math.round(diff / ms), unit);
     }
-    return rtf.format(0, 'second');
+    return locale.startsWith('ar') ? 'الآن' : 'Just now';
   }
 
   sorting = signal<SortingState>([]);
@@ -317,7 +397,7 @@ export class DataTableComponent {
     // Secondary identifiers / metadata.
     code: '150px',
     origin: '130px',
-    originSlug: '130px',
+    originSlug: '160px',
     role: '110px',
     email: '180px',
     userEmail: '180px',
@@ -361,6 +441,7 @@ export class DataTableComponent {
     'stock',
     'amount',
     'total',
+    'totalAmount',
     'priceRange',
     'quantitySold',
   ]);

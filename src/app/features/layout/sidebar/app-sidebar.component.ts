@@ -1,9 +1,8 @@
-import { ChangeDetectionStrategy, Component, ElementRef, computed, effect, inject, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, computed, effect, inject, signal, viewChild } from '@angular/core';
 import { NavigationEnd, Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
-  lucideCommand,
   lucideLayoutDashboard,
   lucidePackage,
   lucideUsers,
@@ -26,14 +25,15 @@ import {
   lucideSlidersHorizontal,
   lucideMegaphone,
   lucideMail,
+  lucideChevronDown,
 } from '@ng-icons/lucide';
-import { HlmSidebarImports, HlmSidebarService } from '@spartan-ng/helm/sidebar';
+import { HlmSidebarImports } from '@spartan-ng/helm/sidebar';
 import { HlmSeparator } from '@spartan-ng/helm/separator';
 import { filter } from 'rxjs';
 
 import { AuthService } from '../../../core/auth/auth.service';
 import { LanguageService } from '../../../core/i18n/language.service';
-import { getNavItems } from '../../../shared/data/sidebar-nav-items';
+import { getNavItems, sectionKeyForRoute } from '../../../shared/data/sidebar-nav-items';
 import { UserMenuComponent } from '../../../shared/ui/user-menu/user-menu.component';
 
 @Component({
@@ -49,7 +49,6 @@ import { UserMenuComponent } from '../../../shared/ui/user-menu/user-menu.compon
   ],
   providers: [
     provideIcons({
-      lucideCommand,
       lucideLayoutDashboard,
       lucidePackage,
       lucideUsers,
@@ -72,22 +71,24 @@ import { UserMenuComponent } from '../../../shared/ui/user-menu/user-menu.compon
       lucideSlidersHorizontal,
       lucideMegaphone,
       lucideMail,
+      lucideChevronDown,
     }),
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  styleUrl: './app-sidebar.component.css',
   templateUrl: './app-sidebar.component.html',
 })
 export class AppSidebarComponent {
-  private readonly _sidebarService = inject(HlmSidebarService);
   private readonly _router = inject(Router);
   protected readonly auth = inject(AuthService);
   protected readonly language = inject(LanguageService);
 
-  private readonly navContainer = viewChild.required<ElementRef<HTMLElement>>('nav');
+  private readonly ITEM_OPEN_KEY = 'nocteon-sidebar-item-open';
 
-  protected readonly _menuSide = computed(() =>
-    this._sidebarService.isMobile() ? 'top' : 'right',
-  );
+  /** Track expanded/collapsed state for parent nav items with children. */
+  protected readonly openItems = signal<Set<string>>(this.loadOpenItems());
+
+  private readonly navContainer = viewChild.required<ElementRef<HTMLElement>>('nav');
 
   private readonly _navItems = computed(() => getNavItems(this.language.current()));
 
@@ -99,7 +100,7 @@ export class AppSidebarComponent {
       .sections.map((section) => ({
         ...section,
         items: section.items.filter(
-          (item) => !item.permission || this.auth.hasPermission(item.permission),
+          (parentItem) => !parentItem.permission || this.auth.hasPermission(parentItem.permission),
         ),
       }))
       .filter((section) => section.items.length > 0),
@@ -110,14 +111,73 @@ export class AppSidebarComponent {
     // reliable way to find it across the groups.
     this._router.events
       .pipe(filter((event) => event instanceof NavigationEnd))
-      .subscribe(() => this.scrollActiveIntoView());
+      .subscribe(() => {
+        this.autoOpenForUrl(this._router.url);
+        this.scrollActiveIntoView();
+      });
+
+    // First paint: open the current page's group instead of everything.
+    this.autoOpenForUrl(this._router.url);
 
     effect(() => {
       // Re-run when the nav re-renders (language switch, permission change).
       this.sections();
-      this._menuSide();
       this.scrollActiveIntoView();
     });
+  }
+
+  /** Toggle a parent nav item's children. */
+  protected toggleItem(route: string): void {
+    const next = new Set(this.openItems());
+    if (next.has(route)) {
+      next.delete(route);
+    } else {
+      next.add(route);
+    }
+    this.openItems.set(next);
+    this.persistOpenItems();
+  }
+
+  /** Check if a parent item's children are collapsed. */
+  protected isItemCollapsed(route: string): boolean {
+    return !this.openItems().has(route);
+  }
+
+  /** Opens the group holding the current route; closes the rest. */
+  private autoOpenForUrl(url: string): void {
+    // Also auto-open the parent item if the route is a child
+    const navItems = getNavItems('en');
+    for (const section of navItems.sections) {
+      for (const item of section.items) {
+        if (item.children?.some((child) => url.startsWith(child.route))) {
+          this.openItems.update((s) => new Set([...s, item.route]));
+          this.persistOpenItems();
+          break;
+        }
+      }
+    }
+  }
+
+  private persistOpenItems(): void {
+    try {
+      const items = Array.from(this.openItems());
+      if (items.length > 0) {
+        localStorage.setItem(this.ITEM_OPEN_KEY, JSON.stringify(items));
+      } else {
+        localStorage.removeItem(this.ITEM_OPEN_KEY);
+      }
+    } catch {
+      /* storage unavailable */
+    }
+  }
+
+  private loadOpenItems(): Set<string> {
+    try {
+      const saved = localStorage.getItem(this.ITEM_OPEN_KEY);
+      return saved ? new Set(JSON.parse(saved)) : new Set();
+    } catch {
+      return new Set();
+    }
   }
 
   private scrollActiveIntoView(): void {

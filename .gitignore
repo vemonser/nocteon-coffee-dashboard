@@ -8,6 +8,8 @@ dist/
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+# Captured admin storageState holds a live refresh token.
+/e2e/.auth/
 
 # Environment & secrets — NEVER COMMIT
 .env
@@ -24,3 +26,13 @@ dist/
 
 # Playwright MCP snapshot artifacts
 .playwright-mcp/
+
+# Ticket evidence captures (screenshots + measurement JSON)
+/evidence/
+
+# Scratch output from ad-hoc probes (debug logs, one-off screenshots)
+console*.txt
+network.txt
+/*.png
+/*.log
+

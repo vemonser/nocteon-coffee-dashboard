@@ -1,11 +1,9 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @import './themes/tokens.css';
-@import './themes/emerald.css';
-@import './themes/burgundy.css';
+@import './themes/copper.css';
 
 @import './radius.css';
-@import './shadows.css';
 
 @layer base {
   * {
@@ -76,7 +74,61 @@
 td:lang(ar),
 span:lang(ar),
 [lang='ar'] {
-  font-family: 'Cairo', 'ArabicFallback', sans-serif !important;
+  font-family: 'IBM Plex Sans Arabic', 'ArabicFallback', sans-serif !important;
+}
+
+/* §6: table headers are not uppercase in Arabic. `uppercase` is a no-op on
+   Arabic script itself, but it would still shout Latin tokens (slugs, codes)
+   inside RTL layouts — neutralize it there. */
+[dir='rtl'] .uppercase {
+  text-transform: none;
+}
+
+/* §7: lifecycle view transition. Active and Trash are one page, so the swap
+   crosses over instead of cutting: BaseListComponent paints `viewPhase()` on the
+   panel root and the parts that actually change carry `.view-fade`. Vertical
+   offset only, so LTR and RTL get the same motion. Timing lives here alone —
+   the phase advances on `animationend`. */
+[data-view-phase='out'] .view-fade {
+  animation: lifecycle-view-out 140ms ease-in both;
+}
+
+[data-view-phase='in'] .view-fade {
+  animation: lifecycle-view-in 180ms ease-out both;
+}
+
+@keyframes lifecycle-view-out {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+@keyframes lifecycle-view-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@layer base {
+  /* §11: respect prefers-reduced-motion. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
 }
 @layer utilities {
   .scrollbar-hide {
@@ -88,6 +140,96 @@ span:lang(ar),
   .scrollbar-hide::-webkit-scrollbar {
     display: none; /* Chrome, Safari, Edge */
   }
+}
+
+/*
+ * Table checkboxes (Phase 1.7): native input with appearance:none so the
+ * browser never paints its own gray box. Unchecked = transparent + --input
+ * border (never a filled square); checked = primary fill + primary border
+ * with a light check. Shared by DataTable and the Columns menu — one
+ * definition, no drift. Works in dark mode and RTL.
+ */
+.table-check {
+  appearance: none;
+  -webkit-appearance: none;
+  display: inline-grid;
+  place-content: center;
+  margin: 0;
+  flex-shrink: 0;
+  background-color: transparent;
+  border: 1px solid var(--input);
+  cursor: pointer;
+  transition: background-color 150ms, border-color 150ms;
+}
+
+.table-check::before {
+  content: '';
+  width: 0.65em;
+  height: 0.65em;
+  transform: scale(0);
+  transition: transform 150ms;
+  clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+  background-color: var(--primary-foreground);
+}
+
+.table-check:checked {
+  background-color: var(--primary);
+  border-color: var(--primary);
+}
+
+.table-check:checked::before {
+  transform: scale(1);
+}
+
+.table-check:indeterminate {
+  background-color: var(--primary);
+  border-color: var(--primary);
+}
+
+.table-check:indeterminate::before {
+  transform: scale(1);
+  clip-path: polygon(0 35%, 100% 35%, 100% 65%, 0 65%);
+}
+
+.table-check:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.table-check:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/*
+ * Thin overlay-like scrollbar for the sidebar nav (§8). Transparent track,
+ * token-colored thumb, no arrow buttons. Firefox + WebKit covered.
+ */
+.thin-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.thin-scroll::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.thin-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.thin-scroll::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 999px;
+}
+
+.thin-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--input);
+}
+
+.thin-scroll::-webkit-scrollbar-button {
+  display: none;
 }
 quill-editor .ql-container {
   min-height: 200px;

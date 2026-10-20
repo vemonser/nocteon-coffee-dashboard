@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { map, Observable } from 'rxjs';
+import { Observable } from 'rxjs';
 import { ApiResponse, PageResponse } from '../../../core/models/api-response.model';
 import { environment } from '../../../../environments/environment';
 import { OrderFilterRequest, OrderResponse, OrderStatus } from '../models/order.model';
@@ -27,23 +27,9 @@ export class OrderService {
     if (params.direction) p = p.set('direction', params.direction);
     if (params.status) p = p.set('status', params.status);
     if (params.userId) p = p.set('userId', params.userId.toString());
+    if (params.search) p = p.set('search', params.search);
 
-    return this.http
-      .get<ApiResponse<SpringPage<OrderResponse>>>(this.base, { params: p })
-      .pipe(
-        map((res) => ({
-          ...res,
-          data: {
-            content: res.data.content,
-            page: res.data.number,
-            size: res.data.size,
-            totalElements: res.data.totalElements,
-            totalPages: res.data.totalPages,
-            first: res.data.first,
-            last: res.data.last,
-          },
-        })),
-      );
+    return this.http.get<ApiResponse<PageResponse<OrderResponse>>>(this.base, { params: p });
   }
 
   updateStatus(id: number, status: OrderStatus): Observable<ApiResponse<OrderResponse>> {
@@ -51,6 +37,8 @@ export class OrderService {
   }
 
   getById(id: number): Observable<ApiResponse<OrderResponse>> {
-    return this.http.get<ApiResponse<OrderResponse>>(`${this.base}/{$id}`);
+    // `{$id}` (a typo, not an interpolation) sent GET /orders/{$id} — the order
+    // detail page could never load, which is why it stayed unrouted.
+    return this.http.get<ApiResponse<OrderResponse>>(`${this.base}/${id}`);
   }
 }

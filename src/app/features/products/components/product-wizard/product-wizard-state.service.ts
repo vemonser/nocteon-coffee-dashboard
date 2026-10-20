@@ -132,7 +132,9 @@ export class ProductWizardStateService {
       sku: [v?.sku ?? '', Validators.required],
       price: [v?.price ?? null, [Validators.required, Validators.min(0)]],
       compareAtPrice: [v?.compareAtPrice ?? null],
+      costPrice: [v?.costPrice ?? null],
       stockQuantity: [v?.stockQuantity ?? 0, [Validators.required, Validators.min(0)]],
+      reorderThreshold: [v?.reorderThreshold ?? 5, [Validators.min(0)]],
       isActive: [v?.isActive ?? true],
       optionPicks: this.fb.array([], ProductWizardStateService.atLeastOneValueSelected),
     });

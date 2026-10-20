@@ -12,11 +12,13 @@ import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmInputImports } from '@spartan-ng/helm/input';
 import { HlmDialogImports } from '@spartan-ng/helm/dialog';
 import { HlmLabelImports } from '@spartan-ng/helm/label';
+import { HlmCheckboxImports } from '@spartan-ng/helm/checkbox';
 
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
   lucideX,
   lucideCheck,
+  lucideLoader2,
 } from '@ng-icons/lucide';
 
 import { TranslocoPipe } from '@jsverse/transloco';
@@ -35,11 +37,11 @@ import { DataTableComponent } from '../../../shared/components/data-table/data-t
     HlmInputImports,
     HlmDialogImports,
     HlmLabelImports,
+    HlmCheckboxImports,
     NgIcon,
   ],
   providers: [
-    provideIcons({
-      lucideX,
+    provideIcons({ lucideLoader2, lucideX,
       lucideCheck,
     }),
   ],
@@ -54,9 +56,18 @@ export class StoreSettingsListComponent extends BaseListComponent<StoreSettingRe
       header: 'ID',
       enableSorting: false,
     }),
+    this.columnHelper.accessor('currency', {
+      header: 'Currency',
+      enableSorting: false,
+    }),
     this.columnHelper.accessor('freeShippingThreshold', {
       header: 'Free Shipping Threshold',
       enableSorting: false,
+    }),
+    this.columnHelper.accessor('isFreeShippingActive', {
+      header: 'Free Shipping Active',
+      enableSorting: false,
+      cell: (info) => (info.getValue() ? 'Yes' : 'No'),
     }),
     this.columnHelper.accessor('createdAt', {
       header: 'Created At',
@@ -95,16 +106,24 @@ export class StoreSettingsListComponent extends BaseListComponent<StoreSettingRe
   protected override buildForm(): FormGroup {
     return this.fb.group({
       freeShippingThreshold: [null, Validators.required],
+      currency: ['EGP', [Validators.required, Validators.minLength(3), Validators.maxLength(3), Validators.pattern(/^[A-Z]{3}$/)]],
+      isFreeShippingActive: [true],
     });
   }
 
   protected override onEditOpen(setting: StoreSetting): void {
-    this.form.patchValue({ freeShippingThreshold: setting.freeShippingThreshold });
+    this.form.patchValue({
+      freeShippingThreshold: setting.freeShippingThreshold,
+      currency: setting.currency ?? 'EGP',
+      isFreeShippingActive: setting.isFreeShippingActive ?? true,
+    });
   }
 
   protected override toRequest(): StoreSetting {
     return {
       freeShippingThreshold: Number(this.form.value.freeShippingThreshold),
+      currency: String(this.form.value.currency).toUpperCase(),
+      isFreeShippingActive: Boolean(this.form.value.isFreeShippingActive),
     };
   }
 

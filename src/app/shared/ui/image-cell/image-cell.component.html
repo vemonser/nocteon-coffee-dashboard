@@ -1,11 +1,20 @@
 ﻿@if (src()) {
-  <img [src]="src()" [alt]="alt()" class="w-10 h-10 rounded-md object-cover" />
+  <!--
+    Fixed-size wrapper instead of sizing the <img> directly: Tailwind preflight
+    sets `img { max-width: 100% }`, so an <img class="w-10 h-10"> inside a cell
+    whose content box is narrower than 40px is squashed into a vertical ellipse
+    (24x40) while h-10 keeps the height. Filling a fixed 40x40 box from the
+    inside cannot be clamped.
+  -->
+  <div class="h-10 w-10 shrink-0 overflow-hidden rounded-[var(--radius-control)] bg-muted">
+    <img [src]="src()" [alt]="alt()" class="h-full w-full object-cover" />
+  </div>
 } @else {
   <!-- Decorative stand-in: the previous text placeholder measured 2.31:1 -->
   <div
     role="img"
     [attr.aria-label]="'imageCell.noImage' | transloco"
-    class="w-10 h-10 rounded-md bg-muted flex items-center justify-center"
+    class="flex h-10 w-10 shrink-0 items-center justify-center rounded-[var(--radius-control)] bg-muted"
   >
     <ng-icon name="lucideImage" class="size-4 text-muted-foreground/50" aria-hidden="true" />
   </div>

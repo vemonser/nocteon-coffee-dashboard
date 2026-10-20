@@ -1,214 +1,267 @@
-<div class="flex flex-col gap-6 p-6">
-  <!-- Header Row -->
-  <div class="flex items-center justify-between">
-    <div>
-      <h1 class="text-2xl font-bold tracking-tight">{{ 'dashboard.title' | transloco }}</h1>
-      <p class="text-muted-foreground">{{ 'dashboard.subtitle' | transloco }}</p>
-    </div>
-
-    <div class="flex items-center gap-3">
-      <!-- Date Range Filter -->
-      <div class="flex items-center gap-2 rounded-md border bg-card p-1">
-        @for (option of filterOptions; track option.value) {
-          <button
-            hlmBtn
-            [variant]="selectedDays() === option.value ? 'default' : 'ghost'"
-            size="sm"
-            (click)="onFilterChange(option.value)"
-          >
-            @if (option.value === 7) { {{ 'dashboard.last7Days' | transloco }} }
-            @else if (option.value === 30) { {{ 'dashboard.last30Days' | transloco }} }
-            @else if (option.value === 90) { {{ 'dashboard.last90Days' | transloco }} }
-            @else { {{ 'dashboard.lastYear' | transloco }} }
-          </button>
-        }
-      </div>
-
-      <!-- <button hlmBtn variant="outline" size="sm">
-        <ng-icon name="lucideCalendar" class="mr-2 size-4" />
-        {{ 'dashboard.exportReport' | transloco }}
-      </button> -->
-    </div>
+<div class="flex flex-col gap-6 p-6 max-w-7xl mx-auto">
+  <!-- Title and subtitle above the toolbar. -->
+  <div class="mb-1">
+    <h1 class="text-2xl font-medium tracking-tight">{{ 'dashboard.title' | transloco }}</h1>
+    <p class="text-sm leading-none text-muted-foreground">{{ 'dashboard.subtitle' | transloco }}</p>
   </div>
 
-  <!-- Stats Cards Row -->
-  <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
-    @if (statsService.statsCards(); as stats) {
-      <!-- Total Revenue -->
-      <hlm-card class="p-0 flex justify-between h-full rounded-md">
-        <div hlmCardContent class="p-4 h-full flex flex-col justify-between">
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-sm text-muted-foreground pb-1">{{ 'dashboard.metrics.totalRevenue' | transloco }}</p>
-              <p class="text-2xl font-bold">$ {{ stats.totalRevenue | number }}</p>
-            </div>
-            <div
-              class="rounded-full self-start bg-primary/10 w-9 h-9 flex justify-center items-center p-2"
-            >
-              <ng-icon name="lucideDollarSign" class="size-5 text-primary" />
-            </div>
-          </div>
-          <div class="mt-2 flex flex-wrap items-center gap-1 text-sm text-green-600">
-            <div class="flex items-center gap-1">
-              <div class="flex justify-center items-center">
-                <ng-icon name="lucideTrendingUp" class="w-10" />
-              </div>
-              <span class="w-full">+12.5%</span>
-            </div>
-            <span class="text-muted-foreground w-full">{{ 'dashboard.vsPreviousPeriod' | transloco }}</span>
-          </div>
-        </div>
-      </hlm-card>
+  <!-- ONE toolbar: the range, the range it compares against, and the export. -->
+  <app-dashboard-toolbar />
 
-      <!-- Orders -->
-      <hlm-card class="p-0 flex justify-between h-full rounded-md">
-        <div hlmCardContent class="p-4 h-full flex flex-col justify-between">
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-sm text-muted-foreground">{{ 'dashboard.orders' | transloco }}</p>
-              <p class="text-2xl font-bold">{{ stats.totalOrders | number }}</p>
-            </div>
-            <div
-              class="rounded-full self-start bg-primary/10 w-9 h-9 flex justify-center items-center p-2"
-            >
-              <ng-icon name="lucideShoppingCart" class="size-5 text-primary" />
-            </div>
-          </div>
-          <div class="mt-2 flex flex-wrap items-center gap-1 text-sm text-green-600">
-            <div class="flex items-center w-full gap-1">
-              <div class="flex justify-center items-center">
-                <ng-icon name="lucideTrendingUp" class="w-10" />
-              </div>
-              <span class="w-full">+8.3%</span>
-            </div>
-            <span class="text-muted-foreground w-full">{{ 'dashboard.vsPreviousPeriod' | transloco }}</span>
-          </div>
-        </div>
-      </hlm-card>
+  @if (statsService.storeCurrencyError()) {
+    <!-- The store settings could not be read, so every amount falls back to
+         USD. The reader has to be told, and the read has to be retryable. -->
+    <div
+      role="alert"
+      class="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-[var(--radius-control)] border border-warning/40 bg-warning-soft px-4 py-3 text-sm text-warning"
+    >
+      <ng-icon name="lucideAlertTriangle" class="size-4 shrink-0" aria-hidden="true" />
+      <p>{{ 'dashboard.currencyUnavailable' | transloco }}</p>
+      <button
+        hlmBtn
+        variant="outline"
+        size="sm"
+        class="ms-auto"
+        (click)="storeSettings.retry()"
+      >
+        {{ 'common.retry' | transloco }}
+      </button>
+    </div>
+  }
 
-      <!-- New Customers -->
-      <hlm-card class="p-0 flex justify-between h-full rounded-md">
-        <div hlmCardContent class="p-4 h-full flex flex-col justify-between">
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-sm text-muted-foreground">{{ 'dashboard.newCustomers' | transloco }}</p>
-              <p class="text-2xl font-bold">{{ stats.newCustomers | number }}</p>
-            </div>
-            <div
-              class="rounded-full self-start bg-primary/10 w-9 h-9 flex justify-center items-center p-2"
-            >
-              <ng-icon name="lucideUsers" class="size-5 text-primary" />
-            </div>
-          </div>
-          <div class="mt-2 flex flex-wrap items-center gap-1 text-sm text-green-600">
-            <div class="flex items-center gap-1">
-              <div class="flex justify-center items-center">
-                <ng-icon name="lucideTrendingUp" class="w-10" />
-              </div>
-              <span>+15.7%</span>
-            </div>
-            <span class="text-muted-foreground">{{ 'dashboard.vsPreviousPeriod' | transloco }}</span>
-          </div>
-        </div>
-      </hlm-card>
-
-      <!-- Coffee Sold -->
-      <hlm-card class="p-0 flex justify-between h-full rounded-md">
-        <div hlmCardContent class="p-4 h-full flex flex-col justify-between">
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-sm text-muted-foreground">{{ 'dashboard.coffeeSold' | transloco }}</p>
-              <p class="text-2xl font-bold">{{ stats.coffeeSold | number }} kg</p>
-            </div>
-            <div
-              class="rounded-full self-start bg-primary/10 w-9 h-9 flex justify-center items-center p-2"
-            >
-              <ng-icon name="lucideCoffee" class="size-5 text-primary" />
-            </div>
-          </div>
-          <div class="mt-2 flex flex-wrap items-center gap-1 text-sm text-green-600">
-            <div class="flex items-center gap-1">
-              <div class="flex justify-center items-center">
-                <ng-icon name="lucideTrendingUp" class="size-4" />
-              </div>
-              <span class="w-full">+10.2%</span>
-            </div>
-            <span class="text-muted-foreground w-full">{{ 'dashboard.vsPreviousPeriod' | transloco }}</span>
-          </div>
-        </div>
-      </hlm-card>
-
-      <!-- AOV -->
-      <hlm-card class="p-0 flex justify-between h-full">
-        <div hlmCardContent class="p-4 h-full flex flex-col justify-between">
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-sm text-muted-foreground">{{ 'dashboard.averageOrderValue' | transloco }}</p>
-              <p class="text-2xl font-bold">${{ stats.averageOrderValue | number }}</p>
-            </div>
-            <div
-              class="rounded-full self-start bg-primary/10 w-9 h-9 flex justify-center items-center p-2"
-            >
-              <ng-icon name="lucidePackage" class="size-5 text-primary" />
-            </div>
-          </div>
-          <div class="mt-2 flex flex-wrap items-center gap-1 text-sm text-green-600">
-            <div class="flex items-center gap-1">
-              <div class="flex justify-center items-center">
-                <ng-icon name="lucideTrendingUp" class="size-4" />
-              </div>
-              <span class="w-full">+6.1%</span>
-            </div>
-            <span class="text-muted-foreground w-full">{{ 'dashboard.vsPreviousPeriod' | transloco }}</span>
-          </div>
-        </div>
-      </hlm-card>
-    }
-  </div>
-
-  <!-- Charts Row -->
-  <div class="grid gap-4 lg:grid-cols-3">
-    <!-- Revenue Chart -->
-    <hlm-card class="lg:col-span-2">
-      <hlm-card-header>
-        <h3 hlmCardTitle>{{ 'dashboard.revenueOverview' | transloco }}</h3>
-        <app-online-users [count]="statsService.onlineUsers()" />
-      </hlm-card-header>
-      <div hlmCardContent>
-        <app-revenue-chart [data]="statsService.revenueChartData()" />
-      </div>
-    </hlm-card>
-
-    <!-- Category Chart -->
+  <!-- The KPI area: FOUR strong cards, then a compact strip for the rest.
+       Eight equal cards would say that nothing matters; four say what does. -->
+  @if (statsService.overviewError(); as error) {
+    <!-- The overview failed: say so, and offer a retry. The toolbar and
+         the attention strip keep working. -->
     <hlm-card>
-      <hlm-card-header>
-        <h3 hlmCardTitle>{{ 'dashboard.revenueByCategory' | transloco }}</h3>
-      </hlm-card-header>
-      <div hlmCardContent>
-        <app-category-chart [data]="statsService.categoryChartData()" />
+      <div hlmCardContent class="shrink-0">
+        <app-widget-state
+          [error]="error"
+          [retry]="retryOverview"
+        />
+      </div>
+    </hlm-card>
+  } @else if (!statsService.loaded() && statsService.loading()) {
+    <!-- The first load: a skeleton with the shape of the KPI row. -->
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      @for (i of [1, 2, 3, 4]; track i) {
+        <hlm-card>
+          <div hlmCardContent class="space-y-2">
+            <div class="h-3 w-1/2 rounded bg-muted skeleton"></div>
+            <div class="h-8 w-2/3 rounded bg-muted skeleton"></div>
+            <div class="h-4 w-1/4 rounded bg-muted skeleton"></div>
+          </div>
+        </hlm-card>
+      }
+    </div>
+  } @else if (statsService.statsCards(); as stats) {
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <app-kpi-card
+        [label]="'dashboard.metrics.totalRevenue' | transloco"
+        [value]="(stats.totalRevenue | money)"
+        [delta]="delta().revenue"
+        [sparkline]="revenueSparkline()"
+        [comparisonLabel]="'dashboard.metrics.totalRevenue' | transloco"
+        link="/dashboard/orders"
+      />
+      <app-kpi-card
+        [label]="'dashboard.orders' | transloco"
+        [value]="fmtCount(stats.totalOrders)"
+        [delta]="delta().orders"
+        [comparisonLabel]="'dashboard.orders' | transloco"
+        link="/dashboard/orders"
+      />
+      <app-kpi-card
+        [label]="'dashboard.newCustomers' | transloco"
+        [value]="fmtCount(stats.newCustomers)"
+        [delta]="delta().customers"
+        [comparisonLabel]="'dashboard.newCustomers' | transloco"
+        link="/dashboard/users"
+      />
+      <app-kpi-card
+        [label]="'dashboard.averageOrderValue' | transloco"
+        [value]="(stats.averageOrderValue | money)"
+        [delta]="delta().aov"
+        [comparisonLabel]="'dashboard.averageOrderValue' | transloco"
+        link="/dashboard/orders"
+      />
+    </div>
+
+    <!-- The secondary strip: the rest, compact. Online users is a LIVE
+         indicator, not a period KPI, so it says so. -->
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <hlm-card size="sm" class="h-full">
+        <div hlmCardContent class="flex items-center justify-between gap-3">
+          <div class="min-w-0">
+            <p class="truncate text-xs text-muted-foreground">{{ 'dashboard.repeatPurchaseRate' | transloco }}</p>
+            @if (repeatPurchaseRate(); as r) {
+              <p class="text-xl font-medium tabular-nums">{{ r.repeatRate | number:'1.0-1' }}%</p>
+              <p class="text-xs text-muted-foreground">
+                {{ r.repeatCustomers }} {{ 'dashboard.of' | transloco }} {{ r.totalCustomers | plural: 'dashboard.countCustomers' }}
+              </p>
+            }
+          </div>
+        </div>
+      </hlm-card>
+
+      <hlm-card size="sm" class="h-full">
+        <div hlmCardContent class="flex items-center justify-between gap-3">
+          <div class="min-w-0">
+            <p class="flex items-center gap-1 truncate text-xs text-muted-foreground">
+              {{ 'dashboard.refundRate' | transloco }}
+              <span
+                class="cursor-help"
+                [title]="'dashboard.refundRateHelp' | transloco"
+                [attr.aria-label]="'dashboard.refundRateHelp' | transloco"
+              >
+                <ng-icon name="lucideInfo" class="size-3 text-muted-foreground" />
+              </span>
+            </p>
+            @if (refundRate(); as r) {
+              <p class="text-xl font-medium tabular-nums">{{ r.refundRate | number:'1.0-1' }}%</p>
+              <p class="text-xs text-muted-foreground">
+                {{ r.totalRefunded }} {{ 'dashboard.of' | transloco }} {{ r.totalPaid | plural: 'dashboard.countOrders' }}
+              </p>
+            }
+          </div>
+        </div>
+      </hlm-card>
+
+      <hlm-card size="sm" class="h-full">
+        <div hlmCardContent class="flex items-center justify-between gap-3">
+          <div class="min-w-0">
+            <p class="truncate text-xs text-muted-foreground">{{ 'dashboard.coffeeSold' | transloco }}</p>
+            <p class="text-xl font-medium tabular-nums">
+              {{ stats.coffeeSold | number:'1.2-2' }} {{ 'dashboard.kg' | transloco }}
+            </p>
+            <p class="text-xs text-muted-foreground">{{ 'dashboard.coffeeSoldHint' | transloco }}</p>
+          </div>
+        </div>
+      </hlm-card>
+
+      <!-- Online users: a LIVE indicator, not a period KPI. -->
+      <hlm-card size="sm" class="h-full">
+        <div hlmCardContent class="flex items-center justify-between gap-3">
+          <div class="min-w-0">
+            <p class="truncate text-xs text-muted-foreground">{{ 'dashboard.onlineUsers' | transloco }}</p>
+            <p class="flex items-center gap-1.5 text-xl font-medium tabular-nums">
+              <span class="relative flex size-2">
+                <span class="absolute inline-flex size-full animate-ping rounded-full bg-success opacity-60"></span>
+                <span class="relative inline-flex size-2 rounded-full bg-success"></span>
+              </span>
+              {{ fmtCount(onlineUsersCount()) }}
+            </p>
+            <p class="text-xs text-muted-foreground">{{ 'dashboard.onlineUsersCaption' | transloco }}</p>
+          </div>
+        </div>
+      </hlm-card>
+    </div>
+  }
+
+  <!-- Needs Attention Panel -->
+  <app-needs-attention-panel />
+
+  <!-- The revenue chart is the hero: full width, and the only thing above
+       the fold that is a chart. -->
+  <hlm-card>
+    <hlm-card-header>
+      <app-widget-header [title]="'dashboard.revenueOverview' | transloco" />
+    </hlm-card-header>
+    <div hlmCardContent class="shrink-0">
+      @if (statsService.revenueChartData().length > 0 && statsService.revenueChartData().some(d => d.revenue > 0)) {
+        <app-revenue-chart
+          [data]="statsService.revenueChartData()"
+          [previousPeriodData]="statsService.revenueChartPreviousPeriod()"
+          [currency]="statsService.storeCurrency()"
+        />
+      } @else {
+        <div class="flex flex-col items-center justify-center h-64 text-muted-foreground">
+          <ng-icon name="lucideLineChart" class="size-12 opacity-30 mb-3" />
+          <p class="font-medium">{{ 'dashboard.revenue.noData' | transloco }}</p>
+        </div>
+      }
+    </div>
+  </hlm-card>
+
+  <!-- One row: "Revenue by" (origin | roast level | category) and
+       "Orders by" (status | payment method). The three revenue breakdowns
+       were three separate donut cards asking the same question; they are
+       one card with three tabs now. -->
+  <div class="grid gap-4 lg:grid-cols-2">
+    <hlm-card>
+      <div hlmCardContent class="shrink-0">
+        <app-revenue-breakdown-card />
+      </div>
+    </hlm-card>
+
+    <hlm-card>
+      <div hlmCardContent class="shrink-0">
+        <app-orders-breakdown-card />
       </div>
     </hlm-card>
   </div>
 
-  <!-- Bottom Row -->
-  <div class="grid gap-4 lg:grid-cols-3">
+  <!-- Top products | Recent orders -->
+  <div class="grid gap-4 lg:grid-cols-2">
     <!-- Top Products -->
     <hlm-card>
       <hlm-card-header>
-        <h3 hlm-card-title>{{ 'dashboard.topSellingProducts' | transloco }}</h3>
+        <app-widget-header
+          [title]="'dashboard.topSellingProducts' | transloco"
+          [actionLabel]="'dashboard.recentOrders.viewAll' | transloco"
+          actionLink="/dashboard/products"
+        />
       </hlm-card-header>
-      <div hlmCardContent>
-        <app-top-products [products]="statsService.topProducts()" />
+      <div hlmCardContent class="shrink-0">
+        @if (statsService.overviewError(); as error) {
+          <app-widget-state [error]="error" [retry]="retryOverview" />
+        } @else if (statsService.topProducts().length > 0) {
+          <app-top-products [products]="statsService.topProducts()" />
+        } @else {
+          <app-widget-state
+            [empty]="true"
+            [emptyLabel]="'dashboard.topProducts.noProducts' | transloco"
+          />
+        }
       </div>
     </hlm-card>
 
-    <!-- Recent Orders (Live) -->
-    <hlm-card class="lg:col-span-2">
+    <!-- Recent Orders -->
+    <hlm-card>
       <hlm-card-header>
-        <h3 hlm-card-title>{{ 'dashboard.recentOrders' | transloco }}</h3>
+        <app-widget-header
+          [title]="'dashboard.recentOrders.title' | transloco"
+          [rangeScoped]="false"
+          [actionLabel]="'dashboard.recentOrders.viewAll' | transloco"
+          actionLink="/dashboard/orders"
+        />
       </hlm-card-header>
-      <div hlmCardContent>
+      <div hlmCardContent class="shrink-0">
         <app-recent-orders />
+      </div>
+    </hlm-card>
+  </div>
+
+  <!-- Low stock | Devices -->
+  <div class="grid gap-4 lg:grid-cols-2">
+    <hlm-card>
+      <hlm-card-header>
+        <app-widget-header
+          [title]="'dashboard.lowStockProducts' | transloco"
+          [rangeScoped]="false"
+          [actionLabel]="'dashboard.recentOrders.viewAll' | transloco"
+          actionLink="/dashboard/products"
+        />
+      </hlm-card-header>
+      <div hlmCardContent class="shrink-0">
+        <app-low-stock-products [products]="lowStockProducts()" />
+      </div>
+    </hlm-card>
+
+    <hlm-card>
+      <div hlmCardContent class="shrink-0">
+        <app-device-list />
       </div>
     </hlm-card>
   </div>

@@ -1,7 +1,6 @@
-import { Component, inject } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
 import { ColumnDef, createColumnHelper } from '@tanstack/angular-table';
 import { map, Observable } from 'rxjs';
 
@@ -13,12 +12,14 @@ import { HlmInputImports } from '@spartan-ng/helm/input';
 import { HlmDialogImports } from '@spartan-ng/helm/dialog';
 import { HlmTableImports } from '@spartan-ng/helm/table';
 import { HlmLabelImports } from '@spartan-ng/helm/label';
+import { HlmTextareaImports } from '@spartan-ng/helm/textarea';
 
 import { TranslocoPipe } from '@jsverse/transloco';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
   lucidePlus,
   lucideSearch,
+  lucideList,
   lucidePencil,
   lucideTrash2,
   lucideX,
@@ -28,8 +29,13 @@ import {
 
 import { BaseListComponent } from '../../../core/crud/base-list.component';
 import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
+import { PagerComponent } from '../../../shared/components/pager/pager.component';
+import { LifecycleTabsComponent } from '../../../shared/components/lifecycle-tabs/lifecycle-tabs.component';
+import { TrashBannerComponent } from '../../../shared/components/trash-banner/trash-banner.component';
+import { AuthService } from '../../../core/auth/auth.service';
 import { HasPermissionDirective } from '../../../core/auth/permission.directive';
 import { TranslationFormHelper } from '../../../shared/utils/translation.utils';
+import { LanguageService } from '../../../core/i18n/language.service';
 import { SUPPORTED_LANGUAGES } from '../../../core/i18n/language';
 import { PageResponse } from '../../../core/models/api-response.model';
 
@@ -45,6 +51,9 @@ import { RoastLevelService } from '../services/roast-level.service';
     ReactiveFormsModule,
     HasPermissionDirective,
     DataTableComponent,
+    PagerComponent,
+    LifecycleTabsComponent,
+    TrashBannerComponent,
     // Spartan
     HlmCardImports,
     HlmButtonImports,
@@ -53,6 +62,7 @@ import { RoastLevelService } from '../services/roast-level.service';
     HlmDialogImports,
     HlmTableImports,
     HlmLabelImports,
+    HlmTextareaImports,
     NgIcon,
     TranslocoPipe,
   ],
@@ -60,6 +70,7 @@ import { RoastLevelService } from '../services/roast-level.service';
     provideIcons({
       lucidePlus,
       lucideSearch,
+      lucideList,
       lucidePencil,
       lucideTrash2,
       lucideX,
@@ -75,56 +86,196 @@ export class RoastLevelListComponent extends BaseListComponent<
   string
 > {
   private roastLevelService = inject(RoastLevelService);
+  protected readonly language = inject(LanguageService);
   protected translationHelper = inject(TranslationFormHelper);
-  protected router = inject(Router);
+  private auth = inject(AuthService);
+
+  readonly showId = signal(false);
+  readonly showDates = signal(true);
+  readonly columnsOpen = signal(false);
+
+  toggleShowId(value: boolean): void {
+    this.showId.set(value);
+  }
+
+  toggleShowDates(value: boolean): void {
+    this.showDates.set(value);
+  }
+
+  /** Opt into the shared soft-delete capability (tabs, counts, undo, restore). */
+  protected override softDeleteEnabled = true;
+  protected override canManageTrash = this.auth.hasPermission('roast_level:delete');
+  protected readonly isTrashAllowed = computed(() => this.auth.hasPermission('roast_level:delete'));
 
   protected override getId(item: RoastLevelResponse): string {
     return item.slug;
   }
 
-  goToDetail(item: RoastLevelResponse): void {
-    this.router.navigate(['/dashboard/roast-levels', item.slug]);
+  // ─── Soft-delete hooks ───────────────────────────────────────────────────────
+
+  protected override loadTrashPage(): Observable<PageResponse<RoastLevelResponse>> {
+    return this.roastLevelService.getDeleted(this.trashParams()).pipe(map((res) => res.data));
   }
+
+  private trashParams() {
+    return {
+      page: this.currentPage(),
+      size: this.pageSize(),
+      search: this.searchQuery || undefined,
+      sort: this.currentSort,
+      direction: this.currentDirection,
+    };
+  }
+
+  protected override callRestore(id: number) {
+    return this.roastLevelService.restore(id);
+  }
+
+  protected override restoreIdOf(item: RoastLevelResponse): number | null {
+    return typeof item.id === 'number' ? item.id : null;
+  }
+
+  /** Backend: DELETE /dashboard/roast-levels/{id}/permanent → 204 (hard delete). */
+  protected override permanentDeleteSrv() {
+    return this.roastLevelService;
+  }
+
+  /** DataTable selection is keyed on the backend id (what restore takes). */
+  readonly rowIdOf = (row: RoastLevelResponse): number | null =>
+    typeof row?.id === 'number' ? row.id : null;
+
+  onSelectionChange(event: { id: number; checked: boolean }): void {
+    this.toggleSelection(event.id, event.checked);
+  }
+
+  /** Current-UI-language name for dialog copy. */
+  rowName(item: RoastLevelResponse): string {
+    return this.getTranslationName(item, this.language.language());
+  }
+
+  protected override undoItemLabel(item: RoastLevelResponse): string {
+    return this.getTranslationName(item, 'en');
+  }
+
+  /** Deleting a roast level means moving it to the trash — the toast says that. */
+  protected override deleteToastKey(): string {
+    return 'roastLevels.trash.movedToTrash';
+  }
+
+  // ─── Copy ────────────────────────────────────────────────────────────────────
+
+  protected override undoLabel(): string {
+    return 'common.undo';
+  }
+  protected override undoMessage(): string {
+    return 'roastLevels.trash.movedToTrash';
+  }
+  protected override restoreConflictTitle(): string {
+    return 'common.restoreConflictTitle';
+  }
+  protected override restoreConflictBody(): string {
+    return 'common.restoreConflictBody';
+  }
+  protected override restoreNotFoundBody(): string {
+    return 'common.restoreNotFound';
+  }
+  protected override restoreForbiddenBody(): string {
+    return 'common.restoreForbidden';
+  }
+  protected override restoreFailedBody(): string {
+    return 'common.restoreFailed';
+  }
+  protected override permanentDeleteUnsupportedTitle(): string {
+    return 'common.permanentDeleteUnavailable';
+  }
+  protected override permanentDeleteUnsupportedBody(): string {
+    return 'common.permanentDeleteUnsupported';
+  }
+
+  noResultsKey(): string {
+    return this.isTrash() ? 'roastLevels.trash.noResultsInTrash' : 'roastLevels.trash.noResultsInActive';
+  }
+
+  getTranslationName(item: RoastLevelResponse, langCode: string): string {
+    return item.translations.find((t) => t.language === langCode)?.name ?? '—';
+  }
+
+  /** The trash endpoints require 'roast_level:delete' — hide the tab without it. */
 
   // ─── Columns ──────────────────────────────────────────────────────────────
   private columnHelper = createColumnHelper<RoastLevelResponse>();
 
-  columns: ColumnDef<RoastLevelResponse, any>[] = [
-    this.columnHelper.accessor('id', {
-      header: 'ID',
-      enableSorting: true,
-    }),
-    this.columnHelper.accessor('slug', {
-      header: 'Slug',
-      enableSorting: true,
-    }),
-    this.columnHelper.accessor('color', {
-      header: 'Color',
-      enableSorting: false,
-    }),
-    ...SUPPORTED_LANGUAGES.map((lang) =>
-      this.columnHelper.accessor(
-        (row): string => row.translations.find((t) => t.language === lang.code)?.name ?? '—',
-        {
-          id: `name_${lang.code}`,
-          header: `Name (${lang.label})`,
-          enableSorting: false,
-        },
-      ),
-    ),
-    this.columnHelper.accessor('createdAt', {
-      header: 'Created At',
-      enableSorting: true,
-    }),
-    this.columnHelper.accessor('updatedAt', {
-      header: 'Updated At',
-      enableSorting: true,
-    }),
-    this.columnHelper.display({
-      id: 'actions',
-      header: 'Actions',
-    }),
-  ];
+  readonly columns = computed<ColumnDef<RoastLevelResponse, any>[]>(() => {
+    const currentLang = this.language.current();
+    const otherLang = SUPPORTED_LANGUAGES.find((l) => l.code !== currentLang)!;
+
+    const mainCell = this.columnHelper.accessor(
+      (row): { name: string; slug: string; imageUrl: string | null; otherName: string; color?: string | null } => {
+        const current = row.translations.find((t) => t.language === currentLang)?.name ?? '—';
+        const other = row.translations.find((t) => t.language === otherLang.code)?.name ?? '—';
+        return {
+          name: current,
+          slug: row.slug,
+          imageUrl: null,
+          otherName: other,
+          color: row.color,
+        };
+      },
+      {
+        id: `main_${currentLang}`,
+        header: currentLang === 'en' ? 'Roast Level' : 'درجة التحميص',
+        enableSorting: true,
+        meta: { width: '30%' },
+      }
+    );
+
+    const otherNameHeaders: Record<string, Record<string, string>> = {
+      en: { en: 'English name', ar: 'الاسم بالإنجليزية' },
+      ar: { en: 'Arabic name', ar: 'الاسم بالعربية' },
+    };
+    const otherNameColumn = this.columnHelper.accessor(
+      (row): string => row.translations.find((t) => t.language === otherLang.code)?.name ?? '—',
+      {
+        id: `name_${otherLang.code}`,
+        header: otherNameHeaders[otherLang.code][currentLang],
+        enableSorting: false,
+        meta: { width: 'auto' },
+      }
+    );
+
+    const trashTail = [
+      this.columnHelper.accessor('deletedAt', {
+        id: 'deleted',
+        header: 'Deleted',
+        enableSorting: true,
+        cell: (info) => info.row.original.deletedAt,
+        meta: { width: '132px' },
+      }),
+    ];
+    const activeTail = this.showDates()
+      ? [
+          this.columnHelper.accessor('createdAt', {
+            header: 'Created At',
+            enableSorting: true,
+            meta: { width: '120px' },
+          }),
+        ]
+      : [];
+
+    const tail = this.isTrash() ? (this.showDates() ? trashTail : []) : activeTail;
+
+    return [
+      mainCell,
+      otherNameColumn,
+      ...tail,
+      this.actionsColumn,
+    ];
+  });
+
+  private actionsColumn: ColumnDef<RoastLevelResponse, any> = this.columnHelper.display({
+    id: 'actions',
+    header: 'Actions',
+  });
 
   // ─── Base contract ────────────────────────────────────────────────────────
 
@@ -132,6 +283,7 @@ export class RoastLevelListComponent extends BaseListComponent<
     return this.roastLevelService
       .getAll({
         page: this.currentPage(),
+        size: this.pageSize(),
         search: this.searchQuery || undefined,
         sort: this.currentSort,
         direction: this.currentDirection,

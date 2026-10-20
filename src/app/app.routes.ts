@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/auth/auth.guard';
 import { permissionGuard } from './core/auth/permission.guard';
+import { UnsavedChangesGuard } from './core/guards/unsaved-changes.guard';
 import { NotificationListComponent } from './features/notifications-list/components/notification-list.component';
 
 // app.routes.ts
@@ -97,6 +98,7 @@ export const routes: Routes = [
           {
             path: ':slug',
             data: { breadcrumb: 'categoryDetail' },
+            canDeactivate: [UnsavedChangesGuard],
             loadComponent: () =>
               import('./features/categories/category-detail/components/category-detail.component').then(
                 (m) => m.CategoryDetailComponent,
@@ -141,8 +143,18 @@ export const routes: Routes = [
               ),
           },
           {
+            path: 'new',
+            data: { breadcrumb: 'newOrigin' },
+            canDeactivate: [UnsavedChangesGuard],
+            loadComponent: () =>
+              import('./features/origins/origin-detail/components/origin-detail.component').then(
+                (m) => m.OriginDetailComponent,
+              ),
+          },
+          {
             path: ':slug',
             data: { breadcrumb: 'originDetail' },
+            canDeactivate: [UnsavedChangesGuard],
             loadComponent: () =>
               import('./features/origins/origin-detail/components/origin-detail.component').then(
                 (m) => m.OriginDetailComponent,
@@ -163,8 +175,18 @@ export const routes: Routes = [
               ),
           },
           {
+            path: 'new',
+            data: { breadcrumb: 'newFarm' },
+            canDeactivate: [UnsavedChangesGuard],
+            loadComponent: () =>
+              import('./features/farms/farm-detail/components/farm-detail.component').then(
+                (m) => m.FarmDetailComponent,
+              ),
+          },
+          {
             path: ':slug',
             data: { breadcrumb: 'farmDetail' },
+            canDeactivate: [UnsavedChangesGuard],
             loadComponent: () =>
               import('./features/farms/farm-detail/components/farm-detail.component').then(
                 (m) => m.FarmDetailComponent,
@@ -440,6 +462,15 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/orders/orders-list/orders-list.component').then(
             (m) => m.OrdersListComponent,
+          ),
+      },
+      {
+        path: 'orders/:id',
+        data: { breadcrumb: 'orderDetail' },
+        canActivate: [permissionGuard('order:read')],
+        loadComponent: () =>
+          import('./features/orders/order-detail/order-detail.component').then(
+            (m) => m.OrderDetailComponent,
           ),
       },
       {

@@ -71,12 +71,10 @@ test.describe('Authentication', () => {
   });
 
   // ─── AC-2b: non-admin sees an explanatory error ───────────────────────────
-  // NOT IMPLEMENTED. login.component.ts sets `error` only from err.error?.message
-  // on a 4xx; the backend returns 200 for a valid non-admin, so no error path
-  // fires. Marked fixme — it encodes a UX decision nobody has made yet.
-  test.fixme('AC-2b non-admin sees an explanatory error and stays on /login', async ({
-    page,
-  }) => {
+  // The backend returns 200 for a valid non-admin, so login.component.ts
+  // checks the role from the response and shows the access-denied copy
+  // instead of navigating. (Was fixme: no 4xx error path ever fired.)
+  test('AC-2b non-admin sees an explanatory error and stays on /login', async ({ page }) => {
     await gotoLogin(page);
     await fillLoginForm(page, creds.userEmail, creds.userPassword);
     await submitLogin(page);

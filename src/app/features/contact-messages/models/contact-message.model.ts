@@ -1,8 +1,11 @@
 export interface ContactResponse {
-  id: string;
+  id: number;
   name: string;
   email: string;
   subject: string;
   message: string;
+  isRead: boolean;
+  isReplied: boolean;
+  replyContent: string | null;
   createdAt: string;
 }

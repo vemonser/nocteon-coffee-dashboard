@@ -12,6 +12,7 @@ export type NavKey =
   | 'categories'
   | 'notifications'
   | 'categoryDetail'
+  | 'orderDetail'
   | 'origins'
   | 'farms'
   | 'roastLevels'
@@ -30,7 +31,8 @@ export type NavKey =
   | 'carts'
   | 'productOptions'
   | 'broadcasts'
-  | 'contactMessages';
+  | 'contactMessages'
+  | 'coffeeData';
 
 export const navI18n: Record<Language, Record<NavKey, string>> = {
   en: {
@@ -45,6 +47,7 @@ export const navI18n: Record<Language, Record<NavKey, string>> = {
     notifications: 'Notifications',
     categories: 'Categories',
     categoryDetail: 'Category',
+    orderDetail: 'Order',
     origins: 'Origins',
     farms: 'Farms',
     roastLevels: 'Roast Levels',
@@ -63,6 +66,7 @@ export const navI18n: Record<Language, Record<NavKey, string>> = {
     productOptions: 'Product Options',
     broadcasts: 'Broadcasts',
     contactMessages: 'Contact Messages',
+    coffeeData: 'Coffee data',
   },
   ar: {
     dashboard: 'لوحة التحكم',
@@ -76,7 +80,8 @@ export const navI18n: Record<Language, Record<NavKey, string>> = {
     products: 'المنتجات',
     categories: 'الفئات',
     categoryDetail: 'الفئة',
-    origins: 'الأصول',
+    orderDetail: 'الطلب',
+    origins: 'المناشئ',
     farms: 'المزارع',
     roastLevels: 'مستويات التحميص',
     roastLevelDetail: 'مستوى التحميص',
@@ -94,5 +99,6 @@ export const navI18n: Record<Language, Record<NavKey, string>> = {
     productOptions: 'خيارات المنتجات',
     broadcasts: 'الرسائل الجماعية',
     contactMessages: 'رسائل التواصل',
+    coffeeData: 'بيانات القهوة',
   },
 };

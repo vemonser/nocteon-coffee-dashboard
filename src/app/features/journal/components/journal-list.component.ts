@@ -18,6 +18,7 @@ import {
   lucideTrash2,
 } from '@ng-icons/lucide';
 import { BaseListComponent } from '../../../core/crud/base-list.component';
+import { LanguageService } from '../../../core/i18n/language.service';
 import { JournalPostResponse } from '../models/journal.model';
 import { JournalService } from '../services/journal.service';
 import { map, Observable } from 'rxjs';
@@ -58,6 +59,7 @@ import { TranslocoPipe } from '@jsverse/transloco';
 export class JournalListComponent extends BaseListComponent<JournalPostResponse, never, string> {
   router = inject(Router);
   private journalService = inject(JournalService);
+  protected readonly language = inject(LanguageService);
 
   protected override getId(item: JournalPostResponse): string {
     return item.slug;

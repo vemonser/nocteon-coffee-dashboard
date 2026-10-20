@@ -19,6 +19,7 @@ import {
   lucideUser,
   lucideShield,
   lucideMail,
+  lucideLoader2,
 } from '@ng-icons/lucide';
 
 // Spartan UI
@@ -44,12 +45,15 @@ import { createColumnHelper, ColumnDef } from '@tanstack/angular-table';
 import { HlmField, HlmFieldImports, HlmFieldLabel } from '@spartan-ng/helm/field';
 
 import { TranslocoPipe } from '@jsverse/transloco';
+import { PagerComponent } from '../../../shared/components/pager/pager.component';
+import { NotifyService } from '../../../core/notify/notify.service';
 type RoleFilter = 'ALL' | 'ADMIN' | 'CUSTOMER';
 
 @Component({
   selector: 'app-users-list',
   standalone: true,
   imports: [
+    PagerComponent,
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
@@ -70,8 +74,7 @@ type RoleFilter = 'ALL' | 'ADMIN' | 'CUSTOMER';
     TranslocoPipe,
   ],
   providers: [
-    provideIcons({
-      lucidePlus,
+    provideIcons({ lucideLoader2, lucidePlus,
       lucideSearch,
       lucidePencil,
       lucideLock,
@@ -103,7 +106,7 @@ export class UsersListComponent extends BaseListComponent<UserResponse, UserRequ
   isActiveFilter: boolean | undefined = undefined;
   enabledFilter: boolean | undefined = undefined;
   
-  goToDetail(user: UserResponse): void {
+  override goToDetail(user: UserResponse): void {
     this.router.navigate(['/dashboard/users', user.id]);
   }
   // Columns
@@ -141,7 +144,7 @@ export class UsersListComponent extends BaseListComponent<UserResponse, UserRequ
         enableSorting: false,
       },
     ),
-    this.columnHelper.accessor((row) => this.formatDate(row.createdAt), {
+    this.columnHelper.accessor((row) => row.createdAt, {
       id: 'joined',
       header: 'Joined',
       enableSorting: true,
@@ -169,6 +172,7 @@ export class UsersListComponent extends BaseListComponent<UserResponse, UserRequ
   protected override loadPage(): Observable<PageResponse<UserResponse>> {
     const params: UserListParams = {
       page: this.currentPage(),
+        size: this.pageSize(),
       search: this.searchQuery || undefined,
       sort: this.currentSort,
       direction: this.currentDirection,
@@ -252,13 +256,22 @@ export class UsersListComponent extends BaseListComponent<UserResponse, UserRequ
     const user = this.deleting();
     if (!user) return;
     this.submitting.set(true);
+    const willBlock = user.active;
     this.userService.toggleActive(user.id).subscribe({
       next: () => {
         this.submitting.set(false);
         this.deleting.set(null);
         this.load();
+        this.notify.success('notify.statusUpdated', 'Status updated');
       },
-      error: () => this.submitting.set(false),
+      error: (err) => {
+        this.submitting.set(false);
+        this.notify.apiError(
+          err,
+          'notify.errorFallback',
+          willBlock ? 'Could not block user' : 'Could not unblock user',
+        );
+      },
     });
   }
 
@@ -288,15 +301,6 @@ export class UsersListComponent extends BaseListComponent<UserResponse, UserRequ
     const last = user.lastName?.[0] || '';
     const username = user.username?.[0] || '';
     return (first + last || username).toUpperCase();
-  }
-
-  formatDate(date: string | null): string {
-    if (!date) return '—';
-    return new Date(date).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
   }
 
   onFilterChange(): void {

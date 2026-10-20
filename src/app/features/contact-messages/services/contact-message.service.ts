@@ -26,4 +26,45 @@ export class ContactMessageService {
       { params: httpParams },
     );
   }
+
+  getAllUnread(params: {
+    page?: number;
+    size?: number;
+    search?: string;
+    sort?: string;
+    direction?: 'asc' | 'desc';
+  }): Observable<ApiResponse<PageResponse<ContactResponse>>> {
+    let httpParams = new HttpParams().set('page', params.page ?? 0).set('size', params.size ?? 20);
+    if (params.search?.trim()) httpParams = httpParams.set('search', params.search.trim());
+    if (params.sort) httpParams = httpParams.set('sort', params.sort);
+    if (params.direction) httpParams = httpParams.set('direction', params.direction);
+    return this.http.get<ApiResponse<PageResponse<ContactResponse>>>(
+      `${environment.apiUrl}${this.basePath}/unread`,
+      { params: httpParams },
+    );
+  }
+
+  getById(id: number): Observable<ApiResponse<ContactResponse>> {
+    return this.http.get<ApiResponse<ContactResponse>>(
+      `${environment.apiUrl}${this.basePath}/${id}`,
+    );
+  }
+
+  markAsRead(id: number): Observable<ApiResponse<ContactResponse>> {
+    return this.http.patch<ApiResponse<ContactResponse>>(
+      `${environment.apiUrl}${this.basePath}/${id}/read`,
+      null,
+    );
+  }
+
+  reply(id: number, replyContent: string): Observable<ApiResponse<ContactResponse>> {
+    return this.http.post<ApiResponse<ContactResponse>>(
+      `${environment.apiUrl}${this.basePath}/${id}/reply`,
+      { replyContent },
+    );
+  }
+
+  delete(id: number): Observable<void> {
+    return this.http.delete<void>(`${environment.apiUrl}${this.basePath}/${id}`);
+  }
 }

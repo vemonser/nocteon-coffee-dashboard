@@ -5,11 +5,12 @@ import { RevenueChartComponent } from '../../../../shared/components/dashboard/r
 import { OrdersStatusChartComponent } from '../../../../shared/components/dashboard/components/orders-status-chart.component';
 
 import { TranslocoPipe } from '@jsverse/transloco';
+import { MoneyPipe } from '../../../../shared/pipes/money.pipe';
 @Component({
   selector: 'app-dashboard-overview',
   standalone: true,
   templateUrl: './dashboard-overview.component.html',
-  imports: [RevenueChartComponent, DecimalPipe, OrdersStatusChartComponent, TranslocoPipe,
+  imports: [RevenueChartComponent, DecimalPipe, OrdersStatusChartComponent, TranslocoPipe, MoneyPipe,
   ],
 })
 export class DashboardOverviewComponent {

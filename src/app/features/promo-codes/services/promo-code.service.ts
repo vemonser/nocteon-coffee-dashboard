@@ -7,14 +7,14 @@ import { ApiResponse, PageResponse } from '../../../core/models/api-response.mod
 import { environment } from '../../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
-export class PromoCodeService extends BaseCrudService<PromoCodeResponse, PromoCodeRequest> {
+export class PromoCodeService extends BaseCrudService<PromoCodeResponse, PromoCodeRequest, number> {
   protected override basePath = '/api/dashboard/promo-codes';
 
   getAll(params: BaseListParams = {}): Observable<ApiResponse<PageResponse<PromoCodeResponse>>> {
     const p = this.buildBaseParams(params);
     return this.http.get<ApiResponse<PageResponse<PromoCodeResponse>>>(this.fullUrl, { params: p });
   }
-  getById(id: string): Observable<ApiResponse<PromoCodeResponse>> {
+  getById(id: number): Observable<ApiResponse<PromoCodeResponse>> {
     return this.http.get<ApiResponse<PromoCodeResponse>>(
       `${environment.apiUrl}/api/dashboard/promo-codes/${id}`,
     )

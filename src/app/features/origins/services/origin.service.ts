@@ -41,11 +41,13 @@ export class OriginService extends BaseCrudService<OriginResponse, OriginRequest
       this.buildRequestBody(data, image, format),
     );
   }
+
   getAllOptions(): Observable<ApiResponse<OriginOption[]>> {
     return this.http.get<ApiResponse<OriginOption[]>>(
       `${environment.apiUrl}/api/dashboard/origins/options`,
     );
   }
+
   getProducts(
     slug: string,
     params: BaseListParams = {},
@@ -55,5 +57,9 @@ export class OriginService extends BaseCrudService<OriginResponse, OriginRequest
       `${environment.apiUrl}/api/origins/${slug}/products`,
       { params: p },
     );
+  }
+
+  override restore(id: number): Observable<ApiResponse<void>> {
+    return this.http.patch<ApiResponse<void>>(`${this.fullUrl}/${id}/restore`, null);
   }
 }

@@ -35,8 +35,8 @@ from a run using real accounts contains those passwords in the clear.
 | AC | Requirement | Test | Status |
 |---|---|---|---|
 | AC-1 | Admin with valid creds reaches `/dashboard` | `AC-1 admin with valid credentials lands on the dashboard` | PASS |
-| AC-2a | Non-admin is not routed to `/dashboard` | `AC-2a non-admin is not routed into the dashboard` | **FAIL — real defect** |
-| AC-2b | Non-admin sees an explanatory error | `AC-2b …` | `test.fixme` — not implemented |
+| AC-2a | Non-admin is not routed to `/dashboard` | `AC-2a non-admin is not routed into the dashboard` | PASS |
+| AC-2b | Non-admin sees an explanatory error | `AC-2b non-admin sees an explanatory error and stays on /login` | PASS |
 | AC-3 | No email + no password cannot submit | `AC-3 …` | PASS |
 | AC-4 | Email but no password cannot submit | `AC-4 …` | PASS |
 | AC-5 | No email but password cannot submit | `AC-5 …` | PASS |
@@ -47,35 +47,35 @@ from a run using real accounts contains those passwords in the clear.
 
 ## Known app defects (these are NOT broken tests)
 
-### 1. AC-2a — no admin gate on `/dashboard`  ·  CRITICAL
+### 1. AC-2a — no admin gate on `/dashboard`  ·  UI gate added, backend still open
 
-`src/app/core/auth/auth.guard.ts` checks only `auth.isLoggedIn()`, which is
-`!!currentUser()` — **no role check**:
+**Fixed on the UI.** Two checks, both driven by the role the backend returns in
+the login/refresh response (`currentUser()?.role`):
 
-```ts
-if (auth.isLoggedIn()) return true;
-return router.createUrlTree(['/login']);
-```
+- `login.component.ts` — after a 200 login, if `res.data.user.role !== 'ADMIN'`
+  it shows the existing `unauthorized.message` copy and calls `clearSession()`,
+  so a non-admin never navigates to `/dashboard`.
+- `core/auth/auth.guard.ts` — checks the same role for deep links/reloads and
+  redirects a non-admin to `/login`.
 
-`src/app/app.routes.ts:15` applies only `canActivate: [authGuard]` to
-`/dashboard`. A `CUSTOMER` reaches the dashboard and sees every admin nav link.
-The `profile` child route (line 455) has **no guard at all**.
+Why the role can be trusted: `AuthService.setSession()` stores the whole `user`
+object from `/api/auth/login` (and `/api/auth/refresh`), and the app initializer
+runs `initializeSession()` **before** routing, so the role is populated by the
+time the guard runs — no race.
 
-**Verified**: the failing run's `error-context.md` shows a CUSTOMER session
-rendering the full dashboard sidebar.
+**Security boundary — do not over-claim this.** The backend authenticates any
+valid account (Sara gets `200` + a valid JWT), so `/api/dashboard/*` remains
+reachable by an authenticated non-admin who calls the API directly. The UI gate
+is defence-in-depth and correct UX; **real authorization must be enforced
+server-side** and is not covered by this suite. `profile` (a child of
+`/dashboard`) is covered by the parent guard.
 
-**Scope limit — read this before "fixing" it.** The backend authenticates any
-valid account (Sara gets `200` + a valid JWT). So `/dashboard` can currently be
-gated in the UI only. Adding `role === 'ADMIN'` to the guard would turn AC-2a
-green **without changing any real security** — the dashboard APIs remain
-reachable by any authenticated user. Backend authorization on `/api/dashboard/*`
-is the actual control and is **not covered by this suite**.
+### 2. AC-2b — explanatory error for an under-privileged user  ·  RESOLVED
 
-### 2. AC-2b — no error path for an under-privileged user  ·  MEDIUM
-
-`login.component.ts` sets `error()` only from `err.error?.message` on a 4xx.
-Since the backend returns `200` for a valid non-admin, no error path fires. The
-copy shown to a blocked user is an open product decision — hence `test.fixme`.
+Was `test.fixme` because `login.component.ts` only set `error()` from a 4xx
+body and the backend returns `200` for a valid non-admin. It now checks the
+role from the response and shows `unauthorized.message` (an existing
+translation) without navigating.
 
 ### 3. AC-6 — dead template code  ·  LOW
 
@@ -91,14 +91,39 @@ a conditional validator, is a product decision.
 
 ## Out of scope / uncovered
 
-Not exercised here: `/unauthorized`, per-route `permissionGuard` behaviour on
-child routes, session persistence across reload, `logout()`, and the
-`/api/auth/refresh` boot path via `initializeSession()`. Given defect #1, the
-suite gives **false confidence about authorization generally** — treat AC-1/AC-7
-as login-correctness evidence, not authorization evidence.
+Not exercised here: the `/unauthorized` page itself, per-route `permissionGuard`
+behaviour on child routes, session persistence across reload, `logout()`, and
+the `/api/auth/refresh` boot path via `initializeSession()`. The suite now
+covers the **UI** admin gate (AC-2a/AC-2b) but gives **no** authorization
+evidence for the backend — `/api/dashboard/*` server-side authorization is
+uncovered and remains the real boundary (see defect #1).
 
 ## Related finding (outside this suite)
 
 `sara@example.com` has role `CUSTOMER` but holds `user:read`, `user:update`,
 `order:read`, `cart:manage`. A customer being granted user-administration
 permissions is a privilege concern worth reviewing on the backend.
+
+## Non-auth regression guards
+
+Four specs here are not part of the auth AC set. Each guards layout behaviour
+that was reported as broken and fixed, and is written to fail if the fix is
+reverted:
+
+| Spec | Guards | Notes |
+|---|---|---|
+| `verify-sidebar.spec.ts` | Every sidebar section opens, its children are reachable, and the nav scrolls with all five groups open at once | Also asserts no nav child is squashed below its content height. That was the bug: `hlm-sidebar-content` is a `flex-column` scroll container whose children default to `flex-shrink: 1`, and `.nav-collapse` hides its overflow (automatic minimum size `0`), so open groups were compressed to a few px — `scrollHeight` stayed equal to `clientHeight`, no scrollbar appeared, and the links were clipped unreachable. |
+| `verify-tables.spec.ts` | Data tables: no `id` column, actions column width, square rounded thumbnails, date/bulk fields sized down, no horizontal overflow at 390px, EN + AR, light + dark | Uses ONE context + ONE login and loads pages strictly in sequence. Refresh-token rotation plus reuse detection revokes the whole token family if a saved `storageState` is replayed or two page loads overlap. |
+| `verify-slug-links.spec.ts` | A list row's slug is a control that opens that entity's own page, on all 9 lists that expose one (8 with a `slug` column + categories, whose slug lives inside the main cell). Clicks through and asserts the resulting URL pins the clicked slug. | Locates the control through `data-testid="slug-link"` — the project's first test id, added because the two render paths share no other stable, user-facing handle. |
+| `verify-category-products.spec.ts` | Category detail products are the SHARED TABLE only: rows render through the DataTable (main cell with name link + slug handle), the card grid and its grid/list toggle no longer exist, the pagination footer shows the range line + per-page select (10/20/50, default 20) and changing per-page refetches page 0 with the new `size`, the featured star lives in the Featured column (featured rows only, tooltip + `aria-label`), the row's name link resolves to an existing route (the product editor, not the non-existent `products/{slug}`), and a failed fetch shows an error state + Retry instead of the empty-category copy. | Uses ONE context + ONE login and 429 backoff/retry on login (mirrors `verify-tables`). Counts are read live from the page, so a seed change moves the expectation with it. AC-P5 (45-row pager) and AC-P7 (500 → Retry) mock the products endpoint; everything else reads the live seed. Replaced `verify-category-grid.spec.ts` when the card grid was removed in favour of the table. |
+
+### Known coverage gap — AC-SL2
+
+`verify-slug-links.spec.ts` also asserts that the categories **trash** tab renders
+no slug control (trashed rows are hidden from the detail queries, so a link there
+would be a dead end). The seeded trash is empty, so the test **skips** with that
+reason instead of passing vacuously over an empty table. Give the trash a row and
+the assertion starts running; until then treat that rule as unproven.
+
+Login is rate limited to 5/min per IP **and** per identifier, so running these
+specs repeatedly in quick succession starts returning `429`.

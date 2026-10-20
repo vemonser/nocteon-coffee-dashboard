@@ -2,7 +2,7 @@
   <!-- Header -->
   <div class="flex items-center justify-between">
     <div>
-      <h1 class="text-2xl font-bold tracking-tight">{{ 'reviews.title' | transloco }}</h1>
+      <h1 class="text-2xl font-medium tracking-tight">{{ 'reviews.title' | transloco }}</h1>
       <p class="text-muted-foreground">
         {{ items().length }} {{ 'common.of' | transloco }} · {{ activeCount() }} {{ 'common.active' | transloco }} · {{ inactiveCount() }} {{ 'common.inactive' | transloco }}
       </p>
@@ -13,18 +13,16 @@
       <div class="flex items-center rounded-md border bg-card p-1">
         <button
           hlmBtn
-          [variant]="viewMode() === 'list' ? 'default' : 'ghost'"
+          [variant]="viewMode() === 'list' ? 'secondary' : 'ghost'"
           size="icon"
-          class="size-8"
           (click)="toggleView('list')"
         >
           <ng-icon name="lucideList" class="size-4" />
         </button>
         <button
           hlmBtn
-          [variant]="viewMode() === 'grid' ? 'default' : 'ghost'"
+          [variant]="viewMode() === 'grid' ? 'secondary' : 'ghost'"
           size="icon"
-          class="size-8"
           (click)="toggleView('grid')"
         >
           <ng-icon name="lucideGrid3x3" class="size-4" />
@@ -55,9 +53,8 @@
       [value]="isApprovedFilterString()"
       [itemToString]="itemToString"
       (valueChange)="onApprovedFilterValueChange($event)"
-      class="rounded-sm!"
     >
-      <hlm-select-trigger class="rounded-sm h-full">
+      <hlm-select-trigger>
         <hlm-select-value [placeholder]="'common.all' | transloco" />
       </hlm-select-trigger>
       <hlm-select-content *hlmSelectPortal>
@@ -74,7 +71,7 @@
   [itemToString]="verifiedItemToString"
   (valueChange)="onVerifiedFilterValueChange($event)"
 >
-  <hlm-select-trigger class="rounded-sm h-full">
+  <hlm-select-trigger>
     <hlm-select-value [placeholder]="'reviews.verification' | transloco" />
   </hlm-select-trigger>
 
@@ -102,7 +99,7 @@
   [itemToString]="ratingItemToString"
   (valueChange)="onMinRatingValueChange($event)"
 >
-  <hlm-select-trigger class="rounded-sm h-full">
+  <hlm-select-trigger>
     <hlm-select-value [placeholder]="'reviews.rating' | transloco" />
   </hlm-select-trigger>
 
@@ -167,11 +164,10 @@
   <!-- List View -->
   @if (viewMode() === 'list') {
     <div class="rounded-md border bg-card">
-      <div class="bg-white rounded-md shadow overflow-x-auto">
+      <div class="bg-card rounded-xl border overflow-x-auto">
         <table class="w-full text-sm">
           <thead>
-            <tr class="border-b bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase">
-              <th class="px-4 py-3 text-center">ID</th>
+            <tr class="border-b bg-muted/50 text-start text-xs font-medium text-muted-foreground uppercase">
               <th class="px-4 py-3 text-center">{{ 'reviews.productSlug' | transloco }}</th>
               <th class="px-4 py-3 text-center">{{ 'reviews.username' | transloco }}</th>
               <th class="px-4 py-3 text-center">{{ 'reviews.rating' | transloco }}</th>
@@ -185,24 +181,23 @@
           <tbody>
             @if (loading()) {
               <tr>
-                <td colspan="8" class="px-4 py-8 text-center text-gray-400">{{ 'common.loading' | transloco }}</td>
+                <td colspan="8" class="px-4 py-8 text-center text-muted-foreground">{{ 'common.loading' | transloco }}</td>
               </tr>
             } @else if (items().length === 0) {
               <tr>
-                <td colspan="8" class="px-4 py-8 text-center text-gray-400">{{ 'reviews.noData' | transloco }}</td>
+                <td colspan="8" class="px-4 py-8 text-center text-muted-foreground">{{ 'reviews.noData' | transloco }}</td>
               </tr>
             } @else {
               @for (review of items(); track review.id) {
-                <tr class="border-b hover:bg-gray-50">
-                  <td class="px-4 py-3 text-center text-blue-600">{{ review.id }}</td>
+                <tr class="border-b hover:bg-accent">
                   <td class="px-4 py-3 text-center">{{ review.productSlug }}</td>
                   <td class="px-4 py-3 text-center">{{ review.username }}</td>
                   <td class="px-4 py-3 text-center">
                     @for (star of stars; track star) {
                       @if (star < review.rating) {
-                        <ng-icon name="heroStarSolid" class="size-5 text-yellow-500" />
+                        <ng-icon name="heroStarSolid" class="size-5 text-warning" />
                       } @else {
-                        <ng-icon name="heroStar" class="size-5 text-gray-300" />
+                        <ng-icon name="heroStar" class="size-5 text-muted-foreground/30" />
                       }
                     }
                   </td>
@@ -213,8 +208,8 @@
                       class="px-2 py-0.5 rounded text-xs font-medium"
                       [class]="
                         review.verified
-                          ? 'bg-green-100 text-green-700'
-                          : 'bg-gray-100 text-gray-500'
+                          ? 'bg-success-soft text-success'
+                          : 'bg-muted text-muted-foreground'
                       "
                     >
                       {{ review.verified ? ('reviews.verified' | transloco) : ('reviews.notVerified' | transloco) }}
@@ -225,43 +220,55 @@
                       class="px-2 py-0.5 rounded text-xs font-medium"
                       [class]="
                         review.approved
-                          ? 'bg-green-100 text-green-700'
-                          : 'bg-amber-100 text-amber-700'
+                          ? 'bg-success-soft text-success'
+                          : 'bg-warning-soft text-warning'
                       "
                     >
                       {{ review.approved ? ('reviews.approved' | transloco) : ('reviews.pending' | transloco) }}
                     </span>
                   </td>
-                  <td class="px-4 py-3 text-gray-500 text-center">
+                  <td class="px-4 py-3 text-muted-foreground text-center">
                     {{ review.createdAt | date: 'short' }}
                   </td>
-                  <td class="px-4 py-3">
-                    <div class="flex items-center justify-center gap-2">
+                  <td class="px-2 py-3">
+                    <!-- Icon-only to match every other list; text buttons were 273px wide. -->
+                    <div class="flex items-center gap-0.5">
                       <button
+                        type="button"
                         (click)="openView(review)"
-                        class="px-3 py-1 text-sm text-gray-600 border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
+                        class="inline-flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                        [attr.aria-label]="'reviews.view' | transloco"
+                        [title]="'reviews.view' | transloco"
                       >
-                        {{ 'reviews.view' | transloco }}
+                        <ng-icon name="lucideEye" class="size-4" aria-hidden="true" />
                       </button>
 
                       <button
                         *hasPermission="'review:moderate'"
+                        type="button"
                         (click)="toggleApproval(review)"
-                        class="px-3 py-1 text-sm rounded-md border transition-colors"
-                        [class]="
-                          review.approved
-                            ? 'text-amber-600 border-amber-200 hover:bg-amber-50'
-                            : 'text-green-600 border-green-200 hover:bg-green-50'
-                        "
+                        class="inline-flex size-8 items-center justify-center rounded-md transition-colors hover:bg-accent"
+                        [class.text-warning]="review.approved"
+                        [class.text-success]="!review.approved"
+                        [attr.aria-label]="(review.approved ? 'reviews.unapprove' : 'reviews.approve') | transloco"
+                        [title]="(review.approved ? 'reviews.unapprove' : 'reviews.approve') | transloco"
                       >
-                        {{ review.approved ? ('reviews.unapprove' | transloco) : ('reviews.approve' | transloco) }}
+                        <ng-icon
+                          [name]="review.approved ? 'lucideX' : 'lucideCheck'"
+                          class="size-4"
+                          aria-hidden="true"
+                        />
                       </button>
+
                       <button
                         *hasPermission="'review:delete'"
+                        type="button"
                         (click)="confirmDelete(review)"
-                        class="px-3 py-1 text-sm text-red-600 border border-red-200 rounded-md hover:bg-red-50 transition-colors"
+                        class="inline-flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-destructive"
+                        [attr.aria-label]="'common.delete' | transloco"
+                        [title]="'common.delete' | transloco"
                       >
-                        {{ 'common.delete' | transloco }}
+                        <ng-icon name="lucideTrash2" class="size-4" aria-hidden="true" />
                       </button>
                     </div>
                   </td>
@@ -278,7 +285,7 @@
   @if (!loading() && viewMode() === 'grid') {
     <div class="grid gap-4 grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
       @for (item of items(); track item.id) {
-        <hlm-card class="group overflow-hidden transition-all py-0 hover:shadow-lg">
+        <hlm-card class="group overflow-hidden transition-colors py-0">
           <div class="relative aspect-video overflow-hidden bg-muted">
             @if (item.primaryImageUrl) {
               <img
@@ -333,7 +340,7 @@
                     <ng-icon name="heroStarSolid" class="size-5" />
                   }
                 </div>
-                <p class="text-sm font-medium text-gray-600 truncate">
+                <p class="text-sm font-medium text-muted-foreground truncate">
                   {{ item.comment }}
                 </p>
               </div>
@@ -341,7 +348,7 @@
             <div class="flex items-center flex-wrap flex-1 w-full justify-center gap-2">
               <button
                 (click)="openView(item)"
-                class="px-3 py-1 text-sm text-gray-600 border flex-1 border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
+                class="px-3 py-1 text-sm text-foreground border flex-1 border-border rounded-md hover:bg-accent transition-colors"
               >
                 {{ 'reviews.view' | transloco }}
               </button>
@@ -352,8 +359,8 @@
                 class="px-3 py-1 text-sm rounded-md border flex-1 transition-colors"
                 [class]="
                   item.approved
-                    ? 'text-amber-600 border-amber-200 hover:bg-amber-50'
-                    : 'text-green-600 border-green-200 hover:bg-green-50'
+                    ? 'text-warning border-warning/30 hover:bg-warning-soft'
+                    : 'text-success border-success/30 hover:bg-success-soft'
                 "
               >
                 {{ item.approved ? ('reviews.unapprove' | transloco) : ('reviews.approve' | transloco) }}
@@ -361,7 +368,7 @@
               <button
                 *hasPermission="'review:delete'"
                 (click)="confirmDelete(item)"
-                class="px-3 py-1 text-sm text-red-600 border flex-1 border-red-200 rounded-md hover:bg-red-50 transition-colors"
+                class="px-3 py-1 text-sm text-destructive border flex-1 border-destructive/30 rounded-md hover:bg-destructive-soft transition-colors"
               >
                 {{ 'common.delete' | transloco }}
               </button>
@@ -380,49 +387,25 @@
 
   <!-- Pagination -->
   @if (pageData() && !loading()) {
-    <div class="flex items-center justify-between">
-      <span class="text-sm text-muted-foreground">
-        {{ 'common.showing' | transloco }} {{ pageData()!.page * pageData()!.size + 1 }} -
-        {{ Math.min((pageData()!.page + 1) * pageData()!.size, pageData()!.totalElements) }}
-        {{ 'common.of' | transloco }} {{ pageData()!.totalElements }}
-      </span>
-
-      <div class="flex items-center gap-2">
-        <button
-          hlmBtn
-          variant="outline"
-          size="sm"
-          [disabled]="pageData()!.first"
-          (click)="goToPage(currentPage() - 1)"
-        >
-          <ng-icon name="lucideChevronLeft" class="size-4" />
-        </button>
-
-        <span class="text-sm text-muted-foreground px-2">
-          {{ 'common.page' | transloco }} {{ pageData()!.page + 1 }} {{ 'common.of' | transloco }} {{ pageData()!.totalPages }}
-        </span>
-
-        <button
-          hlmBtn
-          variant="outline"
-          size="sm"
-          [disabled]="pageData()!.last"
-          (click)="goToPage(currentPage() + 1)"
-        >
-          <ng-icon name="lucideChevronRight" class="size-4" />
-        </button>
-      </div>
-    </div>
+    <app-pager
+      [page]="pageData()!.page"
+      [size]="pageData()!.size"
+      [totalElements]="pageData()!.totalElements"
+      [totalPages]="pageData()!.totalPages"
+      [first]="pageData()!.first"
+      [last]="pageData()!.last"
+      (pageChange)="goToPage($event)"
+    />
   }
 </div>
 
 <!-- ══════ View Review Dialog ══════ -->
 @if (viewing()) {
   <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-      <div class="flex justify-between items-center p-6 border-b sticky top-0 bg-white">
-        <h2 class="text-lg font-bold">{{ 'reviews.details' | transloco }}</h2>
-        <button (click)="closeView()" class="text-gray-400 hover:text-gray-600 text-xl">✕</button>
+    <div class="bg-card rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center p-6 border-b sticky top-0 bg-card">
+        <h2 class="text-lg font-medium">{{ 'reviews.details' | transloco }}</h2>
+        <button (click)="closeView()" class="text-muted-foreground hover:text-foreground text-xl">✕</button>
       </div>
 
       <div class="p-6 space-y-5">
@@ -431,29 +414,29 @@
             <img [src]="viewing()!.avatarUrl" class="w-12 h-12 rounded-full object-cover" />
           } @else {
             <div
-              class="w-12 h-12 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center font-bold"
+              class="w-12 h-12 rounded-full bg-muted text-muted-foreground flex items-center justify-center font-medium"
             >
               {{ viewing()!.username.charAt(0).toUpperCase() }}
             </div>
           }
           <div>
             <p class="font-medium">{{ viewing()!.username }}</p>
-            <p class="text-xs text-gray-500">{{ viewing()!.createdAt | date: 'medium' }}</p>
+            <p class="text-xs text-muted-foreground">{{ viewing()!.createdAt | date: 'medium' }}</p>
           </div>
         </div>
 
-        <div class="border border-gray-200 rounded-md p-4">
-          <p class="text-sm font-medium text-gray-700 mb-1">{{ 'reviews.product' | transloco }}</p>
+        <div class="border border-border rounded-md p-4">
+          <p class="text-sm font-medium text-foreground mb-1">{{ 'reviews.product' | transloco }}</p>
           <p class="text-sm">{{ viewing()!.productSlug }}</p>
         </div>
 
-        <div class="border border-gray-200 rounded-md p-4">
-          <p class="text-sm font-medium text-gray-700 mb-1">{{ 'reviews.rating' | transloco }}</p>
+        <div class="border border-border rounded-md p-4">
+          <p class="text-sm font-medium text-foreground mb-1">{{ 'reviews.rating' | transloco }}</p>
           <p class="text-sm">{{ viewing()!.rating }} / 5</p>
         </div>
 
-        <div class="border border-gray-200 rounded-md p-4">
-          <p class="text-sm font-medium text-gray-700 mb-1">{{ 'reviews.comment' | transloco }}</p>
+        <div class="border border-border rounded-md p-4">
+          <p class="text-sm font-medium text-foreground mb-1">{{ 'reviews.comment' | transloco }}</p>
           <p class="text-sm whitespace-pre-wrap">{{ viewing()!.comment }}</p>
         </div>
 
@@ -461,7 +444,7 @@
           <span
             class="px-2 py-0.5 rounded text-xs font-medium"
             [class]="
-              viewing()!.verified ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
+              viewing()!.verified ? 'bg-success-soft text-success' : 'bg-muted text-muted-foreground'
             "
           >
             {{ viewing()!.verified ? ('reviews.verifiedPurchase' | transloco) : ('reviews.notVerified' | transloco) }}
@@ -469,7 +452,7 @@
           <span
             class="px-2 py-0.5 rounded text-xs font-medium"
             [class]="
-              viewing()!.approved ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'
+              viewing()!.approved ? 'bg-success-soft text-success' : 'bg-warning-soft text-warning'
             "
           >
             {{ viewing()!.approved ? ('reviews.approved' | transloco) : ('reviews.pending' | transloco) }}
@@ -481,18 +464,18 @@
         <button
           *hasPermission="'review:delete'"
           (click)="confirmDelete(viewing()!)"
-          class="flex-1 px-4 py-2 border border-red-200 text-red-600 rounded-md hover:bg-red-50"
+          class="flex-1 px-4 py-2 border border-destructive/30 text-destructive rounded-md hover:bg-destructive-soft"
         >
           {{ 'common.delete' | transloco }}
         </button>
         <button
           *hasPermission="'review:moderate'"
           (click)="toggleApproval(viewing()!)"
-          class="flex-1 px-4 py-2 rounded-md text-white"
+          class="flex-1 px-4 py-2 rounded-md transition-colors"
           [class]="
             viewing()!.approved
-              ? 'bg-amber-600 hover:bg-amber-700'
-              : 'bg-green-600 hover:bg-green-700'
+              ? 'bg-secondary text-secondary-foreground hover:bg-accent'
+              : 'bg-primary text-primary-foreground hover:bg-primary/90'
           "
         >
           {{ viewing()!.approved ? ('reviews.unapprove' | transloco) : ('reviews.approve' | transloco) }}
@@ -505,9 +488,9 @@
 <!-- ══════ Delete Dialog ══════ -->
 @if (deleting()) {
   <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm mx-4 p-6">
-      <h2 class="text-lg font-bold mb-2">{{ 'reviews.deleteTitle' | transloco }}</h2>
-      <p class="text-gray-500 mb-6">
+    <div class="bg-card rounded-xl shadow-2xl w-full max-w-sm mx-4 p-6">
+      <h2 class="text-lg font-medium mb-2">{{ 'reviews.deleteTitle' | transloco }}</h2>
+      <p class="text-muted-foreground mb-6">
         {{ 'reviews.deleteConfirm' | transloco }}
         <strong>{{ deleting()!.username }}</strong
         >?
@@ -515,14 +498,14 @@
       <div class="flex gap-3">
         <button
           (click)="deleting.set(null)"
-          class="flex-1 px-4 py-2 border rounded-md text-gray-700 hover:bg-gray-50"
+          class="flex-1 px-4 py-2 border rounded-md text-foreground hover:bg-accent"
         >
           {{ 'common.cancel' | transloco }}
         </button>
         <button
           (click)="submitDelete()"
           [disabled]="submitting()"
-          class="flex-1 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+          class="flex-1 px-4 py-2 bg-destructive text-destructive-foreground rounded-md hover:bg-destructive/90"
         >
           {{ submitting() ? ('common.deleting' | transloco) : ('common.delete' | transloco) }}
         </button>

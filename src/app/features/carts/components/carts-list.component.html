@@ -1,26 +1,14 @@
 <div class="flex flex-col gap-6 p-6">
   <!-- Header -->
-  <div class="flex items-center justify-between">
+  <div class="flex items-center justify-between gap-4">
     <div>
       <h1 class="text-2xl font-bold tracking-tight">{{ 'carts.title' | transloco }}</h1>
-      <p class="text-muted-foreground">{{ totalItems() }} {{ 'common.of' | transloco }}</p>
+      <p class="text-muted-foreground">{{ totalItems() }} {{ 'common.total' | transloco }}</p>
     </div>
-  </div>
-
-  <!-- Search -->
-  <div class="relative flex-1 max-w-md">
-    <ng-icon
-      name="lucideSearch"
-      class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground"
-    />
-    <input
-      hlmInput
-      type="text"
-      [(ngModel)]="searchQuery"
-      (input)="onSearch()"
-      [placeholder]="'carts.search' | transloco"
-      class="pl-9 w-full pb-1.25 pt-1.25"
-    />
+    <div class="relative w-full max-w-64 sm:w-64">
+      <ng-icon name="lucideSearch" class="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+      <input hlmInput type="search" [dir]="language.current() === 'ar' ? 'rtl' : 'ltr'" [(ngModel)]="searchQuery" (input)="onSearch()" [placeholder]="'carts.search' | transloco" [attr.aria-label]="'carts.search' | transloco" class="w-full ps-9" />
+    </div>
   </div>
 
   <!-- Loading State -->
@@ -45,38 +33,20 @@
   </div>
 
   <!-- Pagination -->
-  @if (pageData() && !loading() && items().length > 0) {
-    <div class="flex items-center justify-between">
-      <span class="text-sm text-muted-foreground">
-        {{ 'common.showing' | transloco }} {{ pageData()!.page * pageData()!.size + 1 }} -
-        {{ Math.min((pageData()!.page + 1) * pageData()!.size, pageData()!.totalElements) }}
-        {{ 'common.of' | transloco }} {{ pageData()!.totalElements }}
-      </span>
-
-      <div class="flex items-center gap-2">
-        <button
-          hlmBtn
-          variant="outline"
-          size="sm"
-          [disabled]="pageData()!.first"
-          (click)="goToPage(currentPage() - 1)"
-        >
-          <ng-icon name="lucideChevronLeft" class="size-4" />
-        </button>
-        <span class="text-sm text-muted-foreground px-2">
-          {{ 'common.page' | transloco }} {{ pageData()!.page + 1 }} {{ 'common.of' | transloco }} {{ pageData()!.totalPages }}
-        </span>
-        <button
-          hlmBtn
-          variant="outline"
-          size="sm"
-          [disabled]="pageData()!.last"
-          (click)="goToPage(currentPage() + 1)"
-        >
-          <ng-icon name="lucideChevronRight" class="size-4" />
-        </button>
-      </div>
-    </div>
+  @if (pageData() && !loading()) {
+    <app-pager
+      class="view-fade"
+      [page]="pageData()!.page"
+      [size]="pageData()!.size"
+      [totalElements]="pageData()!.totalElements"
+      [totalPages]="pageData()!.totalPages"
+      [first]="pageData()!.first"
+      [last]="pageData()!.last"
+      [showPageSize]="true"
+      [sizeOptions]="pageSizeOptions"
+      (pageChange)="goToPage($event)"
+      (sizeChange)="onPageSizeChange($event)"
+    />
   }
 </div>
 
@@ -85,7 +55,7 @@
   <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
     <div class="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl bg-card shadow-2xl border">
       <div class="flex items-center justify-between p-6 border-b sticky top-0 bg-card">
-        <h2 class="text-lg font-bold">{{ 'carts.cartNumber' | transloco }} {{ viewing()!.id }}</h2>
+        <h2 class="text-lg font-bold">{{ viewing()!.userFullName }}'s {{ 'carts.cart' | transloco }}</h2>
         <button hlmBtn variant="ghost" size="icon" class="size-8" (click)="closeView()">
           <ng-icon name="lucideX" class="size-4" />
         </button>
@@ -103,7 +73,7 @@
         <div class="grid grid-cols-2 gap-4">
           <div class="rounded-md border p-4">
             <p class="text-sm font-medium text-muted-foreground mb-1">{{ 'carts.total' | transloco }}</p>
-            <p class="text-lg font-bold">{{ viewing()!.total | number:'1.2-2' }}</p>
+            <p class="text-lg font-bold">{{ viewing()!.total | money }}</p>
           </div>
           <div class="rounded-md border p-4">
             <p class="text-sm font-medium text-muted-foreground mb-1">{{ 'carts.items' | transloco }}</p>
@@ -153,7 +123,7 @@
                     <p class="text-xs text-muted-foreground">SKU: {{ item.sku }}<span *ngIf="item.optionValues?.length"> ·
                       {{ item.optionValues.map(o => o.value).join(' · ') }}</span></p>
                     <div class="flex items-center gap-2 mt-1">
-                      <span class="text-sm font-medium">{{ item.price | number:'1.2-2' }}</span>
+                      <span class="text-sm font-medium">{{ item.price | money }}</span>
                       @if (item.discountPercentage > 0) {
                         <hlm-badge variant="destructive" class="text-xs">-{{ item.discountPercentage }}%</hlm-badge>
                       }
@@ -161,7 +131,7 @@
                   </div>
                   <div class="text-right flex-shrink-0">
                     <p class="text-sm font-medium">x{{ item.quantity }}</p>
-                    <p class="text-xs text-muted-foreground">{{ item.subtotal | number:'1.2-2' }}</p>
+                    <p class="text-xs text-muted-foreground">{{ item.subtotal | money }}</p>
                     <p class="text-xs text-muted-foreground">{{ 'carts.stock' | transloco }}: {{ item.stockQuantity }}</p>
                   </div>
                 </div>

@@ -8,7 +8,7 @@
 
     <!-- Header -->
     <div class="flex items-center justify-between mb-6">
-      <h1 class="text-2xl font-bold tracking-tight">
+      <h1 class="text-2xl font-medium tracking-tight">
         {{ state.isEditMode() ? ('products.wizard.editTitle' | transloco) : ('products.wizard.addTitle' | transloco) }}
       </h1>
     </div>
@@ -59,7 +59,7 @@
       <div>
         @if (state.currentStep() > 0) {
           <button hlmBtn variant="outline" type="button" (click)="onBack()">
-            <ng-icon name="lucideArrowLeft" class="mr-2 size-4 text-black" />
+            <ng-icon name="lucideArrowLeft" class="me-2 size-4 text-foreground rtl:rotate-180" />
             {{ 'products.wizard.back' | transloco }}
           </button>
         } @else {
@@ -74,7 +74,7 @@
         @if (state.currentStep() < state.steps.length - 1) {
           <button hlmBtn type="button" (click)="onNext()">
             {{ 'products.wizard.next' | transloco }}
-            <ng-icon name="lucideArrowRight" class="ml-2 size-4" />
+            <ng-icon name="lucideArrowRight" class="ms-2 size-4 rtl:rotate-180" />
           </button>
         } @else {
           <button hlmBtn type="button" (click)="onSubmit()" [disabled]="submitting()">
