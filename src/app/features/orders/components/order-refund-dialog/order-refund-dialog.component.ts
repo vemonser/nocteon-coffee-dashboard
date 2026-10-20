@@ -1,4 +1,4 @@
-import { Component, computed, inject, input, output, signal } from '@angular/core';
+import { Component, computed, effect, inject, input, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
@@ -93,6 +93,18 @@ export class OrderRefundDialogComponent {
       'The money goes back through the payment gateway. The customer is refunded on the same card.',
     ),
   );
+
+  constructor() {
+    // The dialog fills itself when it OPENS: the amount is what is left to
+    // refund, and the reason starts empty. A dialog that opens with an empty
+    // amount asks the admin to do arithmetic.
+    effect(() => {
+      if (this.open()) {
+        this.amount.set(OrderRefundDialogComponent.twoDecimals(this.remaining()));
+        this.reason.set('');
+      }
+    });
+  }
 
   /** Start from the whole amount, and reset the reason. */
   protected useFullAmount(): void {

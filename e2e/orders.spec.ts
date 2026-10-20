@@ -490,6 +490,51 @@ test.describe('order detail', () => {
     await expect(payment).toContainText(/Online|Cash on delivery/);
   });
 
+  test('the refund dialog asks for an amount and a reason', async () => {
+    // The dialog is reachable from the order's overflow menu.
+    await page.locator('[data-testid="order-more-actions"]').click();
+    await page.waitForTimeout(400);
+    await page.locator('[data-testid="order-refund"]').click();
+    await page.waitForTimeout(500);
+
+    const dialog = page.locator('[data-testid="refund-dialog"]');
+    await expect(dialog).toBeVisible();
+
+    // The amount starts at what is left to refund, and the confirm needs a
+    // REASON: a refund without one is a mystery a month later.
+    const amount = page.locator('[data-testid="refund-amount"]');
+    await expect(amount).not.toHaveValue('');
+    const confirm = page.locator('[data-testid="refund-dialog-confirm"]');
+    await expect(confirm).toBeDisabled();
+
+    await page.locator('[data-testid="refund-reason"]').fill('The customer returned the bag.');
+    await expect(confirm).toBeEnabled();
+
+    // An amount bigger than what is left is refused before the gateway is
+    // even asked.
+    await amount.fill('9999');
+    await expect(page.locator('[data-testid="refund-too-much"]')).toBeVisible();
+    await expect(confirm).toBeDisabled();
+
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(300);
+  });
+
+  test('the status dialog can tell the customer', async () => {
+    await page.goto('/dashboard/orders/15', { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(1500);
+    await page.locator('[data-testid="order-update-status"]').click();
+    await page.waitForTimeout(500);
+
+    const notify = page.locator('[data-testid="status-notify"]');
+    await expect(notify).toBeVisible();
+    // It is OFF until the admin ticks it: the admin decides who hears about it.
+    // The state lives on the switch's own button.
+    await expect(notify.locator('button')).toHaveAttribute('data-state', 'unchecked');
+    await notify.locator('button').click();
+    await expect(notify.locator('button')).toHaveAttribute('data-state', 'checked');
+  });
+
   test('the customer phone is a tel: link, and the address is copyable', async () => {
     const tel = page.locator('[data-testid="order-customer-phone"]');
     if (await tel.count()) {
