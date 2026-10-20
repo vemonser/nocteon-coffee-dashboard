@@ -13,6 +13,14 @@ sheets), `evidence/dashboard-r2/color-math.json` (the colour maths),
 `evidence/dashboard-r2/measurements.json` (every number below),
 `evidence/dashboard-r2/results.json` (the 20-cell matrix).
 
+**Where the evidence lives:** `evidence/` is in the repository's
+`.gitignore` (the project's convention for ticket captures), so the
+matrix, the measurements and the colour maths are on DISK, not in the
+tree. The committed artefacts are the measurement scripts
+(`scripts/measure-dashboard-r2.mjs`, `scripts/color-*.mjs`,
+`scripts/verify-round2.mjs`), the spec and the manifest
+(`.quality/runs/dashboard-r2/`), and the reports.
+
 **The headline:** the numbers now reconcile as far as the data allows, there
 is ONE money formatter, ONE order-number formatter and ONE count scope,
 the Arabic UI carries no untranslated string, the donut centres are
@@ -42,8 +50,9 @@ Status: **done** = implemented and verified with the evidence named;
 | 1.1 | The root cause of the mismatch, in one paragraph | done | — | same file → `rootCauseOfTheMismatch` | 1,176.25 (order totals) vs 20,826.50 (line items) — a factor of 17.7, on the same 10 paid orders |
 | 1.1 | The range: does the frontend send it, does the backend honour it | done | `src/app/core/dashboard/period-fetch.ts` (unchanged, re-verified) | `reconciliation.rangeProof` | the client sends `?days=N`; the same endpoint returns `[]` for `days=0`, so the breakdowns are range-filtered too |
 | 1.1 | The label must be truthful per widget | done | `revenue-breakdown-card.component.ts/.html`, `orders-breakdown-card.component.ts/.html`, `widget-header.component.ts` | `reconciliation[].uiLabel` | the breakdowns keep "Last 30 days" (true) and carry a note that they sum the line items; "All time" stays on Recent orders and Low stock |
-| 1.2 | One shared order-count scope, used by the dashboard and the Orders page | done | **new** `src/app/core/dashboard/order-scope.ts`, `dashboard.component.ts/.html`, `orders-list.component.ts/.html` | `orderScope.scopeTable` (5 rows) | the dashboard counts the 10 PAID orders, the page counts all 17; 10 + 5 cancelled + 1 confirmed + 1 refunded = 17 |
+| 1.2 | One shared order-count scope, used by the dashboard and the Orders page | done | **new** `src/app/core/dashboard/order-scope.ts`, `dashboard.component.ts/.html`, `orders-list.component.ts/.html` | `orderScope.scopeTable` (5 rows) + `orderScope.computed` | the dashboard counts the 10 orders whose PAYMENT status is PAID; the page counts all 17. The excluded set is COMPUTED from the payload: 7 orders (5 cancelled, 1 confirmed, 1 delivered-and-refunded) → 10 + 7 = 17 ✓. The excluded PAYMENT statuses (FAILED, PENDING, REFUNDED) are exactly the ones the shared definition names ✓ |
 | 1.2 | The refund rate uses the same denominator | done | `dashboard.component.html` (the help text) | `orderScope.scopeTable[3]` | 2 of 10, and the help text names the paid-order denominator |
+| 1.2 | The sentence names the PAYMENT status, not the order status | done | `public/assets/i18n/{en,ar}.json` (`orderScope.paidHelp`) | `orderScope.computed.matchesTheSharedDefinition` | the excluded order statuses are CANCELLED, CONFIRMED **and DELIVERED** (a delivered order can be refunded) and the excluded payment statuses are FAILED, PENDING, REFUNDED — so naming the order statuses would have been wrong twice over. The sentence now says "an order is counted when its payment status is Paid" |
 | 1.2 | Is "refunded" a status or a payment flag; can a cancelled order be refunded | done | — | `orderScope.refundedIs` | a **payment flag** (`paymentStatus = REFUNDED`); **yes** — `ORD-2026-000012` is CANCELLED + REFUNDED |
 | 1.3 | The "New" badge only where newness is the meaning | done | `core/dashboard/delta.ts` (`deltaDisplay`), `kpi-card.component.ts/.html`, `dashboard.component.html` | `core/dashboard/delta.spec.ts` (5 new cases), `e2e/dashboard-round2.spec.ts` ("the New badge is only on the card where newness is the meaning") | 3 cards show an em dash + the tooltip "No data in the previous period"; 1 card keeps "New" |
 | 1.3 | The existing tests kept, the previous = 0 cases added | done | `core/dashboard/delta.spec.ts` | `npm run test:unit` → 164 passed | the previous = 0 case was already covered; 5 display cases added |
@@ -77,10 +86,11 @@ Status: **done** = implemented and verified with the evidence named;
 | 3.1 | The donut centre is readable, in both modes | done | `chart-card.component.ts` (the foreground token is re-read on every theme change) | `measurements.browser.*.donuts` + the e2e test | 17.08:1 (light), 15.39:1 (dark) — both ≥ 4.5:1 |
 | 3.1 | The centre uses the compact currency and never leaves the ring | done | `chart-card.component.ts` (the width is MEASURED with a canvas, not guessed) | `donuts[].overflowPx` | "EGP 20.8K" / "20.8K ج.م"; the overflow is **negative** on both donuts (−18.2 / −17.5 px) |
 | 3.1 | The centre says what the number is | done | the two breakdown cards | the e2e test | "Revenue" / "Orders" (not "Origin" / "Status") |
-| 3.2 | The dark status swatches are muted, not neon | done | `styles/themes/copper.css`, `styles/themes/tokens.css`, `chart-rules.ts` | `color-math.json` → `modes.dark.swatches` | Delivered #497c53, Processing #287992, Shipped #6865a9, Pending #8a6a20, Cancelled #a8493f, Refunded #6f6a62 — the old neon #4ade80 and bright cyan #22d3ee are gone |
-| 3.2 | The contrast of every swatch on the card (graphics ≥ 3:1) | done | — | `color-math.json` → `summary.swatchesFailingGraphics` = **[]** | 3.09 – 5.80:1 in light, 3.09 – 3.59:1 in dark (the categorical ramp is unchanged) |
-| 3.3 | The pair distance, with a numeric measure | done | `scripts/color-math.mjs`, `scripts/color-search.mjs` | `color-math.json` → `crossPairs` (36 pairs per mode), `withinPairs` (15) | OKLab dE × 100; the bar is 15 (the categorical ramp's own neighbours are 7–15) |
-| 3.3 | The pairs that are too close, and the fix | done | the new `--status-*` tokens | `color-math.json` → `modes.dark.minimum` | **dark**: 0 → **18.8** dE, 18 collisions → **0** (the worst was `--status-shipped` = `--chart-5`, the same colour). **light**: 5.1 dE, 15 pairs under the bar — inherent to the light palette, and the report explains why (a maximin search over the whole light status set reaches only 9.9) |
+| 3.2 | The dark status swatches are muted, not neon | done | `styles/themes/copper.css`, `styles/themes/tokens.css`, `chart-rules.ts` | `color-math.json` → `modes.dark.swatches` | Delivered #4c6f38, Processing #028a9b, Shipped #5a649d, Pending #b1632f, Cancelled #9c4b62, Refunded #7d7672, Confirmed #65955a. The neon #4ade80 and the bright cyan #22d3ee are no longer **chart swatches** — the theme tokens still exist (they are the light-on-dark TEXT colours), but the status chart and the legacy status chart both read the new `--status-*` tokens now |
+| 3.2 | Every MEANING has its own swatch | done | `chart-rules.ts`, `chart-rules.spec.ts` | the spec "every MEANING has its own swatch" | CONFIRMED used to share the delivered green, so two slices of the SAME ring could be the same colour. It has its own token now (FAILED still shares CANCELLED — they are the same meaning) |
+| 3.2 | The contrast of every swatch on the card (graphics ≥ 3:1) | done | — | `color-math.json` → `summary.swatchesFailingGraphics` = **["roast-1"]** | every status swatch passes in both modes (3.01 – 5.02:1 in dark, 3.09 – 11.44:1 in light). The ONE swatch under 3:1 is `--roast-1` on the LIGHT card (2.03:1) — the documented exemption of design.md §5, the lightest step of the sequential ramp, which always carries a 2 px card-coloured gap and a visible value label |
+| 3.3 | The pair distance, with a numeric measure | done | `scripts/color-math.mjs`, `scripts/color-search.mjs`, `scripts/color-confirmed.mjs` | `color-math.json` → `crossPairs` (42 pairs per mode), `withinPairs` (21) | OKLab dE × 100; the bar is 15 for the cross set (the categorical ramp's own neighbours are 7–15 apart) and 9.6 for the within set (the value the pre-round palette reached) |
+| 3.3 | The pairs that are too close, and the fix | done | the new `--status-*` tokens, `scripts/color-confirmed.mjs` | `color-math.json` → `modes.*.minimum`, `crossPairs`, `withinPairs` | TWO kinds of pair, both reported. **Cross** (a status against a categorical swatch — the two rings are read against each other): dark 0 → **14.4**, 19 collisions → 2; light 0 → 5.1, 20 → 15. **Within** (two statuses — the slices of ONE ring): dark 0 → **11.0**, light 0 → 7.7. The bar is 15 for the cross set and 9.6 for the within set, and **15 is not reachable**: the maximin search proves the ceiling is 14.6 for seven semantic swatches against six categorical ones. The two remaining dark collisions are `status-pending` vs the copper (14.6) and `status-confirmed` vs the teal (14.4) |
 | 3.4 | The legend is one aligned column, below the chart | done | `chart-card.component.html` | `measurements.browser.*.legends` + the e2e test | 4 rows × 4 columns, the columns aligned to the pixel, below the chart in every cell |
 | 3.4 | The legend is readable in RTL and in the ring's order | done | the same | the AR screenshot | the dot is at the inline start (the right in Arabic); the rows follow the ring |
 | 3.5 | A donut only for 3–5 slices, one diameter, a single slice is a stat plus a bar | done | `chart-rules.ts` (unchanged), `chart-card.component.ts/.html` | `donuts[].slices` and `donuts[].diameterPx` | the origin donut 4 slices, the status donut 3, **both 180 px**; the Category tab (1 slice) renders as a stat + a bar |
@@ -89,9 +99,9 @@ Status: **done** = implemented and verified with the evidence named;
 
 | # | Item | Status | Files changed | Evidence | Measured |
 |---|---|---|---|---|---|
-| 4.1 | One padding and one baseline for the four cards | done | `kpi-card.component.ts/.html` | `measurements.browser.*.kpis` + the e2e test | the label is at **16 px** and the value at **48 px** in all four cards, in both languages |
+| 4.1 | One padding and one baseline for the four cards | done | `kpi-card.component.ts/.html` | `measurements.browser.*.kpis` + the e2e test | the label's TOP is **16 px** below the card's top edge and the value's top is **48 px**, in all four cards and in both languages (those are offsets, not type sizes). The TYPE is 12 px for the label and 30 px for the value, in all four cards — the e2e now asserts the font sizes as well as the offsets |
 | 4.2 | The sparkline only when there is a trend | done | **new** `core/dashboard/sparkline.ts` (+ its spec), `kpi-card.component.ts` | `core/dashboard/sparkline.spec.ts` (8 cases), `measurements.sparkline.cases` | 1 point → none, 2 points → none, 7 points → drawn, and the real 30-day series (29 zero days, 1 day with revenue) → **none** |
-| 4.3 | The secondary strip matches the primary cards; "currently online" stays a live indicator | done | `dashboard.component.html` | `measurements.browser.*.stripLabels` | the strip's labels are **12 px / 400**, exactly the primary cards' labels; the online card keeps its pulsing dot and the "currently online" caption, and the dot stops under `prefers-reduced-motion` |
+| 4.3 | The secondary strip matches the primary cards; "currently online" stays a live indicator | done | `dashboard.component.html` | `measurements.browser.*.stripLabels` | the strip's labels are **12 px / 400** — the same type as the primary cards' labels (also 12 px / 400); the online card keeps its pulsing dot and the "currently online" caption, and the dot stops under `prefers-reduced-motion` |
 | 4.4 | Equal heights per row, and no card taller than 1.5× its content | done | `device-list.component.html` (one column), `low-stock-products.component.html` (a centred empty state that fills the card), the card contents grow | `measurements.browser.*.cards` (16 cards × 4 cells) | the worst ratio on the page is now **1.50** (the bottom row); before: 5.43 (Low stock) and 1.81 (Devices) |
 | 4.4 | The page height at 1440, before and after | done | — | `results.json` (before) vs `measurements.json` (after) | **1756 px → 1989 px** (+233) |
 | 4.5 | Recent orders: the full date and time in the tooltip, a link to the order, the customer name + the order number | done | `recent-orders.component.ts/.html` | the screenshots | the tooltip carries the absolute date and time; the row links to `/dashboard/orders/:id`; the number is the shared format |
@@ -131,11 +141,17 @@ frontend.
    number measures, but a reader who adds the two breakdowns up and
    compares them with the Total revenue card will still find a 17×
    difference. The UI note is the honest mitigation, not a fix.
-2. **The light palette still has 15 colour pairs under 15 dE.** The
-   closest is `--status-processing` against `--chart-4` teal (5.1 dE).
-   The full maximin search reaches only 9.9 dE on the light card, so this
-   cannot be fixed by choosing better status colours — it needs a
-   different categorical ramp (a design decision, not a bug fix).
+2. **The light palette still has 15 colour pairs under 15 dE**, and the
+   dark one has 2 (the closest: `--status-pending` against the copper at
+   14.6 dE, and `--status-confirmed` against the teal at 14.4). The bar of
+   15 is NOT reachable: the maximin search
+   (`scripts/color-confirmed.mjs`) proves the ceiling is 14.6 for seven
+   semantic swatches against six categorical ones. The light mode is worse
+   (5.1) because on a white card every swatch has to be dark enough for
+   3:1 and the light categorical ramp already spans that lightness. What
+   DID improve is the pair that mattered most: no two statuses share a
+   colour any more (the minimum went from 0 to 11.0), so two slices of the
+   same ring can always be told apart.
 3. **The page grew by 233 px** (1756 → 1989 at 1440), against the old
    1700 px target. The growth is the price of the one-column legend, the
    card headers on the breakdown cards and the cards that fill their area.
@@ -179,6 +195,18 @@ frontend.
   work did not touch the column budget.
 - **The dashboard's structure.** The same widgets, in the same order, in
   the same rows.
+- **The categorical palette.** chart-1..6, the roast ramp and the
+  chart-other bucket are byte-for-byte the same in both modes.
+- **The light status swatches** keep the values the light mode already had,
+  with two exceptions that had to change: `--status-shipped` used to BE
+  `--chart-5` (a categorical token — the same colour as a possible origin
+  slice), and `--status-confirmed` did not exist.
+- **The `localized-date` component's other surfaces.** The round added
+  `dir="ltr"` to it, so a date reads day-first in Arabic everywhere it is
+  used — the shared data table (the Orders list's *Created at* column) and
+  four detail pages included. That is a CROSS-SURFACE change, declared
+  here: it matches what `Intl` produces for `ar-EG`, and the Orders e2e
+  (19/19) still passes with it.
 - **The seed data and the database.** Nothing was written; the only
   writes in the repository are the evidence PNGs and the JSON reports.
 - **The four legacy ApexCharts components** (`category-chart`,
@@ -196,9 +224,11 @@ are the things a machine cannot judge:
 
 **Every cell (375 / 768 / 1024 / 1440 / 1920 × light / dark × en / ar)**
 
-1. The **Arabic summary line** under the revenue chart: read it right to
-   left — "الإجمالي: 1,176.25 ج.م" and "أفضل يوم: … (20 أكتوبر 2026)". The
-   date must read day-first, not "2026 أكتوبر 20".
+1. The **Arabic summary line** under the revenue chart: the amount comes
+   first in each figure ("1,176.25 ج.م"), and the date in the brackets
+   reads day-first, left to right, as "20 أكتوبر 2026" — the same order
+   `Intl` gives for `ar-EG`, and the same order the EN line has
+   ("20 Oct 2026").
 2. The **donut centre** in dark mode: "الإيرادات / 20.8K ج.م" must be
    clearly readable against the card, and must not touch the ring.
 3. The **status donut** in dark mode: Delivered (muted green), Processing

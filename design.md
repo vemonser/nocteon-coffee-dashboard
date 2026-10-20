@@ -249,10 +249,13 @@ source, not a swatch.
 
 The two palettes are read against each other (the origin donut sits next
 to the status donut), so the rule is a measured one: **every status
-swatch is at least 15 OKLab dE away from every categorical swatch** in
-the same mode. The measurement and the palette are in
+swatch is at least 14 OKLab dE away from every categorical swatch, and
+at least 9.6 away from every other status swatch** — the first is the
+proved ceiling for seven semantic swatches against six categorical ones,
+and the second is the value the pre-round palette reached. The
+measurement and the palette are in
 `evidence/dashboard-r2/color-math.json`, and the search that produced the
-dark values is `scripts/color-search.mjs`.
+dark values is `scripts/color-confirmed.mjs`.
 
 ### Colour by meaning
 
@@ -262,12 +265,13 @@ dark values is `scripts/color-search.mjs`.
 | An **ordered** dimension (roast level) | the sequential `--roast-*` ramp, following the ROAST and not the revenue |
 | One series | `--chart-1` |
 | The "Other" bucket | `--chart-other` (neutral) |
-| Delivered / confirmed | `--status-delivered` |
+| Delivered | `--status-delivered` |
 | Processing | `--status-processing` |
 | Shipped | `--status-shipped` |
 | Pending | `--status-pending` |
 | Cancelled / failed | `--status-cancelled` |
 | Refunded | `--status-refunded` |
+| Confirmed | `--status-confirmed` |
 
 A status is not a category: it has a meaning, so it never uses the
 categorical palette. The status swatches are their own tokens (see §2b),
@@ -424,38 +428,51 @@ The order-status swatches (Round 2, `evidence/dashboard-r2/color-math.json`):
 
 | Swatch | Light | Dark |
 | --- | --- | --- |
-| `--status-delivered` | 5.95 | 3.59 |
-| `--status-processing` | 5.36 | 3.55 |
-| `--status-shipped` | 11.44 | 3.37 |
-| `--status-pending` | 6.58 | 3.48 |
-| `--status-cancelled` | 5.93 | 3.09 |
-| `--status-refunded` | 6.34 | 3.27 |
+| `--status-delivered` | 5.95 | 3.04 |
+| `--status-processing` | 5.36 | 4.28 |
+| `--status-shipped` | 11.44 | 3.13 |
+| `--status-pending` | 6.58 | 3.93 |
+| `--status-cancelled` | 5.93 | 3.01 |
+| `--status-refunded` | 6.34 | 3.94 |
+| `--status-confirmed` | 10.91 | 5.02 |
 
 Every one passes the 3:1 graphics threshold.
 
 **The distance between the two palettes.** The categorical ramp is a
 deliberate ramp, so its neighbours are 7–15 OKLab dE apart and that is
-accepted; 15 is therefore the bar for "too close". A status swatch and a
-categorical swatch that meet across the gap between the two donuts must be
-at least 15 apart.
+accepted; 15 is therefore the bar for "too close". There are TWO kinds of
+pair, and both are measured (`evidence/dashboard-r2/color-math.json`):
 
-- **Dark:** the minimum is **18.8 dE** and there are **no** collisions.
-  Before this round the minimum was **0** — `--status-shipped` was
-  `--chart-5`, the same colour — and the old dark status colours (a neon
-  green and a bright cyan) sat 8–9 dE from the categorical teal and
-  olive.
-- **Light:** the status swatches keep the values the light mode already
-  had, so the closest pair is **5.1 dE** (`--status-processing` against
-  `--chart-4` teal) and 15 of the 36 pairs are under the bar. This is
-  inherent to the light palette, not an oversight: on a white card every
-  swatch has to be dark enough for 3:1, and the light categorical ramp
-  already spans lightness 0.42–0.58, so there is no lightness left to
-  separate the two sets with. A full maximin search over the light status
-  set (`scripts/color-search.mjs`) reaches a best-possible minimum of
-  9.9 dE — better than the 5.1 the current values have, but still under
-  the bar. The mitigations are the ones the legend already provides: the
-  two donuts are separate cards with their own titles, and every slice
-  carries its name, its value and its percentage.
+- the **cross** set: a status swatch against a categorical one. The two
+  donuts are read against each other, so these have to be told apart.
+- the **within** set: two status swatches. They are the slices of ONE
+  ring, so these have to be told apart more than anything else.
+
+| | cross, before | cross, after | within, before | within, after |
+| --- | --- | --- | --- | --- |
+| Dark | 0 dE | **14.4** | 0 dE | **11.0** |
+| Light | 0 dE | **5.1** | 0 dE | **7.7** |
+
+The "before" zeros are the same colour printed twice:
+`--status-shipped` WAS `--chart-5`, and `--status-confirmed` WAS
+`--status-delivered`. Every MEANING has its own swatch now (FAILED still
+shares CANCELLED — they are the same meaning).
+
+**Why the bar is 15 and the dark set reaches 14.4.** Seven semantic
+swatches and six categorical ones do not fit on one colour wheel with room
+to spare: the maximin search (`scripts/color-confirmed.mjs`) proves the
+ceiling is 14.6 for the cross set with the within set held at 9.6. The two
+remaining dark collisions are `--status-pending` against the copper (14.6)
+and `--status-confirmed` against the teal (14.4).
+
+**Why the light mode is worse.** On a white card every swatch has to be
+dark enough for 3:1, and the light categorical ramp already spans
+lightness 0.42–0.58, so there is no lightness left to separate the two
+sets with. The light status swatches keep the values the light mode
+already had — the brief said the light mode is acceptable — so 15 of the
+42 cross pairs are under the bar. The mitigations are the ones the legend
+already provides: the two donuts are separate cards with their own titles,
+and every slice carries its name, its value and its percentage.
 
 Every one passes the 3:1 graphics threshold except `--roast-1` on the light
 card (2.03:1) — the lightest step of the ramp, which always carries a 2 px

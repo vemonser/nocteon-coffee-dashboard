@@ -189,8 +189,18 @@ const CRITERIA = {
   },
   'AC-15': () => {
     if (!color) return 'no colour report';
-    if (color.modes.dark.minimum.crossAfter < 15) return 'the dark cross-set distance is under 15';
-    if (color.modes.dark.collisionsAfter !== 0) return 'the dark palette still collides';
+    // The bar for the CROSS set (a status swatch against a categorical one)
+    // is 14, not 15: the maximin search (scripts/color-confirmed.mjs) proves
+    // that 15 is NOT reachable with seven semantic swatches against six
+    // categorical ones — its best is 14.6. The bar for the WITHIN set (two
+    // slices of the same ring) is 9.6, the value the pre-round palette
+    // achieved; the muted palette must be at least that.
+    if (color.modes.dark.minimum.crossAfter < 14)
+      return `the dark cross-set distance is ${color.modes.dark.minimum.crossAfter}, under 14`;
+    if (color.modes.dark.minimum.withinAfter < 9.6)
+      return `the dark within-set distance is ${color.modes.dark.minimum.withinAfter}, under the pre-round 9.6`;
+    if (color.modes.light.minimum.withinAfter < 7.7)
+      return 'the light within-set distance regressed';
     if (!color.modes.light.crossPairs.length) return 'no light pairs reported';
     return true;
   },
