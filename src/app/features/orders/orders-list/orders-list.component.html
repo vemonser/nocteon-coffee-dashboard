@@ -5,6 +5,20 @@
       <h1 class="text-2xl font-medium tracking-tight">{{ 'orders.title' | transloco }}</h1>
       <p class="text-sm text-muted-foreground" data-testid="orders-total-count">
         {{ headerCount() | plural: 'orders.countOrders' }}
+        <!--
+          What the count covers. The dashboard counts the PAID orders and
+          the page counts EVERY order, so the page says which set it is
+          showing — the same definition, the same words (see
+          core/dashboard/order-scope.ts).
+        -->
+        <span
+          class="ms-1 inline-flex cursor-help align-middle"
+          [title]="scopeNote()"
+          [attr.aria-label]="scopeNote()"
+          data-testid="orders-scope-note"
+        >
+          <ng-icon name="lucideInfo" class="size-3.5" />
+        </span>
       </p>
       <!--
         The count is announced when a filter changes, so the result of a
@@ -200,7 +214,8 @@
   <div class="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5">
     <div class="rounded-[var(--radius-card)] border bg-card p-4" data-testid="orders-stat-card">
       <p class="text-sm text-muted-foreground" data-testid="stat-label">
-        {{ 'orders.stats.all' | transloco }}
+        <!-- The scope label, from the shared definition. -->
+        <span [title]="scopeNote()">{{ 'orders.orderScope.all' | transloco }}</span>
       </p>
       <p class="mt-1 text-2xl font-bold tabular-nums" data-testid="stat-value">{{ allCount() }}</p>
     </div>

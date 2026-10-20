@@ -1,13 +1,17 @@
-<app-widget-header [title]="'dashboard.deviceBreakdown' | transloco" />
+<!--
+  The list is ONE column: five device rows, each with its name, its bar and
+  its count.
 
-<!-- Two columns: the device list is a compact list, and a single column
-     makes the card taller than the widget next to it. -->
-<!-- Two columns and a tight row gap: the list is a list, and the last row
-     must not sit on the card's bottom edge. -->
-<ul class="mt-2 grid gap-x-6 gap-y-1.5 pb-1 sm:grid-cols-2">
+  It used to be two columns, which made the card short — and left the card
+  next to it (Low stock) with a lot of empty space, because the two cards
+  of a row share one height. One column gives the list a height that is
+  close to the card next to it, so both cards fill their own area
+  (design.md: no card is more than 1.5x the content it holds).
+-->
+<ul class="mt-2 flex flex-col gap-1.5 pb-1">
   @for (d of devices(); track d.deviceType) {
     <li class="flex items-center gap-3">
-      <span class="w-20 shrink-0 truncate text-sm">{{ label(d.deviceType) }}</span>
+      <span class="w-24 shrink-0 truncate text-sm">{{ label(d.deviceType) }}</span>
       <!-- The bar uses the FULL track: the largest device is 100 %. -->
       <span class="h-2 flex-1 rounded-full bg-muted overflow-hidden">
         <span
@@ -15,8 +19,13 @@
           [style.width.%]="width(d.count)"
         ></span>
       </span>
-      <span class="w-24 shrink-0 whitespace-nowrap text-end text-sm tabular-nums text-muted-foreground">
-        {{ d.count }} {{ unit() }}
+      <!-- The count AND its unit, in the reader's language and in the right
+           plural form. The unit follows the number in both languages. -->
+      <span
+        class="w-28 shrink-0 whitespace-nowrap text-end text-sm tabular-nums text-muted-foreground"
+        [title]="d.count + ' ' + label(d.deviceType)"
+      >
+        {{ d.count | plural: 'dashboard.countSessions' }}
       </span>
     </li>
   } @empty {

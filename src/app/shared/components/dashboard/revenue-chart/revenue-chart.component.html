@@ -9,8 +9,8 @@
       <!-- Grid + y-axis labels -->
       @for (g of gridLines(); track g.y) {
         <line
-          [attr.x1]="pad.left"
-          [attr.x2]="pad.left + plot().w"
+          [attr.x1]="pad().left"
+          [attr.x2]="pad().left + plot().w"
           [attr.y1]="g.y"
           [attr.y2]="g.y"
           [attr.stroke]="gridStroke()"
@@ -18,7 +18,7 @@
           stroke-dasharray="3 4"
         />
         <text
-          [attr.x]="pad.left - 8"
+          [attr.x]="pad().left - 8"
           [attr.y]="g.y"
           text-anchor="end"
           dominant-baseline="middle"
@@ -65,7 +65,7 @@
       @for (t of xTicks(); track t.index) {
         <text
           data-testid="x-axis-label"
-          [attr.x]="pad.left + (plot().w / data().length) * (t.index + 0.5)"
+          [attr.x]="pad().left + (plot().w / data().length) * (t.index + 0.5)"
           [attr.y]="height - 8"
           text-anchor="middle"
           class="text-[11px]"
@@ -88,10 +88,37 @@
   </div>
 
   <!-- The summary line (the number a reader wants first) and the table
-       toggle share one line. -->
+       toggle share one line.
+
+       The line is built from SEPARATE SPANS, not from one joined string:
+       a single string mixes the currency, the numbers and the date into
+       one bidi context, and the Arabic paragraph then reordered them — the
+       parenthesised date came out as "(20 أكتوبر 2026)" with the year and
+       the day swapped. Each part is its own element, so each part keeps
+       its own direction. -->
   <div class="mt-1.5 flex items-baseline justify-between gap-3">
     @if (summary(); as s) {
-      <p class="text-xs text-muted-foreground">{{ summaryLabel() }}</p>
+      <p class="text-xs text-muted-foreground" data-testid="revenue-summary">
+        <span class="inline-flex items-baseline gap-1">
+          <span>{{ 'dashboard.revenueTotal' | transloco }}:</span>
+          <bdi class="tabular-nums">{{ formatMoney(s.total) }}</bdi>
+        </span>
+        <span aria-hidden="true" class="mx-1.5">·</span>
+        <span class="inline-flex items-baseline gap-1">
+          <span>{{ 'dashboard.revenueAverage' | transloco }}:</span>
+          <bdi class="tabular-nums">{{ formatMoney(s.average) }}</bdi>
+        </span>
+        <span aria-hidden="true" class="mx-1.5">·</span>
+        <span class="inline-flex items-baseline gap-1">
+          <span>{{ 'dashboard.revenueBest' | transloco }}:</span>
+          <bdi class="tabular-nums">{{ formatMoney(s.best) }}</bdi>
+          <span class="inline-flex items-baseline">
+            <span aria-hidden="true">(</span>
+            <app-localized-date [value]="s.bestDate" />
+            <span aria-hidden="true">)</span>
+          </span>
+        </span>
+      </p>
     }
     <!-- The data is available without seeing the picture. -->
     <button

@@ -1513,7 +1513,15 @@
     "recentOrders": {
       "title": "Recent orders",
       "viewAll": "View all",
-      "empty": "No orders yet."
+      "empty": "No orders yet.",
+      "justNow": "just now",
+      "unknownCustomer": "Unknown customer",
+      "minutesAgo_one": "{{count}} min ago",
+      "minutesAgo_other": "{{count}} mins ago",
+      "hoursAgo_one": "{{count}} hour ago",
+      "hoursAgo_other": "{{count}} hours ago",
+      "daysAgo_one": "{{count}} day ago",
+      "daysAgo_other": "{{count}} days ago"
     },
     "onlineUsersCount": "{{count}} user online",
     "periods": {
@@ -1621,7 +1629,6 @@
     },
     "ordersByStatus": "Orders by status",
     "ordersByPaymentMethod": "Orders by payment method",
-    "deviceUnit": "sessions",
     "deviceTypes": {
       "OTHER": "Other",
       "IOS": "iOS",

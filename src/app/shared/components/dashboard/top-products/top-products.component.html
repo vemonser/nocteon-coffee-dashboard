@@ -1,7 +1,12 @@
-<!-- The column header says what the number IS. -->
+<!--
+  The column header says what the numbers ARE: the bar and the number in
+  the last column are both UNITS SOLD. The bar used to sit under the
+  product name, so the column it was drawn in was headed "Product" — the
+  header did not say what the bar meant.
+-->
 <div class="mb-2 flex items-baseline justify-between gap-2 text-xs text-muted-foreground">
   <span>{{ 'dashboard.topProducts.product' | transloco }}</span>
-  <span>{{ 'dashboard.topProducts.units' | transloco }}</span>
+  <span class="w-32 shrink-0 text-end">{{ 'dashboard.topProducts.units' | transloco }}</span>
 </div>
 
 <ul class="flex flex-col gap-2">
@@ -28,17 +33,21 @@
         [routerLink]="['/dashboard/products', product.slug]"
       >
         <span class="block truncate text-sm font-medium">{{ product.name }}</span>
-        <!-- The share bar: units, relative to the best seller. -->
-        <span class="mt-1 block h-1.5 w-full rounded-full bg-muted">
+      </a>
+
+      <!-- The bar AND the number are the same measure: units sold. The bar
+           is scaled to the best seller, so the top product's bar is the
+           full track. -->
+      <span class="flex w-32 shrink-0 items-center gap-2">
+        <span class="h-1.5 w-12 shrink-0 overflow-hidden rounded-full bg-muted">
           <span
             class="block h-full rounded-full bg-chart-1"
             [style.width.%]="share(product.quantitySold)"
           ></span>
         </span>
-      </a>
-
-      <span class="shrink-0 text-sm tabular-nums text-muted-foreground">
-        {{ product.quantitySold | plural: 'dashboard.countSold' }}
+        <span class="text-end text-sm tabular-nums text-muted-foreground">
+          {{ product.quantitySold | plural: 'dashboard.countSold' }}
+        </span>
       </span>
     </li>
   } @empty {

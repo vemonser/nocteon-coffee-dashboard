@@ -46,10 +46,11 @@
             <span class="min-w-0 flex-1">
               <!-- The customer name, from the order. -->
               <span class="block truncate text-sm font-medium">
-                {{ order.customer?.name || 'Unknown Customer' }}
+                {{ order.customer?.name || unknownCustomer() }}
               </span>
+              <!-- The order number, through the SHARED helper. -->
               <span class="block truncate text-xs text-muted-foreground">
-                {{ order.orderNumber || ('#' + order.id) }}
+                <bdi>{{ orderNumber(order) }}</bdi>
               </span>
             </span>
 

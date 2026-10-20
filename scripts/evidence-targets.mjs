@@ -256,7 +256,54 @@ const MEASURE_ORDERS_LIST = () => {
     });
   }
 
-  return { headers, rowCount: rows.length, rows, cards, headerCount, tabs, badges };
+  // The truncation report: which cells are cut, and by how much. The
+  // Method and the Order # must NOT be cut; a value that IS cut must
+  // carry a tooltip.
+  const truncation = { byColumn: {}, mustNotTruncate: ['Method', 'Order #'], withoutTooltip: [] };
+  const columnIndex = (label) => headers.findIndex((h) => h.text.replace(/[↕↑↓]/g, '').trim() === label);
+  const listTable = document.querySelector('app-data-table table');
+  if (listTable) {
+    for (const th of Array.from(listTable.querySelectorAll('thead th'))) {
+      const label = (th.textContent || '').trim().replace(/[↕↑↓]/g, '').trim();
+      if (!label) continue;
+      const cut = [];
+      for (const el of Array.from(th.querySelectorAll('*'))) {
+        const cs = getComputedStyle(el);
+        if (cs.textOverflow === 'ellipsis' && el.scrollWidth > el.clientWidth + 1) {
+          cut.push({ header: true, text: (el.textContent || '').trim() });
+        }
+      }
+      truncation.byColumn[label] = cut;
+    }
+    const bodyRows = Array.from(listTable.querySelectorAll('tbody tr'));
+    for (const tr of bodyRows) {
+      const tds = Array.from(tr.querySelectorAll('td'));
+      tds.forEach((td, i) => {
+        const label = headers[i]?.text.replace(/[↕↑↓]/g, '').trim() ?? `#${i}`;
+        for (const el of Array.from(td.querySelectorAll('*'))) {
+          const cs = getComputedStyle(el);
+          if (cs.textOverflow !== 'ellipsis') continue;
+          if (el.scrollWidth <= el.clientWidth + 1) continue;
+          const entry = {
+            column: label,
+            text: (el.textContent || '').trim().slice(0, 40),
+            missingPx: el.scrollWidth - el.clientWidth,
+            hasTooltip: !!td.querySelector('[title]'),
+          };
+          truncation.byColumn[label] = truncation.byColumn[label] || [];
+          truncation.byColumn[label].push(entry);
+          if (!entry.hasTooltip) truncation.withoutTooltip.push(entry);
+        }
+      });
+    }
+  }
+  truncation.methodTruncated = (truncation.byColumn['Method'] || []).length;
+  truncation.orderNumberTruncated = (truncation.byColumn['Order #'] || []).length;
+  truncation.headersTruncated = Object.entries(truncation.byColumn)
+    .filter(([, cuts]) => cuts.some((c) => c.header))
+    .map(([label]) => label);
+
+  return { headers, rowCount: rows.length, rows, cards, headerCount, tabs, badges, truncation };
 };
 
 // ── order-detail specific measurements ──────────────────────────────────────
@@ -310,7 +357,25 @@ const MEASURE_ORDER_DETAIL = () => {
   const netPaid = (document.querySelector('[data-testid="order-net-paid"]')?.textContent || '').trim();
   const mismatch = !!document.querySelector('[data-testid="order-totals-mismatch"]');
 
-  return { cards, sidebar, actions, steps, cancelled, total, netPaid, totalsMismatchShown: mismatch };
+  // The section order, as it is on the page (the main column first, then
+  // the sidebar).
+  const sectionOrder = {
+    main: cards.map((c) => c.id),
+    sidebar: sidebar.map((c) => c.id),
+  };
+
+  return {
+    cards,
+    sidebar,
+    actions,
+    steps,
+    cancelled,
+    total,
+    netPaid,
+    totalsMismatchShown: mismatch,
+    sectionOrder,
+    cardHeightRatios: cards.map((c) => ({ id: c.id, heightPx: c.heightPx, ratio: c.ratio })),
+  };
 };
 
 // ── the target registry ─────────────────────────────────────────────────────

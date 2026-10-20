@@ -70,6 +70,24 @@
      category of its own. */
   --chart-other: #8a8178;
 
+  /* ─── The order-status swatches ────────────────────────────────────────
+     A status is not a category: it has a MEANING, so it gets its own
+     swatches and never a categorical one. The light values are the
+     semantic tokens the page already used (--success, --info, --warning,
+     --destructive-text, --muted-foreground); SHIPPED is new, because it
+     used to be --chart-5 — a CATEGORICAL token, so a shipped slice and
+     a possible origin slice were the same colour.
+
+     The values are chosen so that every status swatch is at least 15
+     OKLab dE away from every categorical swatch (see
+     evidence/dashboard-r2/color-math.json). */
+  --status-delivered: #137333;
+  --status-processing: #0e7490;
+  --status-shipped: #482a6f;
+  --status-pending: #7a5700;
+  --status-cancelled: #b83232;
+  --status-refunded: #6b5d52;
+
   --radius: 0.5rem;
 }
 
@@ -136,4 +154,21 @@
   --roast-4: #9a5a2f;
 
   --chart-other: #8f857b;
+
+  /* ─── The order-status swatches (dark) ─────────────────────────────────
+     These are NOT the light-on-dark text colours. The old dark palette
+     used --success (#4ade80, a neon green) and --info (#22d3ee, a bright
+     cyan) as chart swatches: they were outside the warm family the rest
+     of the palette lives in, and the cyan collided with the categorical
+     teal that the origin donut uses next to them.
+
+     These values are MUTED, sit in the warm/neutral half of the wheel,
+     and every one of them is at least 15 OKLab dE away from every
+     categorical swatch (measured: evidence/dashboard-r2/color-math.json). */
+  --status-delivered: #497c53;
+  --status-processing: #287992;
+  --status-shipped: #6865a9;
+  --status-pending: #8a6a20;
+  --status-cancelled: #a8493f;
+  --status-refunded: #6f6a62;
 }

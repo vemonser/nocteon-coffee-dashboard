@@ -1,9 +1,13 @@
 @if (products.length === 0) {
-  <!-- An empty widget is ONE line. A 160 px card saying "nothing to report"
-       is a card that shouts about nothing. -->
-  <div class="flex items-center gap-2 py-1 text-sm text-muted-foreground">
-    <ng-icon name="lucideCheckCircle" class="size-4 shrink-0 text-success" />
-    <span>{{ 'dashboard.lowStock.noAlerts' | transloco }}</span>
+  <!--
+    An empty widget is ONE line of TEXT, and it FILLS the card it is in:
+    the card next to it is taller, and the two cards of a row share one
+    height, so a short line at the top of a tall card left the card mostly
+    empty. The empty state is centred in the card's area instead.
+  -->
+  <div class="flex h-full min-h-[136px] flex-col items-center justify-center gap-2 py-2 text-center">
+    <ng-icon name="lucideCheckCircle" class="size-5 shrink-0 text-success" />
+    <span class="text-sm text-muted-foreground">{{ 'dashboard.lowStock.noAlerts' | transloco }}</span>
   </div>
 } @else {
   <ul class="divide-y divide-border">

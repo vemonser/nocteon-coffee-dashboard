@@ -15,7 +15,7 @@ import {
   lucideBanknote,
   lucideX,
 } from '@ng-icons/lucide';
-import { TranslocoPipe } from '@jsverse/transloco';
+import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmInputImports } from '@spartan-ng/helm/input';
 import { HlmNativeSelectImports } from '@spartan-ng/helm/native-select';
@@ -54,6 +54,7 @@ import {
   type OrderFilters,
 } from '../utils/order-filters';
 import { formatOrderNumber } from '../utils/order-number';
+import { ORDER_COUNT_SCOPES } from '../../../core/dashboard/order-scope';
 import type { RowMenuAction } from '../../../shared/ui/actions-cell/actions-cell.component';
 
 /**
@@ -111,6 +112,7 @@ export class OrdersListComponent {
   protected readonly language = inject(LanguageService);
   protected readonly names = inject(LocalizedNameService);
   private readonly storeSettings = inject(StoreSettingsService);
+  private readonly transloco = inject(TranslocoService);
 
   /** Every order the API returned. The filters are applied to THIS. */
   protected readonly allOrders = signal<OrderResponse[]>([]);
@@ -187,6 +189,19 @@ export class OrdersListComponent {
 
   /** The count in the page header — what the table actually shows. */
   protected readonly headerCount = computed(() => this.visibleTotal());
+
+  /**
+   * What the counts on this page cover.
+   *
+   * The page counts EVERY order — the cancelled, the pending and the
+   * refunded ones included. The dashboard counts the PAID orders only, so
+   * the two numbers are different, and the page says which set it is
+   * showing. One definition, shared with the dashboard
+   * (core/dashboard/order-scope.ts).
+   */
+  protected readonly scopeNote = computed(() =>
+    this.transloco.translate(ORDER_COUNT_SCOPES.all.helpKey),
+  );
 
   /** The cards. Each one says exactly what it counts. */
   protected readonly allCount = computed(() => this.allOrders().length);
@@ -641,7 +656,7 @@ export class OrdersListComponent {
       const subtotal = (order.items ?? []).reduce((sum, i) => sum + Number(i.totalPrice ?? 0), 0);
       lines.push(
         [
-          order.orderNumber ?? `#${order.id}`,
+          formatOrderNumber(order.orderNumber, order.id),
           order.createdAt,
           order.status,
           order.paymentStatus,

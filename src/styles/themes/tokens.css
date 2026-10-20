@@ -74,4 +74,10 @@
     --color-roast-2: var(--roast-2);
     --color-roast-3: var(--roast-3);
     --color-roast-4: var(--roast-4);
+    --color-status-delivered: var(--status-delivered);
+    --color-status-processing: var(--status-processing);
+    --color-status-shipped: var(--status-shipped);
+    --color-status-pending: var(--status-pending);
+    --color-status-cancelled: var(--status-cancelled);
+    --color-status-refunded: var(--status-refunded);
 }
