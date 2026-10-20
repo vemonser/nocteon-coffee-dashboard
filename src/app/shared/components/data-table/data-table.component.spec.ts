@@ -17,8 +17,15 @@ describe('DataTableComponent headers', () => {
   });
 
   it('budgets the review columns', () => {
-    expect(DataTableComponent.COLUMN_WIDTHS['reviewer']).toBe('180px');
-    expect(DataTableComponent.COLUMN_WIDTHS['rating']).toBe('120px');
-    expect(DataTableComponent.COLUMN_WIDTHS['comment']).toBe('320px');
+    expect(DataTableComponent.COLUMN_WIDTHS['reviewer']).toBe('125px');
+    expect(DataTableComponent.COLUMN_WIDTHS['rating']).toBe('85px');
+    expect(DataTableComponent.COLUMN_WIDTHS['statusReview']).toBe('95px');
+  });
+
+  it('leaves the comment to the page: the reviews table budgets it itself', () => {
+    // The comment is the widest column of the moderation table, and its
+    // budget has to fit the container with the other seven — so the page
+    // owns it, not the shared map.
+    expect(DataTableComponent.COLUMN_WIDTHS['comment']).toBeUndefined();
   });
 });
