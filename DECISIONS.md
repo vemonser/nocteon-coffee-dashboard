@@ -1156,7 +1156,67 @@ cards in a row share their height, and nothing is clipped at any width
 (the clipping check in the matrix reports 0 real findings — the only hits
 are the `sr-only` elements, which are 1 px by design).
 
-## ORDERS PHASE 5 — Tracking, history and notes (STOPPED FOR APPROVAL)
+## ORDERS PHASE 5 — The backend contract, then the frontend
+
+### 5.0 The contract was approved — and the backend came first
+
+`ORDERS_CONTRACT.md` was approved with the instruction to build the BACKEND
+first. The backend lives in a separate repository
+(`../nocteon-backend`, Spring Boot), so the work landed there.
+
+### 5.1 The backend: one state machine, one history, the counts
+
+| What | Where | What it does |
+|---|---|---|
+| The strict transitions | `OrderStatusService` (already existed, no controller called it) | The controller calls it now. The endpoint used to refuse only DELIVERED and CANCELLED as the CURRENT status, so `PENDING → DELIVERED` was accepted. A refused transition answers **409** with what it refused |
+| `order_status_history` | a new table | Written in the SAME TRANSACTION as every status change: the checkout records the order being placed, the admin's change records who moved it and why, the expiry sweep records its own cancellation. An order can never carry a status its history does not explain |
+| `order_notes` | a new table | The team's notes about the order, always attributed. NOT `orders.notes` — that one is the customer's |
+| The shipment | five columns on `orders` | The carrier, the tracking number, the tracking URL and the two timestamps. There is still no carrier API: the admin pastes what the carrier told them |
+| `order_refunds` | a new table | The AMOUNT, which is what makes the net paid computable. The gateway call is still not integrated, so the row says the refund is MANUAL |
+| `GET /dashboard/orders/stats` | the counts of the FILTERED set | The cards and the rows describe the same set |
+| The list filters | `paymentStatus`, `paymentMethod`, `dateFrom`, `dateTo`, `search` | The browser stopped filtering a page of rows it happened to have: the API filters, and the counts are the API's |
+
+**579 backend tests pass**, including an integration test for the transition
+validation, the totals and the history written atomically.
+
+**Two bugs the tests caught, both real:**
+
+- the expiry sweep released the stock AND the state machine released it again
+  — the units came back TWICE;
+- a PostgreSQL parameter that appears in an `is null` test has no type there,
+  so the date bounds could not be inferred ("could not determine data type of
+  parameter"). The bounds are now never null: an absent filter is a range
+  that covers everything.
+
+The gateway refund is still NOT implemented: Paymob's refund API is not wired
+in, so the refund is recorded and the money is returned by hand. The dialog
+on the order page therefore stays DISABLED, and says so.
+
+### 5.2 The frontend, against the contract
+
+- the list asks the API for its rows AND for its counts, in one round trip,
+  so a card can never contradict the rows below it;
+- the search, the payment status, the payment method and the date range are
+  SERVER-SIDE filters now;
+- the detail page shows the **activity timeline** — the status history, the
+  notes and the refunds, newest first, under the progress tracker;
+- the notes card has a composer that writes to the API;
+- the shipment card shows what the store recorded and lets the admin record
+  it;
+- the payment card shows the transaction reference, the paid-at time, the
+  refunds and the net paid.
+
+**A net paid of nothing is not zero.** An order that was never paid has a
+net paid of `null`, not of its total: the backend only computes one when
+money came in, and the page says "not known" instead of printing a number
+that is not true.
+
+### 5.3 The old contract text is history
+
+The section below is the contract as it was WRITTEN, before the approval. It
+is kept because the decisions in it are the decisions that were taken.
+
+## ORDERS PHASE 5 (as proposed) — Tracking, history and notes
 
 `ORDERS_CONTRACT.md` is written and the work is **stopped there**, as the
 ticket asks: the DTOs, the endpoints, the migrations and the permissions
@@ -1266,165 +1326,3 @@ inherited 16 px, so they fit with room to spare.
 The evidence matrix was re-run end to end over the six targets in all 20
 cells (120 screenshots), with the language switched at runtime, and the
 measurements are in `evidence/orders/results.json`.
-
-# DASHBOARD ROUND 2 — the numbers, the language, the colour, the cards
-
-The Round-1 pass got the structure right. This round fixes what the
-screenshots still showed: numbers that did not reconcile, three ways of
-printing money, i18n leaks, unreadable donut centres, colour collisions
-and weak KPI cards. The evidence is in `evidence/dashboard-r2/`.
-
-## ROUND 2, PHASE 1 — The numbers reconcile
-
-- **The two revenue figures are two DIFFERENT formulas over the same ten
-  orders.** The Total revenue card sums `order.totalAmount` (1,176.25) and
-  the breakdown widgets sum `orderItem.totalPrice` (20,826.50). The seeded
-  `total_amount` does not match the order's own items — a factor of 17.7 —
-  and the backend's own percentages are computed against the order-total
-  sum while the values are the item sum, which is why the category donut
-  reported 1,770.6 % for one category. **No frontend change can reconcile
-  them**: the frontend never sees the two numbers in the same place. The
-  fix is in the data — `total_amount` must equal
-  `SUM(items) + shipping - discount`, exactly as the runtime formula does
-  (SEED_PROPOSAL.md).
-- **The range IS honoured by the breakdowns** (the same endpoint returns an
-  empty breakdown for `days=0`), so the "Last 30 days" label on them is
-  truthful. What is not truthful is the IMPLICIT claim that the breakdown
-  adds up to the revenue card, so the card now carries a note saying that
-  it sums the line items.
-- **The order count has ONE definition** (`core/dashboard/order-scope.ts`):
-  the dashboard counts the orders whose **payment status** is PAID, and
-  the Orders page counts EVERY order. 10 + 7 = 17, so the two numbers
-  reconcile.
-- **The rule is named by the PAYMENT STATUS, not the order status.** The
-  two are independent fields: an order can be DELIVERED and REFUNDED
-  (one in the seed is), and a CANCELLED order can be REFUNDED as well.
-  Naming the order statuses would have been wrong twice over — it would
-  leave the refunded DELIVERED order out of the sentence, and it would
-  count a cancelled order twice. The sentence now says what the backend
-  filters on ("an order is counted when its payment status is Paid — so
-  pending, failed and refunded orders are not counted"), and the evidence
-  script checks that the data agrees with the definition.
-- **"New" is not news.** When the previous period is 0 and the current one
-  is not, there is no percentage to show. Three of the four KPI cards now
-  show an em dash with the reason ("No data in the previous period"); the
-  "New" badge is kept only on the new-customers card, where newness IS
-  the meaning.
-- **One order number, one money formatter.** The order number is the
-  backend's `ORD-YYYY-NNNNNN` everywhere (the dashboard used to print
-  `orderNumber || '#' + id` inline). The money is `EGP 1,176.25` in
-  English and `1,176.25 ج.م` in Arabic — the ISO code instead of the
-  CLDR narrow symbol, the amount first in Arabic instead of behind a
-  left-to-right isolate, and no trailing full stop on the Arabic symbol.
-  The compact form follows the same order (`EGP 1.2K` / `1.2K ج.م`), and
-  the CSV export uses the same formatter WITHOUT the bidi isolate (a file
-  is not a paragraph).
-- **The sparkline needs a trend.** Three points, and two of them above
-  the series' minimum. The revenue series is thirty days in which one day
-  carried a value, and drawing that was the "stray line in the corner".
-
-## ROUND 2, PHASE 2 — The language and the formatting
-
-- **"Sessions" is a plural, in the reader's language**: "418 جلسة",
-  "6 جلسات", "398 sessions". The unit follows the number in both
-  languages.
-- **The revenue summary line is built from SEPARATE spans.** One joined
-  string mixes the currency, the numbers and the date into one bidi
-  context, and the Arabic paragraph reordered the parenthesised date. The
-  date is now laid out as DOM-ordered parts, and the e2e suite asserts the
-  GEOMETRY (the day is the leftmost part) and captures the line.
-- **The card title follows the active tab**: "Revenue by origin", "Orders
-  by status" — in both languages, sentence case, no wrapping. The range
-  scope badge stays in the same place in every card, because the two
-  breakdown cards now carry the same `hlm-card-header` as the others.
-- **ONE tab component.** The range in the toolbar and the tabs inside the
-  cards are the same pill group; only the role differs (`radiogroup` for
-  the range, `tablist` for the views), and the arrow keys are mirrored in
-  RTL like the app's own lifecycle tabs. The "Category" tab is back: a
-  single-slice breakdown renders as a stat plus a bar, which is more
-  useful than a hidden tab.
-- **A computed that translates must read the language signal first.**
-  `transloco.translate()` is not reactive, so a computed that only calls
-  it keeps the language it was built in: the donut centres, the card
-  titles, the tab labels, the scope notes and the delta labels all stayed
-  in the boot language after a runtime switch. The library's sidebar
-  trigger also renders a hardcoded English "Toggle Sidebar" as its
-  screen-reader text, and it was the last Latin word on the Arabic page.
-
-## ROUND 2, PHASE 3 — The colour and the donuts
-
-- **The dark status swatches are their own tokens**, and they are MUTED.
-  The old dark palette used the light-on-dark text colours as chart
-  swatches: a neon green (`#4ade80`) and a bright cyan (`#22d3ee`).
-- **Every MEANING has its own swatch.** CONFIRMED used to share the
-  delivered green, which means two slices of the SAME ring can be the
-  same colour. It has its own token now, and the legacy status chart
-  (the other dashboard) uses the same tokens, so the two dashboards do
-  not paint the same status in two different colours.
-- **The collision is measured, not guessed.** The distance is the OKLab
-  distance x 100; the categorical ramp's own neighbours are 7-15 apart, so
-  15 is the bar. There are TWO kinds of pair, and both are reported:
- *
- *   - **cross** (a status swatch against a categorical one — the two
- *     rings are read against each other): in DARK the minimum went from
- *     **0** to **14.4**, and the collisions from 19 to 2 (both 0.6 short
- *     of the bar). Before, `--status-shipped` WAS `--chart-5` — the same
- *     colour.
- *   - **within** (two status swatches — the slices of ONE ring): the
- *     minimum went from **0** to **11.0**. The old neon palette was 9.6
- *     apart, so the muted palette is BETTER at telling its own slices
- *     apart, not worse.
- *
- * In LIGHT the status swatches keep the values the light mode already had
- * (the brief said the light mode is acceptable), so 15 of the 36 cross
- * pairs are under the bar and the smallest is 5.1. This is inherent to
- * the light palette, not an oversight: on a white card every swatch has
- * to be dark enough for 3:1, and the light categorical ramp already
- * spans lightness 0.42-0.58, so there is no lightness left to separate
-  the two sets with. A full maximin search over the whole light status
-  set reaches a best-possible minimum of 9.3 — better than the 5.1 the
-  current values have, but still under the bar. The mitigations are the
-  ones the legend already provides: the two donuts are separate cards with
-  their own titles, and every slice carries its name, its value and its
-  percentage.
-- **The donut centre is the foreground token, measured in the page**: 17.08:1
-  in light, 15.39:1 in dark, and it never leaves the ring (the width is
-  measured, not guessed). It says what the number IS — "Revenue",
-  "Orders" — not the name of the tab.
-- **The legend is one column** with fixed-width columns, always below the
-  chart, in the same order as the ring, and readable in RTL (the colour
-  dot is at the inline start).
-- **Every donut has the same diameter** (180 px), and a donut is only
-  drawn for 3-5 slices.
-
-## ROUND 2, PHASE 4 — The KPI cards and the layout
-
-- **The four KPI cards share one padding and one baseline** (the label's
-  top is 16 px below the card's top edge and the value's top is 48 px, in
-  all four cards and in both languages; the type is 12 px and 30 px). The
-  value used to sit lower on the revenue card, because that card had a
-  sparkline and the row was `justify-between`.
-- **The sparkline is drawn only when the series is a trend**, and nothing
-  is reserved for it when it is not.
-- **The bottom row's cards fill their own area.** The device list is one
-  column and the low-stock empty state is centred in the card, so neither
-  card is mostly empty. Every card on the page is now at most 1.5x the
-  content it holds (the bottom row is exactly 1.5); before, the low-stock
-  card was 5.43x.
-- **The top-products column header says what the bar and the number are**
-  ("Units sold"), and the bar and the number live in that one column.
-- **The recent orders show the full order number** and the full date and
-  time in the tooltip.
-
-## ROUND 2, PHASE 5 — The verification
-
-The full matrix was re-run (5 widths x 2 themes x 2 languages, the language
-switched at runtime), the measurements were taken in the page, and the
-before/after contact sheets are in `evidence/dashboard-r2/`. The unit
-tests, the Round-2 e2e suite and the existing dashboard-language suite
-(20 cells) all pass.
-
-The acceptance criteria are machine-checked:
-`node scripts/verify-round2.mjs` verifies all 25 of them against the
-recorded evidence, and `.quality/runs/dashboard-r2/evidence-manifest.json`
-is the manifest the evidence gate reads.

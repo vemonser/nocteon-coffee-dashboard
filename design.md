@@ -685,6 +685,7 @@ the KPI cards have a normalised padding with fixed rows.
 - [ ] Every form control has a `for`/`id` label link and an `aria-describedby` error link.
 - [ ] Repeated field sets are one component, not two copies.
 - [ ] Loading, empty, and error states exist for every list.
+
 ## 13. The order pages
 
 The orders list and the order detail page are the two pages where the

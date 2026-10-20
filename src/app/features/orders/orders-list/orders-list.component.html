@@ -4,7 +4,7 @@
     <div>
       <h1 class="text-2xl font-medium tracking-tight">{{ 'orders.title' | transloco }}</h1>
       <p class="text-sm text-muted-foreground" data-testid="orders-total-count">
-        {{ filteredTotal() | plural: 'orders.countOrders' }}
+        {{ pageTotal() | plural: 'orders.countOrders' }}
         <!--
           What the count covers. The dashboard counts the PAID orders and
           the page counts EVERY order, so the page says which set it is
@@ -25,7 +25,7 @@
         filter is heard and not only drawn.
       -->
       <p class="sr-only" role="status" aria-live="polite" data-testid="orders-live-count">
-        {{ filteredTotal() | plural: 'orders.countOrders' }}
+        {{ pageTotal() | plural: 'orders.countOrders' }}
       </p>
     </div>
 
@@ -86,7 +86,7 @@
           (click)="setStatus(option)"
         >
           {{ names.orderStatus(option) }}
-          <span class="ms-1 tabular-nums opacity-80">{{ statusCounts()[option] ?? 0 }}</span>
+          <span class="ms-1 tabular-nums opacity-80">{{ counts()[option] ?? 0 }}</span>
         </button>
       }
     </div>
@@ -100,7 +100,7 @@
           selectClass="w-32"
           size="sm"
           aria-labelledby="orders-filter-payment-status-label"
-          [ngModel]="filters().paymentStatus"
+          [ngModel]="paymentStatus()"
           (ngModelChange)="setPaymentStatus($event)"
           data-testid="orders-filter-payment-status"
         >
@@ -121,7 +121,7 @@
           selectClass="w-36"
           size="sm"
           aria-labelledby="orders-filter-payment-method-label"
-          [ngModel]="filters().paymentMethod"
+          [ngModel]="paymentMethod()"
           (ngModelChange)="setPaymentMethod($event)"
           data-testid="orders-filter-payment-method"
         >
@@ -142,7 +142,7 @@
           selectClass="w-36"
           size="sm"
           aria-labelledby="orders-filter-date-range-label"
-          [ngModel]="filters().range"
+          [ngModel]="range()"
           (ngModelChange)="setRange($event)"
           data-testid="orders-filter-date-range"
         >
@@ -156,14 +156,14 @@
         </hlm-native-select>
       </div>
 
-      @if (filters().range === 'custom') {
+      @if (range() === 'custom') {
         <label class="sr-only" for="orders-filter-from">{{ 'orders.dateRange.custom' | transloco }}</label>
         <input
           id="orders-filter-from"
           hlmInput
           type="date"
           class="w-36"
-          [ngModel]="filters().from ?? ''"
+          [ngModel]="dateFrom() ?? ''"
           (ngModelChange)="setCustomFrom($event)"
         />
         <label class="sr-only" for="orders-filter-to">{{ 'orders.dateRange.custom' | transloco }}</label>
@@ -172,7 +172,7 @@
           hlmInput
           type="date"
           class="w-36"
-          [ngModel]="filters().to ?? ''"
+          [ngModel]="dateTo() ?? ''"
           (ngModelChange)="setCustomTo($event)"
         />
       }
@@ -188,7 +188,7 @@
           type="search"
           class="w-full ps-9"
           data-testid="orders-search"
-          [ngModel]="searchTerm()"
+          [ngModel]="searchField()"
           (ngModelChange)="onSearch($event)"
           [placeholder]="'orders.searchPlaceholder' | transloco"
           [attr.aria-label]="'orders.searchPlaceholder' | transloco"
@@ -214,8 +214,7 @@
   <div class="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5">
     <div class="rounded-[var(--radius-card)] border bg-card p-4" data-testid="orders-stat-card">
       <p class="text-sm text-muted-foreground" data-testid="stat-label">
-        <!-- The scope label, from the shared definition. -->
-        <span [title]="scopeNote()">{{ 'orders.orderScope.all' | transloco }}</span>
+        {{ 'orders.stats.all' | transloco }}
       </p>
       <p class="mt-1 text-2xl font-bold tabular-nums" data-testid="stat-value">{{ allTotal() }}</p>
     </div>
@@ -292,7 +291,7 @@
   } @else {
     <div class="rounded-[var(--radius-card)] border bg-card">
       <app-data-table
-        [data]="rows()"
+        [data]="visibleRows()"
         [columns]="columns"
         [loading]="loading()"
         [emptyMessage]="emptyMessage()"
@@ -307,7 +306,7 @@
         [clickableRows]="true"
         [stickyStartColumn]="'orderNumber'"
         [menuActions]="menuActions"
-        [minWidth]="'1110px'"
+        [minWidth]="'1105px'"
         (sortChange)="onSortChange($event)"
         (rowClick)="openView($event)"
         (selectionChange)="onSelectionChange($event)"
@@ -318,11 +317,11 @@
   }
 
   <!-- ── Pagination ─────────────────────────────────────────────────────── -->
-  @if (!error() && visibleTotal() > 0) {
+  @if (!error() && pageTotal() > 0) {
     <app-pager
       [page]="page()"
       [size]="size()"
-      [totalElements]="visibleTotal()"
+      [totalElements]="pageTotal()"
       [totalPages]="totalPages()"
       [first]="first()"
       [last]="last()"

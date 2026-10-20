@@ -41,12 +41,9 @@ import {
   orderStatusKind,
   paymentStatusKind,
 } from '../models/order-status.model';
-import { formatCurrency } from '../../../shared/utils/locale-format';
+import { formatCurrencyPlain } from '../../../shared/utils/locale-format';
 import { formatOrderNumber } from '../utils/order-number';
-import {
-  ORDERS_LIST_SCOPE,
-  orderScopeDefinition,
-} from '../../../core/dashboard/order-scope';
+import { ORDER_COUNT_SCOPES } from '../../../core/dashboard/order-scope';
 import type { RowMenuAction } from '../../../shared/ui/actions-cell/actions-cell.component';
 
 /**
@@ -107,6 +104,9 @@ export class OrdersListComponent {
   protected readonly loading = signal(false);
   protected readonly error = signal<string | null>(null);
 
+  /** How many orders the filter selects, across every page. */
+  protected readonly pageTotal = signal(0);
+
   /** The counts of the filtered set, and of the whole store. */
   protected readonly filteredTotal = signal(0);
   protected readonly allTotal = signal(0);
@@ -118,6 +118,9 @@ export class OrdersListComponent {
   protected readonly range = signal<'today' | '7d' | '30d' | 'all' | 'custom'>('all');
   protected readonly dateFrom = signal<string | null>(null);
   protected readonly dateTo = signal<string | null>(null);
+  /** What is in the search field. */
+  protected readonly searchField = signal('');
+  /** What is REQUESTED — the URL's search term. */
   protected readonly searchTerm = signal('');
 
   protected readonly sort = signal('createdAt');
@@ -147,26 +150,30 @@ export class OrdersListComponent {
   protected readonly selectedCount = computed(() => this.selectedIds().size);
 
   /**
-   * The filter state, in the shape the template binds to.
+   * What the count covers.
    *
-   * The component keeps the filters as individual signals; the template
-   * reads them through this one object.
+   * <p>The dashboard counts the PAID orders and this page counts every
+   * order, so the page says which set it is showing — one definition, in
+   * one place, for both surfaces.
    */
-  protected readonly filters = computed(() => ({
-    paymentStatus: this.paymentStatus(),
-    paymentMethod: this.paymentMethod(),
-    range: this.range(),
-    from: this.dateFrom(),
-    to: this.dateTo(),
-    search: this.searchTerm(),
-  }));
+  protected readonly scopeNote = computed(() => {
+    const help = ORDER_COUNT_SCOPES.all.helpKey;
+    const value = this.transloco.translate(help);
+    return typeof value === 'string' && value !== help ? value : help;
+  });
+
+  /** How many pages the filtered set has. */
+  protected readonly totalPages = computed(() =>
+    Math.max(1, Math.ceil(this.pageTotal() / this.size())),
+  );
+
+  protected readonly first = computed(() => this.page() === 0);
+  protected readonly last = computed(() => this.page() >= this.totalPages() - 1);
 
   /**
-   * The empty state.
-   *
-   * Two different emptinesses: a store with no orders, and the filters
-   * excluding everything. They need different words and a different way
-   * out.
+   * The empty state says WHICH emptiness it is: a store with no orders, or
+   * orders that the current filters exclude. They need different words and a
+   * different way out.
    */
   protected readonly emptyMessage = computed(() => {
     if (this.allTotal() === 0) return this.t('orders.emptyState.noOrders', 'No orders yet');
@@ -176,60 +183,11 @@ export class OrdersListComponent {
     return this.t('orders.empty', 'No orders found');
   });
 
-  /** Translate with an English fallback (mirrors NotifyService.t). */
+  /** Translate with an English fallback — never a raw key. */
   protected t(key: string, fallback: string): string {
-    if (!key) return fallback;
     const value = this.transloco.translate(key);
     return typeof value === 'string' && value.length > 0 && value !== key ? value : fallback;
   }
-
-  /** The id of a row. */
-  protected readonly rowId = (row: OrderResponse): number => row.id;
-
-  /** The link of a cell: the order number links to the order. */
-  protected readonly cellHref = (columnId: string, row: OrderResponse): string[] | null =>
-    columnId === 'orderNumber' ? ['/dashboard/orders', String(row.id)] : null;
-
-  /**
-   * The counts the TEMPLATE reads.
-   *
-   * The component's own state is `filteredTotal` / `allTotal`; these three
-   * are the same numbers under the names the template uses.
-   */
-  /** The count in the page header — what the table actually shows. */
-  protected readonly headerCount = computed(() => this.filteredTotal());
-  /** The count of the filtered set, across every page. */
-  protected readonly visibleTotal = computed(() => this.filteredTotal());
-
-  /** The pagination, from the filtered set. */
-  protected readonly totalPages = computed(() =>
-    Math.max(1, Math.ceil(this.filteredTotal() / this.size())),
-  );
-  /** The pager's "first page" and "last page" flags. */
-  protected readonly first = computed(() => this.page() === 0);
-  protected readonly last = computed(
-    () => (this.page() + 1) * this.size() >= this.filteredTotal(),
-  );
-  /** The count of the filtered set. */
-  protected readonly matchingCount = computed(() => this.filteredTotal());
-  /** The count of every order the store has. */
-  protected readonly allCount = computed(() => this.allTotal());
-
-  /**
-   * What the counts on this page cover.
-   *
-   * The page counts EVERY order — the cancelled, the pending and the
-   * refunded ones included. The dashboard counts the PAID orders only, so
-   * the two numbers are different, and the page says which set it is
-   * showing. One definition, shared with the dashboard
-   * (core/dashboard/order-scope.ts).
-   */
-  protected readonly scopeNote = computed(() => {
-    this.language.language();
-    return this.transloco.translate(
-      orderScopeDefinition(ORDERS_LIST_SCOPE).helpKey,
-    );
-  });
 
   /** The counts per status, within the filtered set. */
   protected readonly counts = computed(() => this.statusCounts());
@@ -261,11 +219,11 @@ export class OrdersListComponent {
   protected readonly columns: ColumnDef<OrderResponse, any>[] = [
     this.columnHelper.accessor(
       (row) => formatOrderNumber(row.orderNumber, row.id),
-      { id: 'orderNumber', header: 'Order #', enableSorting: false, meta: { width: '166px' } },
+      { id: 'orderNumber', header: 'Order #', enableSorting: false, meta: { width: '165px' } },
     ),
     this.columnHelper.accessor(
       (row) => ({ name: row.customer?.name ?? null, email: row.customer?.email ?? null }),
-      { id: 'customer', header: 'Customer', enableSorting: false, meta: { width: '120px' } },
+      { id: 'customer', header: 'Customer', enableSorting: false, meta: { width: '92px' } },
     ),
     this.columnHelper.accessor('items', {
       id: 'items',
@@ -275,32 +233,32 @@ export class OrdersListComponent {
     }),
     this.columnHelper.accessor(
       (row) => orderStatusKind(row.status),
-      { id: 'orderStatus', header: 'Order status', enableSorting: true, meta: { width: '120px' } },
+      { id: 'orderStatus', header: 'Order status', enableSorting: true, meta: { width: '118px' } },
     ),
     this.columnHelper.accessor(
       (row) => paymentStatusKind(row.paymentStatus),
-      { id: 'paymentStatus', header: 'Payment status', enableSorting: true, meta: { width: '140px' } },
+      { id: 'paymentStatus', header: 'Payment status', enableSorting: true, meta: { width: '134px' } },
     ),
     this.columnHelper.accessor(
       (row) => ({
         icon: row.paymentMethod === 'ONLINE' ? 'lucideCreditCard' : 'lucideBanknote',
         method: row.paymentMethod,
       }),
-      { id: 'paymentMethod', header: 'Method', enableSorting: false, meta: { width: '179px' } },
+      { id: 'paymentMethod', header: 'Method', enableSorting: false, meta: { width: '168px' } },
     ),
     this.columnHelper.accessor('totalAmount', {
       id: 'totalAmount',
       header: 'Total',
       enableSorting: true,
-      meta: { width: '110px', align: 'end' },
+      meta: { width: '112px', align: 'end' },
     }),
     this.columnHelper.accessor('createdAt', {
       id: 'createdAtTime',
       header: 'Created at',
       enableSorting: true,
-      meta: { width: '165px' },
+      meta: { width: '110px' },
     }),
-    this.columnHelper.display({ id: 'actions', header: 'Actions', meta: { width: '84px' } }),
+    this.columnHelper.display({ id: 'actions', header: 'Actions', meta: { width: '82px' } }),
   ];
 
   /**
@@ -319,6 +277,13 @@ export class OrdersListComponent {
     totalAmount: 'totalAmount',
     createdAtTime: 'createdAt',
   };
+
+  /** The row id the table keys its selection on. */
+  protected readonly rowId = (row: OrderResponse): number | null => row?.id ?? null;
+
+  /** The order number is the row's link to its own page. */
+  protected readonly cellHref = (columnId: string, row: OrderResponse): any[] | null =>
+    columnId === 'orderNumber' ? ['/dashboard/orders', row.id] : null;
 
   /** The row's overflow menu. */
   protected readonly menuActions: RowMenuAction[] = [
@@ -397,6 +362,7 @@ export class OrdersListComponent {
     this.dateFrom.set(state.dateFrom);
     this.dateTo.set(state.dateTo);
     this.searchTerm.set(state.search);
+    this.searchField.set(state.search);
     this.sort.set(state.sort);
     this.direction.set(state.direction);
     this.page.set(state.page);
@@ -426,7 +392,9 @@ export class OrdersListComponent {
     if (f.range !== 'all') params['range'] = f.range;
     if (f.dateFrom) params['from'] = f.dateFrom;
     if (f.dateTo) params['to'] = f.dateTo;
-    if (f.search) params['q'] = f.search;
+    // What the field holds is what is asked for: the URL write is the
+    // request, and the field is what the admin typed.
+    if (this.searchField().trim()) params['q'] = this.searchField().trim();
     if (f.sort !== 'createdAt') params['sort'] = f.sort;
     if (f.direction !== 'desc') params['direction'] = f.direction;
     if (f.page > 0) params['page'] = `${f.page}`;
@@ -458,7 +426,7 @@ export class OrdersListComponent {
     }
     const today = this.today();
     const days = range === 'today' ? 1 : range === '7d' ? 7 : 30;
-    const from = new Date(today);
+    const from = new Date();
     from.setDate(from.getDate() - (days - 1));
     return { dateFrom: this.toIso(from), dateTo: today };
   }
@@ -480,13 +448,9 @@ export class OrdersListComponent {
     const range = this.apiRange();
     return {
       paymentStatus:
-        this.paymentStatus() === 'ALL'
-          ? undefined
-          : (this.paymentStatus() as PaymentStatus),
+        this.paymentStatus() === 'ALL' ? undefined : (this.paymentStatus() as PaymentStatus),
       paymentMethod:
-        this.paymentMethod() === 'ALL'
-          ? undefined
-          : (this.paymentMethod() as PaymentMethod),
+        this.paymentMethod() === 'ALL' ? undefined : (this.paymentMethod() as PaymentMethod),
       search: this.searchTerm().trim() || undefined,
       ...range,
     };
@@ -524,6 +488,7 @@ export class OrdersListComponent {
       next: ({ rows, stats, all }) => {
         if (requestId !== this.requestId) return;
         this.rows.set(rows.data?.content ?? []);
+        this.pageTotal.set(rows.data?.totalElements ?? 0);
         this.filteredTotal.set(stats.data?.total ?? 0);
         this.allTotal.set(all.data?.total ?? 0);
         const counts: Record<string, number> = {};
@@ -553,28 +518,24 @@ export class OrdersListComponent {
     this.page.set(0);
     this.selectedIds.set(new Set());
     this.writeUrl();
-    this.load();
   }
 
   protected setPaymentStatus(value: string): void {
     this.paymentStatus.set(value as PaymentStatus | 'ALL');
     this.page.set(0);
     this.writeUrl();
-    this.load();
   }
 
   protected setPaymentMethod(value: string): void {
     this.paymentMethod.set(value as PaymentMethod | 'ALL');
     this.page.set(0);
     this.writeUrl();
-    this.load();
   }
 
   protected setRange(value: string): void {
     this.range.set(value as 'today' | '7d' | '30d' | 'all' | 'custom');
     this.page.set(0);
     this.writeUrl();
-    this.load();
   }
 
   protected setCustomFrom(value: string): void {
@@ -582,7 +543,6 @@ export class OrdersListComponent {
     this.range.set('custom');
     this.page.set(0);
     this.writeUrl();
-    this.load();
   }
 
   protected setCustomTo(value: string): void {
@@ -590,18 +550,18 @@ export class OrdersListComponent {
     this.range.set('custom');
     this.page.set(0);
     this.writeUrl();
-    this.load();
   }
 
   private searchTimeout: ReturnType<typeof setTimeout> | undefined;
 
   protected onSearch(value: string): void {
-    this.searchTerm.set(value);
+    this.searchField.set(value);
     clearTimeout(this.searchTimeout);
     this.searchTimeout = setTimeout(() => {
       this.page.set(0);
+      // The URL is the request: writing it is what makes the list ask the
+      // API again.
       this.writeUrl(true);
-      this.load();
     }, 350);
   }
 
@@ -614,7 +574,6 @@ export class OrdersListComponent {
     this.searchTerm.set('');
     this.page.set(0);
     this.writeUrl();
-    this.load();
   }
 
   protected onSortChange(event: { column: string; direction: 'asc' | 'desc' } | null): void {
@@ -623,7 +582,6 @@ export class OrdersListComponent {
     this.direction.set(event?.direction ?? 'desc');
     this.page.set(0);
     this.writeUrl();
-    this.load();
   }
 
   /** The column id the table shows the sort arrow on. */
@@ -645,7 +603,6 @@ export class OrdersListComponent {
     this.size.set(size);
     this.page.set(0);
     this.writeUrl();
-    this.load();
   }
 
   protected openView(order: OrderResponse): void {
@@ -713,7 +670,9 @@ export class OrdersListComponent {
     if (!rows.length) return;
 
     const money = (value: number): string =>
-      formatCurrency(value, this.language.current(), this.storeSettings.currency());
+      // The PLAIN money: a file is not a paragraph, so the bidi isolate
+      // would be written into the CSV as an invisible control character.
+      formatCurrencyPlain(value, this.language.current(), this.storeSettings.currency());
 
     const header = [
       'Order #',

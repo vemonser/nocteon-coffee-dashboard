@@ -1441,7 +1441,13 @@
       "tagsGap": "The store does not have tags for orders yet.",
       "notesGap": "The store has no place to keep an internal note yet.",
       "historyGap": "The store does not record the order's history yet.",
-      "variantGap": "The store does not record the chosen variant on an order line yet."
+      "variantGap": "The store does not record the chosen variant on an order line yet.",
+      "activityUnavailable": "The order's history could not be loaded. The page still shows what it has.",
+      "noActivity": "No recorded events yet.",
+      "noteAdded": "Note added",
+      "shipmentSaved": "Shipment saved",
+      "resendEmailGap": "The store sends order e-mails automatically, but it cannot send one on demand.",
+      "editShipment": "Record the shipment"
     },
     "dialogs": {
       "status": {
@@ -1482,7 +1488,8 @@
       "delivered": "Delivered",
       "cancelled": "Order cancelled",
       "reason": "Reason",
-      "by": "by {{actor}}"
+      "by": "by {{actor}}",
+      "notify": "the customer is to be told"
     },
     "orderScope": {
       "all": "All orders",
@@ -1684,7 +1691,7 @@
       "status": "Status",
       "paymentMethod": "Payment method"
     },
-    "ordersByStatus": "Orders by status",
+    "ordersByStatus": "Paid orders by status",
     "ordersByPaymentMethod": "Orders by payment method",
     "deviceTypes": {
       "OTHER": "Other",
@@ -1723,7 +1730,8 @@
     "breakdownNote": "This chart adds up the line items (price × quantity). It does not include shipping or discounts, so it does not add up to the Total revenue card.",
     "devicesNote": "The store records one row per observed device session. The count is not a count of people.",
     "recentOrdersNote": "The four most recent orders, whatever their date.",
-    "daysShort": "days"
+    "daysShort": "days",
+    "deviceUnit": "sessions"
   },
   "imageCell": {
     "noImage": "No img"
