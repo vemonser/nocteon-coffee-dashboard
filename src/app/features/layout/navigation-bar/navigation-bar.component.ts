@@ -128,7 +128,7 @@ export class NavigationBarComponent {
       )
       .subscribe((res) => {
         // null = the request failed (toast already shown); keep prior results.
-        if (res) this.searchResults.set(res.results);
+        if (res) this.searchResults.set(res.groups.flatMap((g) => g.items));
       });
   }
 
@@ -141,7 +141,7 @@ export class NavigationBarComponent {
     // result.type is now the backend-provided route segment
     // (e.g. "products", "orders", "promo-codes") thanks to
     // @JsonValue on SearchResultType, so no local mapping is needed.
-    this.router.navigate([`/dashboard/${result.type}/${encodeURIComponent(result.identifier)}`]);
+    this.router.navigate([`/dashboard/${result.type}/${encodeURIComponent(result.id)}`]);
   }
   private formatTypeLabel(type: string): string {
     const labels: Record<string, string> = {
