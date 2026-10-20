@@ -71,6 +71,12 @@ const PLURAL_BASES = [
   'dashboard.countSold',
   'dashboard.countOrders',
   'dashboard.countCustomers',
+  // The orders list and the order detail page count orders, items and
+  // results. Arabic counts a noun by the number in front of it, so the
+  // family has all six categories there and two in English.
+  'orders.countItems',
+  'orders.countOrders',
+  'orders.countResults',
 ];
 const EN_SUFFIXES = ['one', 'other'];
 const AR_SUFFIXES = ['zero', 'one', 'two', 'few', 'many', 'other'];
@@ -330,6 +336,93 @@ const DASHBOARD_GLOSSARY = [
     forbiddenEn: [/^top products$/i, /^top selling product$/i],
   },
 ] as const;
+
+/**
+ * The orders glossary — one word per concept, in BOTH locales.
+ *
+ * The same concept used to have two words: the orders list read
+ * `orders.statuses.*` and the status BADGE read `common.statuses.*`, so a
+ * cancelled order said "ملغاة" in the list and "ملغي" on the badge of the
+ * same row. The payment method had the same split
+ * (`orders.paymentMethods.*` vs `dashboard.paymentMethods.*`).
+ *
+ * The test below fails as soon as one concept maps to two terms again.
+ */
+const ORDERS_GLOSSARY: Array<{
+  concept: string;
+  values: string[];
+  ordersKey: (value: string) => string;
+  otherKey: (value: string) => string;
+}> = [
+  {
+    concept: 'Order status',
+    values: ['PENDING', 'CONFIRMED', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED'],
+    ordersKey: (v) => `orders.statuses.${v}`,
+    otherKey: (v) => `common.statuses.${v.toLowerCase()}`,
+  },
+  {
+    concept: 'Payment status',
+    values: ['PENDING', 'PAID', 'FAILED', 'REFUNDED'],
+    ordersKey: (v) => `orders.paymentStatuses.${v}`,
+    otherKey: (v) => `common.statuses.${v.toLowerCase()}`,
+  },
+  {
+    concept: 'Payment method',
+    values: ['ONLINE', 'CASH_ON_DELIVERY'],
+    ordersKey: (v) => `orders.paymentMethods.${v}`,
+    otherKey: (v) => `dashboard.paymentMethods.${v}`,
+  },
+];
+
+describe('orders glossary', () => {
+  it('a concept maps to ONE term — the list and the badge agree', () => {
+    const drift: string[] = [];
+    for (const entry of ORDERS_GLOSSARY) {
+      for (const value of entry.values) {
+        for (const tag of ['en', 'ar'] as const) {
+          const a = catValue(entry.ordersKey(value), tag);
+          const b = catValue(entry.otherKey(value), tag);
+          if (a !== b) {
+            drift.push(
+              `${tag}: ${entry.concept} "${value}" -> "${a}" (${entry.ordersKey(value)}) ` +
+                `vs "${b}" (${entry.otherKey(value)})`,
+            );
+          }
+        }
+      }
+    }
+    expect(drift, `one concept, one term:\n${drift.join('\n')}`).toEqual([]);
+  });
+
+  it('every orders term is present in both locales', () => {
+    const missing: string[] = [];
+    for (const entry of ORDERS_GLOSSARY) {
+      for (const value of entry.values) {
+        for (const tag of ['en', 'ar'] as const) {
+          const v = catValue(entry.ordersKey(value), tag);
+          if (!v) missing.push(`${tag}:${entry.ordersKey(value)}`);
+        }
+      }
+    }
+    expect(missing).toEqual([]);
+  });
+
+  it('no Arabic orders term mixes scripts', () => {
+    const mixed: string[] = [];
+    for (const key of [...enKeys, ...arKeys].filter((k) => k.startsWith('orders.'))) {
+      const v = catValue(key, 'ar');
+      if (!v) continue;
+      // The placeholders ({{count}}, {{status}}) are not part of the word.
+      const words = v.replace(/\{\{[^}]*\}\}/g, '');
+      // A Latin letter in an Arabic term means the key was never translated
+      // (or was translated with an English word left in it).
+      if (/[A-Za-z]/.test(words) && !/SKU|ORD|CSV|Instagram|Facebook|WhatsApp|URL|Email/i.test(words)) {
+        mixed.push(`ar:${key} = "${v}"`);
+      }
+    }
+    expect(mixed).toEqual([]);
+  });
+});
 
 describe('dashboard glossary (docs/glossary.md)', () => {
   it('every pinned concept uses its approved word in both locales', () => {

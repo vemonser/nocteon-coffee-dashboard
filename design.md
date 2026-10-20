@@ -474,3 +474,133 @@ the business doing?" in one screen and one scroll.
 - [ ] Every form control has a `for`/`id` label link and an `aria-describedby` error link.
 - [ ] Repeated field sets are one component, not two copies.
 - [ ] Loading, empty, and error states exist for every list.
+
+## 13. The order pages
+
+The orders list and the order detail page are the two pages where the
+numbers are the product. The rules below are what the pages are built on.
+
+### 13.1 One status system
+
+The status model lives in ONE place
+(`features/orders/models/order-status.model.ts`): the enums, the allowed
+transitions and the badge kind of every status. The list, the detail page,
+the status dialog, the progress tracker and the export all read from it, so
+a status can never mean two things in two places.
+
+| Order status | Badge | Chart slice |
+|---|---|---|
+| `PENDING` | warning | `--warning` |
+| `CONFIRMED` | info, the **pale** tint | `--chart-4` |
+| `PROCESSING` | info, the **full** tint | `--info` |
+| `SHIPPED` | `--chart-5` on a tint of itself | `--chart-5` |
+| `DELIVERED` | success | `--success` |
+| `CANCELLED` | destructive-text | `--destructive-text` |
+
+| Payment status | Badge |
+|---|---|
+| `PAID` | success |
+| `PENDING` | warning |
+| `FAILED` | destructive-text |
+| `REFUNDED` | muted |
+
+Two rules that came out of the work:
+
+- **Confirmed and Processing share the info hue on purpose** — they are
+  adjacent stages of the same funnel — so they are told apart by the
+  STRENGTH of the tint, not by a second hue. Both carry their text.
+- **A chart needs six distinguishable slices and a badge does not.** The
+  chart gives Confirmed `--chart-4` (the nearest distinguishable neighbour
+  of the same hue family) because `--info` already belongs to Processing.
+  The badge keeps the ticket's mapping exactly.
+
+**One word per concept.** A status used to have two words: the list read
+`orders.statuses.*` and the badge read `common.statuses.*`, so a cancelled
+order said one thing in the list and another on the badge of the same row.
+The vocabulary is pinned by a unit test (`i18n-keys.spec.ts`, "orders
+glossary").
+
+**"Refunded" is a payment flag, not a status.** A refunded order keeps the
+fulfilment status it reached, and the net paid is *unknown* (not zero)
+until the backend records the refund amount.
+
+### 13.2 The progress tracker
+
+`Placed → Confirmed → Processing → Shipped → Delivered`, drawn from the
+order's CURRENT status alone:
+
+- the steps before it are done (a tick on a success fill);
+- the current step is the one the order is at (the brand fill);
+- the steps after it are **muted** — a future step is never drawn as if it
+  had happened;
+- a **cancelled** order leaves the chain: the chain is replaced by the
+  destructive branch, with the reason when the store recorded one.
+
+It needs no history endpoint, so it works today; the activity history
+below it is what the backend contract adds.
+
+### 13.3 The order list
+
+- The columns are `select · Order # · Customer · Items · Order status ·
+  Payment status · Method · Total · Created at · Actions`, and the raw id
+  column is not one of them — the order number is the identifier a customer
+  quotes.
+- The order number is a **real anchor** to the order's page, and the whole
+  row is clickable (the click is ignored on anything interactive inside the
+  row).
+- The **Total** is the one end-aligned column: it opts in with
+  `meta: { align: 'end' }`, and the header switches with the cell so the
+  sort label still sits over its values.
+- The **Method** column is budgeted for the longest label in both
+  languages ("Cash on delivery" / "الدفع عند الاستلام") and is never
+  truncated.
+- The **Created at** cell shows the date and the time, the time on its own
+  line so the column stays narrow, with the relative time in the tooltip
+  and the absolute value in the `datetime` attribute.
+- **The cards count the whole set, never the page.** Each card says what
+  it counts: "All orders" (every order in the store), "Matching filters"
+  (the orders the active filters select), and the status cards within the
+  matching set.
+- **The state lives in the URL**: the status tab, the filters, the search,
+  the sort, the page and the page size. A shared link, a refresh and the
+  back button all work.
+- The **sort is the backend's** — the table uses `manualSorting` and the
+  page maps the display column to the `Order` entity's own property before
+  it asks.
+
+### 13.4 The order detail page
+
+Two columns over the full page width: the order on the left, the facts
+about it on the right.
+
+- **The header** carries the back arrow, the order number, both badges and
+  the created date and time. The actions are at the opposite end: *Update
+  status* (the one primary), *Print invoice*, *Resend email* and the
+  overflow menu with *Cancel* and *Refund*.
+- **The main column**: Items, Totals, the Timeline card and Internal notes.
+- **The sidebar**: Customer, Shipping address, Payment, Shipment and Tags.
+- **The totals card** shows Subtotal, Shipping, Discount, Total and Net
+  paid, and it says so when the recorded total does not match the items —
+  a store whose recorded total disagrees with its own items has a data
+  problem, and hiding it would hide the problem.
+- **No card is taller than 1.5× its content**, the cards in a row share
+  their height, and nothing is clipped at any width.
+
+### 13.5 The status dialog
+
+- It offers **only** the transitions the backend's state machine allows: a
+  delivered or a cancelled order offers nothing, a stage is never skipped
+  and a status never moves backwards.
+- Cancelling has its own dialog, with a **required reason** and the
+  consequence stated.
+- A control the backend cannot honour is **disabled with the reason on
+  it** (the e-mail resend, the refund). A button that silently does nothing
+  is worse than a button that says it cannot.
+
+### 13.6 A pinned first column
+
+A table that is wider than the screen scrolls, and a reader who has
+scrolled to the price must still see which order the price belongs to. The
+first data column (and the select checkbox before it) is **pinned to the
+inline start** — the right in Arabic — so it stays where the eye expects
+it.

@@ -1,0 +1,63 @@
+@if (isCancelled()) {
+  <!-- The destructive branch: the order left the chain. -->
+  <div
+    class="flex items-start gap-3 rounded-md border border-destructive/30 bg-destructive-soft px-3 py-3"
+    data-testid="order-progress-cancelled"
+    role="status"
+  >
+    <ng-icon name="lucideXCircle" class="mt-0.5 size-4 shrink-0 text-destructive-text" aria-hidden="true" />
+    <div class="min-w-0">
+      <p class="text-sm font-medium text-destructive-text">
+        {{ 'orders.statuses.CANCELLED' | transloco }}
+      </p>
+      @if (cancelReason()) {
+        <p class="mt-0.5 text-xs text-destructive-text/90">{{ cancelReason() }}</p>
+      }
+    </div>
+  </div>
+} @else {
+  <ol class="flex flex-col gap-3 sm:flex-row sm:items-start" data-testid="order-progress">
+    @for (step of chain; track step; let last = $last) {
+      <li class="flex min-w-0 flex-1 items-center gap-2 sm:flex-col sm:items-start sm:gap-1.5">
+        <div class="flex w-full items-center gap-2">
+          <span
+            class="flex size-6 shrink-0 items-center justify-center rounded-full border text-xs font-medium"
+            [class.border-success]="isDone(step)"
+            [class.bg-success-soft]="isDone(step)"
+            [class.text-success]="isDone(step)"
+            [class.border-primary]="isCurrent(step)"
+            [class.bg-primary]="isCurrent(step)"
+            [class.text-primary-foreground]="isCurrent(step)"
+            [class.border-border]="isFuture(step)"
+            [class.bg-muted]="isFuture(step)"
+            [class.text-muted-foreground]="isFuture(step)"
+            [attr.data-step]="step"
+            [attr.data-state]="isDone(step) ? 'done' : isCurrent(step) ? 'current' : 'future'"
+          >
+            @if (isDone(step)) {
+              <ng-icon name="lucideCheck" class="size-3.5" aria-hidden="true" />
+            } @else {
+              {{ $index + 1 }}
+            }
+          </span>
+          @if (!last) {
+            <span
+              class="hidden h-px flex-1 sm:block"
+              [class.bg-success]="isDone(step)"
+              [class.bg-border]="!isDone(step)"
+              aria-hidden="true"
+            ></span>
+          }
+        </div>
+        <span
+          class="text-sm"
+          [class.font-medium]="isCurrent(step)"
+          [class.text-foreground]="!isFuture(step)"
+          [class.text-muted-foreground]="isFuture(step)"
+        >
+          {{ 'orders.statuses.' + step | transloco }}
+        </span>
+      </li>
+    }
+  </ol>
+}

@@ -60,6 +60,11 @@
     "select": 0,
     "button": 3
   },
+  "src/app/features/orders/order-detail/order-detail.component.html": {
+    "input": 0,
+    "select": 0,
+    "button": 2
+  },
   "src/app/features/origins/components/origins-list.component.html": {
     "input": 0,
     "select": 0,
@@ -181,6 +186,11 @@
     "button": 2
   },
   "src/app/shared/components/trash-banner/trash-banner.component.html": {
+    "input": 0,
+    "select": 0,
+    "button": 1
+  },
+  "src/app/shared/ui/actions-cell/actions-cell.component.html": {
     "input": 0,
     "select": 0,
     "button": 1
