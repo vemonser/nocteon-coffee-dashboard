@@ -279,7 +279,7 @@ export class OrdersListComponent {
     ),
     this.columnHelper.accessor(
       (row) => paymentStatusKind(row.paymentStatus),
-      { id: 'paymentStatus', header: 'Payment status', enableSorting: true, meta: { width: '130px' } },
+      { id: 'paymentStatus', header: 'Payment status', enableSorting: true, meta: { width: '140px' } },
     ),
     this.columnHelper.accessor(
       (row) => ({
@@ -553,24 +553,28 @@ export class OrdersListComponent {
     this.page.set(0);
     this.selectedIds.set(new Set());
     this.writeUrl();
+    this.load();
   }
 
   protected setPaymentStatus(value: string): void {
     this.paymentStatus.set(value as PaymentStatus | 'ALL');
     this.page.set(0);
     this.writeUrl();
+    this.load();
   }
 
   protected setPaymentMethod(value: string): void {
     this.paymentMethod.set(value as PaymentMethod | 'ALL');
     this.page.set(0);
     this.writeUrl();
+    this.load();
   }
 
   protected setRange(value: string): void {
     this.range.set(value as 'today' | '7d' | '30d' | 'all' | 'custom');
     this.page.set(0);
     this.writeUrl();
+    this.load();
   }
 
   protected setCustomFrom(value: string): void {
@@ -578,6 +582,7 @@ export class OrdersListComponent {
     this.range.set('custom');
     this.page.set(0);
     this.writeUrl();
+    this.load();
   }
 
   protected setCustomTo(value: string): void {
@@ -585,6 +590,7 @@ export class OrdersListComponent {
     this.range.set('custom');
     this.page.set(0);
     this.writeUrl();
+    this.load();
   }
 
   private searchTimeout: ReturnType<typeof setTimeout> | undefined;
@@ -595,6 +601,7 @@ export class OrdersListComponent {
     this.searchTimeout = setTimeout(() => {
       this.page.set(0);
       this.writeUrl(true);
+      this.load();
     }, 350);
   }
 
@@ -607,6 +614,7 @@ export class OrdersListComponent {
     this.searchTerm.set('');
     this.page.set(0);
     this.writeUrl();
+    this.load();
   }
 
   protected onSortChange(event: { column: string; direction: 'asc' | 'desc' } | null): void {
@@ -615,6 +623,7 @@ export class OrdersListComponent {
     this.direction.set(event?.direction ?? 'desc');
     this.page.set(0);
     this.writeUrl();
+    this.load();
   }
 
   /** The column id the table shows the sort arrow on. */
@@ -636,6 +645,7 @@ export class OrdersListComponent {
     this.size.set(size);
     this.page.set(0);
     this.writeUrl();
+    this.load();
   }
 
   protected openView(order: OrderResponse): void {
