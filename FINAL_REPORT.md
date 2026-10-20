@@ -13,6 +13,13 @@ sheets), `evidence/dashboard-r2/color-math.json` (the colour maths),
 `evidence/dashboard-r2/measurements.json` (every number below),
 `evidence/dashboard-r2/results.json` (the 20-cell matrix).
 
+**What was run:** `npm run build` (clean), `npm run test:unit` (166 tests,
+13 files), and the e2e: `dashboard-round2` 10/10, `dashboard-language`
+20/20 (every cell), `dashboard-states` 5/5, `orders` 19/19, `orders-states`
+11/11, `auth` — plus `node scripts/verify-round2.mjs` (25/25 acceptance
+criteria) and the software-factory evidence gate over
+`.quality/runs/dashboard-r2/evidence-manifest.json` (**no gaps**).
+
 **Where the evidence lives:** `evidence/` is in the repository's
 `.gitignore` (the project's convention for ticket captures), so the
 matrix, the measurements and the colour maths are on DISK, not in the
@@ -31,8 +38,10 @@ asserts the FORM of every amount, never its value, for the same reason.
 **The headline:** the numbers now reconcile as far as the data allows, there
 is ONE money formatter, ONE order-number formatter and ONE count scope,
 the Arabic UI carries no untranslated string, the donut centres are
-readable, the dark palette no longer collides with the categorical one, and
-the four KPI cards share one padding and one baseline.
+readable, the dark status palette no longer prints the same colour twice
+(the closest status/categorical pair is 14.4 dE, and the search proves
+14.6 is the ceiling), and the four KPI cards share one padding and one
+baseline.
 
 **What is NOT fixed, and cannot be, in the frontend:** the Total revenue
 card and the revenue breakdowns are two different formulas over the same
@@ -62,7 +71,7 @@ Status: **done** = implemented and verified with the evidence named;
 | 1.2 | The sentence names the PAYMENT status, not the order status | done | `public/assets/i18n/{en,ar}.json` (`orderScope.paidHelp`) | `orderScope.computed.matchesTheSharedDefinition` | the excluded order statuses are CANCELLED, CONFIRMED **and DELIVERED** (a delivered order can be refunded) and the excluded payment statuses are FAILED, PENDING, REFUNDED — so naming the order statuses would have been wrong twice over. The sentence now says "an order is counted when its payment status is Paid" |
 | 1.2 | Is "refunded" a status or a payment flag; can a cancelled order be refunded | done | — | `orderScope.refundedIs` | a **payment flag** (`paymentStatus = REFUNDED`); **yes** — `ORD-2026-000012` is CANCELLED + REFUNDED |
 | 1.3 | The "New" badge only where newness is the meaning | done | `core/dashboard/delta.ts` (`deltaDisplay`), `kpi-card.component.ts/.html`, `dashboard.component.html` | `core/dashboard/delta.spec.ts` (5 new cases), `e2e/dashboard-round2.spec.ts` ("the New badge is only on the card where newness is the meaning") | 3 cards show an em dash + the tooltip "No data in the previous period"; 1 card keeps "New" |
-| 1.3 | The existing tests kept, the previous = 0 cases added | done | `core/dashboard/delta.spec.ts` | `npm run test:unit` → 164 passed | the previous = 0 case was already covered; 5 display cases added |
+| 1.3 | The existing tests kept, the previous = 0 cases added | done | `core/dashboard/delta.spec.ts` | `npm run test:unit` → 166 passed | the previous = 0 case was already covered; 5 display cases added |
 | 1.4 | One order-number format everywhere | done | `features/orders/utils/order-number.ts` (unchanged), `recent-orders.component.ts/.html`, `orders-list.component.ts` (the CSV export) | `greps.orderNumber` | 5 surfaces now go through `formatOrderNumber` / `isolatedOrderNumber` |
 | 1.4 | The grep result of every place that formatted it differently | done | — | `greps.orderNumber.formattedDifferentlyBefore` | 2 places formatted it on their own (`recent-orders.component.html` and the CSV export); both fixed |
 | 1.5 | One money formatter, in both languages | done | `shared/utils/locale-format.ts` (`formatCurrency`, `formatCompactCurrency`, `arabicCurrencySymbol`), `money.pipe.ts` (unchanged) | `locale-format.spec.ts` (the concurrent session's glyph assertions + 4 new compact cases) | EN "EGP 1,176.25", AR "1,176.25 ج.م" (amount first, no trailing dot, Latin digits) |
