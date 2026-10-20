@@ -335,8 +335,8 @@ honest label and list it under 'contract gaps'."*
 
 | Feature | The backend reality | What the UI does now | What it needs |
 |---|---|---|---|
-| **Email sending** | **REAL, but only automatic.** `OrderEmailEventListener` sends the order confirmation when the order is placed, and `OrderShippedEmailListener` sends the shipping notice when it ships. There is **no endpoint to re-send an e-mail on demand**, and no way to send a status-change notice. | the "Resend email" button is **disabled** with the reason on it | `POST /api/dashboard/orders/{id}/resend-email` (re-send the confirmation) and a status-change notification hook in §3.2 |
-| **Payment gateway refund** | **NOT REAL.** `PaymentStatus.REFUNDED` is a flag with **no amount**; there is no refund entity, no refund endpoint, and no call to Paymob's refund API. `PaymentService` only notes that "a manual refund may be needed". | the refund dialog is **disabled** and says exactly why | a Paymob refund call, a `refunds` table with an amount, `POST /api/dashboard/orders/{id}/refund` (§3.6) |
+| **Email sending** | **REAL.** `OrderEmailEventListener` sends the order confirmation when the order is placed, `OrderShippedEmailListener` sends the shipping notice when it ships, and `OrderStatusChangedEmailListener` now sends a status notice when the admin ticks "notify the customer" — enqueued after the transaction commits. There is still **no endpoint to re-send an e-mail on demand**. | the "Resend email" button is **disabled** with the reason on it; the status dialog's "notify the customer" switch is **live** | `POST /api/dashboard/orders/{id}/resend-email` (re-send the confirmation) |
+| **Payment gateway refund** | **BUILT.** The money goes back through Paymob (`POST /api/acceptance/refunds`, the parent transaction id and the amount in cents), and the refund is recorded ONLY when the gateway accepts it. The live call cannot be exercised in this environment: it has no Paymob credentials, so the seeded orders — which have no payment row at all — are refused with "only a paid order can be refunded" | the refund dialog asks for the amount and a reason, and the gateway's refusal is shown as it is | nothing — it is built (§3.6) |
 | **Carrier API** | **NOT REAL.** No carrier, no tracking number, no tracking URL, no delivery timestamps anywhere in the backend. | the shipment card says the store does not record shipments yet | the shipment table and endpoint (§3.5); a carrier integration is a separate project |
 | **Tax** | **NOT REAL.** There is no tax column, field or calculation anywhere in the backend. | the totals card has no tax line | a tax model (a rate, a tax-inclusive/exclusive rule) — out of scope for orders |
 | **Order history** | **NOT REAL.** No `order_status_history` table. | the timeline card shows the one event it can prove (the order's creation) and says the rest is not recorded | §3.3 |
@@ -380,8 +380,9 @@ warning, and the honest "not available yet" lines.
 4. **Is a refund partial?** The dialog offers full or partial, and the
    contract in §3.6 carries an amount — so partial is assumed. A full
    refund could be a separate endpoint.
-5. **Does the status change send an e-mail?** §3.2 carries
-   `notifyCustomer`; the e-mail itself needs the template and the trigger
-   the backend already has for the other two order e-mails.
+5. **Does the status change send an e-mail?** YES — it is built: the
+   change publishes an event, and the e-mail is enqueued after the
+   transaction commits. What it still needs is the Brevo TEMPLATE (the id
+   comes from `BREVO_TEMPLATE_ORDER_STATUS_CHANGED`).
 6. **Are the tags worth the table?** The ticket lists them in the sidebar;
    the backend has nothing.
