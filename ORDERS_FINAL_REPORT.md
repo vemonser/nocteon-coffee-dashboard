@@ -207,12 +207,23 @@ gateway:
 | Gap | Why it is still open |
 |---|---|
 | The **gateway refund** | Paymob's refund API is not wired in. The refund is RECORDED (the amount, the reason, who did it) and the row says it is manual until a gateway reference is written. The order page's refund dialog therefore stays disabled |
-| **`SHIPPED → CANCELLED`** | The strict map forbids it; a store usually wants to cancel an order that has shipped but not arrived. It is decision 1 in the contract |
+| **`SHIPPED → CANCELLED`** | **DECIDED: it stays forbidden.** Once a parcel is on its way, cancelling is a return, and a return is a refund with a reason. The strict map is unchanged |
 | The **status-change e-mail** | The status change records `notifyCustomer`, but nothing sends an e-mail yet. The order page says so |
-| The **seed's broken totals** | 17 of 17 orders disagree with their own items. Fixing them is a data repair that changes what the store believes it charged |
-| The **seed's order numbers** | The seed writes them by hand, so they can collide with the runtime sequence |
+| The **seed's broken totals** | **REPAIRED** — `V111__repair_seeded_order_totals.sql` recomputes the seventeen seeded totals with the checkout's own formula. 0 of 17 disagree now |
+| The **seed's order numbers** | The seed writes them by hand, so they can collide with the runtime sequence. Not repaired: renumbering a live order's identifier is a different decision |
 
-## 8. The two things to decide
+## 8. What is left to decide
+
+Nothing is blocked. Two things are still open, and neither blocks the work:
+
+- **The gateway refund** — Paymob's refund API is not wired in. The refund is
+  RECORDED (the amount, the reason, who did it) and the row says it is
+  manual until a gateway reference is written. The order page's refund
+  dialog stays disabled, as the ticket requires.
+- **The status-change e-mail** — the status change records
+  `notifyCustomer`, but nothing sends an e-mail yet. The order page says so.
+
+## 9. The two things to decide
 >>>>>>> feature/orders-standalone
 
 1. **The backend contract** (`ORDERS_CONTRACT.md`) — approve it, and the six questions in its last section.
