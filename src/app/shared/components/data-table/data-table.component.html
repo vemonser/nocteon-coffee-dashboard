@@ -21,7 +21,11 @@
       @for (headerGroup of table().getHeaderGroups(); track headerGroup.id) {
         <tr hlmTr>
           @if (selectable()) {
-            <th class="w-10 px-4 py-3">
+            <th
+              class="w-10 px-4 py-3"
+              [class.sticky-start]="stickyStartColumn() !== ''"
+              style="inset-inline-start: 0"
+            >
               <input
                 type="checkbox"
                 class="table-check size-4 rounded"
@@ -63,6 +67,8 @@
               [style.insetInlineEnd.px]="header.column.id === 'actions' ? 0 : null"
               [attr.data-numeric]="isNumericColumn(header.column.id) ? '' : null"
               [attr.data-align-end]="isEndAligned(header.column.columnDef) ? '' : null"
+              [class.sticky-start]="isStickyStart(header.column.id)"
+              [style.insetInlineStart.px]="isStickyStart(header.column.id) ? stickyStartOffset : null"
             >
               @if (!header.isPlaceholder) {
                 @if (header.column.getCanSort()) {
@@ -206,7 +212,11 @@
           (click)="onRowClick($event, row.original)"
         >
           @if (selectable()) {
-            <td class="px-4 py-3">
+            <td
+              class="px-4 py-3"
+              [class.sticky-start]="stickyStartColumn() !== ''"
+              style="inset-inline-start: 0"
+            >
               <input
                 type="checkbox"
                 class="table-check size-4 rounded"
@@ -239,6 +249,8 @@
               [style.insetInlineEnd.px]="cell.column.id === 'actions' ? 0 : null"
               [attr.data-numeric]="isNumericColumn(cell.column.id) ? '' : null"
               [attr.data-align-end]="isEndAligned(cell.column.columnDef) ? '' : null"
+              [class.sticky-start]="isStickyStart(cell.column.id)"
+              [style.insetInlineStart.px]="isStickyStart(cell.column.id) ? stickyStartOffset : null"
               [style.max-width]="(cell.column.id === 'main_en' || cell.column.id === 'main_ar') ? '360px' : (cell.column.id === 'actions' ? widthFor(cell.column.id, cell.column.columnDef) : null)"
             >
               @switch (cell.column.id) {

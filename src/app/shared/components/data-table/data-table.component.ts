@@ -283,6 +283,30 @@ export class DataTableComponent {
   clickableRows = input<boolean>(false);
 
   /**
+   * The column that STICKS to the inline start when the table scrolls
+   * sideways.
+   *
+   * A table that is wider than the screen has to scroll, and a reader who
+   * has scrolled to the price must still be able to see WHICH order the
+   * price belongs to. The column is pinned to the inline start (the right in
+   * Arabic), so it stays where the eye expects it.
+   */
+  stickyStartColumn = input<string>('');
+
+  /** True when this column is the pinned one. */
+  isStickyStart(columnId: string): boolean {
+    return this.stickyStartColumn() !== '' && columnId === this.stickyStartColumn();
+  }
+
+  /**
+   * The offset of the pinned column, in px.
+   *
+   * The select checkbox sits BEFORE the pinned column, so it is pinned too
+   * and the pinned column starts after it.
+   */
+  readonly stickyStartOffset = 40;
+
+  /**
    * A click on a clickable row. Interactive elements inside the row are
    * left alone.
    */
