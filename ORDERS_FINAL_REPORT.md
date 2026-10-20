@@ -56,6 +56,7 @@ proved with the data that exists.
 | 3.1 | The column order, the row click, the raw id hidden | done | `features/orders/orders-list/orders-list.component.ts` | `results.json` → `own.headers`; `verification.json` | `select · Order # · Customer · Items · Order status · Payment status · Method · Total · Created at · Actions` — asserted by the e2e test |
 | 3.2 | The status colours from the semantic tokens, never colour alone | done | `shared/ui/status-badge/status-badge.component.ts`, `shared/components/dashboard/components/orders-status-chart.component.ts` | `results.json` → `own.badges` (both modes) | Every badge passes **4.5:1 on its own badge** and **3:1 on the surface**, in light AND dark (e.g. Delivered 5.29/5.95 light, 8.84/10.08 dark) |
 | 3.3 | Tabs with counts, the filters, the URL state, server-side sorting | done | the list component + template | `verification.json` | The state is in the URL (`status`, `paymentStatus`, `paymentMethod`, `range`, `from`, `to`, `q`, `sort`, `direction`, `page`, `size`); the sort is the backend's (the display column is mapped to the `Order` property) |
+| 3.3b | The truncation check (no ellipsis in Method) | done | the list, `e2e/orders.spec.ts` | `results.json` → `own.truncation` | **0** cut in the Method, **0** cut headers, **0** cut values without a tooltip — in all 120 captures |
 | 3.4 | The row actions, the bulk actions, the CSV export | done | `shared/ui/actions-cell/actions-cell.component.ts`, the list | the captures | View + an overflow menu (Change status, Print invoice, Cancel); the bulk bar offers change status and export; the export states what it exports and exports the MATCHING set |
 | 3.5 | Loading, empty, error | done | the list component | `verification.json` | Three distinct empties ("No orders yet" / "No orders match these filters"), a skeleton that keeps the table mounted, and an error state with a working retry |
 | 3.6 | The list pattern of design.md | done | the list template | the captures | Header + count + one primary action, the tabs and the filters in the toolbar row, the cards, the table in a card, the pager, `max-w-7xl` centred |
@@ -181,7 +182,14 @@ The matrix is 20 cells: `{en, ar} × {light, dark} × {375, 768, 1024, 1440, 192
 
 **The "before" pair** (to see the difference): the cards used to say 10 orders and 0 cancelled while the table said 17; the "Created at" header used to stay in English in Arabic; the method column used to be cut to "Cash on d…".
 
-## 6. The two things to decide
+## 6. Two defects the evidence itself caught
+
+| Defect | How it was found | The fix |
+|---|---|---|
+| The **method label** froze in the language the data arrived in (the label was translated in the column accessor, and an accessor is evaluated once) | The before/after contact sheet: the English cell showed an Arabic method | The cell translates it at render time; an e2e test pins it |
+| The **truncation detectors were too forgiving** (`scrollWidth > clientWidth + 1`), so a ONE-pixel overflow was invisible — and "Cash on delivery" was one pixel too wide and DID draw an ellipsis | The contact sheet, read by eye, against a detector that said "no truncation" | The tolerance is gone; the method label and the money are at the body size (14 px) |
+
+## 7. The two things to decide
 
 1. **The backend contract** (`ORDERS_CONTRACT.md`) — approve it, and the six questions in its last section.
 2. **The money glyph** — the shared formatter now renders "EGP 120.50" / "120.50 ج.م", which is what the ticket describes. If the trailing dot in "ج.م." should come back, it is one line in `shared/utils/locale-format.ts` — but it would change the dashboard too.
