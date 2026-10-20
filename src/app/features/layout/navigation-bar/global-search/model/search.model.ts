@@ -1,12 +1,4 @@
-export interface GlobalSearchResponse {
-  results: SearchResultDto[];
-  totalCount: number;
-}
-
-export interface SearchResultDto {
-  type: string;          
-  id: number;
-  title: string;
-  subtitle: string;
-  identifier: string;       
-}
+export type SearchEntityType = 'orders' | 'products' | 'customers' | 'categories' | 'reviews' | 'contact-messages' | 'carts' | 'shipping-zones' | 'pages' | 'actions';
+export interface SearchResultItem { id: string | number; type: SearchEntityType | string; title: string; subtitle?: string; status?: string; thumbnail?: string; meta?: string; route: string; customerName?: string; customerEmail?: string; amount?: number; currency?: string; date?: string; sku?: string; price?: number; stockStatus?: string; ordersCount?: number; itemCount?: number; rating?: number; commentSnippet?: string; product?: string; unread?: boolean; }
+export interface SearchResultGroup { type: string; label?: string; total: number; items: SearchResultItem[]; }
+export interface SearchResponse { groups: SearchResultGroup[]; totalCount: number; }
