@@ -266,6 +266,7 @@
                     [langDir]="'ltr'"
                     [navigable]="!!navigableColumn()"
                     [navigableHref]="hrefFor(row.original)"
+                    [showSlug]="!hideSlug()"
                   />
                 }
                 @case ('main_ar') {
@@ -274,6 +275,7 @@
                     [langDir]="'rtl'"
                     [navigable]="!!navigableColumn()"
                     [navigableHref]="hrefFor(row.original)"
+                    [showSlug]="!hideSlug()"
                   />
                 }
                 @case ('image') {
