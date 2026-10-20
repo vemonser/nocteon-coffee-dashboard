@@ -85,7 +85,10 @@ function git(cmd) {
  */
 function serverOn4200() {
   try {
-    const ss = execSync('ss -ltnp 2>/dev/null | grep :4200 || true', { encoding: 'utf8' });
+    // The port the capture actually ran against — the harness may be pointed
+    // at a second dev server when the main one is busy.
+    const port = new URL(BASE).port || '4200';
+    const ss = execSync(`ss -ltnp 2>/dev/null | grep :${port} || true`, { encoding: 'utf8' });
     const m = ss.match(/pid=(\d+)/);
     if (!m) return { pid: null, cwd: null, cmd: null, listening: false };
     const pid = m[1];

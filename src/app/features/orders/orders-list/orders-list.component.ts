@@ -262,22 +262,22 @@ export class OrdersListComponent {
       id: 'items',
       header: 'Items',
       enableSorting: false,
-      meta: { width: '78px' },
+      meta: { width: '84px' },
     }),
     this.columnHelper.accessor(
       (row) => orderStatusKind(row.status),
-      { id: 'orderStatus', header: 'Order status', enableSorting: true, meta: { width: '120px' } },
+      { id: 'orderStatus', header: 'Order status', enableSorting: true, meta: { width: '124px' } },
     ),
     this.columnHelper.accessor(
       (row) => paymentStatusKind(row.paymentStatus),
-      { id: 'paymentStatus', header: 'Payment status', enableSorting: true, meta: { width: '126px' } },
+      { id: 'paymentStatus', header: 'Payment status', enableSorting: true, meta: { width: '132px' } },
     ),
     this.columnHelper.accessor(
       (row) => ({
         icon: row.paymentMethod === 'ONLINE' ? 'lucideCreditCard' : 'lucideBanknote',
         label: this.names.paymentMethod(row.paymentMethod),
       }),
-      { id: 'paymentMethod', header: 'Method', enableSorting: false, meta: { width: '185px' } },
+      { id: 'paymentMethod', header: 'Method', enableSorting: false, meta: { width: '179px' } },
     ),
     this.columnHelper.accessor('totalAmount', {
       id: 'totalAmount',

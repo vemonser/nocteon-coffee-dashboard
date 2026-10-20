@@ -994,11 +994,17 @@ file-format acronyms excepted).
   The orders families (`countItems`, `countOrders`, `countResults`) were
   added to the plural bases.
 - The titles are sentence case in English.
-- The money keeps the **shared** formatter: the Arabic currency is the
-  CLDR symbol of EGP, `ج.م.` (with the trailing full stop) — the ticket
-  wrote `ج.م`. The shared helper was NOT forked to drop the dot, because
-  the dashboard's own money uses the same glyph and two glyphs for one
-  currency is worse than a full stop. **Flagged for the decision.**
+- The money keeps the **shared** formatter, and the shared formatter now
+  renders the store currency the way the ticket describes it: the **ISO
+  code first in English** ("EGP 120.50") and the **amount first, then the
+  Arabic symbol, without its trailing full stop** ("120.50 ج.م"). The
+  English form used to be the CLDR narrow symbol ("E£"), which is a
+  currency symbol in a Latin shape — the reader saw two different-looking
+  currencies depending on the page. The Arabic form used to carry a
+  LEFT-TO-RIGHT ISOLATE, which forced the amount to the LEFT of the
+  symbol; an amount is not a sentence, so the dot is gone and the isolate
+  with it. The orders pages follow all of this automatically, because they
+  never formatted money themselves.
 - The digits stay Latin in Arabic (`ar-EG-u-nu-latn`).
 - "من" instead of a slash: the existing `ofPhrase` helper already does
   this, and the orders pages use the count helpers rather than building a
@@ -1188,6 +1194,25 @@ dialog with its reason, the totals card with its warning and the honest
   without a ring); the dialog traps the focus and restores it to the
   control that opened it; every badge carries its text; and both pages
   work at 200 % zoom (a 720 px viewport) with no horizontal scroll.
+
+## ORDERS — Working alongside another session
+
+The repository is shared with a second session that is working on the
+DASHBOARD home (its "Round 2"). Two consequences, both recorded here
+because they shaped how the work was done:
+
+- **The shared money formatter changed under this work** (the ISO code in
+  English, the Arabic symbol without its dot). The change is the one the
+  ticket asks for, and the orders pages follow it because they use the
+  shared formatter. The unit test that pinned the old glyph was updated to
+  pin the new one.
+- **The build was broken by the other session's in-flight edits** several
+  times, so the last part of this work ran in a **git worktree**
+  (`/tmp/opencode/nocteon-orders`, branch `feature/orders-polish-wt`),
+  built there and served on **:3000** (the backend's CORS allows
+  `localhost:4200` and `localhost:3000`). The evidence was captured
+  against that build, and `results.json` records the server it ran
+  against (`harness.server`).
 
 ## ORDERS PHASE 7 — Responsive and final
 

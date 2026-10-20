@@ -201,20 +201,71 @@ test.describe('orders list', () => {
     expect(number).toBeGreaterThan(0);
   });
 
-  test('the Method column is never truncated', async () => {
-    const truncated = await page.evaluate(() => {
-      const out: string[] = [];
-      for (const td of Array.from(document.querySelectorAll('app-data-table tbody td'))) {
-        const el = td.querySelector('span');
-        if (!el) continue;
-        const cs = getComputedStyle(el);
-        if (cs.textOverflow === 'ellipsis' && el.scrollWidth > el.clientWidth + 1) {
-          out.push((el.textContent || '').trim());
+  test('the Method and Order # columns are never truncated', async () => {
+    const report = await page.evaluate(() => {
+      const table = document.querySelector('app-data-table table');
+      if (!table) return { error: 'no table' };
+      const headers = Array.from(table.querySelectorAll('thead th')).map((th) =>
+        (th.textContent || '').trim().replace(/[↕↑↓]/g, '').trim(),
+      );
+      const methodIndex = headers.indexOf('Method');
+      const orderIndex = headers.indexOf('Order #');
+
+      const truncatedIn = (index: number): string[] => {
+        const out: string[] = [];
+        const rows = Array.from(table.querySelectorAll('tbody tr'));
+        for (const tr of rows) {
+          const td = tr.querySelectorAll('td')[index];
+          if (!td) continue;
+          for (const el of Array.from(td.querySelectorAll('*'))) {
+            const cs = getComputedStyle(el);
+            if (cs.textOverflow !== 'ellipsis') continue;
+            if (el.scrollWidth <= el.clientWidth + 1) continue;
+            out.push((el.textContent || '').trim());
+          }
+        }
+        return out;
+      };
+
+      // A header must never be cut either.
+      const truncatedHeaders: string[] = [];
+      for (const th of Array.from(table.querySelectorAll('thead th'))) {
+        for (const el of Array.from(th.querySelectorAll('*'))) {
+          const cs = getComputedStyle(el);
+          if (cs.textOverflow !== 'ellipsis') continue;
+          if (el.scrollWidth <= el.clientWidth + 1) continue;
+          truncatedHeaders.push((el.textContent || '').trim());
         }
       }
-      return out;
+
+      // A value that IS truncated must carry a tooltip, so it stays readable.
+      const truncatedWithoutTooltip: string[] = [];
+      for (const el of Array.from(table.querySelectorAll('tbody td *'))) {
+        const cs = getComputedStyle(el);
+        if (cs.textOverflow !== 'ellipsis') continue;
+        if (el.scrollWidth <= el.clientWidth + 1) continue;
+        const host = el.closest('td');
+        const title = host?.querySelector('[title]')?.getAttribute('title');
+        if (!title) truncatedWithoutTooltip.push((el.textContent || '').trim());
+      }
+
+      return {
+        methodIndex,
+        orderIndex,
+        method: truncatedIn(methodIndex),
+        orderNumber: truncatedIn(orderIndex),
+        truncatedHeaders,
+        truncatedWithoutTooltip,
+      };
     });
-    expect(truncated).toEqual([]);
+
+    expect(report.method, 'the Method column must not be truncated').toEqual([]);
+    expect(report.orderNumber, 'the Order # column must not be truncated').toEqual([]);
+    expect(report.truncatedHeaders, 'a header must not be cut').toEqual([]);
+    expect(
+      report.truncatedWithoutTooltip,
+      'a truncated value must carry a tooltip',
+    ).toEqual([]);
   });
 
   test('a raw translation key never reaches the screen', async () => {
@@ -263,15 +314,19 @@ test.describe('orders list', () => {
   });
 
   test('the money is the store currency in both languages', async () => {
+    // The shared money formatter decides the shape of the amount; the test
+    // asserts the STORE CURRENCY and the digits, not one particular glyph.
     const enMoney = await page.locator('app-data-table tbody tr td:nth-child(8)').first().innerText();
-    expect(enMoney).toContain('E£');
+    expect(enMoney.toUpperCase()).toContain('EGP');
+    expect(enMoney).toMatch(/\d/);
 
     await switchLanguage('ar');
     await page.waitForTimeout(800);
     const arMoney = await page.locator('app-data-table tbody tr td:nth-child(8)').first().innerText();
+    // The Arabic symbol of the store currency, and LATIN digits.
     expect(arMoney).toContain('ج.م');
-    // Latin digits in Arabic.
     expect(arMoney).toMatch(/\d/);
+    expect(arMoney).not.toMatch(/[٠-٩]/);
   });
 
   test('a failing endpoint shows an error state with a retry, and the retry recovers', async () => {
