@@ -85,6 +85,9 @@ const ROUTES: TableRoute[] = [
   { path: '/dashboard/promo-codes', label: 'promo-codes', maxActions: 180, hasThumbnail: false, minDominance: 1.2 },
   { path: '/dashboard/orders', label: 'orders', maxActions: 200, hasThumbnail: false, minDominance: 1.1 },
   { path: '/dashboard/store-settings', label: 'store-settings', maxActions: 300, hasThumbnail: false, minDominance: 1 },
+  // The reviews console: the product cell is the ONE unsized column, so it
+  // absorbs the remainder and dominates the actions column by a wide margin.
+  { path: '/dashboard/reviews', label: 'reviews', maxActions: 150, hasThumbnail: true, thumbnailShape: 'square', minDominance: 2 },
 ];
 
 /** Dates render through the shared localized-date element at text-xs (12px). */
