@@ -1,0 +1,406 @@
+<div class="mx-auto flex w-full max-w-7xl flex-col gap-6 p-6">
+  <!-- Header -->
+  <header class="flex flex-wrap items-start justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-medium tracking-tight">{{ 'reviews.title' | transloco }}</h1>
+      <p class="text-sm text-muted-foreground" data-testid="reviews-count">
+        {{ stats().total | plural: 'reviews.countReviews' }} ·
+        {{ stats().approved | plural: 'reviews.countApproved' }} ·
+        {{ stats().pending | plural: 'reviews.countPending' }}
+      </p>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <!-- View toggle: the table is the default; the grid is optional. -->
+      <div class="flex items-center rounded-md border bg-card p-1">
+        <button
+          hlmBtn
+          [variant]="viewMode() === 'list' ? 'secondary' : 'ghost'"
+          size="icon"
+          (click)="toggleView('list')"
+          [attr.aria-label]="'common.listView' | transloco"
+          [title]="'common.listView' | transloco"
+        >
+          <ng-icon name="lucideList" class="size-4" />
+        </button>
+        <button
+          hlmBtn
+          [variant]="viewMode() === 'grid' ? 'secondary' : 'ghost'"
+          size="icon"
+          (click)="toggleView('grid')"
+          [attr.aria-label]="'common.gridView' | transloco"
+          [title]="'common.gridView' | transloco"
+        >
+          <ng-icon name="lucideGrid3x3" class="size-4" />
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Tabs + filters, in one toolbar row -->
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <div
+      role="tablist"
+      class="flex flex-wrap items-center gap-2"
+      [attr.aria-label]="'reviews.tabs.label' | transloco"
+    >
+      @for (tab of tabs(); track tab.id) {
+        <button
+          role="tab"
+          hlmBtn
+          size="sm"
+          [attr.aria-selected]="status() === tab.id"
+          [variant]="status() === tab.id ? 'default' : 'outline'"
+          (click)="setStatus(tab.id)"
+        >
+          {{ tab.label | transloco }}
+          <span class="ms-1 tabular-nums opacity-80">{{ tab.count }}</span>
+        </button>
+      }
+    </div>
+
+    <div class="flex flex-wrap items-center gap-3">
+      <!-- The product filter: the slug is EXACT on the API, so this is a
+           dropdown of real products, not a free-text search. -->
+      <label class="flex items-center gap-1.5">
+        <span class="text-xs text-muted-foreground">{{ 'reviews.filters.product' | transloco }}</span>
+        <hlm-native-select
+          selectClass="w-48"
+          size="sm"
+          [ngModel]="productSlug()"
+          (ngModelChange)="productSlug.set($event); applyFilter()"
+        >
+          <option hlmNativeSelectOption value="">{{ 'common.all' | transloco }}</option>
+          @for (product of products(); track product.slug) {
+            <option hlmNativeSelectOption [value]="product.slug">{{ product.name }}</option>
+          }
+        </hlm-native-select>
+      </label>
+
+      <label class="flex items-center gap-1.5">
+        <span class="text-xs text-muted-foreground">{{ 'reviews.filters.dateRange' | transloco }}</span>
+        <hlm-native-select
+          selectClass="w-36"
+          size="sm"
+          [ngModel]="range()"
+          (ngModelChange)="range.set($event); applyFilter()"
+        >
+          <option hlmNativeSelectOption value="all">{{ 'reviews.dateRange.all' | transloco }}</option>
+          <option hlmNativeSelectOption value="today">{{ 'reviews.dateRange.today' | transloco }}</option>
+          <option hlmNativeSelectOption value="7d">{{ 'reviews.dateRange.7d' | transloco }}</option>
+          <option hlmNativeSelectOption value="30d">{{ 'reviews.dateRange.30d' | transloco }}</option>
+          <option hlmNativeSelectOption value="custom">{{ 'reviews.dateRange.custom' | transloco }}</option>
+        </hlm-native-select>
+      </label>
+
+      <label class="flex items-center gap-1.5">
+        <span class="text-xs text-muted-foreground">{{ 'reviews.filters.rating' | transloco }}</span>
+        <hlm-native-select
+          selectClass="w-32"
+          size="sm"
+          [ngModel]="rating()"
+          (ngModelChange)="rating.set($event); applyFilter()"
+        >
+          <option hlmNativeSelectOption value="">{{ 'common.all' | transloco }}</option>
+          <option hlmNativeSelectOption value="5">5★</option>
+          <option hlmNativeSelectOption value="4">4★ &amp; Up</option>
+          <option hlmNativeSelectOption value="3">3★ &amp; Up</option>
+          <option hlmNativeSelectOption value="2">2★ &amp; Up</option>
+          <option hlmNativeSelectOption value="1">1★ &amp; Up</option>
+        </hlm-native-select>
+      </label>
+
+      <label class="flex items-center gap-1.5">
+        <span class="text-xs text-muted-foreground">{{ 'reviews.filters.verification' | transloco }}</span>
+        <hlm-native-select
+          selectClass="w-36"
+          size="sm"
+          [ngModel]="verification()"
+          (ngModelChange)="verification.set($event); applyFilter()"
+        >
+          <option hlmNativeSelectOption value="">{{ 'common.all' | transloco }}</option>
+          <option hlmNativeSelectOption value="verified">{{ 'reviews.columns.verifiedPurchase' | transloco }}</option>
+          <option hlmNativeSelectOption value="unverified">{{ 'reviews.notVerified' | transloco }}</option>
+        </hlm-native-select>
+      </label>
+
+      <div class="relative w-full sm:w-56">
+        <ng-icon
+          name="lucideSearch"
+          class="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+          aria-hidden="true"
+        />
+        <input
+          hlmInput
+          type="search"
+          class="w-full ps-9"
+          [ngModel]="search()"
+          (ngModelChange)="onSearch($event)"
+          [placeholder]="'reviews.search' | transloco"
+        />
+      </div>
+
+      @if (hasActiveFilters()) {
+        <button hlmBtn variant="ghost" size="sm" (click)="clearFilters()">
+          <ng-icon name="lucideX" class="size-4" aria-hidden="true" />
+          {{ 'reviews.filters.clear' | transloco }}
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- The statistics strip -->
+  <div class="grid grid-cols-2 gap-4 md:grid-cols-4">
+    <div class="rounded-[var(--radius-card)] border bg-card p-4" data-testid="reviews-stat-average">
+      <p class="text-sm text-muted-foreground">{{ 'reviews.stats.averageRating' | transloco }}</p>
+      <p class="mt-1 text-2xl font-bold tabular-nums">
+        {{ stats().averageRating === null ? '—' : (stats().averageRating | number: '1.1-1') }}
+      </p>
+    </div>
+
+    <div class="rounded-[var(--radius-card)] border bg-card p-4" data-testid="reviews-stat-distribution">
+      <p class="text-sm text-muted-foreground">{{ 'reviews.stats.distribution' | transloco }}</p>
+      <div class="mt-2 flex items-end gap-1" aria-hidden="true">
+        @for (star of [5, 4, 3, 2, 1]; track star) {
+          <div class="w-4 rounded-sm bg-warning/70" [style.height.px]="barHeight(star)"></div>
+        }
+      </div>
+      <p class="sr-only">{{ distributionText() }}</p>
+    </div>
+
+    <div class="rounded-[var(--radius-card)] border bg-card p-4" data-testid="reviews-stat-pending">
+      <p class="text-sm text-muted-foreground">{{ 'reviews.stats.pending' | transloco }}</p>
+      <p class="mt-1 text-2xl font-bold tabular-nums">{{ stats().pending }}</p>
+    </div>
+
+    <div class="rounded-[var(--radius-card)] border bg-card p-4" data-testid="reviews-stat-total">
+      <p class="text-sm text-muted-foreground">{{ 'reviews.stats.total' | transloco }}</p>
+      <p class="mt-1 text-2xl font-bold tabular-nums">{{ stats().total }}</p>
+    </div>
+  </div>
+
+  <!-- The bulk bar -->
+  @if (selectedCount() > 0) {
+    <div
+      class="flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-card)] border bg-card px-4 py-3"
+      role="region"
+      data-testid="reviews-bulk-bar"
+      [attr.aria-label]="'reviews.bulk.selected' | transloco: { count: selectedCount() }"
+    >
+      <p class="text-sm">{{ 'reviews.bulk.selected' | transloco: { count: selectedCount() } }}</p>
+      <div class="flex items-center gap-2">
+        <button hlmBtn size="sm" (click)="bulkApprove()" [disabled]="bulkSubmitting()">
+          {{ 'reviews.bulk.approve' | transloco }}
+        </button>
+        <button hlmBtn variant="ghost" size="sm" (click)="clearSelection()">
+          {{ 'reviews.bulk.clear' | transloco }}
+        </button>
+      </div>
+    </div>
+  }
+
+  @if (error()) {
+    <div
+      class="rounded-[var(--radius-card)] border border-destructive/40 bg-destructive-soft p-6 text-center"
+      role="alert"
+      data-testid="reviews-error"
+    >
+      <p class="font-medium text-destructive">{{ 'common.errorTitle' | transloco }}</p>
+      <button hlmBtn variant="outline" class="mt-4" (click)="loadPage()">
+        {{ 'common.retry' | transloco }}
+      </button>
+    </div>
+  } @else if (viewMode() === 'list') {
+    <!-- The table: fifteen reviews in a table is a page; in cards it is a
+         scroll. The table is the default for a reason. -->
+    <div class="rounded-[var(--radius-card)] border bg-card">
+      <app-data-table
+        [data]="items()"
+        [columns]="columns()"
+        [loading]="loading()"
+        [emptyMessage]="emptyMessage()"
+        [showEdit]="false"
+        [showDelete]="false"
+        [showView]="false"
+        [selectable]="true"
+        [selectedIds]="selectedIds()"
+        [rowId]="rowId"
+        [menuActions]="menuActions"
+        [minWidth]="'1080px'"
+        (selectionChange)="onSelectionChange($event)"
+        (toggleAllChange)="onToggleAll($event)"
+        (menuAction)="onMenuAction($event)"
+      />
+    </div>
+  } @else {
+    <!-- The grid: optional, and compact. A card leads with a SMALL
+         thumbnail beside the text, not a full-bleed image. -->
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      @for (item of items(); track item.id) {
+        <hlm-card class="overflow-hidden py-0">
+          <div hlmCardContent class="flex gap-3 p-4">
+            @if (item.primaryImageUrl) {
+              <img
+                [src]="item.primaryImageUrl"
+                [alt]="item.productName ?? item.productSlug"
+                class="size-14 shrink-0 rounded-[var(--radius-control)] object-cover"
+              />
+            }
+            <div class="min-w-0 flex-1">
+              <p class="truncate text-sm font-medium">
+                <bdi>{{ item.productName ?? item.productSlug }}</bdi>
+              </p>
+              <p class="text-xs text-muted-foreground">
+                <app-localized-date [value]="item.createdAt" />
+              </p>
+              <div class="mt-1 flex items-center gap-1.5">
+                <span class="text-xs tabular-nums text-muted-foreground">{{ item.rating }}/5</span>
+                <app-status-badge
+                  [status]="item.approved ? 'approved' : 'pending'"
+                  [customLabel]="item.approved ? 'reviews.status.approved' : 'reviews.status.pending'"
+                />
+              </div>
+              <p class="mt-1 line-clamp-2 text-xs text-muted-foreground">
+                <bdi>{{ item.comment }}</bdi>
+              </p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 border-t px-4 py-3">
+            <button
+              *hasPermission="'review:moderate'"
+              hlmBtn
+              size="sm"
+              class="flex-1"
+              (click)="approve(item)"
+            >
+              {{ 'reviews.approve' | transloco }}
+            </button>
+            <app-actions-cell
+              [item]="item"
+              [showEdit]="false"
+              [showDelete]="false"
+              [showView]="false"
+              [menuActions]="menuActions"
+              (menuAction)="onMenuAction($event)"
+            />
+          </div>
+        </hlm-card>
+      } @empty {
+        <div class="col-span-full py-12 text-center text-muted-foreground">
+          <p class="text-lg font-medium">{{ emptyMessage() }}</p>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Pagination -->
+  @if (!loading() && !error()) {
+    <app-pager
+      [page]="page()"
+      [size]="size()"
+      [totalElements]="stats().total"
+      [totalPages]="1"
+      [first]="page() === 0"
+      [last]="true"
+      (pageChange)="goToPage($event)"
+    />
+  }
+</div>
+
+<!-- The review drawer: the full comment, the product, the order, the rating
+     and the date — everything the table had to shorten. -->
+<app-side-panel
+  [open]="viewing() !== null"
+  [title]="'reviews.details' | transloco"
+  (closed)="closeView()"
+>
+  @if (viewing(); as review) {
+    <div class="space-y-5">
+      <div class="flex items-center gap-3">
+        <app-user-avatar [src]="review.avatarUrl" [name]="review.username" />
+        <div>
+          <p class="font-medium"><bdi>{{ review.username }}</bdi></p>
+          <p class="text-xs text-muted-foreground">
+            <app-localized-date [value]="review.createdAt" [showTime]="true" />
+          </p>
+        </div>
+      </div>
+
+      <div class="rounded-[var(--radius-control)] border p-4">
+        <p class="mb-1 text-sm font-medium">{{ 'reviews.product' | transloco }}</p>
+        <p class="text-sm"><bdi>{{ review.productName ?? review.productSlug }}</bdi></p>
+        @if (review.orderNumber) {
+          <a
+            class="mt-1 inline-flex items-center gap-1 text-sm text-primary hover:underline"
+            [routerLink]="['/dashboard/orders', review.orderId]"
+          >
+            <ng-icon name="lucideBadgeCheck" class="size-4" />
+            {{ 'reviews.columns.verifiedPurchase' | transloco }} · {{ review.orderNumber }}
+          </a>
+        }
+      </div>
+
+      <div class="rounded-[var(--radius-control)] border p-4">
+        <p class="mb-1 text-sm font-medium">{{ 'reviews.rating' | transloco }}</p>
+        <p class="text-sm">{{ review.rating }} / 5</p>
+      </div>
+
+      <div class="rounded-[var(--radius-control)] border p-4">
+        <p class="mb-1 text-sm font-medium">{{ 'reviews.comment' | transloco }}</p>
+        <p class="whitespace-pre-wrap text-sm"><bdi>{{ review.comment }}</bdi></p>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <app-status-badge
+          [status]="review.approved ? 'approved' : 'pending'"
+          [customLabel]="review.approved ? 'reviews.status.approved' : 'reviews.status.pending'"
+        />
+      </div>
+
+      <div class="flex gap-2">
+        <button
+          *hasPermission="'review:moderate'"
+          hlmBtn
+          class="flex-1"
+          (click)="setApproval(review, !review.approved)"
+        >
+          {{
+            (review.approved ? 'reviews.withdrawApproval' : 'reviews.approve') | transloco
+          }}
+        </button>
+        <button
+          *hasPermission="'review:delete'"
+          hlmBtn
+          variant="destructive"
+          class="flex-1"
+          (click)="confirmDelete(review)"
+        >
+          {{ 'common.delete' | transloco }}
+        </button>
+      </div>
+    </div>
+  }
+</app-side-panel>
+
+<!-- The delete confirmation -->
+@if (deleting(); as review) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+    <div class="w-full max-w-sm rounded-xl border bg-card p-6 shadow-2xl" role="alertdialog">
+      <h2 class="text-lg font-medium">{{ 'reviews.deleteTitle' | transloco }}</h2>
+      <p class="mt-1 text-sm text-muted-foreground">{{ 'reviews.deleteConfirm' | transloco }}</p>
+      <div class="mt-6 flex justify-end gap-3">
+        <button hlmBtn variant="outline" (click)="deleting.set(null)">
+          {{ 'common.cancel' | transloco }}
+        </button>
+        <button
+          hlmBtn
+          variant="destructive"
+          [disabled]="deletingBusy()"
+          (click)="submitDelete()"
+        >
+          {{ deletingBusy() ? ('common.deleting' | transloco) : ('common.delete' | transloco) }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
