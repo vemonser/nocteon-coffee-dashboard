@@ -86,7 +86,7 @@
               class="flex min-w-0 flex-1 items-start gap-3 text-start focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
               (click)="openMessage(message)"
             >
-              @if (!message.isRead) {
+              @if (!message.read) {
                 <span
                   data-testid="unread-dot"
                   class="mt-2 size-2 shrink-0 rounded-full bg-primary"
@@ -100,10 +100,10 @@
 
               <span class="min-w-0 flex-1">
                 <span class="flex items-center gap-2">
-                  <span class="truncate text-sm" [class.font-semibold]="!message.isRead">{{
+                  <span class="truncate text-sm" [class.font-semibold]="!message.read">{{
                     message.subject
                   }}</span>
-                  @if (message.isReplied) {
+                  @if (message.replied) {
                     <span
                       class="shrink-0 rounded-full bg-success-soft px-2 py-0.5 text-xs font-medium text-success"
                       >{{ 'contactMessages.replied' | transloco }}</span

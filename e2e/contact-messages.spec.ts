@@ -58,7 +58,9 @@ test('the title is sentence case and the count line names the entity', async () 
 });
 
 test('an unread message carries a dot and a bold subject', async () => {
-  await expect(page.getByTestId('contact-messages-count')).toBeVisible();
+  // The unread TAB, not "the first row": which message is unread depends
+  // on what the suite has already read, and the tab is deterministic.
+  await page.getByRole('tab', { name: /unread/i }).click();
   const row = page.getByTestId('message-row').first();
   await expect(row).toBeVisible();
   await expect(row.getByTestId('unread-dot')).toBeVisible();

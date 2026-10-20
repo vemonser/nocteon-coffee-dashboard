@@ -155,7 +155,7 @@ export class ContactMessagesListComponent {
     const to = this.rangeEnd();
 
     return content.filter((message) => {
-      if (this.tab() === 'replied' && !message.isReplied) return false;
+      if (this.tab() === 'replied' && !message.replied) return false;
       if (from && new Date(message.createdAt) < from) return false;
       if (to && new Date(message.createdAt) > to) return false;
       if (!search) return true;
@@ -204,7 +204,7 @@ export class ContactMessagesListComponent {
     { id: 'replied' as MessageTab, label: 'contactMessages.tabs.replied', count: this.repliedCount() },
   ]);
 
-  private readonly repliedCount = computed(() => this.items().filter((m) => m.isReplied).length);
+  private readonly repliedCount = computed(() => this.items().filter((m) => m.replied).length);
 
   protected onSearch(value: string): void {
     this.search.set(value);
@@ -221,7 +221,7 @@ export class ContactMessagesListComponent {
   protected openMessage(item: ContactResponse): void {
     this.selected.set(item);
     this.replyText.set('');
-    if (!item.isRead) {
+    if (!item.read) {
       this.service.markAsRead(item.id).subscribe({
         next: (res) => {
           if (res?.data) {
