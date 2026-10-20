@@ -24,6 +24,7 @@ import { NotifyService } from '../../../core/notify/notify.service';
 import { formatRelativeTime } from '../../../core/i18n/relative-time';
 import { formatDateAndTime } from '../../../shared/utils/locale-format';
 import { LocalizedDateComponent } from '../../../shared/ui/localized-date/localized-date.component';
+import { PagerComponent } from '../../../shared/components/pager/pager.component';
 import { PluralPipe } from '../../../shared/pipes/plural.pipe';
 import { HlmTextareaImports } from '@spartan-ng/helm/textarea';
 import { UserAvatarComponent } from '../../../shared/ui/user-avatar/user-avatar.component';
@@ -53,6 +54,7 @@ type MessageTab = 'all' | 'unread' | 'replied';
     HlmNativeSelectImports,
     PluralPipe,
     LocalizedDateComponent,
+    PagerComponent,
     HlmTextareaImports,
     UserAvatarComponent,
     OrderDialogComponent,
@@ -85,6 +87,11 @@ export class ContactMessagesListComponent {
   readonly total = signal(0);
   readonly unreadTotal = signal(0);
   readonly tab = signal<MessageTab>('all');
+  readonly page = signal(0);
+  readonly size = signal(20);
+  protected readonly pageSizeOptions = [10, 20, 50] as const;
+  /** The rows of the whole loaded set; the pager slices them. */
+  readonly allItems = signal<ContactResponse[]>([]);
   readonly search = signal('');
   readonly range = signal('all');
   readonly selected = signal<ContactResponse | null>(null);
@@ -115,6 +122,7 @@ export class ContactMessagesListComponent {
       next: (res) => {
         const content = res.data?.content ?? [];
         this.total.set(res.data?.totalElements ?? content.length);
+        this.allItems.set(content);
         this.items.set(this.applyFilters(content));
         this.loading.set(false);
       },
@@ -341,6 +349,28 @@ export class ContactMessagesListComponent {
         return 'contactMessages.emailNotSent';
     }
   }
+
+  // ── the pager ───────────────────────────────────────────────────────────
+
+  protected goToPage(page: number): void {
+    this.page.set(page);
+  }
+
+  protected onPageSizeChange(size: number): void {
+    if (size === this.size()) return;
+    this.size.set(size);
+    this.page.set(0);
+  }
+
+  /** The page of rows the pager is showing. */
+  protected readonly pageItems = computed(() => {
+    const start = this.page() * this.size();
+    return this.items().slice(start, start + this.size());
+  });
+
+  protected readonly totalPages = computed(() =>
+    Math.max(1, Math.ceil(this.items().length / this.size())),
+  );
 
   protected readonly emptyMessage = computed(() =>
     this.items().length === 0 ? 'No messages' : 'No messages match these filters',

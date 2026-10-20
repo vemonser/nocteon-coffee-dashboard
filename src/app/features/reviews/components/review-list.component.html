@@ -1,7 +1,9 @@
 <div class="mx-auto flex w-full max-w-7xl flex-col gap-6 p-6">
-  <!-- Header -->
+  <!-- Header: the title and the count on the start, the view toggle on the
+       end. The tabs and the filters sit in the toolbar row below, so the
+       header is a header and not a toolbar. -->
   <header class="flex flex-wrap items-start justify-between gap-4">
-    <div>
+    <div class="min-w-0">
       <h1 class="text-2xl font-medium tracking-tight">{{ 'reviews.title' | transloco }}</h1>
       <p class="text-sm text-muted-foreground" data-testid="reviews-count">
         {{ stats().total | plural: 'reviews.countReviews' }} ·
@@ -10,7 +12,7 @@
       </p>
     </div>
 
-    <div class="flex items-center gap-2">
+    <div class="flex shrink-0 items-center gap-2">
       <!-- View toggle: the table is the default; the grid is optional. -->
       <div class="flex items-center rounded-md border bg-card p-1">
         <button
@@ -124,7 +126,7 @@
         </hlm-native-select>
       </label>
 
-      <div class="relative w-full sm:w-56">
+      <div class="relative min-w-48 flex-1 sm:max-w-72">
         <ng-icon
           name="lucideSearch"
           class="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
@@ -220,8 +222,8 @@
         [loading]="loading()"
         [emptyMessage]="emptyMessage()"
         [showEdit]="false"
-        [showDelete]="false"
-        [showView]="false"
+        [showDelete]="true"
+        [showView]="true"
         [selectable]="true"
         [selectedIds]="selectedIds()"
         [rowId]="rowId"
@@ -280,8 +282,8 @@
             <app-actions-cell
               [item]="item"
               [showEdit]="false"
-              [showDelete]="false"
-              [showView]="false"
+              [showDelete]="true"
+              [showView]="true"
               [menuActions]="menuActions"
               (menuAction)="onMenuAction($event)"
             />
@@ -296,24 +298,32 @@
   }
 
   <!-- Pagination -->
-  @if (!loading() && !error()) {
+  @if (!loading() && !error() && totalElements() > 0) {
     <app-pager
       [page]="page()"
       [size]="size()"
-      [totalElements]="stats().total"
-      [totalPages]="1"
+      [totalElements]="totalElements()"
+      [totalPages]="totalPages()"
       [first]="page() === 0"
-      [last]="true"
+      [last]="page() >= totalPages() - 1"
+      [showPageSize]="true"
+      [sizeOptions]="pageSizeOptions"
       (pageChange)="goToPage($event)"
+      (sizeChange)="onPageSizeChange($event)"
     />
   }
 </div>
 
 <!-- The review drawer: the full comment, the product, the order, the rating
      and the date — everything the table had to shorten. -->
-<app-side-panel
+<app-order-dialog
   [open]="viewing() !== null"
   [title]="'reviews.details' | transloco"
+  [cancelLabel]="'common.close' | transloco"
+  [confirmLabel]="
+    (viewing()?.approved ? 'reviews.withdrawApproval' : 'reviews.approve') | transloco
+  "
+  (confirmed)="toggleApprovalFromDialog()"
   (closed)="closeView()"
 >
   @if (viewing(); as review) {
@@ -359,30 +369,18 @@
         />
       </div>
 
-      <div class="flex gap-2">
-        <button
-          *hasPermission="'review:moderate'"
-          hlmBtn
-          class="flex-1"
-          (click)="setApproval(review, !review.approved)"
-        >
-          {{
-            (review.approved ? 'reviews.withdrawApproval' : 'reviews.approve') | transloco
-          }}
-        </button>
-        <button
-          *hasPermission="'review:delete'"
-          hlmBtn
-          variant="destructive"
-          class="flex-1"
-          (click)="confirmDelete(review)"
-        >
-          {{ 'common.delete' | transloco }}
-        </button>
-      </div>
+      <button
+        *hasPermission="'review:delete'"
+        hlmBtn
+        variant="destructive"
+        class="w-full"
+        (click)="confirmDelete(review)"
+      >
+        {{ 'common.delete' | transloco }}
+      </button>
     </div>
   }
-</app-side-panel>
+</app-order-dialog>
 
 <!-- The delete confirmation -->
 @if (deleting(); as review) {

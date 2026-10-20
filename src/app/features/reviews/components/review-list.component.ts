@@ -30,7 +30,7 @@ import { PagerComponent } from '../../../shared/components/pager/pager.component
 import { PluralPipe } from '../../../shared/pipes/plural.pipe';
 import { ActionsCellComponent } from '../../../shared/ui/actions-cell/actions-cell.component';
 import { LocalizedDateComponent } from '../../../shared/ui/localized-date/localized-date.component';
-import { SidePanelComponent } from '../../../shared/ui/side-panel/side-panel.component';
+import { OrderDialogComponent } from '../../orders/components/order-dialog/order-dialog.component';
 import { StatusBadgeComponent } from '../../../shared/ui/status-badge/status-badge.component';
 import { UserAvatarComponent } from '../../../shared/ui/user-avatar/user-avatar.component';
 import { RowMenuAction } from '../../../shared/ui/actions-cell/actions-cell.component';
@@ -66,7 +66,7 @@ type ReviewTab = 'pending' | 'approved' | 'all';
     PluralPipe,
     ActionsCellComponent,
     LocalizedDateComponent,
-    SidePanelComponent,
+    OrderDialogComponent,
     StatusBadgeComponent,
     UserAvatarComponent,
     NgIcon,
@@ -117,6 +117,10 @@ export class ReviewListComponent {
   readonly to = signal('');
   readonly page = signal(0);
   readonly size = signal(20);
+  protected readonly pageSizeOptions = [10, 20, 50] as const;
+  /** The totals of the LAST load — the pager's numbers come from the API. */
+  readonly totalElements = signal(0);
+  readonly totalPages = signal(1);
   readonly sort = signal('createdAt');
   readonly direction = signal<'asc' | 'desc'>('desc');
 
@@ -239,6 +243,8 @@ export class ReviewListComponent {
       .subscribe({
         next: (res) => {
           this.items.set(res.data?.content ?? []);
+          this.totalElements.set(res.data?.totalElements ?? 0);
+          this.totalPages.set(res.data?.totalPages ?? 1);
           this.loading.set(false);
         },
         error: (err) => {
@@ -329,6 +335,14 @@ export class ReviewListComponent {
       this.verification() !== '' ||
       this.range() !== 'all',
   );
+
+  protected onPageSizeChange(size: number): void {
+    if (size === this.size()) return;
+    this.size.set(size);
+    this.page.set(0);
+    this.writeUrl();
+    this.loadPage();
+  }
 
   protected goToPage(page: number): void {
     this.page.set(page);
@@ -421,10 +435,15 @@ export class ReviewListComponent {
       : { id: 'approve', label: 'reviews.approve' },
   );
 
+  /**
+   * The menu holds the SECONDARY action only.
+   *
+   * <p>View and Delete are VISIBLE buttons: they are what an admin reaches
+   * for on a row, and hiding them behind a kebab menu means two clicks to
+   * read a review.
+   */
   protected readonly menuActions: RowMenuAction[] = [
-    { id: 'view', label: 'reviews.view', icon: 'lucideEye' },
     { id: 'withdraw', label: 'reviews.withdrawApproval', icon: 'lucideX' },
-    { id: 'delete', label: 'common.delete', icon: 'lucideTrash2', danger: true },
   ];
 
   protected onMenuAction(event: { id: string; item: ReviewResponse }): void {
@@ -508,6 +527,13 @@ export class ReviewListComponent {
 
   protected openView(review: ReviewResponse): void {
     this.viewing.set(review);
+  }
+
+  /** The modal's confirm button: approve, or withdraw the approval. */
+  protected toggleApprovalFromDialog(): void {
+    const review = this.viewing();
+    if (!review) return;
+    this.setApproval(review, !review.approved);
   }
 
   protected closeView(): void {

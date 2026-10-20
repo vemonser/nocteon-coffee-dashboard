@@ -156,6 +156,22 @@
       </div>
     }
   </div>
+
+  <!-- Pagination -->
+  @if (!loading() && items().length > 0) {
+    <app-pager
+      [page]="page()"
+      [size]="size()"
+      [totalElements]="items().length"
+      [totalPages]="totalPages()"
+      [first]="page() === 0"
+      [last]="page() >= totalPages() - 1"
+      [showPageSize]="true"
+      [sizeOptions]="pageSizeOptions"
+      (pageChange)="goToPage($event)"
+      (sizeChange)="onPageSizeChange($event)"
+    />
+  }
 </div>
 
 <!-- The message dialog -->
