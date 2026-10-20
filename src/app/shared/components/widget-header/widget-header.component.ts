@@ -7,6 +7,7 @@ import { TranslocoPipe } from '@jsverse/transloco';
 import { LanguageService } from '../../../core/i18n/language.service';
 import { DashboardStatsService } from '../../../features/dashboard/services/dashboard-stats.service';
 import { PluralPipe } from '../../pipes/plural.pipe';
+import { TranslocoService } from '@jsverse/transloco';
 
 /**
  * The header every dashboard widget uses.
@@ -82,13 +83,22 @@ export class WidgetHeaderComponent {
   readonly infoTitle = input<string | null>(null);
 
   private readonly stats = inject(DashboardStatsService);
+  private readonly language = inject(LanguageService);
+  private readonly transloco = inject(TranslocoService);
 
   readonly days = computed(() => this.stats.days());
 
-  /** The scope as one string, for the tooltip. */
-  readonly scopeLabel = computed(() =>
-    this.rangeScoped()
-      ? `Last ${this.days()}`
-      : 'All time',
-  );
+  /**
+   * The scope as one string, for the tooltip.
+   *
+   * It is TRANSLATED: the tooltip is read by a screen reader and by
+   * anyone hovering, and an English sentence on the Arabic page is an
+   * untranslated string like any other.
+   */
+  readonly scopeLabel = computed(() => {
+    this.language.language();
+    return this.rangeScoped()
+      ? `${this.transloco.translate('dashboard.last')} ${this.days()} ${this.transloco.translate('dashboard.daysShort')}`
+      : this.transloco.translate('dashboard.allTime');
+  });
 }

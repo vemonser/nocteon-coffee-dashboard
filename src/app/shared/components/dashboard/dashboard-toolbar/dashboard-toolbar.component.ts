@@ -110,9 +110,17 @@ export class DashboardToolbarComponent {
   /** The comparison window. */
   readonly previous = computed(() => this.stats.window('previous'));
 
-  /** The last day of a window (its end is exclusive). */
+  /**
+   * The last day of a window (its end is exclusive).
+   *
+   * CALENDAR arithmetic, not `getTime() - 24h`: a DST transition makes a
+   * day 23 or 25 hours long, and the store's zone (Africa/Cairo) has DST.
+   * `core/dashboard/period.ts` has the same rule.
+   */
   lastDayOf(window: { start: Date; end: Date }): Date {
-    return new Date(window.end.getTime() - 24 * 60 * 60 * 1000);
+    const copy = new Date(window.end.getTime());
+    copy.setDate(copy.getDate() - 1);
+    return copy;
   }
 
   /** What the export contains, and for which range. */

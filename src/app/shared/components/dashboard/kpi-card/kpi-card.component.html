@@ -48,7 +48,7 @@
         <p class="text-3xl font-medium tabular-nums tracking-tight"><bdi>{{ value() }}</bdi></p>
 
         @if (deltaText(); as text) {
-          <div class="flex h-5 items-center gap-1.5">
+          <div class="flex h-5 items-center gap-1.5" data-testid="kpi-delta">
             <span
               class="inline-flex items-center gap-1 rounded-full bg-muted px-1.5 py-0.5 text-xs font-medium"
               [class]="deltaTone()"
@@ -65,7 +65,7 @@
         } @else if (isNoBaseline()) {
           <!-- No previous period to compare against: an em dash and the
                reason, never a "New" badge on every card. -->
-          <div class="flex h-5 items-center gap-1.5">
+          <div class="flex h-5 items-center gap-1.5" data-testid="kpi-delta">
             <span
               class="inline-flex items-center rounded-full bg-muted px-1.5 py-0.5 text-xs font-medium text-muted-foreground"
               [title]="noBaselineTitle()"

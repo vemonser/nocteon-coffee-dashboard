@@ -37,7 +37,10 @@
                 [style.background]="row.color"
               ></span>
             </span>
-            <span class="w-28 shrink-0 text-end text-sm tabular-nums text-muted-foreground">
+            <span
+              class="w-28 shrink-0 truncate text-end text-sm tabular-nums text-muted-foreground"
+              [title]="formatValue()(row.value)"
+            >
               {{ formatValue()(row.value) }}
             </span>
             <span class="w-14 shrink-0 text-end text-sm tabular-nums text-muted-foreground">
@@ -128,7 +131,12 @@
           } @else {
             <span class="min-w-0 flex-1 truncate" data-allow-latin [title]="row.label">{{ row.label }}</span>
           }
-          <span class="w-28 shrink-0 text-end tabular-nums text-muted-foreground">
+          <!-- The value is truncated rather than painted outside the card;
+               a long amount keeps its place in the column. -->
+          <span
+            class="w-28 shrink-0 truncate text-end tabular-nums text-muted-foreground"
+            [title]="formatValue()(row.value)"
+          >
             {{ formatValue()(row.value) }}
           </span>
           <span class="w-14 shrink-0 text-end tabular-nums text-muted-foreground">

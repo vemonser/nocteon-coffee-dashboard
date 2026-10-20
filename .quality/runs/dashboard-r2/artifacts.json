@@ -1,0 +1,102 @@
+{
+  "AC-01": {
+    "artifact": "evidence/dashboard-r2/measurements.json",
+    "type": "integration-test"
+  },
+  "AC-02": {
+    "artifact": "evidence/dashboard-r2/measurements.json",
+    "type": "integration-test"
+  },
+  "AC-03": {
+    "artifact": "evidence/dashboard-r2/e2e/new-badge.png",
+    "type": "e2e"
+  },
+  "AC-04": {
+    "artifact": "evidence/dashboard-r2/measurements.json",
+    "type": "integration-test"
+  },
+  "AC-05": {
+    "artifact": "evidence/dashboard-r2/en-light/dashboard-1440.png",
+    "type": "screenshot"
+  },
+  "AC-06": {
+    "artifact": "evidence/dashboard-r2/measurements.json",
+    "type": "integration-test"
+  },
+  "AC-07": {
+    "artifact": "evidence/dashboard-r2/measurements.json",
+    "type": "integration-test"
+  },
+  "AC-08": {
+    "artifact": "evidence/dashboard-r2/ar-dark/dashboard-1440.png",
+    "type": "e2e"
+  },
+  "AC-09": {
+    "artifact": "evidence/dashboard-r2/e2e/summary-line-ar-dark.png",
+    "type": "screenshot"
+  },
+  "AC-10": {
+    "artifact": "evidence/dashboard-r2/en-light/dashboard-1440.png",
+    "type": "screenshot"
+  },
+  "AC-11": {
+    "artifact": "evidence/dashboard-r2/ar-dark/dashboard-1440.png",
+    "type": "screenshot"
+  },
+  "AC-12": {
+    "artifact": "evidence/dashboard-r2/en-light/dashboard-1440.png",
+    "type": "screenshot"
+  },
+  "AC-13": {
+    "artifact": "evidence/dashboard-r2/ar-dark/dashboard-1440.png",
+    "type": "screenshot"
+  },
+  "AC-14": {
+    "artifact": "evidence/dashboard-r2/color-math.json",
+    "type": "static-analysis"
+  },
+  "AC-15": {
+    "artifact": "evidence/dashboard-r2/color-math.json",
+    "type": "static-analysis"
+  },
+  "AC-16": {
+    "artifact": "evidence/dashboard-r2/en-light/dashboard-1440.png",
+    "type": "screenshot"
+  },
+  "AC-17": {
+    "artifact": "evidence/dashboard-r2/measurements.json",
+    "type": "integration-test"
+  },
+  "AC-18": {
+    "artifact": "evidence/dashboard-r2/measurements.json",
+    "type": "integration-test"
+  },
+  "AC-19": {
+    "artifact": "evidence/dashboard-r2/measurements.json",
+    "type": "unit-test"
+  },
+  "AC-20": {
+    "artifact": "evidence/dashboard-r2/measurements.json",
+    "type": "integration-test"
+  },
+  "AC-21": {
+    "artifact": "evidence/dashboard-r2/measurements.json",
+    "type": "integration-test"
+  },
+  "AC-22": {
+    "artifact": "evidence/dashboard-r2/en-light/dashboard-1440.png",
+    "type": "screenshot"
+  },
+  "AC-23": {
+    "artifact": "evidence/dashboard-r2/ar-dark/dashboard-1440.png",
+    "type": "screenshot"
+  },
+  "AC-24": {
+    "artifact": "evidence/dashboard-r2/results.json",
+    "type": "integration-test"
+  },
+  "AC-25": {
+    "artifact": "evidence/dashboard-r2/results.json",
+    "type": "e2e"
+  }
+}

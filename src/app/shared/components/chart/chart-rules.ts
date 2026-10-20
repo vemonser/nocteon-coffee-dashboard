@@ -97,7 +97,9 @@ export const SEQUENTIAL = [
  */
 export const STATUS_COLORS = {
   DELIVERED: 'var(--status-delivered)',
-  CONFIRMED: 'var(--status-delivered)',
+  // CONFIRMED has its OWN swatch. It used to share the delivered green,
+  // which means two slices of the SAME ring can be the same colour.
+  CONFIRMED: 'var(--status-confirmed)',
   PROCESSING: 'var(--status-processing)',
   SHIPPED: 'var(--status-shipped)',
   PENDING: 'var(--status-pending)',

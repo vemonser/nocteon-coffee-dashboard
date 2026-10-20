@@ -1429,7 +1429,7 @@
     },
     "orderScope": {
       "all": "All orders",
-      "allHelp": "Every order the store has, including cancelled, pending and refunded ones."
+      "allHelp": "Every order the store has, whatever its status and whatever its payment status — cancelled, pending and refunded orders are included."
     }
   },
   "notifications": {
@@ -1657,7 +1657,7 @@
     "coffeeSoldHint": "by weight, coffee only",
     "orderScope": {
       "paid": "Paid orders",
-      "paidHelp": "Paid orders in the selected period. Cancelled, pending and refunded orders are not counted."
+      "paidHelp": "Paid orders in the selected period. An order is counted when its payment status is Paid, so pending, failed and refunded orders are not counted."
     },
     "countSessions_one": "{{count}} session",
     "countSessions_other": "{{count}} sessions",
@@ -1665,7 +1665,8 @@
     "donutOrders": "Orders",
     "breakdownNote": "This chart adds up the line items (price × quantity). It does not include shipping or discounts, so it does not add up to the Total revenue card.",
     "devicesNote": "The store records one row per observed device session. The count is not a count of people.",
-    "recentOrdersNote": "The four most recent orders, whatever their date."
+    "recentOrdersNote": "The four most recent orders, whatever their date.",
+    "daysShort": "days"
   },
   "imageCell": {
     "noImage": "No img"

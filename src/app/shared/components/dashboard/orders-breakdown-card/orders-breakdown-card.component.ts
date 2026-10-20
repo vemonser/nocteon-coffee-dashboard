@@ -3,13 +3,17 @@ import { CommonModule } from '@angular/common';
 import { TranslocoService } from '@jsverse/transloco';
 import { DashboardStatsService } from '../../../../features/dashboard/services/dashboard-stats.service';
 import { LanguageService } from '../../../../core/i18n/language.service';
+import { formatCount } from '../../../utils/locale-format';
 import { LocalizedNameService } from '../../../../core/i18n/localized-name.service';
 import { WidgetHeaderComponent } from '../../widget-header/widget-header.component';
 import { ChartCardComponent } from '../../chart/chart-card.component';
 import { HlmCardImports } from '@spartan-ng/helm/card';
 import { TabsComponent } from '../../ui/tabs/tabs.component';
-import { ChartSlice, OTHER, statusColor } from '../../chart/chart-rules';
-import { ORDER_COUNT_SCOPES } from '../../../../core/dashboard/order-scope';
+import { ChartSlice, OTHER, sliceColors, statusColor } from '../../chart/chart-rules';
+import {
+  DASHBOARD_ORDER_SCOPE,
+  orderScopeDefinition,
+} from '../../../../core/dashboard/order-scope';
 
 type OrdersTab = 'status' | 'paymentMethod';
 
@@ -78,14 +82,17 @@ export class OrdersBreakdownCardComponent {
   );
 
   /** Orders by payment method. */
-  readonly paymentData = computed(() =>
-    (this.stats.ordersByPaymentMethod() ?? []).map((d, i) => ({
+  readonly paymentData = computed(() => {
+    const data = (this.stats.ordersByPaymentMethod() ?? []).map((d) => ({
       label: this.names.paymentMethod(d.paymentMethod),
       value: d.count,
-      // A single series -> the first colour.
-      color: i === 0 ? 'var(--chart-1)' : OTHER,
-    })),
-  );
+    }));
+    // A payment method IS a category, so it takes the categorical palette —
+    // and NOT the neutral "Other" token, which means "everything else" and
+    // would mislabel a real payment method.
+    const colors = sliceColors(data.length, 'categorical');
+    return data.map((d, i) => ({ ...d, color: colors[i] ?? OTHER }));
+  });
 
   /** The slices for the active tab. */
   readonly slices = computed<ChartSlice[]>(() =>
@@ -116,12 +123,9 @@ export class OrdersBreakdownCardComponent {
     return this.transloco.translate('dashboard.donutOrders');
   });
 
-  /** Counts are whole numbers. */
+  /** Counts are whole numbers, from the SHARED count formatter. */
   readonly formatValue = (value: number): string =>
-    new Intl.NumberFormat(
-      this.language.current() === 'ar' ? 'ar-EG-u-nu-latn' : 'en-US',
-      { maximumFractionDigits: 0 },
-    ).format(value);
+    formatCount(value, this.language.language());
 
   /** The compact count, for the centre of the donut. */
   readonly formatCompactValue = (value: number): string => this.formatValue(value);
@@ -147,6 +151,8 @@ export class OrdersBreakdownCardComponent {
    */
   readonly scopeNote = computed(() => {
     this.language.language();
-    return this.transloco.translate(ORDER_COUNT_SCOPES.paid.helpKey);
+    return this.transloco.translate(
+      orderScopeDefinition(DASHBOARD_ORDER_SCOPE).helpKey,
+    );
   });
 }

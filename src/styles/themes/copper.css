@@ -87,6 +87,7 @@
   --status-pending: #7a5700;
   --status-cancelled: #b83232;
   --status-refunded: #6b5d52;
+  --status-confirmed: #004722;
 
   --radius: 0.5rem;
 }
@@ -165,10 +166,11 @@
      These values are MUTED, sit in the warm/neutral half of the wheel,
      and every one of them is at least 15 OKLab dE away from every
      categorical swatch (measured: evidence/dashboard-r2/color-math.json). */
-  --status-delivered: #497c53;
-  --status-processing: #287992;
-  --status-shipped: #6865a9;
-  --status-pending: #8a6a20;
-  --status-cancelled: #a8493f;
-  --status-refunded: #6f6a62;
+  --status-delivered: #4c6f38;
+  --status-processing: #028a9b;
+  --status-shipped: #5a649d;
+  --status-pending: #b1632f;
+  --status-cancelled: #9c4b62;
+  --status-refunded: #7d7672;
+  --status-confirmed: #65955a;
 }

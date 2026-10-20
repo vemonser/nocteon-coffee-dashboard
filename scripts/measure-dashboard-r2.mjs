@@ -24,6 +24,7 @@ import { config as loadEnv } from 'dotenv';
 import { resolve } from 'node:path';
 import { mkdirSync, writeFileSync, readFileSync, existsSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
+import { readFileSync as readFileSyncFs } from 'node:fs';
 
 loadEnv({ path: resolve(process.cwd(), '.env.local') });
 const BASE = process.env.E2E_BASE_URL ?? 'http://localhost:4200';
@@ -153,7 +154,7 @@ const reconciliation = {
       endpoint: `GET /api/dashboard/stats/overview?days=${DAYS} -> data.revenueByDay`,
       sendsTheSelectedRange: true,
       formula: 'SUM(order.totalAmount) per calendar day, over the PAID orders',
-      observedTotal: sum(overview.revenueByDay ?? [], (d) => d.revenue ?? 0),
+      observed: sum(overview.revenueByDay ?? [], (d) => d.revenue ?? 0),
       independentlyRecomputed: sum(dashboardSet, (o) => Number(o.totalAmount ?? 0)),
       matches: true,
       uiLabel: 'Last 30 days',
@@ -277,10 +278,44 @@ const paymentCounts = orders.reduce((acc, o) => {
   return acc;
 }, {});
 
+// The excluded set is COMPUTED from the payload: the dashboard's set is
+// the paid orders, and everything else is what the dashboard leaves out.
+const excludedOrders = orders.filter((o) => !dashboardSet.includes(o));
+const excludedPaymentStatuses = [
+  ...new Set(excludedOrders.map((o) => o.paymentStatus)),
+].sort();
+const excludedOrderStatuses = [...new Set(excludedOrders.map((o) => o.status))].sort();
+
+const scopeSource = readFileSyncFs(
+  resolve(process.cwd(), 'src/app/core/dashboard/order-scope.ts'),
+  'utf8',
+);
+const ORDER_SCOPE_EXCLUDED_PAYMENT_STATUSES = [
+  ...scopeSource.matchAll(/'([A-Z]+)'/g),
+]
+  .map((m) => m[1])
+  .filter((s) => s !== 'paid' && s !== 'all');
+
 const orderScope = {
   sharedDefinition: 'src/app/core/dashboard/order-scope.ts -> ORDER_COUNT_SCOPES',
   dashboardScope: 'paid',
   ordersListScope: 'all',
+  computed: {
+    dashboardSetSize: dashboardSet.length,
+    excludedOrders: excludedOrders.length,
+    excludedPaymentStatuses,
+    excludedOrderStatuses,
+    excludedOrderNumbers: excludedOrders.map((o) => o.orderNumber),
+    // The reconciliation: the dashboard's set plus everything it leaves
+    // out is the whole list.
+    reconciles:
+      dashboardSet.length + excludedOrders.length === orders.length,
+    // The payment statuses the shared definition names are exactly the
+    // ones the data leaves out.
+    matchesTheSharedDefinition:
+      JSON.stringify(excludedPaymentStatuses) ===
+      JSON.stringify([...ORDER_SCOPE_EXCLUDED_PAYMENT_STATUSES].sort()),
+  },
   counts: {
     dashboardOrders: overview.totalOrders,
     dashboardRevenue: overview.totalRevenue,
@@ -447,12 +482,15 @@ const orderNumberGrep = grep('orderNumber', [
 const moneyOutsideTheFormatter = grep(
   "(toFixed\\(|currencyDisplay|style\\s*:\\s*['\"]currency['\"]|E£|ج\\.م)",
   SRC,
-).filter(
-  (line) =>
-    !line.includes('src/app/shared/utils/locale-format.ts') &&
-    !line.includes('src/app/core/dashboard/sparkline.ts') &&
-    !line.includes('.spec.ts'),
-);
+).filter((line) => {
+  if (line.includes('src/app/shared/utils/locale-format.ts')) return false;
+  if (line.includes('src/app/core/dashboard/sparkline.ts')) return false;
+  if (line.includes('.spec.ts')) return false;
+  // A COMMENT that mentions a currency glyph is not a currency renderer.
+  const code = line.replace(/^[^:]+:\d+:/, '');
+  const stripped = code.replace(/\/\/.*$/, '').replace(/^\s*\*.*$/, '').trim();
+  return stripped.length > 0;
+});
 
 const greps = {
   command: "grep -rn -E '<pattern>' src/app",
@@ -671,7 +709,7 @@ const MEASURE = () => {
   const kpis = Array.from(document.querySelectorAll('app-kpi-card')).map((card) => {
     const label = card.querySelector('p');
     const value = card.querySelector('p.text-3xl');
-    const delta = card.querySelector('[title]');
+    const delta = card.querySelector('[data-testid="kpi-delta"]');
     const cardBox = card.getBoundingClientRect();
     const box = (el) => {
       if (!el) return null;

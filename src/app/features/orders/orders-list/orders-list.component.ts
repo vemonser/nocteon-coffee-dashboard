@@ -29,7 +29,7 @@ import { NotifyService } from '../../../core/notify/notify.service';
 import { LanguageService } from '../../../core/i18n/language.service';
 import { LocalizedNameService } from '../../../core/i18n/localized-name.service';
 import { StoreSettingsService } from '../../../core/settings/store-settings.service';
-import { formatCurrency } from '../../../shared/utils/locale-format';
+import { formatCurrencyPlain } from '../../../shared/utils/locale-format';
 import { OrderService } from '../services/order.service';
 import {
   OrderResponse,
@@ -54,7 +54,10 @@ import {
   type OrderFilters,
 } from '../utils/order-filters';
 import { formatOrderNumber } from '../utils/order-number';
-import { ORDER_COUNT_SCOPES } from '../../../core/dashboard/order-scope';
+import {
+  ORDERS_LIST_SCOPE,
+  orderScopeDefinition,
+} from '../../../core/dashboard/order-scope';
 import type { RowMenuAction } from '../../../shared/ui/actions-cell/actions-cell.component';
 
 /**
@@ -201,7 +204,9 @@ export class OrdersListComponent {
    */
   protected readonly scopeNote = computed(() => {
     this.language.language();
-    return this.transloco.translate(ORDER_COUNT_SCOPES.all.helpKey);
+    return this.transloco.translate(
+      orderScopeDefinition(ORDERS_LIST_SCOPE).helpKey,
+    );
   });
 
   /** The cards. Each one says exactly what it counts. */
@@ -628,8 +633,10 @@ export class OrdersListComponent {
     const rows = this.matching();
     if (!rows.length) return;
 
+    // The PLAIN money: a file is not a paragraph, so the bidi isolate
+    // would be written into the CSV as an invisible control character.
     const money = (value: number): string =>
-      formatCurrency(value, this.language.current(), this.storeSettings.currency());
+      formatCurrencyPlain(value, this.language.current(), this.storeSettings.currency());
 
     const header = [
       'Order #',

@@ -102,12 +102,20 @@ export class ChartCardComponent {
     if (!total) return '—';
     const full = this.formatValue()(total);
     if (this.fitsInRing(full)) return full;
+    // The compact form keeps the UNIT: a centre that says "20.8K" without
+    // a currency is a number with no meaning on a money chart.
     const compact = this.formatCompactValue()(total);
     if (this.fitsInRing(compact)) return compact;
     return this.bareNumber(total);
   });
 
-  /** The number on its own — the last resort for a very long amount. */
+  /**
+   * The last resort: the number alone.
+   *
+   * It is reached only when even the compact form does not fit, which in
+   * practice never happens — and when it does, a number without a unit is
+   * still better than a number painted over the ring.
+   */
   private bareNumber(value: number): string {
     return formatCompactNumber(value);
   }

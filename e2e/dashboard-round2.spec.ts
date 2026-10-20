@@ -29,8 +29,14 @@ import { resolve } from 'node:path';
  * evidence/dashboard-r2/measurements.json.
  */
 
-/** A raw translation key: `orders.statuses.DELIVERED`. */
-const RAW_KEY = /\b[a-z]+\.[a-z]+\.[A-Z_]+\b/;
+/**
+ * A raw translation key.
+ *
+ * Not only the enum-shaped ones (`orders.statuses.DELIVERED`): the
+ * lower-case keys are the majority of the app's keys
+ * (`dashboard.tabs.origin`), so the check has to catch those too.
+ */
+const RAW_KEY = /\b[a-z][A-Za-z0-9_]*(\.[a-z][A-Za-z0-9_]*){2,}\b/;
 
 /**
  * The Latin words that may appear in the Arabic UI.
@@ -383,6 +389,8 @@ test.describe('dashboard — round 2', () => {
         return {
           labelTop: labelBox ? Math.round(labelBox.top - cardBox.top) : null,
           valueTop: valueBox ? Math.round(valueBox.top - cardBox.top) : null,
+          labelFontSize: labelBox ? getComputedStyle(labelBox).fontSize : null,
+          valueFontSize: valueBox ? getComputedStyle(valueBox).fontSize : null,
         };
       }),
     );
@@ -391,6 +399,14 @@ test.describe('dashboard — round 2', () => {
     const valueTops = new Set(cards.map((c) => c.valueTop));
     expect(labelTops.size, `the labels share one offset (${JSON.stringify(cards)})`).toBe(1);
     expect(valueTops.size, `the values share one baseline (${JSON.stringify(cards)})`).toBe(1);
+
+    // The TYPE, not only the offsets: the four cards read as one set.
+    const labelSizes = new Set(cards.map((c) => c.labelFontSize));
+    const valueSizes = new Set(cards.map((c) => c.valueFontSize));
+    expect(labelSizes.size, `the labels share one size (${JSON.stringify(cards)})`).toBe(1);
+    expect(valueSizes.size, `the values share one size (${JSON.stringify(cards)})`).toBe(1);
+    expect([...labelSizes][0], 'the KPI label is 12px').toBe('12px');
+    expect([...valueSizes][0], 'the KPI value is 30px').toBe('30px');
   });
 
   test('the "New" badge is only on the card where newness is the meaning', async () => {

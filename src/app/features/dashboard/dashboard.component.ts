@@ -36,8 +36,11 @@ import { StoreSettingsService } from '../../core/settings/store-settings.service
 import { LanguageService } from '../../core/i18n/language.service';
 import { computeDelta, type DeltaResult } from '../../core/dashboard/delta';
 import { periodPair } from '../../core/dashboard/period';
-import { formatSignedPercent } from '../../shared/utils/locale-format';
-import { ORDER_COUNT_SCOPES } from '../../core/dashboard/order-scope';
+import { formatCount, formatSignedPercent } from '../../shared/utils/locale-format';
+import {
+  DASHBOARD_ORDER_SCOPE,
+  orderScopeDefinition,
+} from '../../core/dashboard/order-scope';
 import { RevenueChartComponent } from '../../shared/components/dashboard/revenue-chart/revenue-chart.component';
 import { TopProductsComponent } from '../../shared/components/dashboard/top-products/top-products.component';
 import { RecentOrdersComponent } from '../../shared/components/dashboard/recent-orders/recent-orders.component';
@@ -115,12 +118,6 @@ export class DashboardComponent {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
 
-  readonly filterOptions = [
-    { label: 'Last 7 Days', value: 7 },
-    { label: 'Last 30 Days', value: 30 },
-    { label: 'Last 90 Days', value: 90 },
-    { label: 'Last Year', value: 365 },
-  ];
 
   /**
    * The selected window and the window before it.
@@ -135,11 +132,6 @@ export class DashboardComponent {
   readonly currentRange = computed(() => this.periods().current);
   readonly previousRange = computed(() => this.periods().previous);
 
-  /** Format a date as "16 Sep" in current locale. */
-  fmtRangeDate(d: Date): string {
-    const locale = this.language.current() === 'ar' ? 'ar-EG-u-nu-latn' : 'en-US';
-    return new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short' }).format(d);
-  }
 
   /**
    * What the order-derived counts cover.
@@ -149,13 +141,11 @@ export class DashboardComponent {
    */
   protected readonly orderScopeHelp = computed(() => {
     this.language.language();
-    return this.transloco.translate(ORDER_COUNT_SCOPES.paid.helpKey);
+    return this.transloco.translate(
+      orderScopeDefinition(DASHBOARD_ORDER_SCOPE).helpKey,
+    );
   });
 
-  /** Last day of a window (its end is exclusive). */
-  lastDayOf(window: { end: Date }): Date {
-    return new Date(window.end.getTime() - 24 * 60 * 60 * 1000);
-  }
 
   readonly selectedDays = computed(() => this.statsService.days());
 
@@ -209,46 +199,8 @@ export class DashboardComponent {
     });
   }
 
-  /** Title-case label for a device type (e.g. "ios" -> "Ios" is not ideal but matches data). */
-  deviceLabel(deviceType: string): string {
-    const t = (deviceType || '').toLowerCase();
-    const map: Record<string, string> = { ios: 'iOS', mac: 'macOS', macos: 'macOS', android: 'Android', windows: 'Windows', linux: 'Linux', other: 'Other' };
-    return map[t] ?? (t.charAt(0).toUpperCase() + t.slice(1));
-  }
 
-  /** Percentage of total device count for a single device type. */
-  devicePercent(d: { count: number }): number {
-    const total = this.deviceBreakdown().reduce((s, x) => s + (x.count || 0), 0);
-    if (!total) return 0;
-    return (d.count / total) * 100;
-  }
 
-  /** Export current overview as CSV. */
-  exportCsv(): void {
-    const overview = this.statsService.overview();
-    if (!overview) return;
-    const rows: string[] = [];
-    rows.push('Metric,Value');
-    rows.push(`Total Revenue,${overview.totalRevenue}`);
-    rows.push(`Total Orders,${overview.totalOrders}`);
-    rows.push(`Average Order Value,${overview.averageOrderValue}`);
-    rows.push(`Coffee Sold (kg),${overview.coffeeSoldKg}`);
-    rows.push(`New Customers,${overview.userGrowth.currentPeriodCount}`);
-    rows.push(`Repeat Purchase Rate,${overview.repeatPurchaseRate.repeatRate}`);
-    rows.push(`Refund Rate,${overview.refundRate.refundRate}`);
-    rows.push('');
-    rows.push('Top Products,Units Sold,Price');
-    for (const p of overview.topSellingProducts) {
-      rows.push(`"${p.name}",${p.quantitySold},${p.price}`);
-    }
-    const blob = new Blob([rows.join('\\n')], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `nocteon-analytics-${this.statsService.days()}d.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-  }
 
   /** Delta result for a KPI card. */
   /**
@@ -265,11 +217,9 @@ export class DashboardComponent {
   /** Retry the overview after a failure. */
   protected readonly retryOverview = () => this.statsService.retry();
 
+  /** Counts are whole numbers, from the SHARED count formatter. */
   protected fmtCount = (value: number | undefined | null): string =>
-    new Intl.NumberFormat(
-      this.language.current() === 'ar' ? 'ar-EG-u-nu-latn' : 'en-US',
-      { maximumFractionDigits: 0 },
-    ).format(value ?? 0);
+    formatCount(value ?? 0, this.language.language());
 
   protected readonly delta = computed(() => {
     const stats = this.statsService.statsCards();

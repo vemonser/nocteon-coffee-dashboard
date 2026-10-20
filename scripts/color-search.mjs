@@ -103,6 +103,10 @@ const SLOTS = {
   pending: { hue: [55, 85], chroma: [0.045, 0.115], lightness: [0.54, 0.70] },
   cancelled: { hue: [5, 35], chroma: [0.05, 0.125], lightness: [0.40, 0.50] },
   refunded: { hue: [30, 80], chroma: [0.0, 0.02], lightness: [0.45, 0.70] },
+  // CONFIRMED is its own status: a paid order that is confirmed but not
+  // yet delivered. It shares the delivered GREEN in meaning, so it lives
+  // in the same band but is pushed away by its lightness.
+  confirmed: { hue: [150, 190], chroma: [0.04, 0.10], lightness: [0.62, 0.80] },
 };
 
 function* candidates(slot) {
@@ -147,7 +151,7 @@ function score(set, mode, minContrast) {
   // neighbouring chart, so it is pushed to the target FIRST; once it is
   // there, the remaining freedom goes to the distance INSIDE the status
   // set (the slices of one ring).
-  const CROSS_TARGET = 20;
+  const CROSS_TARGET = 15;
   return Math.min(cross, CROSS_TARGET) * 1000 + within - penalty;
 }
 

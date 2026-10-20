@@ -98,6 +98,7 @@ const STATUS_BEFORE = {
     'status-pending': '#7a5700',
     'status-cancelled': '#b83232',
     'status-refunded': '#6b5d52',
+    'status-confirmed': '#137333',
   },
   dark: {
     'status-delivered': '#4ade80',
@@ -106,6 +107,7 @@ const STATUS_BEFORE = {
     'status-pending': '#fbbf24',
     'status-cancelled': '#f28b82',
     'status-refunded': '#a89a8c',
+    'status-confirmed': '#4ade80',
   },
 };
 
@@ -118,14 +120,16 @@ const STATUS_AFTER = {
     'status-pending': '#7a5700',
     'status-cancelled': '#b83232',
     'status-refunded': '#6b5d52',
+    'status-confirmed': '#004722',
   },
   dark: {
-    'status-delivered': '#497c53',
-    'status-processing': '#287992',
-    'status-shipped': '#6865a9',
-    'status-pending': '#8a6a20',
-    'status-cancelled': '#a8493f',
-    'status-refunded': '#6f6a62',
+    'status-delivered': '#4c6f38',
+    'status-processing': '#028a9b',
+    'status-shipped': '#5a649d',
+    'status-pending': '#b1632f',
+    'status-cancelled': '#9c4b62',
+    'status-refunded': '#7d7672',
+    'status-confirmed': '#65955a',
   },
 };
 
@@ -228,6 +232,10 @@ report.summary = {
     .flatMap((m) => m.swatches)
     .filter((s) => !s.passesGraphics3)
     .map((s) => s.name),
+  // --roast-1 on the LIGHT card is the one documented exemption
+  // (design.md §5): the lightest step of the sequential ramp, and it always
+  // carries a 2 px card-coloured gap and a visible value label.
+  documentedExemptions: ['roast-1 (light card, 2.03:1)'],
   crossCollisionsBefore: report.modes.light.collisionsBefore + report.modes.dark.collisionsBefore,
   crossCollisionsAfter: report.modes.light.collisionsAfter + report.modes.dark.collisionsAfter,
   minCrossDistance: {
@@ -237,6 +245,22 @@ report.summary = {
   minCrossDistanceBefore: {
     light: report.modes.light.minimum.crossBefore,
     dark: report.modes.dark.minimum.crossBefore,
+  },
+  minWithinDistance: {
+    light: report.modes.light.minimum.withinAfter,
+    dark: report.modes.dark.minimum.withinAfter,
+  },
+  minWithinDistanceBefore: {
+    light: report.modes.light.minimum.withinBefore,
+    dark: report.modes.dark.minimum.withinBefore,
+  },
+  withinCollisionsAfter: {
+    light: report.modes.light.withinPairs.filter((p) => p.tooClose).length,
+    dark: report.modes.dark.withinPairs.filter((p) => p.tooClose).length,
+  },
+  withinCollisionsBefore: {
+    light: report.modes.light.withinPairs.filter((p) => p.deltaEBefore < TOO_CLOSE).length,
+    dark: report.modes.dark.withinPairs.filter((p) => p.deltaEBefore < TOO_CLOSE).length,
   },
 };
 
@@ -256,7 +280,8 @@ for (const mode of ['light', 'dark']) {
     `  cross-set minimum: ${m.minimum.crossBefore} -> ${m.minimum.crossAfter} dE   collisions: ${m.collisionsBefore} -> ${m.collisionsAfter}`,
   );
   console.log(
-    `  within-set minimum: ${m.minimum.withinBefore} -> ${m.minimum.withinAfter} dE`,
+    `  within-set minimum: ${m.minimum.withinBefore} -> ${m.minimum.withinAfter} dE` +
+      `   (the slices of ONE ring)`,
   );
   const still = m.crossPairs.filter((p) => p.tooClose);
   for (const p of still) {

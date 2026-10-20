@@ -80,4 +80,5 @@
     --color-status-pending: var(--status-pending);
     --color-status-cancelled: var(--status-cancelled);
     --color-status-refunded: var(--status-refunded);
+    --color-status-confirmed: var(--status-confirmed);
 }

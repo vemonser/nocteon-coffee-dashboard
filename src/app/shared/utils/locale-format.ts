@@ -22,7 +22,7 @@ import type { Language } from '../../core/i18n/language';
  *
  * Two rules that the earlier version got wrong:
  *
- *  1. The English form used `narrowSymbol`, which CLDR renders as the
+ *  1. The English form used the CLDR narrow symbol, which renders as the
  *     Latin "E£" — a currency SYMBOL in a Latin shape, so the reader sees
  *     two different-looking currencies depending on the page ("E£" on the
  *     dashboard, "EGP" on the Orders page). The CODE is the same in every
@@ -158,6 +158,19 @@ export function formatDateAndTime(value: unknown, lang: Language): string {
 }
 
 /**
+ * The currency code, normalised.
+ *
+ * The store setting is written by a form, so it can arrive as "egp" or with
+ * a stray space. Intl needs three upper-case letters, and an unknown code
+ * THROWS — so the code is normalised here, once, instead of at every call
+ * site.
+ */
+export function normaliseCurrencyCode(currency: string): string {
+  const code = (currency ?? '').trim().toUpperCase();
+  return /^[A-Z]{3}$/.test(code) ? code : 'USD';
+}
+
+/**
  * The currency's symbol in ARABIC, without the trailing dot.
  *
  * CLDR writes the Egyptian pound as "ج.م." — the dot is a full stop that
@@ -189,9 +202,9 @@ export function arabicCurrencySymbol(currency: string): string {
  * English  -> "EGP 1,176.25"  (the ISO code, then the amount)
  * Arabic   -> "1,176.25 ج.م"  (the amount, then the Arabic symbol)
  *
- * The digits are Latin in BOTH languages (`ar-EG-u-nu-latn`), and the
- * thousands/decimal separators are the Latin ones in Arabic too, so a
- * number never changes shape when the language changes.
+ * The digits are Latin in BOTH languages, and the thousands/decimal
+ * separators are the Latin ones in Arabic too, so a number never changes
+ * shape when the language changes.
  */
 export function formatCurrency(
   value: unknown,
@@ -204,6 +217,8 @@ export function formatCurrency(
       : Number.parseFloat(String(value ?? '').replace(/[^0-9.\-]/g, ''));
   if (!Number.isFinite(n)) return String(value ?? '');
 
+  const code = normaliseCurrencyCode(currency);
+
   if (lang === 'ar') {
     // The AMOUNT first, then the symbol. No LTR isolate: the isolate would
     // force the amount to the left of the symbol, so an Arabic reader read
@@ -214,21 +229,46 @@ export function formatCurrency(
         maximumFractionDigits: 2,
       }).format(n),
     );
-    return `${amount} ${arabicCurrencySymbol(currency)}`;
+    return amount + ' ' + arabicCurrencySymbol(code);
   }
 
-  const s = clean(
-    new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency,
-      // The CODE, not the symbol: the same unit on every page and in every
-      // language. `narrowSymbol` rendered the Latin "E£" here.
-      currencyDisplay: 'code',
-    }).format(n),
-  );
+  // The CODE, not the symbol: the same unit on every page and in every
+  // language. The narrow symbol rendered the Latin "E£" here.
+  let s: string;
+  try {
+    s = clean(
+      new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: code,
+        currencyDisplay: 'code',
+      }).format(n),
+    );
+  } catch {
+    // An unknown code still has to print an amount.
+    const amount = new Intl.NumberFormat('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(n);
+    s = amount + ' ' + code;
+  }
   // Inert in an LTR paragraph, and it keeps the unit glued to the amount
   // when the paragraph is RTL.
   return `\u2066${s}\u2069`;
+}
+
+/**
+ * The money WITHOUT the bidi isolate.
+ *
+ * A file is not a paragraph: the isolate characters would be written into
+ * the CSV as invisible control characters. This is the same formatter, the
+ * same rules, one wrapper less.
+ */
+export function formatCurrencyPlain(
+  value: unknown,
+  lang: Language,
+  currency: string,
+): string {
+  return formatCurrency(value, lang, currency).replace(/[\u2066\u2069]/g, '');
 }
 
 /**
@@ -245,8 +285,8 @@ export function formatCompactCurrency(
 ): string {
   const compact = formatCompactNumber(value);
   if (!compact) return '';
-  if (lang === 'ar') return `${compact} ${arabicCurrencySymbol(currency)}`;
-  return `${currency.toUpperCase()} ${compact}`;
+  if (lang === 'ar') return compact + ' ' + arabicCurrencySymbol(normaliseCurrencyCode(currency));
+  return normaliseCurrencyCode(currency) + ' ' + compact;
 }
 
 /**

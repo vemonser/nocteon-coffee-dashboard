@@ -70,6 +70,7 @@ describe('palette', () => {
     expect(STATUS_COLORS.PENDING).toBe('var(--status-pending)');
     expect(STATUS_COLORS.CANCELLED).toBe('var(--status-cancelled)');
     expect(STATUS_COLORS.REFUNDED).toBe('var(--status-refunded)');
+    expect(STATUS_COLORS.CONFIRMED).toBe('var(--status-confirmed)');
     for (const color of Object.values(STATUS_COLORS)) {
       expect(CATEGORICAL.slice(0, 4)).not.toContain(color);
       // A status swatch is never one of the chart tokens: that is how a
@@ -78,6 +79,21 @@ describe('palette', () => {
       expect(color).not.toMatch(/var\(--chart-/);
       expect(color).not.toMatch(/var\(--roast-/);
     }
+  });
+
+  it('every MEANING has its own swatch — two slices of one ring must differ', () => {
+    // FAILED shares the CANCELLED swatch on purpose: they are the same
+    // meaning ("it did not happen"). Every OTHER meaning has its own.
+    const meanings = [
+      STATUS_COLORS.DELIVERED,
+      STATUS_COLORS.CONFIRMED,
+      STATUS_COLORS.PROCESSING,
+      STATUS_COLORS.SHIPPED,
+      STATUS_COLORS.PENDING,
+      STATUS_COLORS.CANCELLED,
+      STATUS_COLORS.REFUNDED,
+    ];
+    expect(new Set(meanings).size, 'two meanings share a swatch').toBe(meanings.length);
   });
 
   it('an unknown status falls back to the neutral token', () => {

@@ -65,6 +65,10 @@ export class TabsComponent {
    *
    * A tablist is a single tab stop: the reader presses the arrow keys to
    * move between the tabs (design.md §11).
+   *
+   * The keys are MIRRORED in RTL, exactly like the app's own lifecycle
+   * tabs: "next" means next in the READING order, so in Arabic the left
+   * arrow moves forward.
    */
   onKeydown(event: KeyboardEvent): void {
     const keys = ['ArrowRight', 'ArrowLeft', 'ArrowDown', 'ArrowUp', 'Home', 'End'];
@@ -75,15 +79,26 @@ export class TabsComponent {
     let next = current;
     if (event.key === 'Home') next = 0;
     else if (event.key === 'End') next = items.length - 1;
-    else if (event.key === 'ArrowRight' || event.key === 'ArrowDown') {
-      next = (current + 1 + items.length) % items.length;
-    } else {
-      next = (current - 1 + items.length) % items.length;
+    else {
+      const forward = this.rtl() ? 'ArrowLeft' : 'ArrowRight';
+      const backward = this.rtl() ? 'ArrowRight' : 'ArrowLeft';
+      if (event.key === forward || event.key === 'ArrowDown') {
+        next = (current + 1 + items.length) % items.length;
+      } else {
+        next = (current - 1 + items.length) % items.length;
+      }
     }
     event.preventDefault();
     this.select(items[next].id);
     this.focusItem(items[next].id);
   }
+
+  /** True in a right-to-left paragraph. */
+  readonly rtl = computed(
+    () =>
+      typeof document !== 'undefined' &&
+      document.documentElement.getAttribute('dir') === 'rtl',
+  );
 
   /** Select a tab. */
   select(id: string): void {
