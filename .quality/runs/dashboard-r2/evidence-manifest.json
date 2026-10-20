@@ -29,7 +29,7 @@
           "path": "evidence/dashboard-r2/measurements.json",
           "command": "node scripts/verify-round2.mjs AC-01",
           "exitCode": 0,
-          "recordedAt": "2026-10-20T16:10:45.668Z"
+          "recordedAt": "2026-10-20T17:30:01.954Z"
         }
       ]
     },
@@ -57,7 +57,7 @@
           "path": "evidence/dashboard-r2/measurements.json",
           "command": "node scripts/verify-round2.mjs AC-02",
           "exitCode": 0,
-          "recordedAt": "2026-10-20T16:10:45.773Z"
+          "recordedAt": "2026-10-20T17:30:02.036Z"
         }
       ]
     },
@@ -81,11 +81,18 @@
       "naReason": null,
       "evidence": [
         {
-          "type": "e2e",
+          "type": "screenshot",
           "path": "evidence/dashboard-r2/en-light/dashboard-1440.png",
           "command": "node scripts/verify-round2.mjs AC-03",
           "exitCode": 0,
-          "recordedAt": "2026-10-20T16:11:02.270Z"
+          "recordedAt": "2026-10-20T17:30:02.438Z"
+        },
+        {
+          "type": "e2e",
+          "path": "evidence/dashboard-r2/results.json",
+          "command": "node scripts/verify-round2.mjs AC-03",
+          "exitCode": 0,
+          "recordedAt": "2026-10-20T17:31:38.668Z"
         }
       ]
     },
@@ -113,7 +120,7 @@
           "path": "evidence/dashboard-r2/measurements.json",
           "command": "node scripts/verify-round2.mjs AC-04",
           "exitCode": 0,
-          "recordedAt": "2026-10-20T16:10:45.855Z"
+          "recordedAt": "2026-10-20T17:30:02.116Z"
         }
       ]
     },
@@ -136,7 +143,22 @@
       "status": "PASS",
       "notes": null,
       "naReason": null,
-      "evidence": []
+      "evidence": [
+        {
+          "type": "screenshot",
+          "path": "evidence/dashboard-r2/en-light/dashboard-1440.png",
+          "command": "node scripts/verify-round2.mjs AC-05",
+          "exitCode": 0,
+          "recordedAt": "2026-10-20T17:30:02.523Z"
+        },
+        {
+          "type": "integration-test",
+          "path": "evidence/dashboard-r2/measurements.json",
+          "command": "node scripts/verify-round2.mjs AC-05",
+          "exitCode": 0,
+          "recordedAt": "2026-10-20T17:30:02.613Z"
+        }
+      ]
     },
     {
       "id": "AC-06",
@@ -160,7 +182,7 @@
           "path": "evidence/dashboard-r2/measurements.json",
           "command": "node scripts/verify-round2.mjs AC-06",
           "exitCode": 0,
-          "recordedAt": "2026-10-20T16:10:45.940Z"
+          "recordedAt": "2026-10-20T17:30:02.192Z"
         }
       ]
     },
@@ -187,7 +209,7 @@
           "path": "evidence/dashboard-r2/measurements.json",
           "command": "node scripts/verify-round2.mjs AC-07",
           "exitCode": 0,
-          "recordedAt": "2026-10-20T16:10:46.018Z"
+          "recordedAt": "2026-10-20T17:30:02.265Z"
         }
       ]
     },
@@ -211,11 +233,18 @@
       "naReason": null,
       "evidence": [
         {
-          "type": "e2e",
+          "type": "screenshot",
           "path": "evidence/dashboard-r2/ar-dark/dashboard-1440.png",
           "command": "node scripts/verify-round2.mjs AC-08",
           "exitCode": 0,
-          "recordedAt": "2026-10-20T16:11:02.399Z"
+          "recordedAt": "2026-10-20T17:30:02.692Z"
+        },
+        {
+          "type": "e2e",
+          "path": "evidence/dashboard-r2/results.json",
+          "command": "node scripts/verify-round2.mjs AC-08",
+          "exitCode": 0,
+          "recordedAt": "2026-10-20T17:31:38.817Z"
         }
       ]
     },
@@ -242,7 +271,14 @@
           "path": "evidence/dashboard-r2/e2e/summary-line-ar-dark.png",
           "command": "node scripts/verify-round2.mjs AC-09",
           "exitCode": 0,
-          "recordedAt": "2026-10-20T16:11:02.529Z"
+          "recordedAt": "2026-10-20T17:30:02.775Z"
+        },
+        {
+          "type": "integration-test",
+          "path": "evidence/dashboard-r2/e2e/summary-line-ar-dark.png",
+          "command": "node scripts/verify-round2.mjs AC-09",
+          "exitCode": 0,
+          "recordedAt": "2026-10-20T17:30:02.858Z"
         }
       ]
     },
@@ -269,7 +305,14 @@
           "path": "evidence/dashboard-r2/en-light/dashboard-1440.png",
           "command": "node scripts/verify-round2.mjs AC-10",
           "exitCode": 0,
-          "recordedAt": "2026-10-20T16:11:02.647Z"
+          "recordedAt": "2026-10-20T17:30:02.942Z"
+        },
+        {
+          "type": "integration-test",
+          "path": "evidence/dashboard-r2/measurements.json",
+          "command": "node scripts/verify-round2.mjs AC-10",
+          "exitCode": 0,
+          "recordedAt": "2026-10-20T17:30:03.012Z"
         }
       ]
     },
@@ -295,7 +338,14 @@
           "path": "evidence/dashboard-r2/en-light/dashboard-1440.png",
           "command": "node scripts/verify-round2.mjs AC-11",
           "exitCode": 0,
-          "recordedAt": "2026-10-20T16:11:02.757Z"
+          "recordedAt": "2026-10-20T17:30:03.081Z"
+        },
+        {
+          "type": "integration-test",
+          "path": "evidence/dashboard-r2/measurements.json",
+          "command": "node scripts/verify-round2.mjs AC-11",
+          "exitCode": 0,
+          "recordedAt": "2026-10-20T17:30:03.153Z"
         }
       ]
     },
@@ -322,7 +372,14 @@
           "path": "evidence/dashboard-r2/en-light/dashboard-1440.png",
           "command": "node scripts/verify-round2.mjs AC-12",
           "exitCode": 0,
-          "recordedAt": "2026-10-20T16:11:02.867Z"
+          "recordedAt": "2026-10-20T17:30:03.224Z"
+        },
+        {
+          "type": "integration-test",
+          "path": "evidence/dashboard-r2/measurements.json",
+          "command": "node scripts/verify-round2.mjs AC-12",
+          "exitCode": 0,
+          "recordedAt": "2026-10-20T17:30:03.293Z"
         }
       ]
     },
@@ -349,7 +406,14 @@
           "path": "evidence/dashboard-r2/en-light/dashboard-1440.png",
           "command": "node scripts/verify-round2.mjs AC-13",
           "exitCode": 0,
-          "recordedAt": "2026-10-20T16:11:02.975Z"
+          "recordedAt": "2026-10-20T17:30:03.366Z"
+        },
+        {
+          "type": "integration-test",
+          "path": "evidence/dashboard-r2/measurements.json",
+          "command": "node scripts/verify-round2.mjs AC-13",
+          "exitCode": 0,
+          "recordedAt": "2026-10-20T17:30:03.443Z"
         }
       ]
     },
@@ -373,11 +437,18 @@
       "naReason": null,
       "evidence": [
         {
+          "type": "screenshot",
+          "path": "evidence/dashboard-r2/ar-dark/dashboard-1440.png",
+          "command": "node scripts/verify-round2.mjs AC-14",
+          "exitCode": 0,
+          "recordedAt": "2026-10-20T17:30:03.519Z"
+        },
+        {
           "type": "static-analysis",
           "path": "evidence/dashboard-r2/color-math.json",
           "command": "node scripts/verify-round2.mjs AC-14",
           "exitCode": 0,
-          "recordedAt": "2026-10-20T16:11:16.227Z"
+          "recordedAt": "2026-10-20T17:30:03.590Z"
         }
       ]
     },
@@ -389,7 +460,7 @@
         "line": 75
       },
       "kind": "ui-visual",
-      "requiresBrowser": false,
+      "requiresBrowser": true,
       "requiresAutomatedTest": true,
       "implementation": [
         "scripts/color-math.mjs",
@@ -404,7 +475,28 @@
           "path": "evidence/dashboard-r2/color-math.json",
           "command": "node scripts/verify-round2.mjs AC-15",
           "exitCode": 0,
-          "recordedAt": "2026-10-20T16:11:16.355Z"
+          "recordedAt": "2026-10-20T17:28:56.529Z"
+        },
+        {
+          "type": "screenshot",
+          "path": "evidence/dashboard-r2/ar-dark/dashboard-1440.png",
+          "command": "node scripts/verify-round2.mjs AC-15",
+          "exitCode": 0,
+          "recordedAt": "2026-10-20T17:28:56.595Z"
+        },
+        {
+          "type": "screenshot",
+          "path": "evidence/dashboard-r2/ar-dark/dashboard-1440.png",
+          "command": "node scripts/verify-round2.mjs AC-15",
+          "exitCode": 0,
+          "recordedAt": "2026-10-20T17:30:03.661Z"
+        },
+        {
+          "type": "static-analysis",
+          "path": "evidence/dashboard-r2/color-math.json",
+          "command": "node scripts/verify-round2.mjs AC-15",
+          "exitCode": 0,
+          "recordedAt": "2026-10-20T17:30:03.728Z"
         }
       ]
     },
@@ -430,7 +522,14 @@
           "path": "evidence/dashboard-r2/en-light/dashboard-1440.png",
           "command": "node scripts/verify-round2.mjs AC-16",
           "exitCode": 0,
-          "recordedAt": "2026-10-20T16:11:03.087Z"
+          "recordedAt": "2026-10-20T17:30:03.801Z"
+        },
+        {
+          "type": "integration-test",
+          "path": "evidence/dashboard-r2/measurements.json",
+          "command": "node scripts/verify-round2.mjs AC-16",
+          "exitCode": 0,
+          "recordedAt": "2026-10-20T17:30:03.872Z"
         }
       ]
     },
@@ -453,11 +552,18 @@
       "naReason": null,
       "evidence": [
         {
+          "type": "screenshot",
+          "path": "evidence/dashboard-r2/en-light/dashboard-1440.png",
+          "command": "node scripts/verify-round2.mjs AC-17",
+          "exitCode": 0,
+          "recordedAt": "2026-10-20T17:30:03.945Z"
+        },
+        {
           "type": "integration-test",
           "path": "evidence/dashboard-r2/measurements.json",
           "command": "node scripts/verify-round2.mjs AC-17",
           "exitCode": 0,
-          "recordedAt": "2026-10-20T16:11:16.472Z"
+          "recordedAt": "2026-10-20T17:30:04.012Z"
         }
       ]
     },
@@ -479,11 +585,18 @@
       "naReason": null,
       "evidence": [
         {
+          "type": "screenshot",
+          "path": "evidence/dashboard-r2/en-light/dashboard-1440.png",
+          "command": "node scripts/verify-round2.mjs AC-18",
+          "exitCode": 0,
+          "recordedAt": "2026-10-20T17:30:04.084Z"
+        },
+        {
           "type": "integration-test",
           "path": "evidence/dashboard-r2/measurements.json",
           "command": "node scripts/verify-round2.mjs AC-18",
           "exitCode": 0,
-          "recordedAt": "2026-10-20T16:11:16.570Z"
+          "recordedAt": "2026-10-20T17:30:04.155Z"
         }
       ]
     },
@@ -506,11 +619,25 @@
       "naReason": null,
       "evidence": [
         {
+          "type": "screenshot",
+          "path": "evidence/dashboard-r2/en-light/dashboard-1440.png",
+          "command": "node scripts/verify-round2.mjs AC-19",
+          "exitCode": 0,
+          "recordedAt": "2026-10-20T17:30:04.223Z"
+        },
+        {
           "type": "integration-test",
           "path": "evidence/dashboard-r2/measurements.json",
           "command": "node scripts/verify-round2.mjs AC-19",
           "exitCode": 0,
-          "recordedAt": "2026-10-20T16:11:16.669Z"
+          "recordedAt": "2026-10-20T17:30:04.290Z"
+        },
+        {
+          "type": "unit-test",
+          "path": ".quality/runs/dashboard-r2/unit-tests.log",
+          "command": "npm run test:unit",
+          "exitCode": 0,
+          "recordedAt": "2026-10-20T17:30:13.989Z"
         }
       ]
     },
@@ -532,11 +659,18 @@
       "naReason": null,
       "evidence": [
         {
+          "type": "screenshot",
+          "path": "evidence/dashboard-r2/en-light/dashboard-1440.png",
+          "command": "node scripts/verify-round2.mjs AC-20",
+          "exitCode": 0,
+          "recordedAt": "2026-10-20T17:30:04.359Z"
+        },
+        {
           "type": "integration-test",
           "path": "evidence/dashboard-r2/measurements.json",
           "command": "node scripts/verify-round2.mjs AC-20",
           "exitCode": 0,
-          "recordedAt": "2026-10-20T16:11:16.766Z"
+          "recordedAt": "2026-10-20T17:30:04.430Z"
         }
       ]
     },
@@ -559,11 +693,18 @@
       "naReason": null,
       "evidence": [
         {
+          "type": "screenshot",
+          "path": "evidence/dashboard-r2/en-light/dashboard-1440.png",
+          "command": "node scripts/verify-round2.mjs AC-21",
+          "exitCode": 0,
+          "recordedAt": "2026-10-20T17:30:04.499Z"
+        },
+        {
           "type": "integration-test",
           "path": "evidence/dashboard-r2/measurements.json",
           "command": "node scripts/verify-round2.mjs AC-21",
           "exitCode": 0,
-          "recordedAt": "2026-10-20T16:11:16.868Z"
+          "recordedAt": "2026-10-20T17:30:04.590Z"
         }
       ]
     },
@@ -589,7 +730,14 @@
           "path": "evidence/dashboard-r2/en-light/dashboard-1440.png",
           "command": "node scripts/verify-round2.mjs AC-22",
           "exitCode": 0,
-          "recordedAt": "2026-10-20T16:11:03.194Z"
+          "recordedAt": "2026-10-20T17:30:04.671Z"
+        },
+        {
+          "type": "integration-test",
+          "path": "evidence/dashboard-r2/measurements.json",
+          "command": "node scripts/verify-round2.mjs AC-22",
+          "exitCode": 0,
+          "recordedAt": "2026-10-20T17:30:04.750Z"
         }
       ]
     },
@@ -615,7 +763,14 @@
           "path": "evidence/dashboard-r2/ar-dark/dashboard-1440.png",
           "command": "node scripts/verify-round2.mjs AC-23",
           "exitCode": 0,
-          "recordedAt": "2026-10-20T16:11:03.290Z"
+          "recordedAt": "2026-10-20T17:30:04.834Z"
+        },
+        {
+          "type": "integration-test",
+          "path": "evidence/dashboard-r2/measurements.json",
+          "command": "node scripts/verify-round2.mjs AC-23",
+          "exitCode": 0,
+          "recordedAt": "2026-10-20T17:30:04.919Z"
         }
       ]
     },
@@ -644,7 +799,14 @@
           "path": "evidence/dashboard-r2/results.json",
           "command": "node scripts/verify-round2.mjs AC-24",
           "exitCode": 0,
-          "recordedAt": "2026-10-20T16:11:16.969Z"
+          "recordedAt": "2026-10-20T17:30:02.348Z"
+        },
+        {
+          "type": "screenshot",
+          "path": "evidence/dashboard-r2/en-light/dashboard-1440.png",
+          "command": "node scripts/verify-round2.mjs AC-24",
+          "exitCode": 0,
+          "recordedAt": "2026-10-20T17:31:38.964Z"
         }
       ]
     },
@@ -667,11 +829,32 @@
       "naReason": null,
       "evidence": [
         {
-          "type": "e2e",
+          "type": "screenshot",
+          "path": "evidence/dashboard-r2/en-light/dashboard-1440.png",
+          "command": "node scripts/verify-round2.mjs AC-25",
+          "exitCode": 0,
+          "recordedAt": "2026-10-20T17:30:04.999Z"
+        },
+        {
+          "type": "integration-test",
           "path": "evidence/dashboard-r2/results.json",
           "command": "node scripts/verify-round2.mjs AC-25",
           "exitCode": 0,
-          "recordedAt": "2026-10-20T16:11:03.387Z"
+          "recordedAt": "2026-10-20T17:30:05.077Z"
+        },
+        {
+          "type": "unit-test",
+          "path": ".quality/runs/dashboard-r2/unit-tests.log",
+          "command": "npm run test:unit",
+          "exitCode": 0,
+          "recordedAt": "2026-10-20T17:30:25.778Z"
+        },
+        {
+          "type": "e2e",
+          "path": ".quality/runs/dashboard-r2/e2e-round2.log",
+          "command": "npx playwright test e2e/dashboard-round2.spec.ts --reporter=line",
+          "exitCode": 0,
+          "recordedAt": "2026-10-20T17:31:22.449Z"
         }
       ]
     }

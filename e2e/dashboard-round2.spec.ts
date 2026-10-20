@@ -1,4 +1,4 @@
-import { test, expect, type BrowserContext, type Page } from '@playwright/test';
+import { test, expect, type BrowserContext, type Locator, type Page } from '@playwright/test';
 import { creds, gotoLogin, fillLoginForm, submitLogin } from './helpers/auth';
 import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -72,6 +72,32 @@ const DATA_PATTERNS = [
 
 const OUT = resolve(process.cwd(), 'evidence', 'dashboard-r2', 'e2e');
 mkdirSync(OUT, { recursive: true });
+
+/**
+ * Wait for a widget to show its data.
+ *
+ * The API rate-limits, so a request can fail while the suite runs. The
+ * widget's own answer is its RETRY button, so the helper uses it — the
+ * suite then also proves that the retry recovers. The error state is
+ * found by its role, so the helper works in both languages.
+ */
+async function waitForWidgetData(
+  page: Page,
+  locator: Locator,
+  timeout = 30_000,
+): Promise<string> {
+  const deadline = Date.now() + timeout;
+  let text = '';
+  while (Date.now() < deadline) {
+    text = await locator.innerText().catch(() => '');
+    const alert = locator.locator('[role="alert"]');
+    if ((await alert.count()) === 0) return text;
+    const retry = locator.locator('button').first();
+    if ((await retry.count()) > 0) await retry.click().catch(() => {});
+    await page.waitForTimeout(1000);
+  }
+  return text;
+}
 
 /** Switch the language through the app's own control. */
 async function switchLanguage(page: Page, target: 'en' | 'ar') {
@@ -178,29 +204,35 @@ test.describe('dashboard — round 2', () => {
 
   test('the money is formatted ONCE, in both languages', async () => {
     await switchLanguage(page, 'en');
+    // The FORMAT, not the value: the seed is re-run from time to time, and
+    // a test that pins an amount fails for a reason that is not a defect.
+    await expect(page.locator('app-kpi-card').first()).toContainText(/EGP\s?\d{1,3}(,\d{3})*\.\d{2}/);
     const en = await page.locator('app-kpi-card').first().innerText();
-    expect(en, 'the English KPI must print the ISO code').toMatch(/EGP\s?1,176\.25/);
     expect(en, 'the English KPI must not print the Latin narrow symbol').not.toContain('E£');
 
     await switchLanguage(page, 'ar');
+    await expect(page.locator('app-kpi-card').first()).toContainText(/\d{1,3}(,\d{3})*\.\d{2}/);
     const ar = await page.locator('app-kpi-card').first().innerText();
-    expect(ar, 'the Arabic KPI must print the amount').toMatch(/1,176\.25/);
     expect(ar, 'the Arabic KPI must print the Arabic symbol').toMatch(/ج\.م/);
     expect(ar, 'the Arabic amount must not carry a trailing full stop').not.toContain('ج.م.');
   });
 
   test('the order number is the backend number, everywhere', async () => {
     await switchLanguage(page, 'en');
-    const recent = await page.locator('app-recent-orders').innerText();
+    // The widget loads asynchronously, and the API rate-limits, so the
+    // test WAITS for the order number instead of reading the card while it
+    // is still empty.
+    const recent = await waitForWidgetData(page, page.locator('app-recent-orders'));
     expect(recent, 'the dashboard shows the full order number').toMatch(
       /ORD-\d{4}-\d{6}/,
     );
     expect(recent, 'the dashboard does not print a bare #id').not.toMatch(/#\d+\b/);
 
     await page.goto('/dashboard/orders', { waitUntil: 'domcontentloaded' });
-    await page.waitForTimeout(2000);
-    const list = await page.locator('app-data-table table').innerText();
-    expect(list, 'the orders list shows the full order number').toMatch(/ORD-\d{4}-\d{6}/);
+    await expect(page.locator('app-data-table table')).toContainText(
+      /ORD-\d{4}-\d{6}/,
+      { timeout: 20_000 },
+    );
   });
 
   test('the count states its scope, on both surfaces', async () => {
@@ -211,22 +243,41 @@ test.describe('dashboard — round 2', () => {
       .locator('[data-testid="kpi-scope-note"]')
       .first()
       .getAttribute('title');
+    // The rule is the PAYMENT status, not the order status: a delivered
+    // order can be refunded, and a cancelled order can be refunded too.
     expect(tooltip, 'the dashboard states which orders it counts').toContain(
-      'Cancelled',
+      'payment status',
+    );
+    expect(tooltip, 'and it names the payment statuses it leaves out').toContain(
+      'refunded',
     );
 
     await page.goto('/dashboard/orders', { waitUntil: 'domcontentloaded' });
-    await page.waitForTimeout(2000);
+    await expect(page.locator('[data-testid="orders-scope-note"]')).toBeVisible({
+      timeout: 20_000,
+    });
     const scope = await page
       .locator('[data-testid="orders-scope-note"]')
       .getAttribute('title');
     expect(scope, 'the orders page states which orders it counts').toContain(
-      'including cancelled',
+      'cancelled',
+    );
+    expect(scope, 'the two surfaces count different sets, so the sentences differ').not.toBe(
+      tooltip,
     );
   });
 
   test('the Arabic UI carries no untranslated string', async () => {
     await switchLanguage(page, 'ar');
+    // The widgets load asynchronously; the scan waits for the page to
+    // settle, so a slow API is not read as an untranslated string.
+    await page.waitForLoadState('networkidle').catch(() => {});
+    await page.waitForTimeout(1500);
+    // Every widget that failed is retried, so the scan reads the DATA and
+    // not an error message.
+    for (const widget of await page.locator('app-recent-orders, app-device-list').all()) {
+      await waitForWidgetData(page, widget, 15_000);
+    }
     const text = await page.locator('body').innerText();
     expect(text, 'no raw translation key may reach the screen').not.toMatch(RAW_KEY);
 
@@ -389,8 +440,8 @@ test.describe('dashboard — round 2', () => {
         return {
           labelTop: labelBox ? Math.round(labelBox.top - cardBox.top) : null,
           valueTop: valueBox ? Math.round(valueBox.top - cardBox.top) : null,
-          labelFontSize: labelBox ? getComputedStyle(labelBox).fontSize : null,
-          valueFontSize: valueBox ? getComputedStyle(valueBox).fontSize : null,
+          labelFontSize: label ? getComputedStyle(label).fontSize : null,
+          valueFontSize: value ? getComputedStyle(value).fontSize : null,
         };
       }),
     );

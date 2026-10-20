@@ -21,6 +21,13 @@ tree. The committed artefacts are the measurement scripts
 `scripts/verify-round2.mjs`), the spec and the manifest
 (`.quality/runs/dashboard-r2/`), and the reports.
 
+**A note on the figures:** the seed is re-run from time to time, so the
+numbers move (during one run the revenue was 1,055.75 over 9 paid orders
+instead of 1,176.25 over 10). Every figure below is a snapshot of the seed
+that was live when the measurement ran; the RECONCILIATION holds for any
+seed, because it is computed from the payload, not typed in. The e2e
+asserts the FORM of every amount, never its value, for the same reason.
+
 **The headline:** the numbers now reconcile as far as the data allows, there
 is ONE money formatter, ONE order-number formatter and ONE count scope,
 the Arabic UI carries no untranslated string, the donut centres are

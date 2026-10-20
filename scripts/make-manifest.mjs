@@ -219,7 +219,7 @@ const criteria = [
     statement:
       'Given two swatches that are shown side by side, when they are compared, then their hue distance is reported with a numeric measure and the pairs that are too close are listed with the fix.',
     kind: 'ui-visual',
-    requiresBrowser: false,
+    requiresBrowser: true,
     requiresAutomatedTest: true,
     implementation: ['scripts/color-math.mjs', 'scripts/color-search.mjs'],
     artifact: 'evidence/dashboard-r2/color-math.json',
