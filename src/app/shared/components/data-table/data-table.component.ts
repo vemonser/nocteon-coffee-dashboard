@@ -22,6 +22,7 @@ import { MainCellComponent } from './main-cell/main-cell.component';
 import { StatusBadgeComponent } from '../../ui/status-badge/status-badge.component';
 import { LocalizedNameService } from '../../../core/i18n/localized-name.service';
 import { LanguageService } from '../../../core/i18n/language.service';
+import { formatRelativeTime } from '../../../core/i18n/relative-time';
 
 export interface TableSortEvent {
   column: string;
@@ -383,31 +384,7 @@ export class DataTableComponent {
    * For very recent times (< 1 minute), returns "Just now" / "الآن" instead of "now".
    */
   relativeTime(value: unknown): string {
-    if (!value) return '';
-    const then = new Date(value as string).getTime();
-    if (Number.isNaN(then)) return '';
-    const locale = document.documentElement.lang || 'en';
-    const diff = then - Date.now();
-    const absDiff = Math.abs(diff);
-
-    // Less than 1 minute -> "Just now" / "الآن"
-    if (absDiff < 60_000) {
-      return locale.startsWith('ar') ? 'الآن' : 'Just now';
-    }
-
-    const units: Array<[Intl.RelativeTimeFormatUnit, number]> = [
-      ['year', 365 * 24 * 3600e3],
-      ['month', 30 * 24 * 3600e3],
-      ['week', 7 * 24 * 3600e3],
-      ['day', 24 * 3600e3],
-      ['hour', 3600e3],
-      ['minute', 60e3],
-    ];
-    const rtf = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' });
-    for (const [unit, ms] of units) {
-      if (absDiff >= ms) return rtf.format(Math.round(diff / ms), unit);
-    }
-    return locale.startsWith('ar') ? 'الآن' : 'Just now';
+    return formatRelativeTime(value, this.language.language());
   }
 
   sorting = signal<SortingState>([]);
