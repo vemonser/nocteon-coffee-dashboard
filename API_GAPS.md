@@ -30,3 +30,21 @@ Arabic normalization on backend: strip tashkeel; unify alef variants (أ إ آ -
 ## Order identifier
 Orders pages must use the full order number (`ORD-2026-000002`) everywhere (list, details, search, breadcrumbs) instead of "Order #2". Backend already returns orderNumber; frontend should prefer it over numeric id.
 EOF
+## Contact messages & reviews round (ui/contact-reviews-v2)
+
+### Contact messages
+- **Mark as unread**: no `PATCH /api/dashboard/contact-messages/{id}/unread` endpoint. Only mark-as-read exists. Frontend disables the action and logs it. (gap)
+- **Bulk mark-read / bulk delete**: no bulk endpoints. Frontend falls back to per-id calls. (gap)
+- **Resend email**: frontend calls `/resend-email` which does not exist in backend (404). Backend has no resend capability. (gap)
+- **Reply metadata**: backend `ContactResponse` has no `repliedAt`/`repliedBy`/`emailStatus`. Frontend `emailStatus` is always undefined; email-state block hidden. Add these fields or remove frontend reliance. (gap)
+- **Pagination/filtering**: contact endpoint takes no status filter, search, or date params; frontend loads whole set (max 100) and filters client-side. (gap, by design)
+- **Reply persistence**: `replyContent` is returned after reply; `replied` flag set. Confirmed working.
+
+### Reviews
+- **Rejected/hidden state**: backend has only `isApproved` boolean. No rejected state, no reject endpoint. Frontend does not add a Rejected tab. (gap)
+- **Verified purchase verification**: backend `ReviewResponse` has no `orderId`/`orderNumber`. Frontend `VerifiedBadge` links to order only when present (never). Verified = reviewer has a Delivered order containing the product; seed audit needed. (gap)
+- **Reviewer identity**: backend returns `username` (lowercase) only, no full name. Frontend displays username. Source of truth decision pending (Orders show full name). (gap)
+- **Verified count in stats**: `ReviewStatsResponse` has no verified count. Frontend computes verified share from loaded page only (approximate). (gap)
+- **Admin response to review**: no backend support. (gap)
+- **Bulk approval**: backend `setApproval` accepts `ids[]` (exists). OK.
+- **Product name sort**: backend sorts by entity field; `product.name` nested path may or may not be supported. (gap, verify)

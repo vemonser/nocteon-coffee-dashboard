@@ -225,3 +225,13 @@ is settled. The seed proposal therefore does not attempt to change it.
   decision, tracked in `evidence/phase1/results.json` →
   `measurements.missingBackendContracts`).
 - No attempt to make the device breakdown stable (see 3.1).
+
+## Contact & reviews seed proposal (ui/contact-reviews-v2)
+
+- Spread timestamps across rows (currently identical).
+- Contact message referencing "#12345" should use real `ORD-2026-xxxxxx` format.
+- Include at least one replied message with a reply thread.
+- One rejected review if backend supports it (currently not supported).
+- One long review comment and one long product name for truncation testing.
+- Verified purchase = reviewer has a Delivered order containing that product; audit seed against it.
+- Reviewer username vs full name: decide source of truth (Orders show full name).

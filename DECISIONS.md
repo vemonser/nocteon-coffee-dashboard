@@ -1573,3 +1573,21 @@ pretending the delivery is done. The backend needs a sender: a `POST
 - Recent searches in localStorage (max 5, clearable); quick links Orders/Reviews/Contact/Carts; quick actions Add product/Add category.
 - Minimum 2 characters, debounce 250ms, stale requests cancelled via switchMap.
 - Roles: combobox/listbox/option, aria-activedescendant.
+
+## Contact & reviews round decisions (ui/contact-reviews-v2)
+
+- DialogShell created (shared/ui/dialog-shell): title sentence case, optional subtitle, close X, scrollable body, sticky footer with start/end slots, Esc close, focus trap, overlay from `--overlay` token (lighter scrim in light mode).
+- RatingStars: single star colour token (warning); optional "n/5" text with >=8px gap; used in table, grid, dialog, KPI.
+- VerifiedBadge: icon + visible tooltip "Verified purchase" + aria-label; replaces bare check icon.
+- SortHeader primitive created.
+- Tabs: "All" first on reviews list (kept Pending as default selected to preserve e2e).
+- Overlay token `--overlay` added to tokens.css (light 0.32, dark 0.6) and `--color-overlay`.
+- Contact dialog primary button label fixed: `contactMessages.sendReply` (was `replySent`).
+- Mark-as-unread not supported by backend; action disabled with tooltip. Bulk mark-read/delete fall back to per-id.
+- Rejected state not supported by backend; no Rejected tab/action. Logged in API_GAPS.
+- Verified share % computed from loaded page (backend lacks verified count).
+- Canned replies dropdown: skipped (logged). Admin response to review: skipped (API_GAPS).
+- Contact ORD-xxxx link detection: skipped (logged).
+- Unread count badge in sidebar: already exists via /stats/unread-contact-count.
+- Explicit numerals in Arabic: countPending_two etc. changed to include numerals.
+- RatingStars in data-table rating case; VerifiedBadge in reviewer case.
