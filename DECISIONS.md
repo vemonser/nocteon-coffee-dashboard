@@ -1241,6 +1241,51 @@ progress tracker, the status dialog with the strict matrix, the cancel
 dialog with its reason, the totals card with its warning and the honest
 "not available yet" lines.
 
+## ORDERS — The three decisions that closed the work
+
+### 1. A shipped order cannot be cancelled
+
+**The decision: no.** The strict map stays as it is — `SHIPPED` may only
+become `DELIVERED`. Once a parcel is on its way, cancelling the order is not
+a status change, it is a return, and a return is a refund with a reason.
+The dialog therefore never offers the transition, and the API refuses it
+with a 409.
+
+### 2. The seeded totals are repaired
+
+**The decision: yes.** A migration (`V111__repair_seeded_order_totals.sql`)
+recomputes the stored total of the seventeen seeded orders with the SAME
+formula the checkout uses:
+
+```
+total = (sum of the line totals − discount) + shipping
+```
+
+and touches only the rows that disagree. The seventeen order numbers are
+listed EXPLICITLY: the repair is a fix for the seed, not a rule for the
+store's real orders — an order the application creates keeps the total it
+was given, because the store's books are not a migration's to rewrite.
+
+After it: **0 of 17** orders disagree with their items (it was 17 of 17).
+The orders with no items now carry their shipping and their discount, which
+is what the formula says they cost.
+
+The totals card no longer has anything to report for the seeded data, and
+the "the recorded total does not match the items" warning is now a safety
+net rather than a daily fact. The e2e suite proves the warning still
+works: it feeds the order a mismatched total and asserts the page says so.
+
+### 3. One branch for everything
+
+The two sessions' work is merged into one branch. The conflicts were
+resolved by CONTENT, not by side: the shared components took the main
+line's version wherever it was a superset (the status badge's lookup tables,
+the order-scope definition, the data table's reviews columns), the orders
+pages took the clean branch's version, the two documents kept BOTH
+sections, and the locale files were merged key by key.
+
+**179 unit tests** and the whole e2e suite pass on the merged branch.
+
 ## ORDERS PHASE 6 — States, interactions and accessibility
 
 - **The three states, per section.** The list and the detail page each
