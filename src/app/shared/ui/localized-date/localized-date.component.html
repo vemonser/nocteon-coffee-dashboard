@@ -10,9 +10,16 @@
     [class.flex-col]="stackTime()"
     [class.items-start]="stackTime()"
   >
-    <span>{{ p.day }}</span>
-    <span>{{ p.month }}</span>
-    <span>{{ p.year }}</span>
+    <!--
+      The date parts stay in a ROW: they are ONE date, and a column flex
+      would break "20 Oct 2026" into three lines. Only the TIME moves to its
+      own line when the caller asks for it.
+    -->
+    <span class="inline-flex gap-1">
+      <span>{{ p.day }}</span>
+      <span>{{ p.month }}</span>
+      <span>{{ p.year }}</span>
+    </span>
     @if (showTime()) {
       <span class="text-muted-foreground" [class.ms-1]="!stackTime()">{{
         time()

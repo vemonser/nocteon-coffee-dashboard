@@ -297,11 +297,27 @@ test.describe('orders list', () => {
 
   test('the page reacts to a RUNTIME language switch, in both languages', async () => {
     const enHeaders = await page.locator('app-data-table thead th').allInnerTexts();
+    // The METHOD label was once translated in the column accessor, so it
+    // froze in the language that was active when the data arrived.
+    const enMethod = await page
+      .locator('app-data-table tbody tr')
+      .first()
+      .locator('td')
+      .nth(6)
+      .innerText();
 
     await switchLanguage('ar');
     await page.waitForTimeout(600);
     const arHeaders = await page.locator('app-data-table thead th').allInnerTexts();
     expect(arHeaders.join(' ')).not.toBe(enHeaders.join(' '));
+    const arMethod = await page
+      .locator('app-data-table tbody tr')
+      .first()
+      .locator('td')
+      .nth(6)
+      .innerText();
+    expect(arMethod).not.toBe(enMethod);
+    expect(arMethod).toMatch(/[\u0600-\u06FF]/);
     // Arabic headers are Arabic, not a mix of scripts.
     expect(arHeaders.filter(Boolean).join(' ')).not.toMatch(/[A-Za-z]/);
     // And no raw key leaked while switching.

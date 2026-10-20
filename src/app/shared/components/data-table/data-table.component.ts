@@ -20,6 +20,7 @@ import { lucideStar, lucideCreditCard, lucideBanknote } from '@ng-icons/lucide';
 import { ColorCellComponent } from '../color-cell/color-cell.component';
 import { MainCellComponent } from './main-cell/main-cell.component';
 import { StatusBadgeComponent } from '../../ui/status-badge/status-badge.component';
+import { LocalizedNameService } from '../../../core/i18n/localized-name.service';
 import { LanguageService } from '../../../core/i18n/language.service';
 
 export interface TableSortEvent {
@@ -243,6 +244,8 @@ export class DataTableComponent {
   navigableColumn = input<string>('');
 
   private readonly language = inject(LanguageService);
+  /** The shared localized-name helper — the method label is translated at render time. */
+  protected readonly names = inject(LocalizedNameService);
 
   /**
    * The entity-identity name column of the CURRENT UI language (`name_en` /
