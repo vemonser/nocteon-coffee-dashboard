@@ -9,18 +9,36 @@ import type { Language } from '../../core/i18n/language';
  * neutral characters (%, commas, hyphens, $) render correctly inside RTL
  * text. Isolates are inert in LTR.
  *
- * CURRENCY (Phase 1, ticket 1.3)
- * ------------------------------
+ * CURRENCY (Phase 1, ticket 1.3; ROUND 2, ticket 1.5)
+ * --------------------------------------------------
  * There is exactly ONE money formatter in the app: `formatCurrency`. It is
  * fed by the store currency setting (`GET /api/settings` -> `currency`) and
  * used by KPIs, charts, tables, tooltips and the CSV export.
  *
- * The currency DISPLAY is locale-dependent, not hardcoded:
- *   - English  -> `narrowSymbol` ("E£1,176.25")
- *   - Arabic   -> `symbol` ("1,176.25 ج.م.")
- * `narrowSymbol` in the `ar` locale still yields the Latin "E£" because
- * CLDR's narrow symbol for EGP is locale-independent in that locale; the
- * `symbol` display gives the Arabic "ج.م.". Digits stay Latin in both.
+ * The currency DISPLAY is defined ONCE, here, in both languages:
+ *
+ *   - English  -> the ISO CODE first, then the amount: "EGP 1,176.25"
+ *   - Arabic   -> the amount first, then the ARABIC symbol: "1,176.25 ج.م"
+ *
+ * Two rules that the earlier version got wrong:
+ *
+ *  1. The English form used `narrowSymbol`, which CLDR renders as the
+ *     Latin "E£" — a currency SYMBOL in a Latin shape, so the reader sees
+ *     two different-looking currencies depending on the page ("E£" on the
+ *     dashboard, "EGP" on the Orders page). The CODE is the same in every
+ *     language and every surface.
+ *  2. The Arabic form was wrapped in a LEFT-TO-RIGHT ISOLATE (U+2066),
+ *     which forced the amount to the LEFT of the symbol — the reader then
+ *     read the symbol first. The Arabic money is NOT isolated: the
+ *     paragraph direction places the amount first (rightmost in RTL), which
+ *     is the order a reader expects.
+ *
+ * The Arabic symbol is written WITHOUT its trailing dot ("ج.م", not
+ * "ج.م."): the dot is a sentence terminator in the CLDR string, and an
+ * amount is not a sentence.
+ *
+ * The compact form (chart axes, donut centres) is `formatCompactCurrency`,
+ * and it follows the SAME order as the full form: "EGP 1.2K" / "1.2K ج.م".
  */
 
 export function appLocale(lang: Language): string {
@@ -139,7 +157,42 @@ export function formatDateAndTime(value: unknown, lang: Language): string {
   return time ? `${date}, ${time}` : date;
 }
 
-/** The one and only money formatter. */
+/**
+ * The currency's symbol in ARABIC, without the trailing dot.
+ *
+ * CLDR writes the Egyptian pound as "ج.م." — the dot is a full stop that
+ * belongs to a sentence, not to an amount. `Intl` gives us the symbol as
+ * one `currency` part, so the dot is trimmed here and NOWHERE else.
+ *
+ * A currency with no Arabic symbol (a code-only currency) falls back to
+ * the ISO code, so the amount is never written without a unit.
+ */
+export function arabicCurrencySymbol(currency: string): string {
+  let symbol = '';
+  try {
+    const parts = new Intl.NumberFormat('ar-EG', {
+      style: 'currency',
+      currency,
+      currencyDisplay: 'symbol',
+    }).formatToParts(1);
+    symbol = parts.find((p) => p.type === 'currency')?.value ?? '';
+  } catch {
+    symbol = '';
+  }
+  symbol = clean(symbol).replace(/[.،]\s*$/, '').trim();
+  return symbol || currency.toUpperCase();
+}
+
+/**
+ * The one and only money formatter.
+ *
+ * English  -> "EGP 1,176.25"  (the ISO code, then the amount)
+ * Arabic   -> "1,176.25 ج.م"  (the amount, then the Arabic symbol)
+ *
+ * The digits are Latin in BOTH languages (`ar-EG-u-nu-latn`), and the
+ * thousands/decimal separators are the Latin ones in Arabic too, so a
+ * number never changes shape when the language changes.
+ */
 export function formatCurrency(
   value: unknown,
   lang: Language,
@@ -149,18 +202,51 @@ export function formatCurrency(
     typeof value === 'number'
       ? value
       : Number.parseFloat(String(value ?? '').replace(/[^0-9.\-]/g, ''));
-  if (!Number.isFinite(n)) return `\u2066${String(value ?? '')}\u2069`;
+  if (!Number.isFinite(n)) return String(value ?? '');
+
+  if (lang === 'ar') {
+    // The AMOUNT first, then the symbol. No LTR isolate: the isolate would
+    // force the amount to the left of the symbol, so an Arabic reader read
+    // the unit first.
+    const amount = clean(
+      new Intl.NumberFormat('ar-EG-u-nu-latn', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      }).format(n),
+    );
+    return `${amount} ${arabicCurrencySymbol(currency)}`;
+  }
+
   const s = clean(
-    new Intl.NumberFormat(appLocale(lang), {
+    new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency,
-      // Arabic gets the Arabic currency symbol ("ج.م."); English gets the
-      // narrow one ("E£"). `narrowSymbol` alone renders "E£" in BOTH
-      // locales, which is what the QA report flagged.
-      currencyDisplay: lang === 'ar' ? 'symbol' : 'narrowSymbol',
+      // The CODE, not the symbol: the same unit on every page and in every
+      // language. `narrowSymbol` rendered the Latin "E£" here.
+      currencyDisplay: 'code',
     }).format(n),
   );
+  // Inert in an LTR paragraph, and it keeps the unit glued to the amount
+  // when the paragraph is RTL.
   return `\u2066${s}\u2069`;
+}
+
+/**
+ * Compact money for chart axes and donut centres: "EGP 1.2K" / "1.2K ج.م".
+ *
+ * The SAME order as `formatCurrency` — the code first in English, the
+ * amount first in Arabic — so an axis and a card never disagree about
+ * which side the unit is on.
+ */
+export function formatCompactCurrency(
+  value: unknown,
+  lang: Language,
+  currency: string,
+): string {
+  const compact = formatCompactNumber(value);
+  if (!compact) return '';
+  if (lang === 'ar') return `${compact} ${arabicCurrencySymbol(currency)}`;
+  return `${currency.toUpperCase()} ${compact}`;
 }
 
 /**

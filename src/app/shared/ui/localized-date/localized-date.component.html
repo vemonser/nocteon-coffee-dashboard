@@ -1,5 +1,15 @@
 @if (parts(); as p) {
-  <span class="inline-flex gap-1 tabular-nums" [class.flex-col]="stackTime()" [class.items-start]="stackTime()">
+  <!--
+    dir="ltr": the parts are laid out in DOM order (day, month, year), so
+    the flex row has to run left to right. In an RTL paragraph a `row` flex
+    runs RIGHT to LEFT, which reversed the date to "2026 أكتوبر 20".
+  -->
+  <span
+    class="inline-flex gap-1 tabular-nums"
+    dir="ltr"
+    [class.flex-col]="stackTime()"
+    [class.items-start]="stackTime()"
+  >
     <span>{{ p.day }}</span>
     <span>{{ p.month }}</span>
     <span>{{ p.year }}</span>

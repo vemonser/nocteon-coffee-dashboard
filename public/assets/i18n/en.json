@@ -1426,6 +1426,10 @@
       "cancelled": "Order cancelled",
       "reason": "Reason",
       "by": "by {{actor}}"
+    },
+    "orderScope": {
+      "all": "All orders",
+      "allHelp": "Every order the store has, including cancelled, pending and refunded ones."
     }
   },
   "notifications": {
@@ -1586,7 +1590,8 @@
     "vs": "vs",
     "delta": {
       "noChange": "No change",
-      "new": "New"
+      "new": "New",
+      "noBaseline": "No data in the previous period"
     },
     "selectedPeriod": "Selected period",
     "refundRateHelp": "Refunded orders as a share of paid orders in the selected period.",
@@ -1614,7 +1619,7 @@
       "status": "Status",
       "paymentMethod": "Payment method"
     },
-    "ordersByStatus": "Paid orders by status",
+    "ordersByStatus": "Orders by status",
     "ordersByPaymentMethod": "Orders by payment method",
     "deviceUnit": "sessions",
     "deviceTypes": {
@@ -1642,7 +1647,18 @@
     "last365Days": "Last 365 days",
     "rangeLabel": "Date range",
     "exportTooltip": "Exports the dashboard overview and the top products as a CSV",
-    "coffeeSoldHint": "by weight, coffee only"
+    "coffeeSoldHint": "by weight, coffee only",
+    "orderScope": {
+      "paid": "Paid orders",
+      "paidHelp": "Paid orders in the selected period. Cancelled, pending and refunded orders are not counted."
+    },
+    "countSessions_one": "{{count}} session",
+    "countSessions_other": "{{count}} sessions",
+    "donutRevenue": "Revenue",
+    "donutOrders": "Orders",
+    "breakdownNote": "This chart adds up the line items (price × quantity). It does not include shipping or discounts, so it does not add up to the Total revenue card.",
+    "devicesNote": "The store records one row per observed device session. The count is not a count of people.",
+    "recentOrdersNote": "The four most recent orders, whatever their date."
   },
   "imageCell": {
     "noImage": "No img"

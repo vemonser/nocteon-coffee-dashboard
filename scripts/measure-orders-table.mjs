@@ -37,21 +37,20 @@ for (const width of WIDTHS) {
   const rows = Array.from(table.querySelectorAll('tbody tr'))
     .filter((tr) => !tr.hasAttribute('aria-hidden'))
     .slice(0, 3);
+  // EVERY element with an ellipsis, in the header AND in the body — the
+  // inner span of a cell is the one that actually truncates.
   const truncated = [];
-  for (const tr of rows) {
-    const tds = Array.from(tr.querySelectorAll('td'));
-    tds.forEach((td, i) => {
-      const el = td.querySelector('span, a, bdi');
-      if (!el) return;
-      const cs = getComputedStyle(el);
-      if (cs.textOverflow === 'ellipsis' && el.scrollWidth > el.clientWidth + 1) {
-        truncated.push({
-          column: headers[i]?.text ?? `#${i}`,
-          text: (el.textContent || '').trim().slice(0, 40),
-          scrollWidth: el.scrollWidth,
-          clientWidth: el.clientWidth,
-        });
-      }
+  for (const el of Array.from(document.querySelectorAll('app-data-table *'))) {
+    const cs = getComputedStyle(el);
+    if (cs.textOverflow !== 'ellipsis') continue;
+    if (el.scrollWidth <= el.clientWidth + 1) continue;
+    const host = el.closest('th') ?? el.closest('td');
+    truncated.push({
+      column: (host?.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 30),
+      header: !!el.closest('th'),
+      text: (el.textContent || '').trim().slice(0, 40),
+      scrollWidth: el.scrollWidth,
+      clientWidth: el.clientWidth,
     });
   }
   const wrapper = table.parentElement;

@@ -1438,6 +1438,10 @@
       "cancelled": "تم إلغاء الطلب",
       "reason": "السبب",
       "by": "بواسطة {{actor}}"
+    },
+    "orderScope": {
+      "all": "كل الطلبات",
+      "allHelp": "كل طلبات المتجر، بما فيها الملغاة والمعلّقة والمستردة."
     }
   },
   "notifications": {
@@ -1598,7 +1602,8 @@
     "vs": "مقابل",
     "delta": {
       "noChange": "لا تغيير",
-      "new": "جديد"
+      "new": "جديد",
+      "noBaseline": "لا توجد بيانات في الفترة السابقة"
     },
     "selectedPeriod": "الفترة المحددة",
     "refundRateHelp": "الطلبات المستردة كنسبة من الطلبات المدفوعة في الفترة المحددة.",
@@ -1642,7 +1647,7 @@
       "status": "الحالة",
       "paymentMethod": "طريقة الدفع"
     },
-    "ordersByStatus": "الطلبات المدفوعة حسب الحالة",
+    "ordersByStatus": "الطلبات حسب الحالة",
     "ordersByPaymentMethod": "الطلبات حسب طريقة الدفع",
     "deviceUnit": "جلسة",
     "deviceTypes": {
@@ -1670,7 +1675,22 @@
     "last365Days": "آخر 365 يوم",
     "rangeLabel": "نطاق التاريخ",
     "exportTooltip": "يصدّر نظرة عامة على لوحة التحكم وأفضل المنتجات في ملف CSV",
-    "coffeeSoldHint": "بالوزن، القهوة فقط"
+    "coffeeSoldHint": "بالوزن، القهوة فقط",
+    "orderScope": {
+      "paid": "الطلبات المدفوعة",
+      "paidHelp": "الطلبات المدفوعة في الفترة المحددة. الطلبات الملغاة والمعلّقة والمستردة لا تُحتسب."
+    },
+    "countSessions_zero": "{{count}} جلسة",
+    "countSessions_one": "{{count}} جلسة",
+    "countSessions_two": "{{count}} جلستان",
+    "countSessions_few": "{{count}} جلسات",
+    "countSessions_many": "{{count}} جلسة",
+    "countSessions_other": "{{count}} جلسة",
+    "donutRevenue": "الإيرادات",
+    "donutOrders": "الطلبات",
+    "breakdownNote": "يجمع هذا الرسم عناصر الطلب (السعر × الكمية). لا يشمل الشحن ولا الخصومات، لذلك لا يطابق بطاقة إجمالي الإيرادات.",
+    "devicesNote": "يسجّل المتجر صفًا لكل جلسة جهاز تمت ملاحظتها. الرقم ليس عددًا للأشخاص.",
+    "recentOrdersNote": "أحدث أربعة طلبات، أيًّا كانت تواريخها."
   },
   "imageCell": {
     "noImage": "لا توجد صورة"

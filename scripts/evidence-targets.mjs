@@ -78,6 +78,9 @@ const GENERIC_MEASURE = () => {
   for (const el of all) {
     if (!isVisible(el)) continue;
     const cs = getComputedStyle(el);
+    // A screen-reader-only element is a 1px box BY DESIGN: its "clip" is
+    // not a defect, it is how it is hidden.
+    if (el.classList.contains('sr-only')) continue;
     const oy = cs.overflowY;
     const ox = cs.overflowX;
 
@@ -241,10 +244,15 @@ const MEASURE_ORDERS_LIST = () => {
       text,
       color: getComputedStyle(span || el).color,
       background: getComputedStyle(badge).backgroundColor,
+      // The text on its own badge (the text target: 4.5:1).
       textOnBadge: textColor ? ratio(textColor, bg) : null,
+      // The badge's MEANING colour (the text) on the surface it sits on
+      // (the graphics target: 3:1). The soft tint of the background is not
+      // a meaningful contrast — the text is what carries the meaning.
+      textOnSurface: textColor ? ratio(textColor, surface) : null,
       badgeOnSurface: ratio(bg, surface),
       textPasses4_5: textColor ? ratio(textColor, bg) >= 4.5 : null,
-      graphicsPasses3: ratio(bg, surface) >= 3,
+      graphicsPasses3: textColor ? ratio(textColor, surface) >= 3 : null,
     });
   }
 

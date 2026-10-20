@@ -256,28 +256,28 @@ export class OrdersListComponent {
     ),
     this.columnHelper.accessor(
       (row) => ({ name: row.customer?.name ?? null, email: row.customer?.email ?? null }),
-      { id: 'customer', header: 'Customer', enableSorting: false, meta: { width: '115px' } },
+      { id: 'customer', header: 'Customer', enableSorting: false, meta: { width: '95px' } },
     ),
     this.columnHelper.accessor('items', {
       id: 'items',
       header: 'Items',
       enableSorting: false,
-      meta: { width: '84px' },
+      meta: { width: '78px' },
     }),
     this.columnHelper.accessor(
       (row) => orderStatusKind(row.status),
-      { id: 'orderStatus', header: 'Order status', enableSorting: true, meta: { width: '122px' } },
+      { id: 'orderStatus', header: 'Order status', enableSorting: true, meta: { width: '120px' } },
     ),
     this.columnHelper.accessor(
       (row) => paymentStatusKind(row.paymentStatus),
-      { id: 'paymentStatus', header: 'Payment status', enableSorting: true, meta: { width: '130px' } },
+      { id: 'paymentStatus', header: 'Payment status', enableSorting: true, meta: { width: '126px' } },
     ),
     this.columnHelper.accessor(
       (row) => ({
         icon: row.paymentMethod === 'ONLINE' ? 'lucideCreditCard' : 'lucideBanknote',
         label: this.names.paymentMethod(row.paymentMethod),
       }),
-      { id: 'paymentMethod', header: 'Method', enableSorting: false, meta: { width: '165px' } },
+      { id: 'paymentMethod', header: 'Method', enableSorting: false, meta: { width: '185px' } },
     ),
     this.columnHelper.accessor('totalAmount', {
       id: 'totalAmount',
@@ -289,9 +289,9 @@ export class OrdersListComponent {
       id: 'createdAtTime',
       header: 'Created at',
       enableSorting: true,
-      meta: { width: '100px' },
+      meta: { width: '110px' },
     }),
-    this.columnHelper.display({ id: 'actions', header: 'Actions', meta: { width: '84px' } }),
+    this.columnHelper.display({ id: 'actions', header: 'Actions', meta: { width: '82px' } }),
   ];
 
   /**
