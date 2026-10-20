@@ -146,6 +146,33 @@ Status: **done** = implemented and verified with the evidence named;
 
 ---
 
+## 1b. The broadcasts page (a separate, later task)
+
+The broadcasts page was broken in three visible ways, and the fix is in
+`src/app/features/broadcasts/`:
+
+- the header printed **the page's row count, the word "of" and a bell** —
+  "2 of 🔔". It now prints the TOTAL with a real label ("2 broadcasts" /
+  "٢ رسالة جماعية");
+- the status badge printed **the raw enum** ("PENDING", "IN_PROGRESS",
+  "COMPLETED") — an untranslated string on the Arabic page. It is now
+  "Queued" / "Sending" / "Sent" (منtranslated: في الانتظار / جارٍ الإرسال /
+  تم الإرسال);
+- **the audience was never stated.** The backend sends one message to
+  EVERY customer (`userRepository.findByRoleAndSubscribedTrue(CUSTOMER)` —
+  read out of the deployed jar), so the create dialog now says so, and
+  every row carries the recipient count the backend counted.
+
+**The delivery itself cannot be fixed from this repository.** The
+deployed backend has `BroadcastCreationService` and nothing else in the
+broadcast package: no sender, no scheduler, no `send` endpoint. A
+broadcast is created with its recipient rows and stays `PENDING` with
+`sentCount = 0` forever (verified against the API and the
+`broadcast_recipients` table). The page therefore says "Queued" and shows
+what HAS been sent, instead of pretending the delivery happened. **The
+backend needs a sender** — a `POST /api/dashboard/broadcasts/{id}/send`
+or a scheduled job that walks the `PENDING` recipient rows and mails them.
+
 ## 2. The backend contract gaps
 
 Nothing here was changed in the backend, and nothing was faked in the
@@ -159,7 +186,8 @@ frontend.
 | 4 | **Staff accounts in the order aggregates** | `GET /api/dashboard/orders`, `GET /api/dashboard/stats/overview?days=N` | the users aggregate excludes staff (9 customers of 10 accounts) but the order and revenue aggregates do **not**: the admin's two paid orders are counted, and "Admin Aurum" is the first row of Recent orders | the order/revenue aggregates should exclude the staff accounts the way the user aggregate does, or the seed should not create orders for the admin. The frontend must not hide the rows. |
 | 5 | **What a device row is** | `GET /api/dashboard/stats/overview?days=N` → `deviceBreakdown` | a count of the rows of a cumulative device table; the rows grow while the store is open and the dashboard's own traffic is the largest single contributor | the endpoint should say what a row is (a session?) and should exclude the staff's own traffic, or the number measures the dashboard rather than the store |
 | 6 | **Per-product revenue** | `GET /api/dashboard/stats/overview?days=N` → `topSellingProducts` | `quantitySold` and `price` (the **lowest** variant price, not the price paid) — no revenue | the widget can only show units truthfully; with a per-product revenue it could show what the bars are worth |
-| 7 | **A refund amount** | `GET /api/dashboard/orders/:id` | `paymentStatus = REFUNDED` with no amount, so the net paid is unknown | the refund rate is a COUNT share today; a refund amount would make "net paid" a number |
+| 7 | **A broadcast sender** | `POST /api/dashboard/broadcasts` (create only) | the broadcast and its recipient rows are created and nothing sends them: no sender, no scheduler, no `send` endpoint, so every broadcast stays `PENDING` with `sentCount = 0` | a sender — a `POST /{id}/send` or a scheduled job that walks the `PENDING` recipient rows and mails them through the existing `EmailService` |
+| 8 | **A refund amount** | `GET /api/dashboard/orders/:id` | `paymentStatus = REFUNDED` with no amount, so the net paid is unknown | the refund rate is a COUNT share today; a refund amount would make "net paid" a number |
 
 ---
 

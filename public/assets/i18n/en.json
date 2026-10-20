@@ -1800,7 +1800,15 @@
     "content": "Message",
     "contentRequired": "Message is required",
     "contentPlaceholder": "Write your broadcast message...",
-    "send": "Send"
+    "send": "Send",
+    "totalCount": "{{count}} broadcasts",
+    "audience": "This message goes to every customer of the store. The number of recipients is counted when the broadcast is created.",
+    "sentTitle": "{{sent}} of {{total}} recipients have received this broadcast.",
+    "status": {
+      "queued": "Queued",
+      "inProgress": "Sending",
+      "completed": "Sent"
+    }
   },
   "contactMessages": {
     "title": "Contact messages",

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HasPermissionDirective } from '../../../core/auth/permission.directive';
 import { HlmCardImports } from '@spartan-ng/helm/card';
@@ -26,6 +26,22 @@ import { TranslocoPipe } from '@jsverse/transloco';
 import { PagerComponent } from '../../../shared/components/pager/pager.component';
 import { LocalizedDateComponent } from '../../../shared/ui/localized-date/localized-date.component';
 
+/**
+ * The broadcasts list.
+ *
+ * A broadcast reaches EVERY customer of the store: the backend picks the
+ * recipients with `findByRoleAndSubscribedTrue(CUSTOMER)`, so there is no
+ * audience to choose in the UI — one message, everybody. The page says so
+ * in the create dialog, and every row carries the number of recipients the
+ * backend counted, so "who did this go to" is never a guess.
+ *
+ * THE SENDING IS THE BACKEND'S (and it is a known gap):
+ * `BroadcastCreationService` creates the broadcast and its recipient rows
+ * and stops there. The build in the container has no sender and no
+ * scheduler for it, so a broadcast stays PENDING with `sentCount = 0`.
+ * The page therefore says "Queued" and shows what HAS been sent, rather
+ * than pretending the delivery is done.
+ */
 @Component({
   selector: 'app-broadcast-list',
   standalone: true,
@@ -106,12 +122,31 @@ export class BroadcastListComponent extends BaseListComponent<BroadcastResponse,
     throw new Error('Broadcasts cannot be deleted');
   }
 
-  statusLabel(status: BroadcastStatus): string {
-    const labels: Record<BroadcastStatus, string> = {
-      PENDING: 'PENDING',
-      IN_PROGRESS: 'IN_PROGRESS',
-      COMPLETED: 'COMPLETED',
-    };
-    return labels[status];
+  /**
+   * The number of broadcasts in the store — the TOTAL, not the number of
+   * rows on this page. The header used to print the page's row count
+   * followed by the word "of" and a bell, which read as "2 of 🔔".
+   */
+  protected readonly totalCount = computed(() => this.pageData()?.totalElements ?? 0);
+
+  /** The status, in the reader's language. */
+  protected statusLabel(status: BroadcastStatus): string {
+    const key =
+      status === 'COMPLETED'
+        ? 'broadcasts.status.completed'
+        : status === 'IN_PROGRESS'
+          ? 'broadcasts.status.inProgress'
+          : 'broadcasts.status.queued';
+    return this.t(key, status);
+  }
+
+  /**
+   * What the sent line means.
+   *
+   * A broadcast that has not gone out says so: the reader sees the queue,
+   * not a silent zero.
+   */
+  protected sentTitle(item: BroadcastResponse): string {
+    return this.t('broadcasts.sentTitle', `${item.sentCount} of ${item.totalRecipients}`);
   }
 }

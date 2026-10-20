@@ -1856,7 +1856,15 @@
     "content": "الرسالة",
     "contentRequired": "الرسالة مطلوبة",
     "contentPlaceholder": "اكتب رسالتك الجماعية...",
-    "send": "إرسال"
+    "send": "إرسال",
+    "totalCount": "{{count}} رسالة جماعية",
+    "audience": "تذهب هذه الرسالة إلى كل عملاء المتجر. يُحسب عدد المستلمين عند إنشاء الرسالة.",
+    "sentTitle": "استلم {{total}} مستلمًا من أصل {{sent}}.",
+    "status": {
+      "queued": "في الانتظار",
+      "inProgress": "جارٍ الإرسال",
+      "completed": "تم الإرسال"
+    }
   },
   "contactMessages": {
     "title": "رسائل التواصل",

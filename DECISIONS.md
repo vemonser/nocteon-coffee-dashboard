@@ -1434,3 +1434,27 @@ inherited 16 px, so they fit with room to spare.
 The evidence matrix was re-run end to end over the six targets in all 20
 cells (120 screenshots), with the language switched at runtime, and the
 measurements are in `evidence/orders/results.json`.
+
+
+## BROADCASTS — The page, and the thing the page cannot fix
+
+The broadcasts page printed **the page's row count, the word "of" and a
+bell icon** ("2 of 🔔"), the status badge printed **the raw enum**
+("PENDING"), and **nothing said who the broadcast goes to**.
+
+- The header now prints the TOTAL with a real label ("2 broadcasts"), like
+  the other lists.
+- The status is translated: Queued / Sending / Sent.
+- The create dialog says the audience out loud: the backend picks the
+  recipients with `findByRoleAndSubscribedTrue(CUSTOMER)`, so one message
+  goes to EVERY customer, and the row carries the count the backend
+  counted.
+
+**What the page cannot fix:** the deployed backend has no sender. Its
+broadcast package is `BroadcastCreationService` and nothing else — no
+sender, no scheduler, no `send` endpoint — so a broadcast is created with
+its recipient rows and stays `PENDING` with `sentCount = 0` forever. The
+page says "Queued" and shows what HAS been sent rather than pretending the
+delivery is done. The backend needs a sender: a `POST
+/api/dashboard/broadcasts/{id}/send`, or a scheduled job that walks the
+`PENDING` recipient rows through the existing `EmailService`.
