@@ -234,6 +234,7 @@
         (selectionChange)="onSelectionChange($event)"
         (toggleAllChange)="onToggleAll($event)"
         (menuAction)="onMenuAction($event)"
+        (rowClick)="openView($event)"
       />
     </div>
   } @else {
@@ -286,6 +287,7 @@
               [showView]="true"
               [menuActions]="menuActions"
               (menuAction)="onMenuAction($event)"
+              (view)="openView(item)"
             />
           </div>
         </hlm-card>

@@ -15,16 +15,18 @@ import {
   lucideLoader2,
   lucidePlus,
   lucideSearch,
+  lucideTrash2,
   lucideX,
 } from '@ng-icons/lucide';
 import { BaseListComponent } from '../../../core/crud/base-list.component';
 import { BroadcastRequest, BroadcastResponse, BroadcastStatus } from '../models/broadcast.model';
 import { BroadcastService } from '../services/broadcast.service';
 import { map, Observable } from 'rxjs';
-import { PageResponse } from '../../../core/models/api-response.model';
+import { ApiResponse, PageResponse } from '../../../core/models/api-response.model';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { PagerComponent } from '../../../shared/components/pager/pager.component';
 import { LocalizedDateComponent } from '../../../shared/ui/localized-date/localized-date.component';
+import { PluralPipe } from '../../../shared/pipes/plural.pipe';
 
 /**
  * The broadcasts list.
@@ -47,6 +49,7 @@ import { LocalizedDateComponent } from '../../../shared/ui/localized-date/locali
   standalone: true,
   imports: [
     LocalizedDateComponent,
+    PluralPipe,
     PagerComponent,
     CommonModule,
     FormsModule,
@@ -68,6 +71,7 @@ import { LocalizedDateComponent } from '../../../shared/ui/localized-date/locali
       lucideLoader2,
       lucidePlus,
       lucideSearch,
+      lucideTrash2,
       lucideX,
     }),
   ],
@@ -75,6 +79,9 @@ import { LocalizedDateComponent } from '../../../shared/ui/localized-date/locali
 })
 export class BroadcastListComponent extends BaseListComponent<BroadcastResponse, BroadcastRequest> {
   private broadcastService = inject(BroadcastService);
+
+  /** True while the export is running. */
+  protected readonly exporting = signal(false);
 
   protected override getId(item: BroadcastResponse): string {
     return item.id;
@@ -118,8 +125,77 @@ export class BroadcastListComponent extends BaseListComponent<BroadcastResponse,
     throw new Error('Broadcasts cannot be edited');
   }
 
-  protected override callDelete(_id: string): Observable<never> {
-    throw new Error('Broadcasts cannot be deleted');
+  /**
+   * Delete a broadcast.
+   *
+   * The backend HAS the endpoint (`DELETE /api/dashboard/broadcasts/{id}`
+   * — it removes the broadcast and its recipient rows), so the page can
+   * offer it. The previous version threw, which left no way to get rid of
+   * a broadcast.
+   */
+  protected override callDelete(id: string): Observable<ApiResponse<void>> {
+    return this.broadcastService.deleteBroadcast(id);
+  }
+
+  protected override deleteToastKey(): string {
+    return 'broadcasts.deleted';
+  }
+
+  protected override deleteToastFallback(): string {
+    return 'The broadcast was deleted';
+  }
+
+  /**
+   * Export the broadcasts as a CSV.
+   *
+   * Every broadcast, not only the rows on this page — an export of "the
+   * twenty rows on this page" is not an export.
+   */
+  protected exportBroadcasts(): void {
+    if (this.exporting()) return;
+    this.exporting.set(true);
+    this.broadcastService.getEveryBroadcast().subscribe({
+        next: (rows) => {
+          this.exporting.set(false);
+          if (!rows.length) {
+            this.notify.warning('broadcasts.export.empty', 'There are no broadcasts to export');
+            return;
+          }
+          const escape = (value: unknown): string => {
+            const text = value === null || value === undefined ? '' : String(value);
+            return /[",\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+          };
+          const lines = ['subject,content,status,sent,recipients,failed,createdAt'];
+          for (const row of rows) {
+            lines.push(
+              [
+                row.subject,
+                row.content,
+                row.status,
+                row.sentCount,
+                row.totalRecipients,
+                row.failedCount,
+                row.createdAt,
+              ]
+                .map(escape)
+                .join(','),
+            );
+          }
+          // The BOM, so Excel reads the file as UTF-8.
+          const blob = new Blob(['\uFEFF' + lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+          const url = URL.createObjectURL(blob);
+          const anchor = document.createElement('a');
+          anchor.href = url;
+          anchor.download = `broadcasts-${new Date().toISOString().slice(0, 10)}.csv`;
+          anchor.click();
+          URL.revokeObjectURL(url);
+          this.notify.success('broadcasts.export.done', 'The broadcasts were exported');
+        },
+        error: () => {
+          this.exporting.set(false);
+          this.notify.apiError(null, 'broadcasts.export.failed', 'The broadcasts could not be exported');
+        },
+      });
   }
 
   /**

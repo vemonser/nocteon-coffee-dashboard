@@ -41,6 +41,7 @@ const icons: Record<NavKey, string> = {
   carts: 'lucideShoppingCart',
   productOptions: 'lucideSlidersHorizontal',
   broadcasts: 'lucideMegaphone',
+  newsletter: 'lucideMailPlus',
   contactMessages: 'lucideMail',
   coffeeData: 'lucideDatabase',
 };
@@ -108,6 +109,7 @@ export function getNavItems(lang: Language) {
     [
       { label: t.journal, icon: icons.journal, route: '/dashboard/journal', permission: 'journal:read' },
       { label: t.broadcasts, icon: icons.broadcasts, route: '/dashboard/broadcasts', permission: 'broadcast:read' },
+      { label: t.newsletter, icon: icons.newsletter, route: '/dashboard/newsletter', permission: 'user:read' },
       { label: t.notifications, icon: icons.notifications, route: '/dashboard/notifications', permission: 'notification:read' },
     ],
     t,

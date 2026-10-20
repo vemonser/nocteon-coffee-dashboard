@@ -348,6 +348,35 @@
                   </span>
                 }
 
+                <!-- The cart owner: avatar, name, and email under it. -->
+                @case ('userFullName') {
+                  <div class="flex min-w-0 items-center gap-2">
+                    <app-user-avatar
+                      [src]="$any(cell.getValue())?.avatar"
+                      [name]="$any(cell.getValue())?.name"
+                      size="md"
+                      class="shrink-0"
+                    />
+                    <span class="flex min-w-0 flex-col items-start">
+                      <span
+                        class="block max-w-full truncate text-start text-sm font-medium"
+                        [attr.title]="$any(cell.getValue())?.name"
+                      >
+                        {{ $any(cell.getValue())?.name || '—' }}
+                      </span>
+                      @if ($any(cell.getValue())?.email) {
+                        <span
+                          class="block max-w-full truncate text-start text-xs text-muted-foreground"
+                          [attr.title]="$any(cell.getValue()).email"
+                          dir="ltr"
+                        >
+                          {{ $any(cell.getValue()).email }}
+                        </span>
+                      }
+                    </span>
+                  </div>
+                }
+
                 <!-- The order status and the payment status: a badge each, and
                      never colour alone — the badge always carries its text. -->
                 @case ('orderStatus') {

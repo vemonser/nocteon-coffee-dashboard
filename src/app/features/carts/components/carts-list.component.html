@@ -55,7 +55,7 @@
   <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
     <div class="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl bg-card shadow-2xl border">
       <div class="flex items-center justify-between p-6 border-b sticky top-0 bg-card">
-        <h2 class="text-lg font-bold">{{ viewing()!.userFullName }}'s {{ 'carts.cart' | transloco }}</h2>
+        <h2 class="text-lg font-bold">{{ viewing()!.userFullName }}'s {{ 'carts.cart' | transloco }} #{{ viewing()!.id }}</h2>
         <button hlmBtn variant="ghost" size="icon" class="size-8" (click)="closeView()">
           <ng-icon name="lucideX" class="size-4" />
         </button>
@@ -103,8 +103,9 @@
             </div>
           } @else {
             <div class="space-y-3">
-              @for (item of viewing()!.items; track item.id) {
+              @for (item of viewing()!.items; track item.id; let i = $index) {
                 <div class="flex gap-3 rounded-md border p-3">
+                  <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-medium text-muted-foreground">{{ i + 1 }}</span>
                   <div class="h-16 w-16 flex-shrink-0 rounded-md bg-muted overflow-hidden">
                     @if (item.primaryImageUrl) {
                       <img

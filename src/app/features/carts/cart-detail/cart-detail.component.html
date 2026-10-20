@@ -16,9 +16,16 @@
           <h3 hlmCardTitle>{{ 'carts.detail.customer' | transloco }}</h3>
         </hlm-card-header>
         <div hlmCardContent class="space-y-2">
-          <div class="flex items-center gap-2">
-            <ng-icon name="lucideUser" class="size-4 text-muted-foreground" />
-            <span>{{ cart()!.userFullName }}</span>
+          <div class="flex items-center gap-3">
+            <app-user-avatar
+              [src]="cart()!.userAvatarUrl ?? cart()!.avatarUrl ?? cart()!.avatar ?? null"
+              [name]="cart()!.userFullName"
+              size="md"
+            />
+            <div class="flex flex-col min-w-0">
+              <span class="font-medium truncate">{{ cart()!.userFullName }}</span>
+              <span class="text-xs text-muted-foreground truncate" dir="ltr">{{ cart()!.userEmail }}</span>
+            </div>
           </div>
           <div class="flex items-center gap-2">
             <ng-icon name="lucideClock" class="size-4 text-muted-foreground" />

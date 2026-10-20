@@ -321,6 +321,15 @@ export const routes: Routes = [
       },
 
       {
+        path: 'newsletter',
+        data: { breadcrumb: 'newsletter' },
+        canActivate: [permissionGuard('user:read')],
+        loadComponent: () =>
+          import('./features/newsletter/components/newsletter-list.component').then(
+            (m) => m.NewsletterListComponent,
+          ),
+      },
+      {
         path: 'broadcasts',
         data: { breadcrumb: 'broadcasts' },
         canActivate: [permissionGuard('broadcast:read')],

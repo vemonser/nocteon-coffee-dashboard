@@ -81,7 +81,7 @@ const ROUTES: TableRoute[] = [
   { path: '/dashboard/origins', label: 'origins', maxActions: 130, hasThumbnail: true, thumbnailShape: 'square', minDominance: 2.0 },
   { path: '/dashboard/users', label: 'users', maxActions: 130, hasThumbnail: true, thumbnailShape: 'circle', minDominance: 2 },
   { path: '/dashboard/products', label: 'products', maxActions: 130, hasThumbnail: true, thumbnailShape: 'square', minDominance: 2.5 },
-  { path: '/dashboard/carts', label: 'carts', maxActions: 130, hasThumbnail: false, minDominance: 2.5 },
+  { path: '/dashboard/carts', label: 'carts', maxActions: 130, hasThumbnail: true, thumbnailShape: 'circle', minDominance: 2.5 },
   { path: '/dashboard/promo-codes', label: 'promo-codes', maxActions: 180, hasThumbnail: false, minDominance: 1.2 },
   { path: '/dashboard/orders', label: 'orders', maxActions: 200, hasThumbnail: false, minDominance: 1.1 },
   { path: '/dashboard/store-settings', label: 'store-settings', maxActions: 300, hasThumbnail: false, minDominance: 1 },

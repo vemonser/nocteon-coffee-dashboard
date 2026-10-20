@@ -250,7 +250,8 @@
     "coffeeVariety": "Coffee Variety",
     "tastingNote": "Tasting Note",
     "days": "days",
-    "errorTitle": "Could not load"
+    "errorTitle": "Could not load",
+    "processing": "Processing…"
   },
   "products": {
     "title": "Products",
@@ -1808,7 +1809,19 @@
       "queued": "Queued",
       "inProgress": "Sending",
       "completed": "Sent"
-    }
+    },
+    "delete": "Delete the broadcast",
+    "deleteTitle": "Delete this broadcast",
+    "deleteConfirm": "The broadcast and its recipient list are removed. Delete",
+    "deleted": "The broadcast was deleted",
+    "export": {
+      "button": "Export broadcasts",
+      "done": "The broadcasts were exported",
+      "empty": "There are no broadcasts to export",
+      "failed": "The broadcasts could not be exported"
+    },
+    "totalCount_one": "1 broadcast",
+    "totalCount_other": "{{count}} broadcasts"
   },
   "contactMessages": {
     "title": "Contact messages",
@@ -1880,5 +1893,28 @@
     "viewDetails": "View details",
     "pendingReviews": "Reviews awaiting moderation",
     "unreadMessages": "Unread messages"
+  },
+  "newsletter": {
+    "title": "Newsletter",
+    "totalCount": "{{count}} addresses in the audience",
+    "search": "Search addresses...",
+    "empty": "There are no addresses in the audience yet.",
+    "audience": "The audience of a newsletter is the store's customers — the same list a broadcast goes to. The API does not carry a per-address newsletter flag, so an address that unsubscribed is still listed.",
+    "columns": {
+      "email": "Email",
+      "name": "Name",
+      "role": "Role",
+      "joined": "Joined",
+      "lastActive": "Last active"
+    },
+    "export": {
+      "button": "Export emails",
+      "hint": "Exports every address of the audience as a CSV, not only the rows on this page.",
+      "done": "The addresses were exported",
+      "empty": "There are no addresses to export",
+      "failed": "The addresses could not be exported"
+    },
+    "totalCount_one": "1 address in the audience",
+    "totalCount_other": "{{count}} addresses in the audience"
   }
 }
