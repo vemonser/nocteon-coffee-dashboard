@@ -1,4 +1,4 @@
-import { expect, type Page } from '@playwright/test';
+import { expect, type Page, type Response } from '@playwright/test';
 
 /**
  * Shared helpers for the auth E2E suite.
@@ -98,6 +98,25 @@ export interface LoginResult {
  * No fixed sleeps, no swallowed timeouts.
  */
 export async function submitLogin(page: Page): Promise<LoginResult> {
+  // The body is captured from a LISTENER, at response time.
+  //
+  // `response.body()` is read after the click, and by then the SPA may
+  // have navigated away and torn the request context down — the read
+  // throws, the role comes back null, and the suite fails with "requires
+  // an ADMIN account" on a login that actually succeeded. The listener
+  // fires the moment the response arrives, while the body is still there.
+  let captured: any = null;
+  const listener = async (response: Response) => {
+    if (!response.url().includes('/api/auth/login')) return;
+    if (response.request().method() !== 'POST') return;
+    try {
+      captured = await response.json();
+    } catch {
+      /* the body is gone; the status is still the answer */
+    }
+  };
+  page.on('response', listener);
+
   const responsePromise = page.waitForResponse(
     (r) => r.url().includes('/api/auth/login') && r.request().method() === 'POST',
     { timeout: 20_000 },
@@ -106,19 +125,20 @@ export async function submitLogin(page: Page): Promise<LoginResult> {
   await page.locator(sel.submit).click();
 
   const response = await responsePromise;
+  page.off('response', listener);
 
-  // Read the body from the raw buffer captured at response time. response.json()
-  // can throw if the SPA navigates away and the request context is torn down.
-  let role: string | null = null;
-  let permissions: string[] | null = null;
-  try {
-    const raw = await response.body();
-    const body = JSON.parse(raw.toString('utf8'));
-    role = body?.data?.user?.role ?? null;
-    permissions = body?.data?.user?.permissions ?? null;
-  } catch {
-    /* 401 bodies are JSON too, but never assume it */
+  // The captured body, or the raw buffer as a fallback.
+  let body: any = captured;
+  if (!body) {
+    try {
+      const raw = await response.body();
+      body = JSON.parse(raw.toString('utf8'));
+    } catch {
+      /* 401 bodies are JSON too, but never assume it */
+    }
   }
+  const role: string | null = body?.data?.user?.role ?? null;
+  const permissions: string[] | null = body?.data?.user?.permissions ?? null;
 
   // Terminal state: navigated away OR error rendered.
   await Promise.race([

@@ -503,9 +503,10 @@ export class OrdersListComponent {
       all: this.orderService.getStats({}),
       // Full read of the filtered set to compute revenue/avg until the
       // backend exposes them on the stats endpoint (see API_GAPS.md).
-      kpiRows: this.orderService.getAll({
-        page: 0,
-        size: 1000,
+      // It WALKS the pages: the API caps a page at 100 rows, so a single
+      // "size: 1000" request was a 400 — and a 400 inside this forkJoin
+      // left the whole list stuck on "Loading".
+      kpiRows: this.orderService.getEveryOrder({
         status: status === 'ALL' ? undefined : status,
         ...filter,
       }),
@@ -522,7 +523,7 @@ export class OrdersListComponent {
         }
         this.statusCounts.set(counts);
         // Revenue = sum of totalAmount of non-cancelled orders in the filtered set.
-        const allRows = kpiRows.data?.content ?? [];
+        const allRows = kpiRows;
         const revenue = allRows
           .filter((o) => o.status !== 'CANCELLED')
           .reduce((sum, o) => sum + (o.totalAmount ?? 0), 0);

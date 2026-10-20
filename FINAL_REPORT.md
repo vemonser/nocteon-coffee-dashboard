@@ -215,6 +215,18 @@ pretending the delivery happened. **The backend needs a sender**: a
 the `PENDING` recipient rows and mails them through the existing
 `EmailService`.
 
+### The page size — a contract constraint, and a bug it caused
+
+| Fact | Where it shows |
+|---|---|
+| Every dashboard list endpoint validates `size` and answers **400** for anything above **100** | verified against `/api/dashboard/orders`, `/users`, `/categories`, `/broadcasts` — one shared cap, not a per-endpoint one |
+| A request above the cap is a **failed** page, not a bigger one | the orders list asked for `size: 1000` for its revenue KPI, the 400 killed the whole `forkJoin`, and the page sat on "Loading..." — ten orders tests failed with it |
+| The fix | the size is clamped to 100 in the base CRUD service and in the product service; a caller that needs the whole set **walks the pages** (the orders KPI read, the newsletter export, the broadcasts export) |
+| Also unblocked | the journal form's preloader and the product wizard's dropdowns asked for 200 rows and were getting an error instead of the list |
+
+**The backend could raise the cap** (or expose an export endpoint) — but
+until it does, the client walks the pages.
+
 ## 2. The backend contract gaps
 
 Nothing here was changed in the backend, and nothing was faked in the
