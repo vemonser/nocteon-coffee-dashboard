@@ -28,7 +28,7 @@ import { NotificationComponent } from '../../notification/components/notificatio
 import { BreadcrumbComponent } from '../../../shared/components/breadcrumb/breadcrumb.component';
 import { UserMenuComponent } from '../../../shared/ui/user-menu/user-menu.component';
 import { GlobalSearchService } from './global-search/service/global-search.service';
-import { SearchResultItem as SearchResultDto } from './global-search/model/search.model';
+import { SearchResultDto } from './global-search/model/search.model';
 
 @Component({
   selector: 'app-navigation-bar',
@@ -128,7 +128,7 @@ export class NavigationBarComponent {
       )
       .subscribe((res) => {
         // null = the request failed (toast already shown); keep prior results.
-        if (res) this.searchResults.set(res.groups.flatMap((g) => g.items));
+        if (res) this.searchResults.set(res.results);
       });
   }
 
@@ -141,7 +141,7 @@ export class NavigationBarComponent {
     // result.type is now the backend-provided route segment
     // (e.g. "products", "orders", "promo-codes") thanks to
     // @JsonValue on SearchResultType, so no local mapping is needed.
-    this.router.navigate([`/dashboard/${result.type}/${encodeURIComponent(result.id)}`]);
+    this.router.navigate([`/dashboard/${result.type}/${encodeURIComponent(result.identifier)}`]);
   }
   private formatTypeLabel(type: string): string {
     const labels: Record<string, string> = {
