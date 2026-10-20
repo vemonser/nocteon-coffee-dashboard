@@ -30,9 +30,16 @@ const sources = import.meta.glob('/src/app/**/*.ts', {
 }) as Record<string, string>;
 
 describe('money formatter', () => {
-  it('renders EGP with the narrow symbol in English and the Arabic symbol in Arabic', () => {
-    expect(formatCurrency(1176.25, 'en', 'EGP')).toContain('E£');
+  it('renders EGP with the ISO code in English and the Arabic symbol in Arabic', () => {
+    // The English form is the CODE first ("EGP 1,176.25"): the CLDR narrow
+    // symbol ("E£") is a currency symbol in a Latin shape, so the reader saw
+    // two different-looking currencies depending on the page.
+    expect(formatCurrency(1176.25, 'en', 'EGP')).toContain('EGP');
+    expect(formatCurrency(1176.25, 'en', 'EGP')).not.toContain('E£');
+    // The Arabic form is the AMOUNT first, then the Arabic symbol, with no
+    // trailing full stop ("1,176.25 ج.م").
     expect(formatCurrency(1176.25, 'ar', 'EGP')).toContain('ج.م');
+    expect(formatCurrency(1176.25, 'ar', 'EGP')).not.toContain('ج.م.');
   });
 
   it('keeps Latin digits in Arabic', () => {
