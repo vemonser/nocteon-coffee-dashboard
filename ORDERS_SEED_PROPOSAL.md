@@ -182,16 +182,17 @@ These stay unverifiable **without** the seed, and are reported as such in
 
 ## 5. What the seed does NOT fix
 
-- **The 17 existing orders keep their broken totals.** The proposal adds
-  data; it does not rewrite history. Repairing them means a separate
-  migration that recomputes `orders.total_amount` from their own
-  `order_items` rows — which is a data repair, not a seed, and needs its own
-  decision (the recorded totals are what the store "believes" it charged;
-  overwriting them changes the books, not just the display).
+- **The 17 existing orders' totals are now REPAIRED** — by
+  `V111__repair_seeded_order_totals.sql` (a separate migration, not this
+  seed): it recomputes the stored total with the checkout's own formula and
+  touches only the rows that disagree. **0 of 17** orders disagree now
+  (it was 17 of 17). What this proposal adds is COHERENT data — real
+  timestamps, real histories, real customers — not a repair of the old rows.
 - **The order-number collision stays.** The seed proposes generating the
   numbers from the sequence, but the 17 EXISTING seeded numbers are still
   hand-written. A migration that renumbers them is needed before the
-  sequence can be trusted end to end.
+  sequence can be trusted end to end. It is NOT part of this proposal:
+  renumbering a live order's identifier is a decision of its own.
 - **The missing backend tables stay missing.** `order_status_history`,
   `order_notes`, the shipment fields, the refund amounts and the transaction
   reference are all in `ORDERS_CONTRACT.md` (Phase 5). The seed cannot
