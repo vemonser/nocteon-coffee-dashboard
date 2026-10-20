@@ -43,7 +43,7 @@ for (const width of WIDTHS) {
   for (const el of Array.from(document.querySelectorAll('app-data-table *'))) {
     const cs = getComputedStyle(el);
     if (cs.textOverflow !== 'ellipsis') continue;
-    if (el.scrollWidth <= el.clientWidth + 1) continue;
+    if (el.scrollWidth <= el.clientWidth) continue;
     const host = el.closest('th') ?? el.closest('td');
     truncated.push({
       column: (host?.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 30),
