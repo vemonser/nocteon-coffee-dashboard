@@ -27,10 +27,23 @@ async function settle(page, ms = 1200) {
   await page.waitForTimeout(ms);
 }
 
-/** Click the first visible element matching a test id; report if it is absent. */
-async function clickTestId(page, testId) {
+/**
+ * Click the first visible element matching a test id; report if it is absent.
+ *
+ * <p>A menu item is waited for before it is clicked: the overflow menu
+ * animates, and clicking during the animation loses the click. That showed up
+ * as one cell out of twenty with no screenshot of the dialog.
+ */
+async function clickTestId(page, testId, { waitFor = 0 } = {}) {
   const el = page.locator(`[data-testid="${testId}"]`).first();
   if ((await el.count()) === 0) return { present: false, reason: `no [data-testid="${testId}"]` };
+  if (waitFor > 0) {
+    try {
+      await el.waitFor({ state: 'visible', timeout: waitFor });
+    } catch {
+      return { present: false, reason: `[data-testid="${testId}"] never became visible` };
+    }
+  }
   if (!(await el.isVisible().catch(() => false))) {
     return { present: false, reason: `[data-testid="${testId}"] is not visible` };
   }
@@ -425,8 +438,7 @@ export const TARGET_SETS = {
         // first — the same path a user takes.
         const menu = await clickTestId(page, 'order-more-actions');
         if (!menu.present) return menu;
-        await page.waitForTimeout(400);
-        const clicked = await clickTestId(page, 'order-cancel');
+        const clicked = await clickTestId(page, 'order-cancel', { waitFor: 5000 });
         if (!clicked.present) return clicked;
         return { present: await dialogOpen(page, 'cancel-dialog'), opened: true };
       },
@@ -437,8 +449,7 @@ export const TARGET_SETS = {
       action: async (page) => {
         const menu = await clickTestId(page, 'order-more-actions');
         if (!menu.present) return menu;
-        await page.waitForTimeout(400);
-        const clicked = await clickTestId(page, 'order-refund');
+        const clicked = await clickTestId(page, 'order-refund', { waitFor: 5000 });
         if (!clicked.present) return clicked;
         return { present: await dialogOpen(page, 'refund-dialog'), opened: true };
       },
