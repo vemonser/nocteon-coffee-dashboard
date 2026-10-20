@@ -369,7 +369,7 @@
                       class="size-4 shrink-0 text-muted-foreground"
                       aria-hidden="true"
                     />
-                    <span class="truncate">{{ names.paymentMethod($any(cell.getValue())?.method) }}</span>
+                    <span class="truncate text-sm">{{ names.paymentMethod($any(cell.getValue())?.method) }}</span>
                   </span>
                 }
 
@@ -407,7 +407,7 @@
                 }
                 @case ('totalAmount') {
                   <span
-                    class="block tabular-nums"
+                    class="block text-sm tabular-nums"
                     [class.text-start]="!isEndAligned(cell.column.columnDef)"
                     [class.text-end]="isEndAligned(cell.column.columnDef)"
                   >

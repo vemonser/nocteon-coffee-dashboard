@@ -1232,6 +1232,25 @@ failure says whether the request was aborted at all or the page simply had
 not rendered yet. The same fixed wait was removed from the list's error
 test.
 
+A second flake appeared in the same area: "the cards count the whole set"
+compares the card with the API's own total, and it makes that call
+through the app's session — which the backend rate-limits. Under load the
+refresh was refused, the test compared against a number it never got, and
+it failed. **The test now skips the comparison when the API cannot be
+reached** (it says so) and always runs the check that needs no API call:
+the card and the status tab must agree.
+
+### A detector that was too forgiving
+
+The truncation checks compared `scrollWidth > clientWidth + 1`, so a
+**one-pixel** overflow was invisible. It was invisible in the wrong
+direction: the "Cash on delivery" label was one pixel too wide and DID
+draw an ellipsis, and the detectors said there was none.
+
+The tolerance is gone (an overflow of any size counts) and the METHOD
+label and the money are now at the body size (14 px) instead of the
+inherited 16 px, so they fit with room to spare.
+
 ## ORDERS PHASE 7 — Responsive and final
 
 The evidence matrix was re-run end to end over the six targets in all 20

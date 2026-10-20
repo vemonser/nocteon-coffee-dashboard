@@ -89,12 +89,12 @@ const GENERIC_MEASURE = () => {
       verticalClipped.push({ ...desc(el), scrollHeight: el.scrollHeight, clientHeight: el.clientHeight });
     }
     // Content cut off HORIZONTALLY by a clipping box.
-    if ((ox === 'hidden' || ox === 'clip') && el.scrollWidth > el.clientWidth + 1) {
+    if ((ox === 'hidden' || ox === 'clip') && el.scrollWidth > el.clientWidth) {
       horizontalClipped.push({ ...desc(el), scrollWidth: el.scrollWidth, clientWidth: el.clientWidth });
     }
     // Deliberate ellipsis — recorded so the "no truncation" rules can be
     // checked per column instead of guessed.
-    if (cs.textOverflow === 'ellipsis' && el.scrollWidth > el.clientWidth + 1) {
+    if (cs.textOverflow === 'ellipsis' && el.scrollWidth > el.clientWidth) {
       ellipsised.push(desc(el));
     }
     // A raw translation key that reached the screen.
@@ -269,7 +269,7 @@ const MEASURE_ORDERS_LIST = () => {
       const cut = [];
       for (const el of Array.from(th.querySelectorAll('*'))) {
         const cs = getComputedStyle(el);
-        if (cs.textOverflow === 'ellipsis' && el.scrollWidth > el.clientWidth + 1) {
+        if (cs.textOverflow === 'ellipsis' && el.scrollWidth > el.clientWidth) {
           cut.push({ header: true, text: (el.textContent || '').trim() });
         }
       }
@@ -283,7 +283,7 @@ const MEASURE_ORDERS_LIST = () => {
         for (const el of Array.from(td.querySelectorAll('*'))) {
           const cs = getComputedStyle(el);
           if (cs.textOverflow !== 'ellipsis') continue;
-          if (el.scrollWidth <= el.clientWidth + 1) continue;
+          if (el.scrollWidth <= el.clientWidth) continue;
           const entry = {
             column: label,
             text: (el.textContent || '').trim().slice(0, 40),

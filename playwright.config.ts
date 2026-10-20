@@ -10,6 +10,9 @@ const BASE_URL = process.env['E2E_BASE_URL'] ?? 'http://localhost:4200';
 
 export default defineConfig({
   testDir: './e2e',
+  // The artifacts directory can be moved, so two Playwright runs in the same
+  // repository (a shared working tree) do not clean each other's traces.
+  outputDir: process.env['PW_OUTPUT_DIR'] ?? 'test-results',
   fullyParallel: false,
   workers: 1,
   forbidOnly: !!process.env['CI'],
