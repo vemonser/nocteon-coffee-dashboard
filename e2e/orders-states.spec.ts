@@ -72,7 +72,6 @@ test.describe('states and interactions', () => {
     // error: the endpoint fails -> the error state with a retry.
     await page.route('**/api/dashboard/orders**', (route) => route.abort('failed'));
     await page.reload({ waitUntil: 'domcontentloaded' });
-    await page.waitForTimeout(1500);
     await expect(page.locator('[data-testid="orders-error"]')).toBeVisible();
     await page.unrouteAll();
 
