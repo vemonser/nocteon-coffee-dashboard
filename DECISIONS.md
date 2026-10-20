@@ -1286,6 +1286,32 @@ sections, and the locale files were merged key by key.
 
 **179 unit tests** and the whole e2e suite pass on the merged branch.
 
+## ORDERS — One environment finding: the API rate limit
+
+The full e2e suite (both sessions' specs, 200+ tests) tripped the backend's
+general rate limit: **200 requests per minute per identifier** (the
+identifier is the caller's IP, so every browser on the machine shares it).
+
+The symptom is a list page that renders its ERROR STATE instead of its
+table — which is the app behaving correctly, not a defect — and a test that
+then fails with "no table rendered".
+
+It is not caused by the orders work: the orders pages make three requests
+per page load, and the evidence run (120 page loads) stays at ~27 requests
+a minute. It appears when two suites run at once, which is exactly what
+happened while the two sessions were working side by side.
+
+**What was done about it:** the failing tests pass when they are run in
+smaller batches with a pause between them, which is the proof that the
+limit — and not the code — is the cause. The app's own answer to a 429 is
+the error state with a working retry, and the backend's message ("Too many
+requests, please slow down.") is shown as it is.
+
+**What is still open:** a suite that runs 200+ tests against one IP will
+trip the limit. The fix belongs in the harness (a pause between the
+heavier specs) or in the backend (a higher limit for the authenticated
+dashboard calls). Neither is the orders' to decide.
+
 ## ORDERS PHASE 6 — States, interactions and accessibility
 
 - **The three states, per section.** The list and the detail page each

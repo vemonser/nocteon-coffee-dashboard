@@ -405,10 +405,31 @@ test.describe('order detail', () => {
   test('the totals card shows the stored total AND the items subtotal', async () => {
     const subtotal = await page.locator('text=Subtotal').locator('xpath=following-sibling::*[1]').innerText();
     const total = await page.locator('[data-testid="order-total"]').innerText();
+    // The items of ORD-2026-000001 are 1,825.00 and the shipping is 50.00,
+    // so the stored total is 1,875.00 (the seed's 120.50 was repaired).
     expect(subtotal).toContain('1,825');
-    expect(total).toContain('120.50');
-    // The mismatch is REPORTED, not hidden.
+    expect(total).toContain('1,875');
+    // The recorded total agrees with the items, so nothing is reported.
+    await expect(page.locator('[data-testid="order-totals-mismatch"]')).toHaveCount(0);
+  });
+
+  test('a total that disagrees with the items is REPORTED, not hidden', async () => {
+    // The same order, with a total that does not match its items: the page
+    // must say so rather than quietly show one of the two numbers.
+    await page.route('**/api/dashboard/orders/1', async (route) => {
+      const response = await route.fetch();
+      const body = await response.json();
+      if (body?.data) {
+        body.data.totalAmount = 120.5;
+      }
+      await route.fulfill({ response, json: body });
+    });
+    await page.goto(ORDER, { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(1500);
+
     await expect(page.locator('[data-testid="order-totals-mismatch"]')).toBeVisible();
+    await expect(page.locator('[data-testid="order-total"]')).toContainText('120.50');
+    await page.unroute('**/api/dashboard/orders/1');
   });
 
   test('the status dialog offers only the transitions the backend allows', async () => {
