@@ -361,9 +361,9 @@
               </div>
 
               <div class="mt-1 flex flex-col gap-2 border-t border-border pt-2">
-                <div class="flex items-center justify-between gap-4" data-total-row="paid">
-                  <dt class="text-sm text-muted-foreground">{{ 'orders.detail.paid' | transloco }}</dt>
-                  <dd class="text-sm tabular-nums" data-testid="order-paid">
+                <div class="flex items-center justify-between gap-4" data-total-row="collected">
+                  <dt class="text-sm text-muted-foreground">{{ 'orders.detail.collected' | transloco }}</dt>
+                  <dd class="text-sm tabular-nums" data-testid="order-collected">
                     @if (settlement().paid === null) {
                       <span class="text-warning">{{ notRecorded() }}</span>
                     } @else {
@@ -930,19 +930,17 @@
                   </div>
                 }
               </div>
-            } @else {
-              <p class="text-sm text-muted-foreground" data-testid="order-no-shipment">
-                {{ 'orders.detail.noShipmentRecorded' | transloco }}
-              </p>
-            }
-
-            @if (shipmentMissingForStatus()) {
+            } @else if (shipmentMissingForStatus()) {
               <p
                 class="mt-2 flex items-start gap-1.5 text-xs text-warning"
                 data-testid="order-shipment-warning"
               >
                 <ng-icon name="lucideTriangleAlert" class="mt-0.5 size-3.5 shrink-0" aria-hidden="true" />
                 <span>{{ 'orders.detail.shipmentMissingWarning' | transloco }}</span>
+              </p>
+            } @else {
+              <p class="text-sm text-muted-foreground" data-testid="order-no-shipment">
+                {{ 'orders.detail.noShipmentRecorded' | transloco }}
               </p>
             }
 
