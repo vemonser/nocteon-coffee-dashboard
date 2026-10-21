@@ -123,6 +123,8 @@ export class OrderRefundDialogComponent {
   }
 
   private t(key: string, fallback: string): string {
+    // React to a runtime language switch: `translate()` is not a signal read.
+    this.transloco.activeLang();
     const value = this.transloco.translate(key);
     return typeof value === 'string' && value.length > 0 && value !== key ? value : fallback;
   }

@@ -345,30 +345,95 @@ const MEASURE_ORDER_DETAIL = () => {
     top: Math.round(el.getBoundingClientRect().top + window.scrollY),
   }));
 
+  const text = (selector) =>
+    (document.querySelector(selector)?.textContent || '').trim().replace(/\s+/g, ' ');
+
   const actions = Array.from(
     document.querySelectorAll(
       '[data-testid="order-update-status"], [data-testid="order-print-invoice"],' +
         '[data-testid="order-resend-email"], [data-testid="order-more-actions"],' +
-        '[data-testid="order-back"]',
+        '[data-testid="order-back"], [data-testid="order-refund-action"]',
     ),
   ).map((el) => ({
     id: el.getAttribute('data-testid'),
     text: (el.textContent || '').trim().replace(/\s+/g, ' '),
     disabled: el.hasAttribute('disabled') || el.getAttribute('aria-disabled') === 'true',
     title: el.getAttribute('title') || el.getAttribute('aria-label') || null,
+    /** The reason a disabled control gives. Added by the v3 page. */
+    disabledReason: el.getAttribute('data-disabled-reason') || null,
+    /** Does the control (or its wrapper) carry a tooltip? */
+    hasTooltip: !!el.getAttribute('data-tooltip') || !!el.closest('[data-tooltip]'),
   }));
 
-  // The progress tracker: which step the order is at.
-  const steps = Array.from(document.querySelectorAll('[data-step]')).map((el) => ({
-    step: el.getAttribute('data-step'),
-    state: el.getAttribute('data-state'),
-  }));
+  // The progress tracker: which step the order is at, whether it is drawn
+  // as done (a check, not a number) and what it says per step.
+  const steps = Array.from(document.querySelectorAll('[data-step]')).map((el) => {
+    // The date/actor live in the step's text column, a SIBLING of the circle's
+    // wrapper, so the whole <li> is the scope — not `el.parentElement`.
+    const item = el.closest('li');
+    return {
+      step: el.getAttribute('data-step'),
+      state: el.getAttribute('data-state'),
+      label: (item?.querySelector('span.block.text-sm')?.textContent || '').trim().replace(/\s+/g, ' '),
+      hasCheckIcon: !!el.querySelector('svg'),
+      numericLabel: (el.textContent || '').trim(),
+      date: item?.querySelector('[data-step-date]')?.textContent?.trim() || null,
+      actor: item?.querySelector('[data-step-actor]')?.textContent?.trim() || null,
+    };
+  });
+  const deliveredStep = steps.find((s) => s.step === 'DELIVERED') || null;
   const cancelled = !!document.querySelector('[data-testid="order-progress-cancelled"]');
+  const terminalState =
+    document.querySelector('[data-testid="order-terminal-state"]')?.getAttribute('data-terminal') || null;
+
+  // The activity log: the number of rendered events and whether the page is
+  // showing its real empty state.
+  const activityItems = Array.from(document.querySelectorAll('[data-testid="order-activity"] li'));
+  const activity = {
+    count: activityItems.length,
+    empty: !!document.querySelector('[data-testid="order-no-activity"]'),
+    emptyText: text('[data-testid="order-no-activity"]'),
+    titles: activityItems.map((el) =>
+      (el.querySelector('[data-event-title]')?.textContent || '').trim(),
+    ),
+    warning: text('[data-testid="order-activity-warning"]'),
+  };
+
+  // The payment card: what is missing on a PAID order, what it warns about.
+  const paymentCard = document.querySelector('[data-card="payment"]');
+  const payment = {
+    text: (paymentCard?.textContent || '').trim().replace(/\s+/g, ' '),
+    transactionReference: text('[data-testid="order-transaction-reference"]'),
+    paidAt: text('[data-testid="order-paid-at"]'),
+    warning: text('[data-testid="order-payment-warning"]'),
+    dashes: (paymentCard?.textContent || '').split('—').length - 1,
+    refundActionDisabled:
+      document.querySelector('[data-testid="order-refund-action"]')?.hasAttribute('disabled') ?? null,
+    copyReference: !!document.querySelector('[data-testid="order-copy-reference"]'),
+  };
 
   // The totals, as they are shown.
-  const total = (document.querySelector('[data-testid="order-total"]')?.textContent || '').trim();
-  const netPaid = (document.querySelector('[data-testid="order-net-paid"]')?.textContent || '').trim();
+  const total = text('[data-testid="order-total"]');
+  const netPaid = text('[data-testid="order-net-paid"]');
   const mismatch = !!document.querySelector('[data-testid="order-totals-mismatch"]');
+  const totalsRows = Array.from(document.querySelectorAll('[data-testid="order-totals"] [data-total-row]')).map(
+    (el) => ({
+      row: el.getAttribute('data-total-row'),
+      label: (el.querySelector('dt')?.textContent || '').trim(),
+      value: (el.querySelector('dd')?.textContent || '').trim(),
+    }),
+  );
+
+  // The breadcrumb trail, as one line.
+  const breadcrumb = (document.querySelector('nav ol')?.textContent || '')
+    .trim()
+    .replace(/\s+/g, ' ');
+
+  // Which cards exist, and whether the dead Tags card is still among them.
+  const tagsCard = !!document.querySelector('[data-card="tags"]');
+  const shipmentText = text('[data-card="shipment"]');
+  const customerText = text('[data-card="customer"]');
+  const addressText = text('[data-card="address"]');
 
   // The section order, as it is on the page (the main column first, then
   // the sidebar).
@@ -382,10 +447,25 @@ const MEASURE_ORDER_DETAIL = () => {
     sidebar,
     actions,
     steps,
+    deliveredStep,
     cancelled,
+    terminalState,
+    activity,
+    payment,
     total,
     netPaid,
+    totalsRows,
     totalsMismatchShown: mismatch,
+    breadcrumb,
+    tagsCard,
+    shipmentText,
+    customerText,
+    addressText,
+    states: {
+      loading: !!document.querySelector('[data-testid="order-detail-loading"]'),
+      error: !!document.querySelector('[data-testid="order-detail-error"]'),
+      notFound: !!document.querySelector('[data-testid="order-detail-notfound"]'),
+    },
     sectionOrder,
     cardHeightRatios: cards.map((c) => ({ id: c.id, heightPx: c.heightPx, ratio: c.ratio })),
   };
@@ -773,6 +853,278 @@ export const TARGET_SETS = {
         if (!clicked.present) return clicked;
         return { present: await dialogOpen(page, 'refund-dialog'), opened: true };
       },
+    },
+  ],
+
+  // The order-details v3 matrix: one real order per terminal/flow state.
+  // The ids come from the seeded backend (17 orders, verified 2026-10-21):
+  //   1 Delivered+Paid with items   8 Shipped+Paid
+  //   6 Cancelled+Failed, no items  9 Delivered+Refunded, no items
+  //  15 Confirmed+COD pending, no items
+  'order-details-v3': [
+    { id: 'delivered', url: '/dashboard/orders/1', measure: async (page) => page.evaluate(MEASURE_ORDER_DETAIL) },
+    { id: 'shipped', url: '/dashboard/orders/8', measure: async (page) => page.evaluate(MEASURE_ORDER_DETAIL) },
+    { id: 'cancelled', url: '/dashboard/orders/6', measure: async (page) => page.evaluate(MEASURE_ORDER_DETAIL) },
+    { id: 'refunded', url: '/dashboard/orders/9', measure: async (page) => page.evaluate(MEASURE_ORDER_DETAIL) },
+    { id: 'no-items', url: '/dashboard/orders/15', measure: async (page) => page.evaluate(MEASURE_ORDER_DETAIL) },
+  ],
+
+  // The states that are not one of the five orders: the overflow menu's
+  // contents and the not-found page.
+  'order-details-v3-extra': [
+    {
+      id: 'kebab',
+      url: '/dashboard/orders/1',
+      action: async (page) => {
+        const menu = await clickTestId(page, 'order-more-actions');
+        if (!menu.present) return menu;
+        const items = await page.locator('[role="menuitem"]').allInnerTexts();
+        return { present: true, items: items.map((i) => i.trim()).filter(Boolean) };
+      },
+      measure: async (page) => page.evaluate(MEASURE_ORDER_DETAIL),
+    },
+    {
+      id: 'not-found',
+      url: '/dashboard/orders/999999',
+      measure: async (page) => page.evaluate(MEASURE_ORDER_DETAIL),
+    },
+    {
+      // Only the transitions the state machine allows: a SHIPPED order can
+      // move to DELIVERED and nothing else. The note and notify controls
+      // travel with the request.
+      id: 'status-dialog',
+      url: '/dashboard/orders/8',
+      action: async (page) => {
+        const clicked = await clickTestId(page, 'order-update-status');
+        if (!clicked.present) return clicked;
+        return {
+          present: await dialogOpen(page, 'status-dialog'),
+          options: await page.locator('[data-testid="status-option"]').allInnerTexts(),
+          note: (await page.locator('[data-testid="status-note"]').count()) > 0,
+          notify: (await page.locator('[data-testid="status-notify"]').count()) > 0,
+        };
+      },
+      measure: async (page) => page.evaluate(MEASURE_ORDER_DETAIL),
+    },
+    {
+      // The invoice sheet: print media must drop the chrome and the actions,
+      // and the page must be in its LIGHT tokens even when the screen is dark.
+      id: 'print',
+      url: '/dashboard/orders/1',
+      action: async (page) => {
+        // `window.print()` fires `beforeprint`; emulateMedia does not. Dispatch
+        // it so the captured sheet is the sheet a real print produces (the
+        // page removes `.dark` in that handler).
+        await page.evaluate(() => window.dispatchEvent(new Event('beforeprint')));
+        await page.emulateMedia({ media: 'print' });
+        return { media: 'print' };
+      },
+      measure: async (page) => {
+        const result = await page.evaluate(() => {
+          const display = (selector) =>
+            document.querySelector(selector)
+              ? getComputedStyle(document.querySelector(selector)).display
+              : null;
+          // `print-hidden` sits on the WRAPPER of some controls, so the
+          // control itself still computes `display: inline-flex` with no box.
+          // What paper sees is "no box": measure the rect, not the display.
+          const visible = (selector) => {
+            const el = document.querySelector(selector);
+            if (!el) return null;
+            const r = el.getBoundingClientRect();
+            return r.width > 0 && r.height > 0;
+          };
+          const sidebar = document.querySelector('[data-slot="sidebar-container"]');
+          const grid = document.querySelector('[data-testid="order-detail-sidebar"]')?.parentElement;
+          return {
+            actions: display('[data-testid="order-print-invoice"]'),
+            back: display('[data-testid="order-back"]'),
+            noteEditor: display('[data-testid="order-note-input"]'),
+            actionsVisible: visible('[data-testid="order-print-invoice"]'),
+            backVisible: visible('[data-testid="order-back"]'),
+            noteVisible: visible('[data-testid="order-note-input"]'),
+            sidebarChrome: sidebar ? getComputedStyle(sidebar).display : 'absent',
+            layout: grid ? getComputedStyle(grid).display : null,
+            dark: document.documentElement.classList.contains('dark'),
+            printClass: document.documentElement.classList.contains('order-print'),
+            background: getComputedStyle(document.body).backgroundColor,
+          };
+        });
+        // Restore the screen through the SAME event a real print fires. This
+        // proves the light sheet did not leave a dark screen light.
+        const restore = await page.evaluate(() => {
+          window.dispatchEvent(new Event('afterprint'));
+          return {
+            darkAfterRestore: document.documentElement.classList.contains('dark'),
+            printClassAfter: document.documentElement.classList.contains('order-print'),
+          };
+        });
+        await page.emulateMedia({ media: 'screen' });
+        return { ...result, ...restore };
+      },
+    },
+    {
+      // The page with the data this store does NOT record yet: a status
+      // history, internal notes, a shipment and a payment reference.
+      //
+      // <p>FIXTURE, NOT PRODUCT DATA. The real order is fetched first and only
+      // the missing fields are added, so the money, the items and the customer
+      // stay real. This proves the populated branches render — and keeps the
+      // empty states in the other targets honest, because those run with no
+      // fixtures at all.
+      id: 'populated',
+      url: '/dashboard/orders/1',
+      routes: [
+        {
+          url: /\/api\/dashboard\/orders\/1$/,
+          handler: async (route) => {
+            const response = await route.fetch();
+            const json = await response.json();
+            json.data.shipment = {
+              carrier: 'Aramex',
+              trackingNumber: 'ARX-4471902',
+              trackingUrl: 'https://www.aramex.com/track/ARX-4471902',
+              shippedAt: '2026-10-20T09:20:00Z',
+              deliveredAt: '2026-10-21T09:02:00Z',
+            };
+            await route.fulfill({ response, json });
+          },
+        },
+        {
+          url: /\/api\/dashboard\/orders\/1\/history$/,
+          handler: (route) =>
+            route.fulfill({
+              json: {
+                success: true,
+                message: null,
+                data: [
+                  { id: 1, orderId: 1, fromStatus: null, toStatus: 'PENDING', note: null, changedBy: 'system', notifyCustomer: false, createdAt: '2026-10-20T05:49:48Z' },
+                  { id: 2, orderId: 1, fromStatus: 'PENDING', toStatus: 'CONFIRMED', note: 'Payment captured.', changedBy: 'admin@aurum.local', notifyCustomer: true, createdAt: '2026-10-20T06:05:00Z' },
+                  { id: 3, orderId: 1, fromStatus: 'CONFIRMED', toStatus: 'PROCESSING', note: null, changedBy: 'admin@aurum.local', notifyCustomer: false, createdAt: '2026-10-20T06:20:00Z' },
+                  { id: 4, orderId: 1, fromStatus: 'PROCESSING', toStatus: 'SHIPPED', note: 'Handed to Aramex.', changedBy: 'admin@aurum.local', notifyCustomer: true, createdAt: '2026-10-20T09:15:00Z' },
+                  { id: 5, orderId: 1, fromStatus: 'SHIPPED', toStatus: 'DELIVERED', note: null, changedBy: 'admin@aurum.local', notifyCustomer: true, createdAt: '2026-10-21T09:05:00Z' },
+                ],
+                errors: [],
+                timestamp: '2026-10-21T10:00:00Z',
+              },
+            }),
+        },
+        {
+          url: /\/api\/dashboard\/orders\/1\/notes$/,
+          handler: (route) =>
+            route.fulfill({
+              json: {
+                success: true,
+                message: null,
+                data: [
+                  { id: 2, orderId: 1, author: 'admin@aurum.local', body: 'Customer asked for a coarser grind next time.', internal: true, createdAt: '2026-10-21T09:30:00Z' },
+                  { id: 1, orderId: 1, author: 'admin@aurum.local', body: 'Double-checked the roast date before dispatch.', internal: true, createdAt: '2026-10-20T10:40:00Z' },
+                ],
+                errors: [],
+                timestamp: '2026-10-21T10:00:00Z',
+              },
+            }),
+        },
+        {
+          url: /\/api\/dashboard\/orders\/1\/payment$/,
+          handler: async (route) => {
+            const response = await route.fetch();
+            const json = await response.json();
+            json.data.transactionReference = 'TXN-8891-2026';
+            json.data.paidAt = '2026-10-20T06:02:00Z';
+            await route.fulfill({ response, json });
+          },
+        },
+      ],
+      action: async (page) => ({
+        fixture: 'populated',
+        note: 'history, notes, shipment and payment reference are injected; all other data is the real order',
+      }),
+      measure: async (page) => page.evaluate(MEASURE_ORDER_DETAIL),
+    },
+  ],
+
+  // The page's non-happy states, made reachable by stalling or failing the
+  // order request. Fixtures only — nothing here runs in the app.
+  'order-details-v3-states': [
+    {
+      id: 'loading',
+      url: '/dashboard/orders/1',
+      routes: [
+        {
+          url: /\/api\/dashboard\/orders\/1$/,
+          handler: async (route) => {
+            // Hold the response past the harness's network-idle timeout
+            // (30 s) so the screenshot lands on the skeleton, not on the
+            // loaded page. The run then navigates away, which aborts it.
+            await new Promise((resolve) => setTimeout(resolve, 90_000));
+            await route.continue().catch(() => {});
+          },
+        },
+      ],
+      action: async (page) => ({
+        loading: await page.locator('[data-testid="order-detail-loading"]').count(),
+      }),
+    },
+    {
+      id: 'error',
+      url: '/dashboard/orders/2',
+      routes: [
+        {
+          url: /\/api\/dashboard\/orders\/2$/,
+          handler: (route) =>
+            route.fulfill({
+              status: 500,
+              contentType: 'application/json',
+              body: JSON.stringify({
+                success: false,
+                message: 'The order could not be loaded.',
+                data: null,
+                errors: [],
+                timestamp: '2026-10-21T10:00:00Z',
+              }),
+            }),
+        },
+      ],
+      action: async (page) => ({
+        error: await page.locator('[data-testid="order-detail-error"]').count(),
+        retry: await page.locator('[data-testid="order-detail-error"] button').first().innerText(),
+      }),
+    },
+  ],
+
+  // The return path: open a FILTERED list, click a row, then click the
+  // "Orders" crumb. The crumb must hand the list back its filters.
+  'order-details-v3-return': [
+    {
+      id: 'filtered-return',
+      url: '/dashboard/orders?status=DELIVERED',
+      action: async (page) => {
+        const row = page.locator('tbody tr').first();
+        if ((await row.count()) === 0) return { present: false, reason: 'no rows' };
+        await row.click();
+        await page.waitForURL('**/dashboard/orders/*', { timeout: 15_000 }).catch(() => {});
+        await page.waitForTimeout(1500);
+        const detailUrl = page.url();
+        // The last crumb is the CURRENT page (no href, aria-disabled); the
+        // one before it is "Orders".
+        const crumb = page.locator('nav ol a[href]').last();
+        const crumbHref = await crumb.getAttribute('href').catch(() => null);
+        await crumb.click();
+        await page.waitForTimeout(1500);
+        return {
+          present: true,
+          detailUrl,
+          crumbHref,
+          backUrl: page.url(),
+          preservedFilters: /status=DELIVERED/i.test(page.url()),
+        };
+      },
+      measure: async (page) =>
+        page.evaluate(() => ({
+          url: location.pathname + location.search,
+          breadcrumb: (document.querySelector('nav ol')?.textContent || '').trim().replace(/\s+/g, ' '),
+        })),
     },
   ],
 

@@ -22,7 +22,12 @@
           <!-- Section crumb (e.g. Catalog) — not a destination -->
           <span hlmBreadcrumbLink class="text-muted-foreground">{{ item.label }}</span>
         } @else if (!last) {
-          <a hlmBreadcrumbLink [routerLink]="item.url">{{ item.label }}</a>
+          <a
+            hlmBreadcrumbLink
+            [routerLink]="crumbPath(item.url)"
+            [queryParams]="crumbQueryParams(item.url)"
+            >{{ item.label }}</a
+          >
         } @else {
           <a hlmBreadcrumbPage>{{ item.label }}</a>
         }

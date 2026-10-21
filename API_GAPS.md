@@ -83,39 +83,85 @@ Orders use `SKU-1-1`, carts use `SKU-001`. Propose a single format
 - Reviewer full name: backend returns `username` (lowercase) only; no full name. Frontend title-cases the username.
 - Verified purchase: backend now returns `orderId`/`orderNumber` (present in model); seed audit of which reviews are verified is reported in SEED_PROPOSAL.md.
 
-## Review details dialog v3 (ui/review-dialog-v3)
+## Order details v3 (ui/order-details-v3)
 
-Every line below was checked against the RUNNING backend (`main`, live call on
-2026-10-21, `GET /api/dashboard/reviews`), not against the DTO on disk.
+Verified against the running backend on 2026-10-21 with the seeded 17 orders.
+The page never invents a value for any of the gaps below; it shows "Not
+recorded", an inline warning, or a disabled action with the reason.
 
-- **The verified-purchase order is not in the response — BLOCKED on backend.**
-  The live `ReviewResponse` carries `id, username, avatarUrl, rating, comment,
-  verified, approved, productName, productSlug, primaryImageUrl, createdAt` and
-  NO `orderId` / `orderNumber`. The "View order ORD-…" link in the dialog is
-  therefore rendered only when the fields arrive; with the API as it is today
-  the link does not appear, and nothing is invented to fill it. The DTO with
-  `orderId` / `orderNumber` exists on the backend branch
-  `feature/reviews-messages-backend` but is NOT deployed. The dashboard model
-  keeps both fields optional (`number | null`), so the day the backend ships
-  them the link appears with no frontend change. (gap)
-- **No reject action, no rejected state — BLOCKED on backend.**
-  `ReviewController` exposes `PATCH /api/dashboard/reviews/{id}/approval?approved=`
-  and `DELETE /api/dashboard/reviews/{id}`; there is no reject endpoint and
-  `approved` is a boolean, so a rejected review has nowhere to live. The
-  Pending dialog therefore offers Approve (primary), Close and Delete only.
-  A "Reject" button is NOT rendered disabled either: a dead button reads as a
-  broken product. (gap)
-- **No admin reply — BLOCKED on backend.**
-  There is no endpoint and no column for a public answer from the dashboard.
-  The reply feature is skipped in this round and logged in DECISIONS.md. (gap)
-- **The reviewer still has no full name.** `username` is the only identity the
-  API returns; the dialog title-cases it, as the list does. (gap, unchanged)
-- **The product page of the dashboard has no read-only route.** Not an API
-  gap: `/dashboard/products/:slug` does not exist as a route, so the product
-  name in the dialog links to `/dashboard/products/:slug/edit`, the only
-  product page the dashboard has. A read-only product page would be a routing
-  task, not an API one. (gap, frontend)
-### 10. Currency/scale
-Cart prices (12.50/14/11) vs order prices (650/525) suggest different scales.
-Confirm whether carts are in a different currency or the seed is wrong;
-propose a single currency (EGP) and a single scale across both entities.
+### 1. Order status history is an empty contract (blocker for the timeline)
+
+- `GET /api/dashboard/orders/{id}/history` exists and returns `200`, but every
+  seeded order returns `[]`. The page therefore logs only the order's
+  `createdAt` (a real timestamp) and states that step dates are not recorded.
+- What is needed: the endpoint must return one row per transition:
+  `id, orderId, fromStatus (null on creation), toStatus, note, changedBy,
+  notifyCustomer, createdAt`, oldest first, including the creation row.
+- Writers: `PUT /api/dashboard/orders/{id}/status` must write a history row in
+  the same transaction as the status change (it receives `note` and
+  `notifyCustomer` today). A refund and a shipment should also be written as
+  recorded events (or exposed through their own lists, which the page already
+  reads).
+- `changedBy` is currently not populated anywhere; the page shows it as an
+  actor only when present.
+- Missing actor display name: `changedBy` is an e-mail at best. A `changedByName`
+  (or the admin's display name) is needed for a human timeline.
+
+### 2. Shipment: fields exist on the model, none are persisted by seed/flow
+
+- `GET /api/dashboard/orders/{id}/shipment` and
+  `PUT /api/dashboard/orders/{id}/shipment` exist and accept `carrier`,
+  `trackingNumber`, `trackingUrl`. `OrderResponse.shipment` is `null` for every
+  seeded order, including SHIPPED and DELIVERED ones.
+- There is no `estimatedDeliveryAt` (ETA) field; the shipment form does not ask
+  for one and the card does not show one.
+- `shippedAt` / `deliveredAt` are not stamped when the status changes to
+  SHIPPED / DELIVERED. They are only whatever the shipment row already has.
+- Needed: persist the shipment on the status transition (or require it), stamp
+  `shippedAt`/`deliveredAt`, and add `estimatedDeliveryAt`. A DELIVERED order
+  with no shipment should be rejected by the backend, not only warned about in
+  the UI.
+
+### 3. Payment facts are missing on PAID and REFUNDED orders
+
+- `OrderPaymentDetails.paidAt` and `.transactionReference` are `null` for every
+  seeded order, including PAID ones. The page shows an inline warning on a PAID
+  order whose payment facts are missing.
+- `POST /api/dashboard/orders/{id}/refund` records a refund row, but the seeded
+  REFUNDED orders have no refund rows. For order 9 the payment endpoint returns
+  `amount: 0, netPaid: null, refunds: []` — the refunded amount cannot be
+  derived, so the page shows "Not recorded" for Refunded rather than `0`.
+- Needed: persist `transactionReference` and `paidAt` when a payment is
+  captured (gateway callback or COD collection), record a refund row when the
+  status becomes REFUNDED (or expose `refundedAmount` on the order/payment),
+  and return a non-null `netPaid`.
+- The gateway refund itself is not wired: the service records the refund and
+  marks it `manual`. The UI copies the dialog's "goes back through the gateway"
+  wording only because that is the intended contract; the actual gateway call
+  is a backend gap.
+
+### 4. Customer aggregate (N+1 today)
+
+- No `GET /api/dashboard/customers/{id}/stats`. The page computes order count
+  and paid lifetime value by walking `getEveryOrder({ userId })`, which is
+  correct but reads every page of the customer's orders.
+- Needed: `{ orderCount, paidOrderCount, lifetimePaid, lastOrderAt }`, with a
+  documented basis (which payment statuses count).
+
+### 5. Per-line money and order-level money that do not exist
+
+- `OrderItemResponse` has no per-line discount (`discountAmount`) and no
+  `compareAtPrice`. The page uses the catalog's `compareAtPrice` only as a
+  struck-through "regular price", explicitly not as an order discount.
+- `OrderResponse` has no `couponCode` and no `taxAmount`. The page shows a Tax
+  row only when a tax value ever appears, and a Discount row from the order's
+  `discountAmount` only.
+- Needed if the business wants them: `discountAmount` per line, `couponCode`,
+  `taxAmount` (and a tax basis), all persisted at order creation.
+
+### 6. Resend order e-mail
+
+- No endpoint to send an order e-mail on demand. The action is disabled with
+  the reason "the store sends order e-mails automatically, but it cannot send
+  one on demand." A `POST /api/dashboard/orders/{id}/resend-email` (and an
+  event row when it is sent) would make the action real.

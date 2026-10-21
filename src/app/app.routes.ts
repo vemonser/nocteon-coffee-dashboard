@@ -475,7 +475,7 @@ export const routes: Routes = [
       },
       {
         path: 'orders/:id',
-        data: { breadcrumb: 'orderDetail' },
+        data: { breadcrumb: 'orders' },
         canActivate: [permissionGuard('order:read')],
         loadComponent: () =>
           import('./features/orders/order-detail/order-detail.component').then(

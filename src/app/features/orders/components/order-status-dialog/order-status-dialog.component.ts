@@ -1,4 +1,4 @@
-import { Component, computed, inject, input, output, signal } from '@angular/core';
+import { Component, computed, effect, inject, input, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TranslocoService } from '@jsverse/transloco';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
@@ -95,6 +95,13 @@ export class OrderStatusDialogComponent {
 
   protected readonly canConfirm = computed(() => this.selected() !== null);
 
+  /** Each opening starts clean: no status, note or notify left from last time. */
+  constructor() {
+    effect(() => {
+      if (this.open()) this.reset();
+    });
+  }
+
   protected statusName(status: OrderStatus): string {
     return this.t(`orders.statuses.${status}`, status);
   }
@@ -121,6 +128,11 @@ export class OrderStatusDialogComponent {
   }
 
   private t(key: string, fallback: string, params?: Record<string, unknown>): string {
+    // Read the active language so every computed that calls `t()` is
+    // recomputed when the admin switches language at runtime. `translate()`
+    // alone is not a signal read, so `computed()` would keep the value it
+    // captured on the page's first render.
+    this.transloco.activeLang();
     const value = this.transloco.translate(key, params);
     return typeof value === 'string' && value.length > 0 && value !== key ? value : fallback;
   }

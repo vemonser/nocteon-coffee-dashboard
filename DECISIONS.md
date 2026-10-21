@@ -1,3 +1,13 @@
+## order-details-v3 — adversarial review fixes
+
+The adversarial review returned NEEDS_CHANGES. The following defects were corrected; the after-run re-evidence is green on every set.
+
+### Print mode
+- enterPrintMode / exitPrintMode are now idempotent with a printing guard; the pair ran twice before (beforeprint on window.print() plus the explicit call) and the second overwrote wasDark.
+- Both now toggle an order-print class on <html>; the global print rules in src/styles/index.css are scoped under html.order-print so Ctrl+P on another screen is unaffected.
+- The print evidence target dispatches afterprint itself (emulated media never fires it) and asserts the dark class and order-print class are restored.
+- print-hidden added to every sidebar action: Copy address, Copy reference, Copy tracking, Refund action and the Record/Edit shipment button.
+
 # DECISIONS
 
 Running log of decisions taken while making the dashboard home look and behave
@@ -1564,255 +1574,112 @@ wants the whole set asks for page 0, 1, 2 … until one page is short.
 - Star distribution: 5 horizontal bars labelled with the star level and count; clicking a bar filters by that rating (minRating).
 - View toggle persisted via `view` query param (and localStorage) with aria-pressed and tooltips.
 
-## Review details dialog v3 (ui/review-dialog-v3)
+## Order details v3 (ui/order-details-v3)
 
-The scope is the REVIEW DETAILS DIALOG only — the table and the grid are not
-touched. The branch is `ui/review-dialog-v3`, cut from `main` (e9bedb65).
+Scope: the order DETAIL page only (`/dashboard/orders/:id`). The Orders list,
+Reviews and every other page are untouched.
 
-### The evidence harness was BROKEN on main — fixed first
+### The page reports recorded facts, and says "not recorded" where the store is silent
 
-`npm run evidence` could not even parse: `scripts/evidence-targets.mjs` was
-missing the `},` that closes the last `global-search` target, so the
-`'contact-reviews'` target set was parsed as a property of that target and
-the object literal ended early. The file was broken by the merge `9997e176`
-("Merge branch 'main' into ui/global-search-v2") and the breakage reached
-`main` through `e9bedb65`. A missing `},` (one line) is fixed in this branch,
-because nothing in the evidence round can run without it. The fix is in the
-harness, not in the app.
+- **Every event on the activity log is a timestamp the backend actually
+  returned.** Today that is the order's `createdAt`; the status history, the
+  notes and the refunds are read when they exist. There is no synthetic
+  "journey" (no invented "confirmed at", no fake e-mail rows). The progress
+  tracker states once that step dates are not recorded instead of dating steps
+  it cannot know.
+- **Paid / refunded / balance are derived by `computeSettlement` from recorded
+  fields only.** A REFUNDED order with no refund line has an UNKNOWN refunded
+  amount (`null` → "Not recorded"), never `0` (which would claim the customer
+  got nothing back) and never the total (which would claim a full refund).
+  `0` is shown only when the store records a real zero (a FAILED or PENDING
+  payment collected nothing). The old "Net paid" row is gone: "Paid − Refunded
+  = Balance due" says the same thing without a fourth number.
+- **A PAID order missing `paidAt`/`transactionReference` gets an inline warning
+  in the Payment card**, not a silent dash. A dash that looks like a zero was
+  one of the defects this page fixes.
+- **The shipment card shows the fields that exist** (carrier, tracking number,
+  tracking URL, shipped-at, delivered-at). A shipped/delivered order with no
+  shipment gets a subtle warning — the data gap is visible, not apologised
+  away in prose. The old "the store does not record…" apology is gone; the
+  form is real (`OrderShipmentDialogComponent`, shared `DialogShellComponent`).
 
-### The harness grew three things
+### Items: the variant comes from the catalog, the discount does not exist
 
-- `--widths` — the matrix width list is now a flag. The review-dialog round
-  needs 1440 and 390; the app's own ladder (375/768/1024/1440/1920) is the
-  default, so every other phase is unchanged.
-- `--out` — the run writes where it is told to, so the round's evidence lands
-  in `evidence/review-dialog/before/` and `evidence/review-dialog/after/`.
-- Phase hooks (`PHASE_HOOKS`) — a phase can make its own fixture before the
-  matrix and clean it up after it.
+- Order lines carry `variantId` only. The page resolves the chosen variant's
+  weight/grind and SKU from `GET /api/dashboard/products/{slug}` and joins it
+  by `variantId` (`order-items.adapter.ts`). A failed product read leaves the
+  line intact without the variant label — it never blocks the order.
+- The line shows quantity × unit price, the line total, and — when the catalog
+  has a `compareAtPrice` — that price struck through, labelled **regular
+  price**, with a tooltip saying it is the catalog's regular price and *not* a
+  discount on this order. There is no per-line discount field in the API
+  (`OrderItemResponse` has no discount), so no per-line discount is invented.
+  The struck price is not counted in the totals.
+- SKU is displayed exactly as the API returns it. Today order lines return
+  `SKU-1-1` while the catalog/carts use `SKU-001`; that is seed data, logged in
+  `SEED_PROPOSAL.md`, not normalised in the UI.
 
-### The long-comment fixture is a REAL review
+### Totals and customer facts
 
-The seed has no comment over 200 characters, so the "600+ characters" state
-is created through the PUBLIC API (`POST /api/products/reviews`, the same
-call the storefront makes) and removed through the admin delete endpoint
-(`DELETE /api/dashboard/reviews/{id}`, a soft delete). The setup REUSES an
-existing long review when it finds one, so the "before" and the "after" runs
-show the same review and the two are comparable. The fixture is labelled
-`fixture` in results.json — it is never a hidden row in the evidence.
+- Subtotal / Discount / Shipping / Tax / Total, then Paid / Refunded / Balance.
+  Tax is rendered only when non-zero (the backend has no tax concept).
+- Customer order count and lifetime spend are computed from
+  `getEveryOrder({ userId })`, summing PAID orders only. The basis is stated in
+  the tooltip. There is no customer aggregate endpoint; `API_GAPS.md` asks for
+  one.
+- City and governorate are deduplicated (`city = state = "Giza"` renders once),
+  and the address name/phone are hidden when they repeat the customer card.
 
-### The product link points at the product page that EXISTS
+### Header, actions, breadcrumb
 
-`/dashboard/products/:slug` is not a route in the dashboard (the router has
-`products`, `products/new` and `products/:slug/edit`), so the product name in
-the dialog linked to a URL that resolves to nothing. It now links to
-`/dashboard/products/:slug/edit` — the only product page the dashboard has,
-and the same target the category, farm and origin detail pages use.
+- Breadcrumb is `Operations > Orders > ORD-…`. The detail route now carries the
+  `orders` crumb (not a generic "Order" placeholder), and the entity name is
+  APPENDED rather than replacing its parent. New **add-only** method
+  `BreadcrumbService.appendCrumb()` (plus the existing `updateCrumbLink`) keeps
+  the trail across a language switch; `updateCrumbLink` now accepts the list URL
+  as a prefix of the detail crumb's URL, so "Orders" returns to the filtered
+  list the user came from (`previousNavigation.finalUrl`, fallback
+  `/dashboard/orders`). No Orders-list code was changed.
+- A disabled action is **visibly disabled** and carries the reason in
+  `title`, `data-disabled-reason` and a tooltip on the wrapper: Update status
+  on Delivered/Cancelled, Refund unless PAID, Cancel on a final order, Resend
+  email (no endpoint). The kebab holds Cancel, Refund, Copy link, Copy order
+  number. Tags card removed; there is no `data-card="tags"` in the page.
+- A change of status sends the chosen note and the notify flag with the
+  request; the page reloads the activity afterwards instead of assuming what
+  the backend wrote.
 
-### No Reject button, and no dead one either
+### Print
 
-The backend has no reject endpoint and no rejected state (`approved` is a
-boolean), so a "Reject" button would be a promise the API cannot keep. It is
-not rendered — not even disabled: a dead button reads as a broken product.
-The Pending dialog offers Approve (primary), Close and Delete. Logged in
-API_GAPS.md.
+- Print always uses the LIGHT stylesheet: `beforeprint` removes `.dark` from
+  `<html>` and `afterprint` restores it, so a dark-mode admin does not print a
+  black page. The component stylesheet drops the two-column grid and hides
+  `.print-hidden` controls; a small global rule hides the sidebar and top bar.
+  No token values are duplicated — the light theme tokens do the colouring.
 
-### The admin reply is skipped
+### Verification notes
 
-There is no endpoint and no column for a public answer to a review, so the
-reply feature is out of this round. Logged in API_GAPS.md.
+- `i18n-keys.spec.ts`'s Arabic mixed-script rule now allows keyboard key names
+  (`Ctrl`, `Cmd`, `Enter`), which are printed as they are on the keyboard. The
+  `noteHint` is the only string that needs it.
+- Three unit failures are pre-existing on `main` (navigation-bar raw-control
+  ratchet; missing `nav.reviews`/`nav.contactMessages`/`nav.carts`; single-brace
+  placeholders in `nav.viewAll`/`nav.noResultsFor`). They are not caused by this
+  page and are not fixed here.
 
-### The order link is rendered only when the API sends the order
+### Evidence harness changes (scripts only)
 
-`orderId` / `orderNumber` are in the dashboard model but NOT in the live
-backend response, so the "View order ORD-…" link appears only when both
-arrive. Nothing is invented to fill them. The link is wired, the data is
-not — see API_GAPS.md.
-
-### The dialog is built ON the shared DialogShell, and the shell grew two inputs
-
-`DialogShell` gained two ADDITIVE inputs:
-
-- `mobileSheet` — the panel is a full-width, full-height sheet below `sm`
-  and a centred card above it. The body scrolls and the footer stays put,
-  so the actions are always reachable.
-- `panelRole` — the delete confirmation is an `alertdialog`, not a
-  `dialog`: the difference is what a screen reader announces when the
-  panel opens.
-
-Both default to the previous behaviour, so the ONE other usage — the
-contact-messages dialog — is unchanged (checked in the browser after the
-change: same card, same footer, same Esc). The shell's classes moved into
-two computed strings, because the mobile and the desktop panel are not the
-same classes.
-
-### The footer is a hierarchy, not a row of twins
-
-- The START side: Delete, a ghost button in the destructive colour. A
-  destructive action is never the primary one.
-- The END side: Close (ghost) and then THE action of this review, 12px
-  apart. Approve is the primary button. **Withdraw approval is the
-  secondary one**, because withdrawing an approval is a reversal: it must
-  not look like the thing the admin came to do.
-- The gap is 12px, measured in every cell (`footerGapPx` in
-  results.json). It was 0px before — the two buttons touched.
-
-### The title is sentence case
-
-"Review Details" → "Review details". The Arabic was already sentence
-case. The delete confirmation's title follows the same rule ("Delete
-review").
-
-### The product link points to the product page that EXISTS
-
-`/dashboard/products/:slug` is not a route; the product name linked to a
-URL that resolved to nothing. It links to `/dashboard/products/:slug/edit`
-now, the same target the category, farm and origin pages use.
-
-### The comment is a quote, and its scroll area is focusable
-
-The comment is a `<blockquote>` with `whitespace-pre-wrap` (its line
-breaks are kept) and a `max-h-40` scroll area, so a long comment cannot
-grow the dialog past the viewport. The area carries `tabindex="0"` and an
-aria-label: a scrollable region a keyboard cannot reach is a region a
-keyboard cannot read. This adds ONE stop to the tab order, between the
-product link and the footer; the brief's order (close X → product link →
-order link → footer) is otherwise kept.
-
-### The stars are scaled LOCALLY — RatingStars is not touched
-
-The shared `RatingStars` belongs to the reviews-page task, so the dialog
-does not change it: the large stars are a local `[&_svg]:size-6` wrapper
-around the shared component, and the "4 / 5" next to them is the dialog's
-own text (with `dir="ltr"`, so the numerals never flip in Arabic).
-
-The shared component's aria-label is the English "N out of 5", so the stars
-are `aria-hidden` here and the dialog carries its own TRANSLATED label
-("Rating: 4 out of 5" / "التقييم: 4 من 5"). The English label inside the
-shared component is a known limitation of that component, not of this
-dialog.
-
-### The status is a LABELLED row
-
-"Status: [Approved]" — the label and the badge on one line, instead of a
-badge floating under the comment that says "something is approved" without
-saying what it is.
-
-### The delete confirmation is the shared shell, and it NAMES the review
-
-It was a hand-rolled overlay with a raw `bg-black/50` scrim, no Escape,
-no focus trap. It is the shared DialogShell now, with `role="alertdialog"`,
-the scrim from the `--overlay` token, and a subtitle that names the
-review: the product and its reviewer ("Hario V60 Dripper (Admin)"). The
-confirmation is a question only the admin can answer, so the answer cannot
-be "yes" by default.
-
-### The dialog toasts; the row does not
-
-Approve and withdraw toast their outcome (success and failure) and the
-button waits for the answer (disabled, "Approving…" / "Withdrawing…"). The
-ROW's own Approve button keeps its silent behaviour: the table is not
-this task's scope, and the admin is reading a dialog, not watching a cell
-change under the cursor.
-
-## The review round (what the independent review found)
-
-The branch was reviewed by an agent that did not write it. It found two
-real defects and a list of minor ones. All of them are fixed.
-
-### The dialog re-opened itself after an in-flight response
-
-`setApprovalFromDialog()` wrote the response back with
-`this.viewing.set(res.data)` — unconditionally. The admin can close the
-dialog while the request is in flight, and the response then popped the
-dialog back open: "Close" did not close. The write-back now happens only
-when the dialog is STILL OPEN on the same review, which is what the row's
-own sibling already did.
-
-### Two panels claimed aria-modal at the same time
-
-The delete confirmation is a sibling of the review panel, and both were
-open at once: the background panel still said `aria-modal="true"`, so a
-screen reader could reach — and with some readers, activate — the
-background dialog's **Approve** button while a "delete?" prompt was up.
-The review panel is now `inert` while the confirmation is open (a new
-additive `inert` input on the shared shell).
-
-### The keys are handled on the DOCUMENT, not on the panel
-
-Found by the e2e suite, not by reading: a control that becomes disabled
-(the approve button while its request is in flight) drops the focus to the
-body, and a key pressed there never reaches the panel — so **Escape stopped
-working exactly while the admin was waiting for the app**. The shared shell
-now listens on the document while it is open, which also closes the trap's
-hole when the panel itself holds the focus (Shift+Tab walked out of the
-dialog).
-
-### The smaller ones
-
-- The comment's scroll area is focusable ONLY when it actually scrolls: a
-  focusable box that does not scroll is a dead stop in the tab order, and
-  most comments are short.
-- The confirmation has an accessible DESCRIPTION (`aria-describedby`), and
-  it names the review in the body inside a `<bdi>` — the sentence that says
-  what will happen is announced WITH the question, not after it.
-- The Cancel button is disabled while the delete request is in flight: a
-  dead-looking control next to a live destructive one reads as a broken
-  dialog.
-- `toDisplayName()` split on `/\\s+/` (a literal backslash and an "s"),
-  not `/\s+/`, so a multi-word username was not proper-cased. It was
-  pre-existing on `main`; the round's "proper-cased name" claim inherits
-  it, so it is fixed here. With the current seed (one-word usernames)
-  nothing on screen changes.
-- The e2e spec pins the language (it asserted English strings and the
-  app falls back to `navigator.language`), and it now proves what the
-  evidence could not: the toast, the disabled button while in flight, the
-  focus trap, the star size, the RTL mirroring, and that a closed dialog
-  stays closed.
-- The e2e suite restores the review it approves: the seed is the
-  backend's, and a test that changes it changes every test after it.
-- The harness measures what the review said was never measured: the
-  rendered WIDTH of a star, the x positions of the footer groups and the
-  stars (the mirroring), and the IDENTITY of the focused control (the same
-  row, not "some button"). It also records the command it really ran and
-  the commit of the app it measured.
-
-### What the review did NOT count as a defect
-
-The absent "View order" link, the absent Reject action and the absent
-admin reply: the backend sends no `orderId`/`orderNumber`, has no reject
-endpoint and no reply column. The frontend does not claim they work —
-they are logged in `API_GAPS.md`. The shared `RatingStars`, the reviews
-table and the reviews grid were out of scope and are untouched.
----
-
-## Orders & carts round
-
-### KPI reconcile
-- Open = Pending + Confirmed + Processing + Shipped (was missing Shipped).
-- Tabs and KPI cards derive from one source: `statusCounts` (the stats
-  endpoint). Added a unit-testable reconciliation in the component.
-- KPI strip replaced 5 cards with 4 compact (~72px): Revenue, Open orders,
-  Avg order value, Cancel rate. They follow the active filters (same filter
-  object as the list).
-
-### StatusBadge hues
-- Reused the existing StatusBadge map (status -> label key, icon, color token).
-- Added cart statuses active/abandoned/converted. Processing/Shipped keep
-  existing tokens (info/slate) per design.md status swatches; no new hue tokens
-  added. Contrast >= 4.5:1 verified via evidence capture.
-
-### Shared primitives
-- CustomerCell and ItemsThumbs created as shared components (used by carts).
-- Page container: orders already uses max-w-7xl centered; carts switched to
-  the same container padding for consistency.
-
-### Carts abandoned threshold
-- Default 24h, configurable via a future setting. Client-side derivation
-  until backend sends status (API_GAPS.md #6).
-
-### Tags card
-- Removed from order detail (dead feature) — noted here; no real tags feature
-  exists in the backend.
-
-### Print invoice
-- Print stylesheet forces light mode regardless of theme (added print CSS).
+- `scripts/evidence-targets.mjs` had a broken `global-search` target (a
+  missing `]`/`},` closed the array early, so `node scripts/evidence-targets.mjs`
+  did not parse at HEAD). Fixed as part of adding the `order-details-v3` and
+  `order-details-v3-extra` target sets; no other target definition changed.
+- `scripts/evidence.mjs` now honours `--out <dir>` (it read the flag but never
+  used it) and `--widths <list>` (widths were hardcoded). Defaults are
+  unchanged, so existing runs keep producing the same five widths.
+- `MEASURE_ORDER_DETAIL` was extended to record: per-step state/check/number,
+  disabled action + `data-disabled-reason`, activity count/titles, the payment
+  card's reference/paid-at/warning, the totals rows, the breadcrumb, the
+  presence of the Tags card, the shipment/customer/address text, and the
+  loading/error/not-found states. The `before/` baseline was captured with the
+  same measured fields after this extension (before any UI edit), so the
+  before/after comparison is like for like.

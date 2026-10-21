@@ -254,10 +254,73 @@ is settled. The seed proposal therefore does not attempt to change it.
 7. **All orders share one timestamp (8:49 AM)** — propose spread timestamps
    and sample events so history can be demonstrated (ORDERS_SEED_PROPOSAL.md).
 
-### Carts
+- Verified purchase audit: verified = reviewer has a Delivered order containing that product. Seed data should be reconciled so `verified` matches `orderId`/`orderNumber` presence; mismatches (verified true without order, or order present but not delivered) should be corrected in the seed.
+- Reviewer usernames are lowercase in seed; display proper-casing is applied in the UI, but seed could store display names if full names are added later.
 
-8. **Abandoned threshold default 24h, configurable** — proposed in
-   DECISIONS.md. Frontend derives status client-side until backend sends it.
-9. **Cart status (active/abandoned/converted), converted-order id, last
-   activity** — see API_GAPS.md #6.
-10. **Send reminder endpoint** — see API_GAPS.md #7.
+## Order details v3 (ui/order-details-v3)
+
+The detail page was verified against the 17 seeded orders. These data defects
+make the page (and any UAT of it) weaker than the UI; none of them are worked
+around by inventing data in the frontend.
+
+### 1. Every order has the same `createdAt`
+
+All 17 orders report `createdAt = 2026-10-20T05:49:48.204790Z`. Every timeline
+therefore starts at the same instant, ordering is untestable, and the list's
+"newest first" sort cannot be seen. The seed should spread creation over
+several weeks and make each transition later than the previous one.
+
+### 2. SHIPPED and DELIVERED orders have no shipment
+
+`OrderResponse.shipment` is `null` for every order, including the SHIPPED and
+DELIVERED ones, and `shippedAt`/`deliveredAt` are always null. The page now
+flags this ("marked shipped or delivered, but no shipment is recorded"), but a
+UAT of the shipment card and the stepper's step dates is impossible without
+seed rows. Proposed: one order per fulfilment stage with a carrier, tracking
+number, tracking URL, `shippedAt`, `deliveredAt` and an ETA.
+
+### 3. PAID orders have no payment facts
+
+`paidAt` and `transactionReference` are null on every PAID order (the page
+warns about it on each one). The seed should set both for the ONLINE paid
+orders, and `paidAt` for the COD-paid order (collected at delivery).
+
+### 4. A REFUNDED order has no refund line
+
+Order 9 is DELIVERED + REFUNDED but its payment returns
+`amount: 0, netPaid: null, refunds: []`. The UI correctly shows the refunded
+amount as "Not recorded", but this is the one state where the settlement cannot
+be checked. Proposed: a refund row (amount, reason, `createdAt`, `createdBy`)
+for every REFUNDED order, plus one partial refund to exercise the balance.
+
+### 5. Order lines have no items on seven orders
+
+Orders 6, 7, 9, 10, 12, 14 and 15 have no `order_items` rows; their totals are
+shipping-only (and order 9's total is `0.00` while it is DELIVERED + REFUNDED).
+The empty-items state is real and useful, but most orders should carry items so
+the items card, variant join and per-line prices are exercised. Keep at most
+one shipping-only order.
+
+### 6. The SKU format disagrees between order lines and the catalog
+
+Order lines return `SKU-1-1` / `SKU-2-1`; the catalog and carts use
+`SKU-001`-style values. The page displays the raw API value (no normalisation),
+so the same product shows two different SKUs on two screens. The seed should
+store the catalog's SKU on the order line, or the backend should copy it at
+order creation.
+
+### 7. Address duplication in the seed
+
+`city` and `state` are both `"Giza"`, and `address.fullName` / `address.phone`
+repeat the customer's name and phone. The page deduplicates both for display
+and hides repeats, but the seed should use distinct values (e.g. city `Giza`,
+governorate `Giza Governorate`) so the address block can be checked without the
+dedupe masking a data error.
+
+### 8. States worth adding for UAT
+
+The set today covers Delivered+Paid (1), Shipped+Paid (8), Cancelled+Failed (6),
+Delivered+Refunded (9) and Confirmed+COD pending with no items (15). Missing:
+a Processing order, a Pending order, a SHIPPED order with a real shipment, a
+partial refund, a COD order paid at delivery, and an order with a recorded
+history (creation + transitions + actor + note).

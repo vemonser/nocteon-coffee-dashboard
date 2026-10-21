@@ -1,4 +1,4 @@
-import { Component, computed, inject, input, output, signal } from '@angular/core';
+import { Component, computed, effect, inject, input, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TranslocoService } from '@jsverse/transloco';
 import { HlmInputImports } from '@spartan-ng/helm/input';
@@ -54,6 +54,13 @@ export class OrderCancelDialogComponent {
 
   protected readonly canConfirm = computed(() => this.reason().trim().length > 0);
 
+  /** Each opening starts clean: no reason left from the previous attempt. */
+  constructor() {
+    effect(() => {
+      if (this.open()) this.reset();
+    });
+  }
+
   protected confirm(): void {
     if (!this.canConfirm()) return;
     this.confirmed.emit({ reason: this.reason().trim() });
@@ -64,6 +71,8 @@ export class OrderCancelDialogComponent {
   }
 
   private t(key: string, fallback: string, params?: Record<string, unknown>): string {
+    // React to a runtime language switch: `translate()` is not a signal read.
+    this.transloco.activeLang();
     const value = this.transloco.translate(key, params);
     return typeof value === 'string' && value.length > 0 && value !== key ? value : fallback;
   }
