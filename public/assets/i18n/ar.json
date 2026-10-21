@@ -1147,6 +1147,17 @@
     "adjustSearch": "عدّل البحث أو الفلاتر",
     "deleteTitle": "حذف التقييم",
     "deleteConfirm": "هل أنت متأكد من حذف هذا التقييم؟",
+    "deleteConfirmNamed": "سيتم حذف التقييم وتعليقه. لا يمكن التراجع عن هذا الإجراء.",
+    "dialog": {
+      "ratingLabel": "التقييم: {{rating}} من 5",
+      "viewOrder": "عرض الطلب"
+    },
+    "action": {
+      "approved": "تم اعتماد التقييم",
+      "approvalWithdrawn": "تم سحب الاعتماد",
+      "approving": "جارٍ الاعتماد…",
+      "withdrawing": "جارٍ سحب الاعتماد…"
+    },
     "unapproved": "غير معتمدة",
     "countReviews_zero": "{{count}} تقييم",
     "countReviews_one": "تقييم واحد",

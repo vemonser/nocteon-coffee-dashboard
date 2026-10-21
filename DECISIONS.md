@@ -1537,6 +1537,252 @@ Two rules now hold everywhere:
 The rule for the future: the API's cap is 100 rows per page. Anything that
 wants the whole set asks for page 0, 1, 2 … until one page is short.
 
+## Orders list v3 (ui/orders-list-v3)
+
+- KPI Revenue = sum of `totalAmount` of PAID orders only (COD pending and refunded excluded); AOV = Revenue / paid count; cancel rate = cancelled / all. KPIs follow active filters. Basis stated via card tooltip.
+- Open = Pending + Confirmed + Processing + Shipped (OPEN_STATUSES updated to include Shipped).
+- Customer column uses shared `CustomerCellComponent` with avatar; width 220px.
+- Created at renders on one line (stackTime false).
+- "No items" renders warning icon + tooltip.
+- COD + Cancelled payment status maps to "Not collected" (frontend mapping; logged).
+- Order # renders as accent link via data-table cellHref.
+- Row hover highlights full row including checkbox/actions; focus-visible + keyboard Enter.
+- Sort indicators use shared `SortHeaderComponent` (chevrons inactive, arrows active) with aria-sort.
+- Filters: label inside control, active count on Clear filters.
+- Bulk bar: allowed transitions only, Export selected, confirm dialog.
+- Row kebab: View, Update status, Print invoice, Resend email, Copy order number, separator, Cancel.
+- Refunded secondary line shown only when `refundedAmount` present.
+
+## Reviews v3 (ui/reviews-v3)
+
+- RatingStars: every star was hollow because the component used Lucide's outline `star` icon and toggled `fill-warning` on the host. Lucide's SVG carries `fill="none"`, so the CSS fill never reached the path and no star ever filled. Fix lives in `src/app/shared/ui/rating-stars/rating-stars.component.ts`: both states are now inline SVGs with an explicit `fill="currentColor"` (filled) / `fill="none"` (empty), coloured with the `warning` / `muted` tokens. Aria-label is now `N out of 5`.
+- Average rating basis: kept the backend's value (computed over ALL reviews, 4.0) because the API has no approved-only average; labelled `reviews.stats.averageRating` as "Average rating · all" so the basis is explicit. Approved-only would be 4.31 but requires a new endpoint (see API_GAPS).
+- VerifiedBadge: created `src/app/shared/ui/verified-badge/verified-badge.component.ts` (was missing) using a badge-check icon in the primary token with a visible tooltip + aria-label "Verified purchase", visually distinct from the green Approved StatusBadge.
+- Reviewer display name: backend returns lowercase `username` only; no full name exists, so the UI title-cases the username (`toDisplayName`) and shows the full value in a tooltip. Full-name source remains an API gap.
+- Table: Rating column sized to 150px with a 16px gap before Comment; Comment clamped to 2 lines with tooltip; no horizontal overflow at 1440/1280; Approve only on Pending rows via `primaryActionFor`; kebab holds Withdraw (approved rows) + Delete (confirm). Always-visible red trash removed (`showDelete="false"`).
+- Grid: RatingStars + `N/5`; reviewer line with VerifiedBadge; status badge in card header corner; Pending footer has Approve + Eye + kebab, Approved footer has Eye + kebab only (shrinks); comment clamped to 3 lines; stable min-height; last row left-aligned; view toggle persists via `view` URL param with `aria-pressed` and tooltips.
+- Star distribution: 5 horizontal bars labelled with the star level and count; clicking a bar filters by that rating (minRating).
+- View toggle persisted via `view` query param (and localStorage) with aria-pressed and tooltips.
+
+## Review details dialog v3 (ui/review-dialog-v3)
+
+The scope is the REVIEW DETAILS DIALOG only — the table and the grid are not
+touched. The branch is `ui/review-dialog-v3`, cut from `main` (e9bedb65).
+
+### The evidence harness was BROKEN on main — fixed first
+
+`npm run evidence` could not even parse: `scripts/evidence-targets.mjs` was
+missing the `},` that closes the last `global-search` target, so the
+`'contact-reviews'` target set was parsed as a property of that target and
+the object literal ended early. The file was broken by the merge `9997e176`
+("Merge branch 'main' into ui/global-search-v2") and the breakage reached
+`main` through `e9bedb65`. A missing `},` (one line) is fixed in this branch,
+because nothing in the evidence round can run without it. The fix is in the
+harness, not in the app.
+
+### The harness grew three things
+
+- `--widths` — the matrix width list is now a flag. The review-dialog round
+  needs 1440 and 390; the app's own ladder (375/768/1024/1440/1920) is the
+  default, so every other phase is unchanged.
+- `--out` — the run writes where it is told to, so the round's evidence lands
+  in `evidence/review-dialog/before/` and `evidence/review-dialog/after/`.
+- Phase hooks (`PHASE_HOOKS`) — a phase can make its own fixture before the
+  matrix and clean it up after it.
+
+### The long-comment fixture is a REAL review
+
+The seed has no comment over 200 characters, so the "600+ characters" state
+is created through the PUBLIC API (`POST /api/products/reviews`, the same
+call the storefront makes) and removed through the admin delete endpoint
+(`DELETE /api/dashboard/reviews/{id}`, a soft delete). The setup REUSES an
+existing long review when it finds one, so the "before" and the "after" runs
+show the same review and the two are comparable. The fixture is labelled
+`fixture` in results.json — it is never a hidden row in the evidence.
+
+### The product link points at the product page that EXISTS
+
+`/dashboard/products/:slug` is not a route in the dashboard (the router has
+`products`, `products/new` and `products/:slug/edit`), so the product name in
+the dialog linked to a URL that resolves to nothing. It now links to
+`/dashboard/products/:slug/edit` — the only product page the dashboard has,
+and the same target the category, farm and origin detail pages use.
+
+### No Reject button, and no dead one either
+
+The backend has no reject endpoint and no rejected state (`approved` is a
+boolean), so a "Reject" button would be a promise the API cannot keep. It is
+not rendered — not even disabled: a dead button reads as a broken product.
+The Pending dialog offers Approve (primary), Close and Delete. Logged in
+API_GAPS.md.
+
+### The admin reply is skipped
+
+There is no endpoint and no column for a public answer to a review, so the
+reply feature is out of this round. Logged in API_GAPS.md.
+
+### The order link is rendered only when the API sends the order
+
+`orderId` / `orderNumber` are in the dashboard model but NOT in the live
+backend response, so the "View order ORD-…" link appears only when both
+arrive. Nothing is invented to fill them. The link is wired, the data is
+not — see API_GAPS.md.
+
+### The dialog is built ON the shared DialogShell, and the shell grew two inputs
+
+`DialogShell` gained two ADDITIVE inputs:
+
+- `mobileSheet` — the panel is a full-width, full-height sheet below `sm`
+  and a centred card above it. The body scrolls and the footer stays put,
+  so the actions are always reachable.
+- `panelRole` — the delete confirmation is an `alertdialog`, not a
+  `dialog`: the difference is what a screen reader announces when the
+  panel opens.
+
+Both default to the previous behaviour, so the ONE other usage — the
+contact-messages dialog — is unchanged (checked in the browser after the
+change: same card, same footer, same Esc). The shell's classes moved into
+two computed strings, because the mobile and the desktop panel are not the
+same classes.
+
+### The footer is a hierarchy, not a row of twins
+
+- The START side: Delete, a ghost button in the destructive colour. A
+  destructive action is never the primary one.
+- The END side: Close (ghost) and then THE action of this review, 12px
+  apart. Approve is the primary button. **Withdraw approval is the
+  secondary one**, because withdrawing an approval is a reversal: it must
+  not look like the thing the admin came to do.
+- The gap is 12px, measured in every cell (`footerGapPx` in
+  results.json). It was 0px before — the two buttons touched.
+
+### The title is sentence case
+
+"Review Details" → "Review details". The Arabic was already sentence
+case. The delete confirmation's title follows the same rule ("Delete
+review").
+
+### The product link points to the product page that EXISTS
+
+`/dashboard/products/:slug` is not a route; the product name linked to a
+URL that resolved to nothing. It links to `/dashboard/products/:slug/edit`
+now, the same target the category, farm and origin pages use.
+
+### The comment is a quote, and its scroll area is focusable
+
+The comment is a `<blockquote>` with `whitespace-pre-wrap` (its line
+breaks are kept) and a `max-h-40` scroll area, so a long comment cannot
+grow the dialog past the viewport. The area carries `tabindex="0"` and an
+aria-label: a scrollable region a keyboard cannot reach is a region a
+keyboard cannot read. This adds ONE stop to the tab order, between the
+product link and the footer; the brief's order (close X → product link →
+order link → footer) is otherwise kept.
+
+### The stars are scaled LOCALLY — RatingStars is not touched
+
+The shared `RatingStars` belongs to the reviews-page task, so the dialog
+does not change it: the large stars are a local `[&_svg]:size-6` wrapper
+around the shared component, and the "4 / 5" next to them is the dialog's
+own text (with `dir="ltr"`, so the numerals never flip in Arabic).
+
+The shared component's aria-label is the English "N out of 5", so the stars
+are `aria-hidden` here and the dialog carries its own TRANSLATED label
+("Rating: 4 out of 5" / "التقييم: 4 من 5"). The English label inside the
+shared component is a known limitation of that component, not of this
+dialog.
+
+### The status is a LABELLED row
+
+"Status: [Approved]" — the label and the badge on one line, instead of a
+badge floating under the comment that says "something is approved" without
+saying what it is.
+
+### The delete confirmation is the shared shell, and it NAMES the review
+
+It was a hand-rolled overlay with a raw `bg-black/50` scrim, no Escape,
+no focus trap. It is the shared DialogShell now, with `role="alertdialog"`,
+the scrim from the `--overlay` token, and a subtitle that names the
+review: the product and its reviewer ("Hario V60 Dripper (Admin)"). The
+confirmation is a question only the admin can answer, so the answer cannot
+be "yes" by default.
+
+### The dialog toasts; the row does not
+
+Approve and withdraw toast their outcome (success and failure) and the
+button waits for the answer (disabled, "Approving…" / "Withdrawing…"). The
+ROW's own Approve button keeps its silent behaviour: the table is not
+this task's scope, and the admin is reading a dialog, not watching a cell
+change under the cursor.
+
+## The review round (what the independent review found)
+
+The branch was reviewed by an agent that did not write it. It found two
+real defects and a list of minor ones. All of them are fixed.
+
+### The dialog re-opened itself after an in-flight response
+
+`setApprovalFromDialog()` wrote the response back with
+`this.viewing.set(res.data)` — unconditionally. The admin can close the
+dialog while the request is in flight, and the response then popped the
+dialog back open: "Close" did not close. The write-back now happens only
+when the dialog is STILL OPEN on the same review, which is what the row's
+own sibling already did.
+
+### Two panels claimed aria-modal at the same time
+
+The delete confirmation is a sibling of the review panel, and both were
+open at once: the background panel still said `aria-modal="true"`, so a
+screen reader could reach — and with some readers, activate — the
+background dialog's **Approve** button while a "delete?" prompt was up.
+The review panel is now `inert` while the confirmation is open (a new
+additive `inert` input on the shared shell).
+
+### The keys are handled on the DOCUMENT, not on the panel
+
+Found by the e2e suite, not by reading: a control that becomes disabled
+(the approve button while its request is in flight) drops the focus to the
+body, and a key pressed there never reaches the panel — so **Escape stopped
+working exactly while the admin was waiting for the app**. The shared shell
+now listens on the document while it is open, which also closes the trap's
+hole when the panel itself holds the focus (Shift+Tab walked out of the
+dialog).
+
+### The smaller ones
+
+- The comment's scroll area is focusable ONLY when it actually scrolls: a
+  focusable box that does not scroll is a dead stop in the tab order, and
+  most comments are short.
+- The confirmation has an accessible DESCRIPTION (`aria-describedby`), and
+  it names the review in the body inside a `<bdi>` — the sentence that says
+  what will happen is announced WITH the question, not after it.
+- The Cancel button is disabled while the delete request is in flight: a
+  dead-looking control next to a live destructive one reads as a broken
+  dialog.
+- `toDisplayName()` split on `/\\s+/` (a literal backslash and an "s"),
+  not `/\s+/`, so a multi-word username was not proper-cased. It was
+  pre-existing on `main`; the round's "proper-cased name" claim inherits
+  it, so it is fixed here. With the current seed (one-word usernames)
+  nothing on screen changes.
+- The e2e spec pins the language (it asserted English strings and the
+  app falls back to `navigator.language`), and it now proves what the
+  evidence could not: the toast, the disabled button while in flight, the
+  focus trap, the star size, the RTL mirroring, and that a closed dialog
+  stays closed.
+- The e2e suite restores the review it approves: the seed is the
+  backend's, and a test that changes it changes every test after it.
+- The harness measures what the review said was never measured: the
+  rendered WIDTH of a star, the x positions of the footer groups and the
+  stars (the mirroring), and the IDENTITY of the focused control (the same
+  row, not "some button"). It also records the command it really ran and
+  the commit of the app it measured.
+
+### What the review did NOT count as a defect
+
+The absent "View order" link, the absent Reject action and the absent
+admin reply: the backend sends no `orderId`/`orderNumber`, has no reject
+endpoint and no reply column. The frontend does not claim they work —
+they are logged in `API_GAPS.md`. The shared `RatingStars`, the reviews
+table and the reviews grid were out of scope and are untouched.
 ---
 
 ## Orders & carts round

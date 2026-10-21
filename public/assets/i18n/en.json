@@ -1141,12 +1141,23 @@
     "selectRow": "Select row",
     "farm": "Farm",
     "loadError": "Could not load data",
-    "details": "Review Details",
+    "details": "Review details",
     "product": "Product",
     "minRating": "Minimum Rating",
     "adjustSearch": "Adjust your search or filters",
-    "deleteTitle": "Delete Review",
+    "deleteTitle": "Delete review",
     "deleteConfirm": "Are you sure you want to delete this review?",
+    "deleteConfirmNamed": "The review and its comment will be removed. This cannot be undone.",
+    "dialog": {
+      "ratingLabel": "Rating: {{rating}} out of 5",
+      "viewOrder": "View order"
+    },
+    "action": {
+      "approved": "Review approved",
+      "approvalWithdrawn": "Approval withdrawn",
+      "approving": "Approving…",
+      "withdrawing": "Withdrawing…"
+    },
     "unapproved": "Unapproved",
     "countReviews_one": "{{count}} review",
     "countReviews_other": "{{count}} reviews",

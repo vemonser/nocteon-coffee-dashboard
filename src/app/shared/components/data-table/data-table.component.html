@@ -613,9 +613,14 @@
                     being scannable. The full text opens in the drawer.
                     <bdi> keeps a Latin comment from having its punctuation
                     moved to the front inside an Arabic page.
+
+                    NO `block` HERE: `line-clamp-2` works by setting
+                    `display: -webkit-box`, and a `block` class in the same
+                    list wins the `display` — so the clamp was never applied
+                    and a long comment grew the row to half a page.
                   -->
                   <span
-                    class="block max-w-full text-start text-sm leading-relaxed line-clamp-2"
+                    class="max-w-full text-start text-sm leading-relaxed line-clamp-2"
                     [attr.title]="$any(cell.getValue())"
                   >
                     <bdi>{{ $any(cell.getValue()) }}</bdi>

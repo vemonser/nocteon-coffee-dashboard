@@ -12,7 +12,8 @@
     "test:ui": "playwright test --ui",
     "test:report": "playwright show-report",
     "test:unit": "ng test",
-    "evidence": "node scripts/evidence.mjs"
+    "evidence": "node scripts/evidence.mjs",
+    "verify:review-dialog": "node scripts/verify-review-dialog-evidence.mjs"
   },
   "private": true,
   "packageManager": "npm@11.16.0",

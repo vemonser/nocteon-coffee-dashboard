@@ -1,5 +1,5 @@
 import { CommonModule, DecimalPipe } from '@angular/common';
-import { Component, computed, effect, inject, signal } from '@angular/core';
+import { Component, ElementRef, computed, effect, inject, signal, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { ColumnDef, createColumnHelper } from '@tanstack/angular-table';
@@ -136,6 +136,17 @@ export class ReviewListComponent {
   readonly viewing = signal<ReviewResponse | null>(null);
   readonly deleting = signal<ReviewResponse | null>(null);
   readonly deletingBusy = signal(false);
+  /** The dialog's own request: the action button waits for the answer. */
+  readonly dialogBusy = signal(false);
+  /**
+   * The comment's scroll area, and whether it actually scrolls.
+   *
+   * <p>The area is focusable ONLY when it scrolls: a focusable box that
+   * does not scroll is a dead stop in the middle of the tab order, and
+   * most comments are short.
+   */
+  protected readonly commentBox = viewChild<ElementRef<HTMLElement>>('commentBox');
+  protected readonly commentScrolls = signal(false);
 
   private readonly VIEW_KEY = 'nocteon-reviews-view-mode';
   readonly viewMode = signal<ViewMode>(this.readViewMode());
@@ -165,6 +176,20 @@ export class ReviewListComponent {
     effect(() => {
       this.language.language();
       this.buildColumns();
+    });
+
+    // The comment's scroll area: measured AFTER the comment is in the DOM,
+    // so the area is focusable exactly when it has something to scroll.
+    effect(() => {
+      const review = this.viewing();
+      const box = this.commentBox()?.nativeElement;
+      if (!review || !box) {
+        this.commentScrolls.set(false);
+        return;
+      }
+      requestAnimationFrame(() => {
+        this.commentScrolls.set(box.scrollHeight > box.clientHeight + 1);
+      });
     });
   }
 
@@ -571,11 +596,63 @@ export class ReviewListComponent {
     this.viewing.set(review);
   }
 
-  /** The modal's confirm button: approve, or withdraw the approval. */
-  protected toggleApprovalFromDialog(): void {
-    const review = this.viewing();
-    if (!review) return;
-    this.setApproval(review, !review.approved);
+  /**
+   * The product page of the dashboard.
+   *
+   * <p>`/dashboard/products/{slug}` is not a route — the router has
+   * `products`, `products/new` and `products/:slug/edit` — so the product
+   * name used to link to a URL that resolved to nothing. The edit page is
+   * the product page the dashboard has, and the one the category, farm and
+   * origin pages link to as well.
+   */
+  protected productLink(review: ReviewResponse): string[] {
+    return ['/dashboard/products', review.productSlug, 'edit'];
+  }
+
+  /**
+   * The review the delete confirmation is about: its product and its
+   * reviewer. "Delete this one" is a question only the admin can answer, so
+   * the confirmation names the review instead of saying "this item".
+   */
+  protected readonly deleteTargetLabel = computed(() => {
+    const review = this.deleting();
+    if (!review) return '';
+    return `${review.productName ?? review.productSlug} (${this.toDisplayName(review.username)})`;
+  });
+
+  /**
+   * Approve, or withdraw the approval, FROM THE DIALOG.
+   *
+   * <p>The row's own Approve button keeps its own behaviour: the dialog
+   * toasts, because the admin is reading a dialog and not watching a table
+   * cell change under the cursor. The button is disabled while the request
+   * is in flight, so a double press cannot approve twice.
+   */
+  protected setApprovalFromDialog(review: ReviewResponse, approved: boolean): void {
+    if (this.dialogBusy()) return;
+    this.dialogBusy.set(true);
+    this.reviewService.setSingleApproval(review.id, approved).subscribe({
+      next: (res) => {
+        this.dialogBusy.set(false);
+        if (res?.data) {
+          this.items.update((list) => list.map((r) => (r.id === review.id ? res.data! : r)));
+          // The dialog is only refreshed when it is STILL OPEN on this
+          // review: the admin can close it while the request is in flight,
+          // and a response that arrives afterwards must not pop the dialog
+          // back open.
+          if (this.viewing()?.id === review.id) this.viewing.set(res.data);
+        }
+        this.notify.success(
+          approved ? 'reviews.action.approved' : 'reviews.action.approvalWithdrawn',
+          approved ? 'Review approved' : 'Approval withdrawn',
+        );
+        this.loadStats();
+      },
+      error: (err) => {
+        this.dialogBusy.set(false);
+        this.notify.apiError(err, 'notify.errorFallback', 'Could not update the review');
+      },
+    });
   }
 
   protected closeView(): void {
@@ -584,6 +661,11 @@ export class ReviewListComponent {
 
   protected confirmDelete(review: ReviewResponse): void {
     this.deleting.set(review);
+  }
+
+  protected cancelDelete(): void {
+    if (this.deletingBusy()) return;
+    this.deleting.set(null);
   }
 
   protected submitDelete(): void {
@@ -631,7 +713,7 @@ export class ReviewListComponent {
   protected toDisplayName(value: string | null | undefined): string {
     if (!value) return '';
     return value
-      .split(/\\s+/)
+      .split(/\s+/)
       .map((part) => (part ? part.charAt(0).toUpperCase() + part.slice(1) : part))
       .join(' ');
   }

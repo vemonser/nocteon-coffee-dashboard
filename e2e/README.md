@@ -45,6 +45,26 @@ from a run using real accounts contains those passwords in the clear.
 | AC-8 | Unknown email → error, stays on login | `AC-8 …` | PASS |
 | AC-9 | Logged-out deep link → redirected to `/login` | `AC-9 …` | PASS |
 
+### The review details dialog (ui/review-dialog-v3)
+
+`e2e/review-dialog.spec.ts` — the dialog only; the table and the grid have
+their own suite (`e2e/reviews.spec.ts`).
+
+| AC | Requirement | Test | Status |
+|---|---|---|---|
+| AC-01 | The title is sentence case | `the title is sentence case, like the rest of the app` | PASS |
+| AC-02 | The footer buttons have a gap and a hierarchy | `the footer buttons have a gap and a hierarchy` | PASS |
+| AC-03 | The stars are large, with the number next to them | `the rating shows the stars and the number next to them` | PASS |
+| AC-04 | The status is a labelled row | `the status is a LABELLED row, not a floating badge` | PASS |
+| AC-05 | The product name links to the product page that exists | `the product name links to the product page that EXISTS` | PASS |
+| AC-07 | The comment keeps its line breaks | `the comment keeps its line breaks` | PASS |
+| AC-08 | Escape closes, the focus returns to the trigger | `Escape closes the dialog and the focus returns to the trigger` | PASS |
+| AC-08b | The focus stays INSIDE the dialog | `the focus stays INSIDE the dialog` | PASS |
+| AC-11 | In Arabic the footer is mirrored, the numerals still read "N / 5" | `in Arabic the footer is mirrored and the numerals still read "N / 5"` | PASS |
+| AC-12 | Approving toasts; the button waits for the answer | `approving toasts, and the button waits for the answer` | PASS |
+| AC-12b | Closing the dialog mid-request does not re-open it | `closing the dialog while the request is in flight does NOT re-open it` | PASS |
+| AC-13 | The delete confirmation names the review | `the delete confirmation NAMES the review` | PASS |
+
 ## Known app defects (these are NOT broken tests)
 
 ### 1. AC-2a — no admin gate on `/dashboard`  ·  UI gate added, backend still open
