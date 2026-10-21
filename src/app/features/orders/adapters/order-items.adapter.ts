@@ -28,6 +28,13 @@ export interface OrderItemView {
   variantLabel: string | null;
   /** The catalog's compare-at price, only when it is ABOVE the paid unit price. */
   originalUnitPrice: number | null;
+  /**
+   * The SKU to show: the catalog variant's SKU when it resolved, falling back
+   * to the order line's own SKU. The order line and the catalog can carry
+   * different SKU formats (see SEED_PROPOSAL.md); showing the catalog's value
+   * keeps a product's SKU consistent across the dashboard.
+   */
+  displaySku: string;
 }
 
 /**
@@ -61,6 +68,7 @@ export function buildOrderItemViews(
       variant,
       variantLabel,
       originalUnitPrice: hasRegularPrice ? compareAt : null,
+      displaySku: variant?.sku ?? item.sku,
     };
   });
 }

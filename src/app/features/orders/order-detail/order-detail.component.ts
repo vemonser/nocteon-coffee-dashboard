@@ -617,7 +617,10 @@ export class OrderDetailComponent {
     this.orderService
       .getEveryOrder({ userId: customerId })
       .pipe(
-        map((orders) => summarizeCustomerOrders(orders)),
+        // The backend accepts `userId` but silently ignores it, returning every
+        // order in the system (API_GAPS.md). Filter client-side to the customer's
+        // own orders before summarising.
+        map((orders) => summarizeCustomerOrders(orders.filter((o) => o.customer?.id === customerId))),
         catchError(() => of(null)),
         takeUntilDestroyed(this.destroyRef),
       )

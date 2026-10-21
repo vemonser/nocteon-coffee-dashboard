@@ -1540,6 +1540,7 @@
       "paymentRefunded": "تم استرداد الدفعة",
       "paymentRefundedHint": "أُعيد المبلغ. حالة التنفيذ أعلاه هي آخر مرحلة وصل إليها الطلب.",
       "collected": "المحصّل",
+      "collectedAt": "تم التحصيل في",
       "collectedBasis": "من {{count}} طلب مدفوع",
       "collectedHelp": "مجموع مجاميع الطلبات المدفوعة فقط"
     },
