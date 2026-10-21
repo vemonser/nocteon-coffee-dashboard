@@ -123,6 +123,12 @@ function serverOn4200() {
 async function login(page) {
   for (let attempt = 1; attempt <= 4; attempt += 1) {
     await page.goto(`${BASE}/login`, { waitUntil: 'domcontentloaded' });
+    // The app must be INTERACTIVE before the form can be filled: a dev
+    // server that is still compiling answers the document, not the app, and
+    // the click on a form nobody wired yet sends nothing — the run then
+    // waits for a response that will never come.
+    await page.waitForSelector('#identifier', { state: 'visible', timeout: 60_000 });
+    await page.waitForTimeout(500);
     await page.fill('#identifier', process.env.E2E_ADMIN_EMAIL);
     await page.fill('#password', process.env.E2E_ADMIN_PASSWORD);
     const response = page.waitForResponse(
