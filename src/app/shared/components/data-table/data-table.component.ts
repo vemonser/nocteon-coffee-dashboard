@@ -215,6 +215,8 @@ export class DataTableComponent {
    * kebab menu, so the actions column stays narrow.
    */
   menuActions = input<RowMenuAction[]>([]);
+  /** Per-row overflow menu. Wins over `menuActions` when supplied. */
+  menuActionsFor = input<((row: any) => RowMenuAction[]) | null>(null);
 
   /**
    * The row's PRIMARY action — a LABELLED button, not an icon.
@@ -223,6 +225,7 @@ export class DataTableComponent {
    * approved by mistake reaches a customer.
    */
   primaryAction = input<{ id: string; label: string } | null>(null);
+  primaryActionFor = input<((row: any) => { id: string; label: string } | null) | null>(null);
 
   /**
    * Hides the slug under the name in the main cell.

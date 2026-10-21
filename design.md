@@ -815,3 +815,19 @@ scrolled to the price must still see which order the price belongs to. The
 first data column (and the select checkbox before it) is **pinned to the
 inline start** — the right in Arabic — so it stays where the eye expects
 it.
+
+## Command palette (global search)
+
+- Surface: `--card` token (warm) for the modal; never the cool autocomplete popover tint.
+- Highlight: `--search-highlight` = `color-mix(in srgb, var(--primary) 18%, transparent)` for `<mark>` matched text.
+- Active row: `--accent` background + `--primary` start-edge accent (`border-s-2 border-primary`).
+- Width 640-720px, max-height 70vh, results scroll inside; full-screen sheet on mobile.
+- Minimum row height 44px; sticky footer with localized hints.
+
+## Contact & reviews patterns (ui/contact-reviews-v2)
+
+- DialogShell: shared dialog with title (sentence case), optional subtitle, close X, scrollable body, sticky footer (destructive ghost start, secondary, primary end, mirrored in RTL), Esc close, focus trap, overlay from `--overlay` token.
+- RatingStars: single star colour token (warning); optional "n/5" text with min 8px gap.
+- VerifiedBadge: icon + visible tooltip "Verified purchase" + aria-label.
+- SortHeader: sortable column header button with arrow.
+- Overlay token: `--overlay` (light 0.32, dark 0.6), `--color-overlay`.

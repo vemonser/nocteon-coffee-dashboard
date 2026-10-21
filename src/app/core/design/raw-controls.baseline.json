@@ -21,7 +21,7 @@
     "button": 0
   },
   "src/app/features/contact-messages/components/contact-messages-list.component.html": {
-    "input": 0,
+    "input": 1,
     "select": 0,
     "button": 1
   },
@@ -129,6 +129,11 @@
     "input": 2,
     "select": 0,
     "button": 0
+  },
+  "src/app/features/reviews/components/review-list.component.html": {
+    "input": 0,
+    "select": 0,
+    "button": 2
   },
   "src/app/features/roast-level/components/roast-level-list.component.html": {
     "input": 1,

@@ -84,7 +84,7 @@ test.describe('newsletter and broadcasts', () => {
     const addressLines = csv
       .split('\n')
       .slice(1)
-      .filter((line) => line.includes('@'));
+      .filter((line: string) => line.includes('@'));
     const tableRows = await rows.count();
     expect(addressLines.length, 'every address is exported').toBeGreaterThanOrEqual(
       tableRows,
