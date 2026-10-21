@@ -1514,7 +1514,10 @@
       "shipmentFormHint": "The store records the carrier, the tracking number and the tracking URL. Delivery times are stamped by the store.",
       "trackingUrlHint": "A link the customer can open to follow the parcel.",
       "paymentRefunded": "Payment refunded",
-      "paymentRefundedHint": "The money was returned. The fulfilment status above is the last stage the order reached."
+      "paymentRefundedHint": "The money was returned. The fulfilment status above is the last stage the order reached.",
+      "collected": "Collected",
+      "collectedBasis": "From {{count}} paid order(s)",
+      "collectedHelp": "Sum of totals of PAID orders only"
     },
     "dialogs": {
       "status": {
