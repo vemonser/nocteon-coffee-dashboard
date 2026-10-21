@@ -1,6 +1,6 @@
 # Review details dialog v3 — final report (ui/review-dialog-v3)
 
-Base: `main` @ `e9bedb65` · Branch: `ui/review-dialog-v3` · 11 commits ·
+Base: `main` @ `e9bedb65` · Branch: `ui/review-dialog-v3` · 15 commits ·
 scope: the REVIEW DETAILS DIALOG only (the Reviews table and grid are not
 touched — see the diff stat at the end).
 
@@ -31,6 +31,7 @@ touched — see the diff stat at the end).
 | 21 | `DECISIONS.md` / `API_GAPS.md` | done (appended) | `DECISIONS.md`, `API_GAPS.md` | nothing was overwritten |
 | 22 | The Reviews table and the grid | untouched | the diff stat below | the dialog lives in the same template; the first changed line is 356 — the table, the grid, the filters and the statistics strip are byte-identical |
 | 23 | The independent review | done | `DECISIONS.md` → "The review round" | two real defects (the dialog re-opening itself after an in-flight response; two `aria-modal` panels at once) and six smaller ones — all fixed, with the e2e and the evidence re-run after the fixes |
+| 24 | The comment column of the TABLE (asked for after the round) | done | `after/en-light/review-dialog-long-comment-1440.png` (AC-17) | the cell had `block` AND `line-clamp-2` in the same class list, and `block` won the `display` — so the clamp never applied and a 653-character comment grew the row to **571px**. Without the `block`: two lines, an ellipsis, the full text in the title, the row is **71px** |
 
 ## The numbers, before and after
 
@@ -41,6 +42,7 @@ touched — see the diff stat at the end).
 | The dialog height at 390 | 398–738px of 900 | 900px of 900 (the sheet) | idem |
 | The long comment | grew the dialog, no scroll area | scrolls inside its own area (`scrollHeight 252 > clientHeight 158`) | `targets[].comment` |
 | The rendered width of a star | 16px | **24px** | `targets[].stars.widthPx` |
+| The row of a long comment in the TABLE | 571px, the whole comment on the screen | **71px**, two lines and an ellipsis | `targets[].tableRow` |
 | Escape closes | true | true | `targets[].escape.closes` |
 | The focus returns to the SAME control | — | true (the trigger, not "some button") | `targets[].escape.focusReturned` + `escape.trigger` |
 | The badge contrast (text on its own tint) | 5.29:1 | 5.29:1 | `headline.badgeContrastVsBadgeBg` (WCAG AA needs 4.5:1) |
@@ -51,25 +53,26 @@ touched — see the diff stat at the end).
 ## The diff stat (no whitespace-only changes)
 
 ```
- .quality/runs/2026-10-21T13-00-00Z/evidence-manifest.json | 564 +++++++++
+ .quality/runs/2026-10-21T13-00-00Z/evidence-manifest.json | 597 +++++++++
  API_GAPS.md                                        |  33 ++
  DECISIONS.md                                       | 220 +++++++
- REVIEW_DIALOG_FINAL_REPORT.md                      | 108 ++++
+ REVIEW_DIALOG_FINAL_REPORT.md                      | 115 ++++
  docs/review-dialog-v3-plan.md                      |  35 ++
- docs/review-dialog-v3-spec.md                      |  83 +++
+ docs/review-dialog-v3-spec.md                      |  88 +++
  e2e/README.md                                      |  20 +
  e2e/review-dialog.spec.ts                          | 331 ++++++++++++
  package.json                                       |   3 +-
  public/assets/i18n/ar.json                         |  11 +
  public/assets/i18n/en.json                         |  15 +-
- scripts/evidence-targets.mjs                       | 425 ++++++++++++++++++++++
+ scripts/evidence-targets.mjs                       | 443 +++++++++++++++++++++++
  scripts/evidence.mjs                               | 138 +++--
  scripts/measure-review-dialog.mjs                  |  96 ++++++
- scripts/verify-review-dialog-evidence.mjs          | 248 +++++++++
+ scripts/verify-review-dialog-evidence.mjs          | 260 +++++++++
  .../reviews/components/review-list.component.html  | 174 +++++--
  .../reviews/components/review-list.component.ts    |  96 ++-
+ .../data-table/data-table.component.html           |   7 +-
  .../ui/dialog-shell/dialog-shell.component.ts      |  90 +++-
- 18 files changed, 2587 insertions(+), 103 deletions(-)
+ 19 files changed, 2668 insertions(+), 104 deletions(-)
 ```
 
 `git diff --check e9bedb65..HEAD` is empty: no whitespace errors, and no
