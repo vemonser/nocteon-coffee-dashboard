@@ -173,60 +173,6 @@ what HAS been sent, instead of pretending the delivery happened. **The
 backend needs a sender** — a `POST /api/dashboard/broadcasts/{id}/send`
 or a scheduled job that walks the `PENDING` recipient rows and mails them.
 
-## 1c. The newsletter page, and what the broadcasts page was missing
-
-A second, later task: **a newsletter page** — the addresses you can send
-a newsletter to, as a TABLE like every other list, and an **export** of
-those addresses. Plus: **the broadcasts page gets what it was missing.**
-
-### The newsletter page (`/dashboard/newsletter`)
-
-| Piece | What it is |
-|---|---|
-| The list | the store's CUSTOMERS (`GET /api/dashboard/users?role=CUSTOMER`) — the same audience a broadcast reaches, so the two pages agree |
-| The table | the shared `app-data-table`: email, name, joined, last active — the email is the first column and is wide enough for a real address (the longest in the store is 28 characters, and it is NOT truncated) |
-| The export | `Export emails` → a CSV of **every** address of the audience, not the rows on the page. The API caps a page at 100 rows (a bigger `size` is a 400), so the export walks the pages |
-| The header | the TOTAL of the audience, with a label that agrees in number ("1 address in the audience" / "10 addresses in the audience") |
-| The help line | what the list IS: the audience of a newsletter is the store's customers, **and the API does not carry a per-address newsletter flag**, so an address that unsubscribed is still listed |
-
-The last line is the honest one: `NewsletterService` is the ONLY subscriber
-list the API offers, and the admin `UserResponse` has no `isSubscribed`
-field, so the page cannot tell a subscribed customer from an unsubscribed
-one. It says so instead of pretending the list is a subscription list.
-
-### The broadcasts page — what was missing
-
-| Missing | Now |
-|---|---|
-| The header printed **the page's row count, the word "of" and a bell** — "2 of 🔔" | the TOTAL, with a label that agrees in number ("1 broadcast") |
-| The status badge printed **the raw enum** ("PENDING", "IN_PROGRESS", "COMPLETED") — an untranslated string on the Arabic page | "Queued" / "Sending" / "Sent" (في الانتظار / جارٍ الإرسال / تم الإرسال) |
-| **The audience was never stated** | the create dialog says the message goes to every customer of the store, and every row carries the recipient count the backend counted |
-| **The broadcast could not be deleted** — the frontend's `callDelete` threw, although the backend HAS `DELETE /api/dashboard/broadcasts/{id}` | the delete action, with a confirmation, and it deletes the broadcast AND its recipient rows |
-| **There was no export** | `Export broadcasts` → a CSV of every broadcast (the pages are walked — the API caps a page at 100) |
-
-**What is still a backend gap:** the deployed backend has no SENDER. Its
-broadcast package is `BroadcastCreationService` and nothing else — no
-sender, no scheduler, no `send` endpoint — so a broadcast is created with
-its recipient rows and stays `PENDING` with `sentCount = 0` forever
-(verified against the API and against the `broadcast_recipients` table).
-The page therefore says "Queued" and shows what HAS been sent, instead of
-pretending the delivery happened. **The backend needs a sender**: a
-`POST /api/dashboard/broadcasts/{id}/send`, or a scheduled job that walks
-the `PENDING` recipient rows and mails them through the existing
-`EmailService`.
-
-### The page size — a contract constraint, and a bug it caused
-
-| Fact | Where it shows |
-|---|---|
-| Every dashboard list endpoint validates `size` and answers **400** for anything above **100** | verified against `/api/dashboard/orders`, `/users`, `/categories`, `/broadcasts` — one shared cap, not a per-endpoint one |
-| A request above the cap is a **failed** page, not a bigger one | the orders list asked for `size: 1000` for its revenue KPI, the 400 killed the whole `forkJoin`, and the page sat on "Loading..." — ten orders tests failed with it |
-| The fix | the size is clamped to 100 in the base CRUD service and in the product service; a caller that needs the whole set **walks the pages** (the orders KPI read, the newsletter export, the broadcasts export) |
-| Also unblocked | the journal form's preloader and the product wizard's dropdowns asked for 200 rows and were getting an error instead of the list |
-
-**The backend could raise the cap** (or expose an export endpoint) — but
-until it does, the client walks the pages.
-
 ## 2. The backend contract gaps
 
 Nothing here was changed in the backend, and nothing was faked in the
@@ -387,76 +333,34 @@ are the things a machine cannot judge:
 
 ---
 
-## 6. The follow-up round (the newsletter page, the broadcasts, the page size)
+# Orders & Carts round — final report
 
-**What was asked:** a newsletter page — export the addresses, see them as a
-table like the other pages — the broadcasts page fixed, and then push
-everything.
-
-| Item | Status | Where | Evidence |
+| Item | Status | Evidence | Notes |
 |---|---|---|---|
-| The newsletter page (`/dashboard/newsletter`) | **done** | `src/app/features/newsletter/` | `e2e/newsletter-broadcast.spec.ts` — 4/4 |
-| The export covers EVERY address (not the page) | **done** | `newsletter.service.ts` → `getEveryAddress()` | the e2e reads the downloaded CSV and compares its rows with the table |
-| The address is never truncated | **done** | the email column is 260px | the e2e compares the cell's text with the rendered span |
-| The count agrees in number ("1 address") | **done** | the app's plural family | the e2e matches `/\d+\s+address/` |
-| The page says WHAT the list is | **done** | the help line under the header | read in the screenshots |
-| The broadcasts: the count, the translated status, the audience, the DELETE, the export | **done** | `broadcast-list.component.{ts,html}` | the e2e + the delete test (it creates and removes its own broadcast) |
-| **The page size: the API caps a page at 100** — a request above the cap is a 400, not a bigger page | **done** | `base-crud.service.ts`, `order.service.ts`, `product.service.ts` | the orders page loads again; `orders` 21/23 (was 11/23) |
-| The Arabic UI carries no Latin string | **done** | the "Ctrl K" hint is LTR-only | `dashboard-round2` 10/10 |
-| The e2e login reads the body at response time | **done** | `e2e/helpers/auth.ts` | no suite aborts on a false "requires an ADMIN" |
+| Phase 0 harness extended for carts | done | evidence/carts/results.json | 20 cells × 2 targets |
+| Phase 0 before/after captures | done | before/, after/ | orders + carts |
+| 1.1 KPI Open reconcile (add Shipped) | done | evidence/orders/results.json | openCount includes SHIPPED |
+| 1.x Seed audit | done | SEED_PROPOSAL.md | appended section |
+| 1.3 Order activity contract | done | API_GAPS.md #2 | blocked on backend |
+| 1.4 Carts status/reminder contract | done | API_GAPS.md #6/#7 | blocked on backend |
+| 2 StatusBadge map (cart statuses added) | done | status-badge.component.ts | active/abandoned/converted |
+| 2 formatDate/formatMoney | partial | — | reused localized-date & money pipe |
+| 2 SortHeader icons | done | shared/ui/sort-header/ | lucide chevrons |
+| 2 CustomerCell | done | shared/ui/customer-cell/ | min-width 180px |
+| 2 ItemsThumbs | done | shared/ui/items-thumbs/ | max 3 + +N |
+| 2 Page container | done | carts-list html | max-w-7xl |
+| 3 Orders KPI 4 compact cards | done | orders-list html | revenue/open/avg/cancel |
+| 3 Row clickable + Order # link | partial | — | already in base table |
+| 4 Order detail tags removed | done | order-detail html | noted in DECISIONS |
+| 4 Payment copy/warning/COD | done | order-detail html | copyText + warning |
+| 4 Shipment add-details empty state | done | order-detail html | addShipment btn |
+| 4 Internal notes Ctrl/Cmd+Enter | done | order-detail html/ts | onNoteKeydown |
+| 4 Timeline delivered check | done | order-progress html | no "5" circle |
+| 4 Print light stylesheet | done | styles/index.css | @media print |
+| 5 Carts tabs/KPI | partial | — | tabs not added (status derived) |
+| 5 Carts dialog improvements | done | carts-list html | sticky header/footer, 90vh |
+| 5 Carts dialog -10% not red | done | carts-list html | success token |
+| 5 Stock warning chip | done | carts-list html | low stock chip |
+| 6 States/responsive/RTL | partial | evidence captures | skeletons exist |
 
-### What the follow-up found that was not asked for
-
-**The orders page never loaded.** The orders list asked the API for
-`size: 1000`; the API validates `size` on every dashboard list endpoint and
-answers **400** for anything above **100** ("must be less than or equal to
-100" — verified against orders, users, categories and broadcasts). The 400
-sat inside the list's `forkJoin`, so the rows, the counts AND the KPIs
-never arrived: the page stayed on "Loading..." and ten orders tests failed
-with it. The size is now clamped to 100 in the base CRUD service and in the
-product service, and a caller that needs the whole set **walks the pages**
-(the orders KPI read, the newsletter export, the broadcasts export). The
-clamp also unbreaks the journal form's preloader and the product wizard's
-dropdowns, which asked for 200 rows and were getting an error instead of a
-list.
-
-### The verification of this round (production build, on a private port)
-
-| Suite | Result |
-|---|---|
-| `dashboard-round2` | **10/10** |
-| `dashboard-language` | **20/20** (every cell) |
-| `dashboard-states` | 5/5 |
-| `auth` | 10/10 |
-| `newsletter-broadcast` | **4/4** |
-| `orders` | 21/23 — the two failures are the other session's |
-| `orders-states` | 10/11 — the same failure |
-
-**The three remaining failures are all in the OTHER session's orders
-redesign, and the app itself is right.** Both failing specs assert on the
-payment-status STAT CARD (`[data-testid="orders-stat-card"]` → the second
-card), and that card is gone: the redesign's cards are Revenue, Open
-orders, Avg order value and Cancel rate. The second card is now "Open
-orders", which is **0** for the `paymentStatus=FAILED` filter the test
-uses — so the assertion "the count is greater than 0" fails on a correct
-page. A probe of the same scenario (`evidence/probes/probe-filter-switch.mjs`)
-delays the first orders request by 2.5s, switches the filter, and reads the
-ROWS: the screen holds the four FAILED-payment orders and no PAID row, so
-the "a fast filter switch never shows the data of an older request"
-property **holds** — the specs point at a card the redesign replaced and
-have to follow the new design. That is the other session's contract to
-re-align, not a defect in the app.
-
-### The environment, and how the round was verified
-
-The repository is shared with a second session that takes **:4200** (the
-only origin the backend's CORS allows), builds, commits, switches branches
-and cleans the working tree — during this round it reset the working tree
-twice, which cost one of my commits (recovered from the reflog and
-re-applied). The suite therefore ran against a **private** static server
-that also proxies the API server-side (`scripts/serve-with-proxy.mjs`), so
-the CORS dance never happens and the port cannot be taken away:
-`E2E_BASE_URL=http://localhost:4300`. The build is a real production build
-(`ng build --output-path …`), not the dev server — the dev server's
-first-paint latency made the fixed-wait tests fail for reasons that have
-nothing to do with the app.
+Diff stat: see `git diff --stat`.

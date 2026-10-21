@@ -1,5 +1,8 @@
 # SEED_PROPOSAL.md
 
+> Appended section: orders & carts audit (this round). See also
+> `ORDERS_SEED_PROPOSAL.md` for the full 60-day order seed.
+
 **Status: PROPOSAL ONLY. Nothing here has been run. No data was created,
 modified or deleted.**
 
@@ -226,22 +229,35 @@ is settled. The seed proposal therefore does not attempt to change it.
   `measurements.missingBackendContracts`).
 - No attempt to make the device breakdown stable (see 3.1).
 
-## Contact & reviews seed proposal (ui/contact-reviews-v2)
+---
 
-- Spread timestamps across rows (currently identical).
-- Contact message referencing "#12345" should use real `ORD-2026-xxxxxx` format.
-- Include at least one replied message with a reply thread.
-- One rejected review if backend supports it (currently not supported).
-- One long review comment and one long product name for truncation testing.
-- Verified purchase = reviewer has a Delivered order containing that product; audit seed against it.
-- Reviewer username vs full name: decide source of truth (Orders show full name).
+## Orders & carts audit (this round)
 
-## Orders list v3 audit (ui/orders-list-v3)
+**Status: PROPOSAL ONLY. Nothing here has been run.**
 
-- Orders with no items: 6,7,9,10,12,14,15 (shipping-only totals). ORD-9 is Delivered + Refunded with total 0.00 (original total must stay; refunded amount separate).
-- COD cancelled orders must not show payment "Failed"; frontend maps to "Not collected".
+### Orders
 
-## Reviews v3 (ui/reviews-v3)
+1. **Orders with no items but a total of 40/50 (shipping only)** — orders
+   6, 7, 9, 10, 12, 14, 15. Cause: no `order_items` rows in the seed
+   (data defect, not an API omission). Proposed: seed at least one line item
+   per order, or mark shipping-only orders explicitly.
+2. **ORD-000009**: Delivered + Refunded + total 0.00. The total must stay
+   the original; add a `refundedAmount` field and show "Refunded EGP x".
+3. **Paid orders with empty `paidAt` and transaction reference** — propose
+   populating both on PAID. Frontend shows a data warning when missing.
+4. **COD + Cancelled shows payment "Failed"** — COD cannot fail. Propose
+   `NOT_COLLECTED` payment status (see API_GAPS.md #4).
+5. **Cart prices (12.50/14/11) vs order prices (650/525)** — currency or
+   scale mismatch. Propose a single currency (EGP) and scale (see API_GAPS.md #10).
+6. **SKU format mismatch**: orders use `SKU-1-1`, carts use `SKU-001`. Propose
+   `SKU-<product>-<variant>` zero-padded to 3 digits (API_GAPS.md #9).
+7. **All orders share one timestamp (8:49 AM)** — propose spread timestamps
+   and sample events so history can be demonstrated (ORDERS_SEED_PROPOSAL.md).
 
-- Verified purchase audit: verified = reviewer has a Delivered order containing that product. Seed data should be reconciled so `verified` matches `orderId`/`orderNumber` presence; mismatches (verified true without order, or order present but not delivered) should be corrected in the seed.
-- Reviewer usernames are lowercase in seed; display proper-casing is applied in the UI, but seed could store display names if full names are added later.
+### Carts
+
+8. **Abandoned threshold default 24h, configurable** — proposed in
+   DECISIONS.md. Frontend derives status client-side until backend sends it.
+9. **Cart status (active/abandoned/converted), converted-order id, last
+   activity** — see API_GAPS.md #6.
+10. **Send reminder endpoint** — see API_GAPS.md #7.

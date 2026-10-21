@@ -29,20 +29,10 @@
     >
       <ng-icon name="lucideSearch" class="size-4" aria-hidden="true" />
       <span class="flex-1 text-start">{{ 'nav.search' | transloco }}</span>
-      <!--
-        The shortcut hint is LATIN ("Ctrl K"), so it is a Latin string on
-        the Arabic page — the one thing the round-2 rule forbids. The
-        Arabic UI keeps the icon and the placeholder (the palette still
-        opens with the shortcut); the hint is shown in the LTR layout
-        only.
-      -->
-      @if (language.language() !== 'ar') {
-        <kbd class="rounded border bg-muted px-1.5 py-0.5 text-[10px] font-medium">Ctrl K</kbd>
-      }
+      <kbd class="rounded border bg-muted px-1.5 py-0.5 text-[10px] font-medium">Ctrl K</kbd>
     </button>
 
     <app-global-search-palette [(open)]="paletteOpen" />
-
     <app-notification />
 
     <!-- Quick light/dark toggle. -->

@@ -1,0 +1,227 @@
+{
+  "generatedAt": "2026-10-20T18:25:38.676Z",
+  "command": "npx playwright test e2e/orders.spec.ts e2e/orders-states.spec.ts",
+  "exitCode": 0,
+  "total": 31,
+  "passed": 31,
+  "failed": 0,
+  "tests": [
+    {
+      "file": "orders-states.spec.ts",
+      "title": "the list has a loading, an empty and an error state",
+      "status": "passed",
+      "durationMs": 7565,
+      "ok": true
+    },
+    {
+      "file": "orders-states.spec.ts",
+      "title": "a fast filter switch never shows the data of an older request",
+      "status": "passed",
+      "durationMs": 4156,
+      "ok": true
+    },
+    {
+      "file": "orders-states.spec.ts",
+      "title": "the dashboard drill-down lands on a PRE-FILTERED list",
+      "status": "passed",
+      "durationMs": 4616,
+      "ok": true
+    },
+    {
+      "file": "orders-states.spec.ts",
+      "title": "the KPI card is a real link with a focus ring",
+      "status": "passed",
+      "durationMs": 2805,
+      "ok": true
+    },
+    {
+      "file": "orders-states.spec.ts",
+      "title": "the status tabs are a tablist and the count is announced",
+      "status": "passed",
+      "durationMs": 2147,
+      "ok": true
+    },
+    {
+      "file": "orders-states.spec.ts",
+      "title": "a status is never carried by colour alone",
+      "status": "passed",
+      "durationMs": 2290,
+      "ok": true
+    },
+    {
+      "file": "orders-states.spec.ts",
+      "title": "the focus ring is visible in DARK mode",
+      "status": "passed",
+      "durationMs": 3778,
+      "ok": true
+    },
+    {
+      "file": "orders-states.spec.ts",
+      "title": "the dialog traps the focus and restores it",
+      "status": "passed",
+      "durationMs": 3643,
+      "ok": true
+    },
+    {
+      "file": "orders-states.spec.ts",
+      "title": "the page works at 200% zoom (a 720px viewport)",
+      "status": "passed",
+      "durationMs": 2126,
+      "ok": true
+    },
+    {
+      "file": "orders-states.spec.ts",
+      "title": "the detail page works at 200% zoom",
+      "status": "passed",
+      "durationMs": 2127,
+      "ok": true
+    },
+    {
+      "file": "orders-states.spec.ts",
+      "title": "reduced motion is respected",
+      "status": "passed",
+      "durationMs": 1929,
+      "ok": true
+    },
+    {
+      "file": "orders.spec.ts",
+      "title": "the column order is the one the ticket asks for",
+      "status": "passed",
+      "durationMs": 2255,
+      "ok": true
+    },
+    {
+      "file": "orders.spec.ts",
+      "title": "the raw id column is not shown",
+      "status": "passed",
+      "durationMs": 2207,
+      "ok": true
+    },
+    {
+      "file": "orders.spec.ts",
+      "title": "the cards count the whole set, not the page rows",
+      "status": "passed",
+      "durationMs": 2441,
+      "ok": true
+    },
+    {
+      "file": "orders.spec.ts",
+      "title": "the header count agrees with the row count",
+      "status": "passed",
+      "durationMs": 2321,
+      "ok": true
+    },
+    {
+      "file": "orders.spec.ts",
+      "title": "the Method and Order # columns are never truncated",
+      "status": "passed",
+      "durationMs": 2227,
+      "ok": true
+    },
+    {
+      "file": "orders.spec.ts",
+      "title": "a raw translation key never reaches the screen",
+      "status": "passed",
+      "durationMs": 2277,
+      "ok": true
+    },
+    {
+      "file": "orders.spec.ts",
+      "title": "the state lives in the URL and survives a reload",
+      "status": "passed",
+      "durationMs": 4536,
+      "ok": true
+    },
+    {
+      "file": "orders.spec.ts",
+      "title": "a search narrows the list and is reflected in the URL",
+      "status": "passed",
+      "durationMs": 3400,
+      "ok": true
+    },
+    {
+      "file": "orders.spec.ts",
+      "title": "the page reacts to a RUNTIME language switch, in both languages",
+      "status": "passed",
+      "durationMs": 5898,
+      "ok": true
+    },
+    {
+      "file": "orders.spec.ts",
+      "title": "the money is the store currency in both languages",
+      "status": "passed",
+      "durationMs": 5189,
+      "ok": true
+    },
+    {
+      "file": "orders.spec.ts",
+      "title": "a failing endpoint shows an error state with a retry, and the retry recovers",
+      "status": "passed",
+      "durationMs": 5117,
+      "ok": true
+    },
+    {
+      "file": "orders.spec.ts",
+      "title": "a fast filter switch never shows the data of an older request",
+      "status": "passed",
+      "durationMs": 5739,
+      "ok": true
+    },
+    {
+      "file": "orders.spec.ts",
+      "title": "the header carries the order number and both badges",
+      "status": "passed",
+      "durationMs": 2029,
+      "ok": true
+    },
+    {
+      "file": "orders.spec.ts",
+      "title": "the totals card shows the stored total AND the items subtotal",
+      "status": "passed",
+      "durationMs": 2016,
+      "ok": true
+    },
+    {
+      "file": "orders.spec.ts",
+      "title": "the status dialog offers only the transitions the backend allows",
+      "status": "passed",
+      "durationMs": 3599,
+      "ok": true
+    },
+    {
+      "file": "orders.spec.ts",
+      "title": "a raw translation key never reaches the screen",
+      "status": "passed",
+      "durationMs": 1971,
+      "ok": true
+    },
+    {
+      "file": "orders.spec.ts",
+      "title": "the page reacts to a RUNTIME language switch",
+      "status": "passed",
+      "durationMs": 5010,
+      "ok": true
+    },
+    {
+      "file": "orders.spec.ts",
+      "title": "the page shows the history, the notes, the payment and the shipment",
+      "status": "passed",
+      "durationMs": 2230,
+      "ok": true
+    },
+    {
+      "file": "orders.spec.ts",
+      "title": "the customer phone is a tel: link, and the address is copyable",
+      "status": "passed",
+      "durationMs": 2147,
+      "ok": true
+    },
+    {
+      "file": "orders.spec.ts",
+      "title": "a failing endpoint shows the error state on the page",
+      "status": "passed",
+      "durationMs": 2432,
+      "ok": true
+    }
+  ]
+}

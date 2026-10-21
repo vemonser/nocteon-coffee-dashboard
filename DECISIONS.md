@@ -1509,89 +1509,6 @@ pretending the delivery is done. The backend needs a sender: a `POST
 /api/dashboard/broadcasts/{id}/send`, or a scheduled job that walks the
 `PENDING` recipient rows through the existing `EmailService`.
 
-## NEWSLETTER — a page for the addresses, and an export
-
-The newsletter page is a LIST like every other list — the shared
-`app-data-table`, the search, the pager, the count in the header — with
-one thing it exists for: **the export of the addresses**.
-
-- The audience is the store's CUSTOMERS (`GET
-  /api/dashboard/users?role=CUSTOMER`), because that is the same set a
-  broadcast reaches (`findByRoleAndSubscribedTrue(CUSTOMER)`), so the two
-  pages cannot disagree about who the audience is.
-- The export covers **every** address, not the rows on the page, and it
-  walks the pages: the API caps a page at 100 rows and answers a bigger
-  `size` with a 400. Asking for a thousand rows in one request exports
-  NOTHING — which is what the first version did.
-- The count agrees in number ("1 address in the audience"), through the
-  app's plural family (`<base>_<Intl.PluralRules category>`), because
-  "1 addresses" is the kind of small wrongness the rest of the app does
-  not have.
-- **The page says what the list IS.** The admin `UserResponse` carries no
-  newsletter flag and the list has no `subscribed` filter, so the page
-  cannot tell a subscribed customer from an unsubscribed one. The help
-  line says so instead of pretending the list is a subscription list. The
-  backend needs a subscriber list (or a `subscribed` filter) for that to
-  change.
-
-## BROADCASTS — what the page was missing
-
-- The header printed **the page's row count, the word "of" and a bell**
-  ("2 of 🔔"). It prints the TOTAL, with a label that agrees in number.
-- The status badge printed **the raw enum** ("PENDING") — an untranslated
-  string on the Arabic page. It is "Queued" / "Sending" / "Sent".
-- **The audience is now stated**: the create dialog says the message goes
-  to every customer of the store, and every row carries the recipient
-  count the backend counted.
-- **The broadcast can be deleted.** The backend HAS
-  `DELETE /api/dashboard/broadcasts/{id}` (it removes the broadcast and
-  its recipient rows); the frontend threw instead, so there was no way to
-  get rid of a broadcast.
-- **The broadcasts export** as a CSV, walking the pages like the
-  newsletter export.
-
-**The delivery is still a backend gap.** The deployed backend has no
-sender: its broadcast package is `BroadcastCreationService` and nothing
-else — no sender, no scheduler, no `send` endpoint — so a broadcast is
-created with its recipient rows and stays `PENDING` with `sentCount = 0`
-forever. The page says "Queued" and shows what HAS been sent rather than
-pretending the delivery is done. The backend needs a sender: a `POST
-/api/dashboard/broadcasts/{id}/send`, or a scheduled job that walks the
-`PENDING` recipient rows through the existing `EmailService`.
-
-### Global search command palette (ui/global-search-v2)
-
-- Replaced the anchored autocomplete dropdown with a centered command palette modal.
-- Opens via Ctrl/Cmd+K, "/", or clicking the top-bar trigger; trigger shows "Ctrl K" hint.
-- Surface uses `--card` token (warm) instead of cool bluish-white popover tint.
-- Added `--search-highlight` token for `<mark>` matched text.
-- Active row uses `--accent` background + `--primary` start-edge accent.
-- Group order: Orders, Products, Customers, Categories, Reviews, Contact messages, Carts, then Pages and Actions. Max 5 rows per data group; max 3 Pages/Actions.
-- Backend aggregated endpoint `GET /api/admin/search?q=&limitPerType=` proposed; frontend behind `GLOBAL_SEARCH_USE_MOCK = true` flag until backend ships (see API_GAPS.md).
-- Order identifiers use full order number (`ORD-2026-000002`); group named "Customers" not "Users".
-- Arabic normalization rules (backend): strip tashkeel; unify alef variants (أ إ آ -> ا), ي/ى, ة/ه. Ranking: exact match, then prefix, then substring.
-- Recent searches in localStorage (max 5, clearable); quick links Orders/Reviews/Contact/Carts; quick actions Add product/Add category.
-- Minimum 2 characters, debounce 250ms, stale requests cancelled via switchMap.
-- Roles: combobox/listbox/option, aria-activedescendant.
-
-## Contact & reviews round decisions (ui/contact-reviews-v2)
-
-- DialogShell created (shared/ui/dialog-shell): title sentence case, optional subtitle, close X, scrollable body, sticky footer with start/end slots, Esc close, focus trap, overlay from `--overlay` token (lighter scrim in light mode).
-- RatingStars: single star colour token (warning); optional "n/5" text with >=8px gap; used in table, grid, dialog, KPI.
-- VerifiedBadge: icon + visible tooltip "Verified purchase" + aria-label; replaces bare check icon.
-- SortHeader primitive created.
-- Tabs: "All" first on reviews list (kept Pending as default selected to preserve e2e).
-- Overlay token `--overlay` added to tokens.css (light 0.32, dark 0.6) and `--color-overlay`.
-- Contact dialog primary button label fixed: `contactMessages.sendReply` (was `replySent`).
-- Mark-as-unread not supported by backend; action disabled with tooltip. Bulk mark-read/delete fall back to per-id.
-- Rejected state not supported by backend; no Rejected tab/action. Logged in API_GAPS.
-- Verified share % computed from loaded page (backend lacks verified count).
-- Canned replies dropdown: skipped (logged). Admin response to review: skipped (API_GAPS).
-- Contact ORD-xxxx link detection: skipped (logged).
-- Unread count badge in sidebar: already exists via /stats/unread-contact-count.
-- Explicit numerals in Arabic: countPending_two etc. changed to include numerals.
-- RatingStars in data-table rating case; VerifiedBadge in reviewer case.
-
 ## THE PAGE SIZE — the API caps a page at 100, and a bigger one is a 400
 
 Found while re-running the suites after the newsletter work: the **orders
@@ -1620,29 +1537,36 @@ Two rules now hold everywhere:
 The rule for the future: the API's cap is 100 rows per page. Anything that
 wants the whole set asks for page 0, 1, 2 … until one page is short.
 
-## Orders list v3 (ui/orders-list-v3)
+---
 
-- KPI Revenue = sum of `totalAmount` of PAID orders only (COD pending and refunded excluded); AOV = Revenue / paid count; cancel rate = cancelled / all. KPIs follow active filters. Basis stated via card tooltip.
-- Open = Pending + Confirmed + Processing + Shipped (OPEN_STATUSES updated to include Shipped).
-- Customer column uses shared `CustomerCellComponent` with avatar; width 220px.
-- Created at renders on one line (stackTime false).
-- "No items" renders warning icon + tooltip.
-- COD + Cancelled payment status maps to "Not collected" (frontend mapping; logged).
-- Order # renders as accent link via data-table cellHref.
-- Row hover highlights full row including checkbox/actions; focus-visible + keyboard Enter.
-- Sort indicators use shared `SortHeaderComponent` (chevrons inactive, arrows active) with aria-sort.
-- Filters: label inside control, active count on Clear filters.
-- Bulk bar: allowed transitions only, Export selected, confirm dialog.
-- Row kebab: View, Update status, Print invoice, Resend email, Copy order number, separator, Cancel.
-- Refunded secondary line shown only when `refundedAmount` present.
+## Orders & carts round
 
-## Reviews v3 (ui/reviews-v3)
+### KPI reconcile
+- Open = Pending + Confirmed + Processing + Shipped (was missing Shipped).
+- Tabs and KPI cards derive from one source: `statusCounts` (the stats
+  endpoint). Added a unit-testable reconciliation in the component.
+- KPI strip replaced 5 cards with 4 compact (~72px): Revenue, Open orders,
+  Avg order value, Cancel rate. They follow the active filters (same filter
+  object as the list).
 
-- RatingStars: every star was hollow because the component used Lucide's outline `star` icon and toggled `fill-warning` on the host. Lucide's SVG carries `fill="none"`, so the CSS fill never reached the path and no star ever filled. Fix lives in `src/app/shared/ui/rating-stars/rating-stars.component.ts`: both states are now inline SVGs with an explicit `fill="currentColor"` (filled) / `fill="none"` (empty), coloured with the `warning` / `muted` tokens. Aria-label is now `N out of 5`.
-- Average rating basis: kept the backend's value (computed over ALL reviews, 4.0) because the API has no approved-only average; labelled `reviews.stats.averageRating` as "Average rating · all" so the basis is explicit. Approved-only would be 4.31 but requires a new endpoint (see API_GAPS).
-- VerifiedBadge: created `src/app/shared/ui/verified-badge/verified-badge.component.ts` (was missing) using a badge-check icon in the primary token with a visible tooltip + aria-label "Verified purchase", visually distinct from the green Approved StatusBadge.
-- Reviewer display name: backend returns lowercase `username` only; no full name exists, so the UI title-cases the username (`toDisplayName`) and shows the full value in a tooltip. Full-name source remains an API gap.
-- Table: Rating column sized to 150px with a 16px gap before Comment; Comment clamped to 2 lines with tooltip; no horizontal overflow at 1440/1280; Approve only on Pending rows via `primaryActionFor`; kebab holds Withdraw (approved rows) + Delete (confirm). Always-visible red trash removed (`showDelete="false"`).
-- Grid: RatingStars + `N/5`; reviewer line with VerifiedBadge; status badge in card header corner; Pending footer has Approve + Eye + kebab, Approved footer has Eye + kebab only (shrinks); comment clamped to 3 lines; stable min-height; last row left-aligned; view toggle persists via `view` URL param with `aria-pressed` and tooltips.
-- Star distribution: 5 horizontal bars labelled with the star level and count; clicking a bar filters by that rating (minRating).
-- View toggle persisted via `view` query param (and localStorage) with aria-pressed and tooltips.
+### StatusBadge hues
+- Reused the existing StatusBadge map (status -> label key, icon, color token).
+- Added cart statuses active/abandoned/converted. Processing/Shipped keep
+  existing tokens (info/slate) per design.md status swatches; no new hue tokens
+  added. Contrast >= 4.5:1 verified via evidence capture.
+
+### Shared primitives
+- CustomerCell and ItemsThumbs created as shared components (used by carts).
+- Page container: orders already uses max-w-7xl centered; carts switched to
+  the same container padding for consistency.
+
+### Carts abandoned threshold
+- Default 24h, configurable via a future setting. Client-side derivation
+  until backend sends status (API_GAPS.md #6).
+
+### Tags card
+- Removed from order detail (dead feature) — noted here; no real tags feature
+  exists in the backend.
+
+### Print invoice
+- Print stylesheet forces light mode regardless of theme (added print CSS).

@@ -229,11 +229,7 @@
       "disabled": "Disabled",
       "confirmed": "Confirmed",
       "unknown": "Unknown",
-      "approved": "Approved",
-      "active": "Enabled",
-      "abandoned": "Abandoned",
-      "converted": "Converted",
-      "notCollected": "Not collected"
+      "approved": "Approved"
     },
     "toggleSidebar": "Toggle sidebar",
     "total": "total",
@@ -272,8 +268,7 @@
     "days": "days",
     "errorTitle": "Could not load",
     "processing": "Processing…",
-    "clear": "Clear",
-    "confirm": "Confirm"
+    "clear": "Clear"
   },
   "products": {
     "title": "Products",
@@ -1194,17 +1189,13 @@
       "dateRange": "Date range",
       "rating": "Minimum rating",
       "verification": "Verification",
-      "clear": "Clear filters",
-      "ratingAll": "Rating: all",
-      "ratingAtLeast": "Rating: {{n}}+"
+      "clear": "Clear filters"
     },
     "stats": {
       "averageRating": "Average rating",
       "distribution": "Star distribution",
       "pending": "Pending",
-      "total": "Total",
-      "reviews": "reviews",
-      "verifiedShare": "Verified share"
+      "total": "Total"
     },
     "dateRange": {
       "all": "All time",
@@ -1347,14 +1338,11 @@
       "actions": "Actions"
     },
     "stats": {
-      "revenue": "Revenue",
-      "open": "Open orders",
-      "avgOrderValue": "Avg order value",
-      "cancelRate": "Cancel rate",
-      "revenueBasis": "Sum of paid orders' totals",
-      "openBasis": "Pending + confirmed + processing + shipped",
-      "avgOrderValueBasis": "Revenue / number of paid orders",
-      "cancelRateBasis": "Cancelled / all orders"
+      "all": "All orders",
+      "matching": "Matching filters",
+      "open": "Open",
+      "delivered": "Delivered",
+      "cancelled": "Cancelled"
     },
     "filters": {
       "paymentStatus": "Payment status",
@@ -1379,8 +1367,7 @@
       "noOrdersHint": "Orders placed in the store will appear here.",
       "noResults": "No orders match these filters",
       "noResultsHint": "Try a wider date range, or clear the filters.",
-      "noItems": "No items",
-      "noItemsHint": "Order has no line items"
+      "noItems": "No items"
     },
     "errorState": {
       "title": "The orders could not be loaded",
@@ -1390,9 +1377,7 @@
       "selected": "{{count}} selected",
       "changeStatus": "Change status",
       "export": "Export CSV",
-      "clear": "Clear selection",
-      "confirmTitle": "Change status?",
-      "confirmBody": "Change {{count}} selected order(s) to {{status}}?"
+      "clear": "Clear selection"
     },
     "export": {
       "button": "Export CSV",
@@ -1406,10 +1391,7 @@
       "cancel": "Cancel order",
       "refund": "Refund",
       "resendEmail": "Resend email",
-      "copy": "Copy",
-      "copyOrderNumber": "Copy order number",
-      "copied": "Order number copied",
-      "resendEmailUnavailable": "Resend email is not available yet"
+      "copy": "Copy"
     },
     "countItems_one": "{{count}} item",
     "countItems_other": "{{count}} items",
@@ -1484,6 +1466,7 @@
       "shipmentSaved": "Shipment saved",
       "resendEmailGap": "The store sends order e-mails automatically, but it cannot send one on demand.",
       "editShipment": "Record the shipment",
+      "addShipment": "Add shipment details",
       "refundRecorded": "Refund sent to the payment gateway"
     },
     "dialogs": {
@@ -1537,8 +1520,7 @@
     "orderScope": {
       "all": "All orders",
       "allHelp": "Every order the store has, whatever its status and whatever its payment status — cancelled, pending and refunded orders are included."
-    },
-    "refundedLine": "Refunded {{amount}}"
+    }
   },
   "notifications": {
     "title": "Notifications",
@@ -1900,14 +1882,7 @@
       "status": "Status",
       "dateRange": "Date range",
       "clear": "Clear filters"
-    },
-    "sending": "Sending...",
-    "markRead": "Mark as read",
-    "markUnread": "Mark as unread",
-    "markUnreadNotSupported": "Mark as unread is not available",
-    "bulkSelected": "{{count}} selected",
-    "bulkMarkRead": "Mark as read",
-    "bulkDelete": "Delete selected"
+    }
   },
   "unauthorized": {
     "title": "Access Denied",

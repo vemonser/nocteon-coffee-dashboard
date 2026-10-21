@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, of, throwError } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { map, delay } from 'rxjs/operators';
 import { SearchResponse, SearchResultGroup } from '../model/search.model';
 import { environment } from '../../../../../../environments/environment';
@@ -24,9 +24,6 @@ export class GlobalSearchService {
 
   private mockSearch(query: string, limitPerType: number): Observable<SearchResponse> {
     const q = query.toLowerCase();
-    if (q.includes('error')) {
-      return throwError(() => new Error('mock error')).pipe(delay(250));
-    }
     const groups: SearchResultGroup[] = [];
 
     const orders = [
@@ -68,6 +65,7 @@ export class GlobalSearchService {
     ].filter((m) => m.title.toLowerCase().includes(q) || m.subtitle.toLowerCase().includes(q));
     if (contact.length) groups.push({ type: 'contact-messages', total: contact.length, items: contact.map((m) => ({ id: m.id, type: 'contact-messages', title: m.title, subtitle: m.subtitle, unread: m.unread, route: `/dashboard/contact-messages` })) });
 
+    // Arabic normalization fallback
     if (normalizeAr(q).includes('احمد')) {
       const grp = groups.find((g) => g.type === 'customers');
       const exists = grp?.items.some((i) => normalizeAr(String(i.title)).includes('احمد'));

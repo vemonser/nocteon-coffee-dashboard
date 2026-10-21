@@ -145,6 +145,27 @@ export class CartsListComponent {
 
   readonly totalItems = computed(() => this.pageData()?.totalElements ?? 0);
 
+  /** Derive a cart status when the backend does not send one (see API_GAPS.md). */
+  cartStatus(cart: CartResponse): StatusKind {
+    if (cart.status) {
+      if (cart.status === 'ACTIVE') return 'active';
+      if (cart.status === 'ABANDONED') return 'abandoned';
+      if (cart.status === 'CONVERTED') return 'converted';
+    }
+    const ref = cart.lastActivityAt ?? cart.updatedAt ?? cart.createdAt;
+    const ageMs = Date.now() - new Date(ref).getTime();
+    const abandonedThresholdMs = 24 * 60 * 60 * 1000;
+    if (ageMs > abandonedThresholdMs) return 'abandoned';
+    return 'active';
+  }
+
+  sendReminder(cart: CartResponse): void {
+    this.cartService.sendReminder(cart.id).subscribe({
+      next: () => this.notify.success('carts.reminderSent', 'Reminder sent'),
+      error: (err) => this.notify.apiError(err, 'notify.errorFallback', 'Could not send reminder'),
+    });
+  }
+
   private columnHelper = createColumnHelper<CartResponse>();
   columns: ColumnDef<CartResponse, any>[] = [
     this.columnHelper.accessor((row) => ({

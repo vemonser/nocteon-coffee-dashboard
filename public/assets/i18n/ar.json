@@ -229,11 +229,7 @@
       "disabled": "معطّل",
       "confirmed": "مؤكد",
       "unknown": "غير معروف",
-      "approved": "معتمد",
-      "active": "مُفعّل",
-      "abandoned": "مهجور",
-      "converted": "محول",
-      "notCollected": "لم يُحصّل"
+      "approved": "معتمد"
     },
     "toggleSidebar": "إظهار/إخفاء القائمة",
     "total": "إجمالي",
@@ -272,8 +268,7 @@
     "days": "أيام",
     "errorTitle": "تعذّر التحميل",
     "processing": "جارٍ التنفيذ…",
-    "clear": "مسح",
-    "confirm": "تأكيد"
+    "clear": "مسح"
   },
   "products": {
     "title": "المنتجات",
@@ -1206,17 +1201,13 @@
       "dateRange": "الفترة",
       "rating": "الحد الأدنى للتقييم",
       "verification": "التحقق",
-      "clear": "مسح الفلاتر",
-      "ratingAll": "التقييم: الكل",
-      "ratingAtLeast": "التقييم: {{n}}+"
+      "clear": "مسح الفلاتر"
     },
     "stats": {
       "averageRating": "متوسط التقييم",
       "distribution": "توزيع النجوم",
       "pending": "قيد المراجعة",
-      "total": "الإجمالي",
-      "reviews": "تقييمات",
-      "verifiedShare": "حصة الموثق"
+      "total": "الإجمالي"
     },
     "dateRange": {
       "all": "كل الفترات",
@@ -1359,14 +1350,11 @@
       "actions": "الإجراءات"
     },
     "stats": {
-      "revenue": "الإيرادات",
-      "open": "طلبات مفتوحة",
-      "avgOrderValue": "متوسط قيمة الطلب",
-      "cancelRate": "معدل الإلغاء",
-      "revenueBasis": "مجموع طلبات المدفوعة",
-      "openBasis": "قيد الانتظار + مؤكّد + قيد التجهيز + شُحن",
-      "avgOrderValueBasis": "الإيراد ÷ عدد الطلبات المدفوعة",
-      "cancelRateBasis": "ملغى ÷ كل الطلبات"
+      "all": "كل الطلبات",
+      "matching": "المطابقة للفلاتر",
+      "open": "قيد التنفيذ",
+      "delivered": "تم التوصيل",
+      "cancelled": "ملغاة"
     },
     "filters": {
       "paymentStatus": "حالة الدفع",
@@ -1391,8 +1379,7 @@
       "noOrdersHint": "ستظهر هنا الطلبات التي يتم إنشاؤها في المتجر.",
       "noResults": "لا توجد طلبات مطابقة لهذه الفلاتر",
       "noResultsHint": "جرّب فترة زمنية أوسع، أو امسح الفلاتر.",
-      "noItems": "لا منتجات",
-      "noItemsHint": "الطلب لا يحتوي على عناصر"
+      "noItems": "لا منتجات"
     },
     "errorState": {
       "title": "تعذّر تحميل الطلبات",
@@ -1402,9 +1389,7 @@
       "selected": "تم تحديد {{count}}",
       "changeStatus": "تغيير الحالة",
       "export": "تصدير CSV",
-      "clear": "إلغاء التحديد",
-      "confirmTitle": "تغيير الحالة؟",
-      "confirmBody": "تغيير {{count}} طلبات محدّدة إلى {{status}}؟"
+      "clear": "إلغاء التحديد"
     },
     "export": {
       "button": "تصدير CSV",
@@ -1418,10 +1403,7 @@
       "cancel": "إلغاء الطلب",
       "refund": "استرداد المبلغ",
       "resendEmail": "إعادة إرسال البريد",
-      "copy": "نسخ",
-      "copyOrderNumber": "نسخ رقم الطلب",
-      "copied": "تم نسخ رقم الطلب",
-      "resendEmailUnavailable": "إعادة إرسال البريد غير متاحة بعد"
+      "copy": "نسخ"
     },
     "countItems_zero": "لا منتجات",
     "countItems_one": "منتج واحد",
@@ -1508,6 +1490,7 @@
       "shipmentSaved": "تم حفظ الشحنة",
       "resendEmailGap": "يرسل المتجر بريد الطلبات تلقائيًا، لكنه لا يستطيع إرسال رسالة عند الطلب.",
       "editShipment": "تسجيل الشحنة",
+      "addShipment": "إضافة تفاصيل الشحنة",
       "refundRecorded": "تم إرسال الاسترداد لبوابة الدفع"
     },
     "dialogs": {
@@ -1561,8 +1544,7 @@
     "orderScope": {
       "all": "كل الطلبات",
       "allHelp": "كل طلبات المتجر، أيًّا كانت حالة الطلب وحالة الدفع — وتشمل الطلبات الملغاة والمعلّقة والمستردة."
-    },
-    "refundedLine": "مُسترَد {{amount}}"
+    }
   },
   "notifications": {
     "title": "الإشعارات",
@@ -1968,14 +1950,7 @@
       "status": "الحالة",
       "dateRange": "الفترة",
       "clear": "مسح الفلاتر"
-    },
-    "sending": "جارٍ الإرسال...",
-    "markRead": "تحديد كمقروء",
-    "markUnread": "تحديد كغير مقروء",
-    "markUnreadNotSupported": "تحديد كغير مقروء غير متاح",
-    "bulkSelected": "تم تحديد {{count}}",
-    "bulkMarkRead": "تحديد كمقروء",
-    "bulkDelete": "حذف المحدد"
+    }
   },
   "unauthorized": {
     "title": "الوصول مرفوض",
