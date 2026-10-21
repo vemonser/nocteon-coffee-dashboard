@@ -235,3 +235,13 @@ is settled. The seed proposal therefore does not attempt to change it.
 - One long review comment and one long product name for truncation testing.
 - Verified purchase = reviewer has a Delivered order containing that product; audit seed against it.
 - Reviewer username vs full name: decide source of truth (Orders show full name).
+
+## Orders list v3 audit (ui/orders-list-v3)
+
+- Orders with no items: 6,7,9,10,12,14,15 (shipping-only totals). ORD-9 is Delivered + Refunded with total 0.00 (original total must stay; refunded amount separate).
+- COD cancelled orders must not show payment "Failed"; frontend maps to "Not collected".
+
+## Reviews v3 (ui/reviews-v3)
+
+- Verified purchase audit: verified = reviewer has a Delivered order containing that product. Seed data should be reconciled so `verified` matches `orderId`/`orderNumber` presence; mismatches (verified true without order, or order present but not delivered) should be corrected in the seed.
+- Reviewer usernames are lowercase in seed; display proper-casing is applied in the UI, but seed could store display names if full names are added later.

@@ -232,7 +232,8 @@
       "approved": "معتمد",
       "active": "نشط",
       "abandoned": "مهجور",
-      "converted": "محول"
+      "converted": "محول",
+      "notCollected": "لم يُحصّل"
     },
     "toggleSidebar": "إظهار/إخفاء القائمة",
     "total": "إجمالي",
@@ -271,7 +272,8 @@
     "days": "أيام",
     "errorTitle": "تعذّر التحميل",
     "processing": "جارٍ التنفيذ…",
-    "clear": "مسح"
+    "clear": "مسح",
+    "confirm": "تأكيد"
   },
   "products": {
     "title": "المنتجات",
@@ -1356,7 +1358,11 @@
       "revenue": "الإيرادات",
       "open": "طلبات مفتوحة",
       "avgOrderValue": "متوسط قيمة الطلب",
-      "cancelRate": "معدل الإلغاء"
+      "cancelRate": "معدل الإلغاء",
+      "revenueBasis": "مجموع طلبات المدفوعة",
+      "openBasis": "قيد الانتظار + مؤكّد + قيد التجهيز + شُحن",
+      "avgOrderValueBasis": "الإيراد ÷ عدد الطلبات المدفوعة",
+      "cancelRateBasis": "ملغى ÷ كل الطلبات"
     },
     "filters": {
       "paymentStatus": "حالة الدفع",
@@ -1381,7 +1387,8 @@
       "noOrdersHint": "ستظهر هنا الطلبات التي يتم إنشاؤها في المتجر.",
       "noResults": "لا توجد طلبات مطابقة لهذه الفلاتر",
       "noResultsHint": "جرّب فترة زمنية أوسع، أو امسح الفلاتر.",
-      "noItems": "لا منتجات"
+      "noItems": "لا منتجات",
+      "noItemsHint": "الطلب لا يحتوي على عناصر"
     },
     "errorState": {
       "title": "تعذّر تحميل الطلبات",
@@ -1391,7 +1398,9 @@
       "selected": "تم تحديد {{count}}",
       "changeStatus": "تغيير الحالة",
       "export": "تصدير CSV",
-      "clear": "إلغاء التحديد"
+      "clear": "إلغاء التحديد",
+      "confirmTitle": "تغيير الحالة؟",
+      "confirmBody": "تغيير {{count}} طلبات محدّدة إلى {{status}}؟"
     },
     "export": {
       "button": "تصدير CSV",
@@ -1405,7 +1414,10 @@
       "cancel": "إلغاء الطلب",
       "refund": "استرداد المبلغ",
       "resendEmail": "إعادة إرسال البريد",
-      "copy": "نسخ"
+      "copy": "نسخ",
+      "copyOrderNumber": "نسخ رقم الطلب",
+      "copied": "تم نسخ رقم الطلب",
+      "resendEmailUnavailable": "إعادة إرسال البريد غير متاحة بعد"
     },
     "countItems_zero": "لا منتجات",
     "countItems_one": "منتج واحد",
@@ -1545,7 +1557,8 @@
     "orderScope": {
       "all": "كل الطلبات",
       "allHelp": "كل طلبات المتجر، أيًّا كانت حالة الطلب وحالة الدفع — وتشمل الطلبات الملغاة والمعلّقة والمستردة."
-    }
+    },
+    "refundedLine": "مُسترَد {{amount}}"
   },
   "notifications": {
     "title": "الإشعارات",
