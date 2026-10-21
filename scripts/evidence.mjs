@@ -46,7 +46,7 @@ import { config as loadEnv } from 'dotenv';
 import { resolve } from 'node:path';
 import { mkdirSync, existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { execSync } from 'node:child_process';
-import { targetsFor, settle, GENERIC_MEASURE } from './evidence-targets.mjs';
+import { targetsFor, settle, GENERIC_MEASURE, PHASE_HOOKS } from './evidence-targets.mjs';
 
 loadEnv({ path: resolve(process.cwd(), '.env.local') });
 
@@ -57,10 +57,25 @@ const URL_PATH = argValue('--url') ?? null;
 const OUT = resolve(process.cwd(), 'evidence', PHASE);
 const AUTH_STATE = resolve(process.cwd(), 'e2e/.auth/dashboard-admin.json');
 
-const WIDTHS = [375, 768, 1024, 1440, 1920];
+/**
+ * The widths of the matrix. The default is the app's own ladder; a phase
+ * that only needs the desktop and the phone passes --widths.
+ */
+const WIDTHS = (argValue('--widths') ?? '375,768,1024,1440,1920')
+  .split(',')
+  .map((w) => Number(w.trim()))
+  .filter((w) => Number.isFinite(w) && w > 0);
 const THEMES = ['light', 'dark'];
 const LANGS = ['en', 'ar'];
 const VIEWPORT_HEIGHT = 900;
+
+/**
+ * Where the run writes. `--out` wins; otherwise the run lands in
+ * evidence/<phase> (plus -<tag> when a tag is given).
+ */
+const RUN_DIR = argValue('--out')
+  ? resolve(process.cwd(), argValue('--out'))
+  : `${OUT}${TAG ? '-' + TAG : ''}`;
 
 /** The screens this phase captures. `--url` keeps the legacy single-screen mode. */
 const TARGETS = targetsFor(PHASE, URL_PATH);
@@ -248,13 +263,28 @@ if (existsSync(AUTH_STATE) && (await sessionIsLive(page))) {
   await login(page);
 }
 
+// 2. The phase's fixtures (a review that does not exist in the seed, …).
+//    They are made ONCE, before the matrix, and the same fixture is used by
+//    every cell, so the "before" and the "after" runs are comparable.
+const hooks = PHASE_HOOKS[PHASE] ?? null;
+let fixtureContext = null;
+if (hooks?.setup) {
+  try {
+    fixtureContext = await hooks.setup(page);
+    console.log(`fixture: ${JSON.stringify({ ...fixtureContext, token: undefined })}`);
+  } catch (err) {
+    fixtureContext = { error: String(err?.message ?? err) };
+    console.error(`fixture setup failed: ${fixtureContext.error}`);
+  }
+}
+
 const cells = [];
 
 for (const width of WIDTHS) {
   await page.setViewportSize({ width, height: VIEWPORT_HEIGHT });
   for (const theme of THEMES) {
     for (const lang of LANGS) {
-      const dir = `${OUT}${TAG ? '-' + TAG : ''}/${lang}-${theme}`;
+      const dir = `${RUN_DIR}/${lang}-${theme}`;
       mkdirSync(dir, { recursive: true });
 
       const targetResults = [];
@@ -346,38 +376,36 @@ for (const width of WIDTHS) {
 // 3. Persist the (possibly rotated) session for the next run.
 mkdirSync(resolve(process.cwd(), 'e2e/.auth'), { recursive: true });
 await context.storageState({ path: AUTH_STATE });
+
+// 3b. The fixtures are cleaned up here — after the matrix, and only when the
+//     run was asked to.
+let teardown = null;
+if (hooks?.teardown) {
+  try {
+    teardown = await hooks.teardown(page, fixtureContext);
+    console.log(`fixture teardown: ${JSON.stringify(teardown)}`);
+  } catch (err) {
+    teardown = { error: String(err?.message ?? err) };
+    console.error(`fixture teardown failed: ${teardown.error}`);
+  }
+}
+
 await context.close();
 await browser.close();
 
 // ── results.json ────────────────────────────────────────────────────────────
 
-// Re-run this phase's measurement script so results.json can never hold a
-// stale copy: the device breakdown changes between loads, so a measurement
-// taken before the capture would not describe the captured page.
-//
-// The measurement is a separate, isolated run. A failure there must not
-// throw away the capture that already succeeded — the error is recorded in
-// results.json instead.
+// The results are written TWICE: once with the matrix, and once more after
+// the phase's measurement script has run. The script reads the run's own
+// results.json (so it summarises the numbers that were actually measured,
+// not a second, separate pass) and writes measurements.json, which is
+// merged back in.
+const resultsFile = `${RUN_DIR}/results.json`;
+mkdirSync(RUN_DIR, { recursive: true });
+
 let measurementError = null;
-const measurementScript = resolve(process.cwd(), `scripts/measure-${PHASE}.mjs`);
-if (existsSync(measurementScript)) {
-  console.log(`running measurements -> scripts/measure-${PHASE}.mjs`);
-  try {
-    const res = await import(`file://${measurementScript}`);
-    if (typeof res.run === 'function') await res.run();
-  } catch (err) {
-    measurementError = String(err?.message ?? err);
-    console.error(`measurement failed: ${measurementError}`);
-  }
-}
 
-const measurementsFile = `${OUT}${TAG ? '-' + TAG : ''}/measurements.json`;
-let measurements = null;
-if (existsSync(measurementsFile)) {
-  measurements = JSON.parse(readFileSync(measurementsFile, 'utf8'));
-}
-
-const results = {
+const buildResults = (measurementsValue) => ({
   phase: PHASE,
   tag: TAG || null,
   generatedAt: new Date().toISOString(),
@@ -392,16 +420,40 @@ const results = {
     viewportHeight: VIEWPORT_HEIGHT,
     storageState: 'e2e/.auth/dashboard-admin.json (gitignored; one login, replayed)',
     runtimeLanguageSwitch: true,
+    fixture: fixtureContext ? { ...fixtureContext, token: undefined } : null,
+    teardown,
     gitBranch: git('rev-parse --abbrev-ref HEAD'),
     gitCommit: git('rev-parse --short HEAD'),
     server: serverOn4200(),
   },
   cells,
-  measurements,
+  measurements: measurementsValue,
   measurementError,
-};
+});
 
-mkdirSync(OUT, { recursive: true });
-writeFileSync(`${OUT}${TAG ? '-' + TAG : ''}/results.json`, JSON.stringify(results, null, 2));
-console.log(`\nresults -> evidence/${PHASE}${TAG ? '-' + TAG : ''}/results.json`);
+writeFileSync(resultsFile, JSON.stringify(buildResults(null), null, 2));
+
+const measurementScript = resolve(process.cwd(), `scripts/measure-${PHASE}.mjs`);
+if (existsSync(measurementScript)) {
+  console.log(`running measurements -> scripts/measure-${PHASE}.mjs`);
+  try {
+    // The measurement script writes where THIS run writes, so the numbers
+    // in results.json always describe the run that produced the screenshots.
+    process.env.EVIDENCE_OUT = RUN_DIR;
+    const res = await import(`file://${measurementScript}`);
+    if (typeof res.run === 'function') await res.run();
+  } catch (err) {
+    measurementError = String(err?.message ?? err);
+    console.error(`measurement failed: ${measurementError}`);
+  }
+}
+
+const measurementsFile = `${RUN_DIR}/measurements.json`;
+let measurements = null;
+if (existsSync(measurementsFile)) {
+  measurements = JSON.parse(readFileSync(measurementsFile, 'utf8'));
+}
+
+writeFileSync(resultsFile, JSON.stringify(buildResults(measurements), null, 2));
+console.log(`\nresults -> ${RUN_DIR.replace(resolve(process.cwd()) + '/', '')}/results.json`);
 console.log(`cells captured: ${cells.length}`);
