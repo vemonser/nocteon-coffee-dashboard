@@ -17,6 +17,19 @@ export abstract class BaseCrudService<TResponse, TRequest, TId = string> {
   protected readonly http = inject(HttpClient);
   protected abstract basePath: string;
 
+  /**
+   * The biggest page the API accepts.
+   *
+   * Every dashboard list endpoint validates `size` and answers **400**
+   * ("must be less than or equal to 100") for anything bigger — one
+   * shared cap, verified against every list endpoint. A request that
+   * asks for more is not a bigger page, it is a failed page.
+   *
+   * So the size is clamped here, once, and a caller that needs MORE
+   * rows than a page has to walk the pages (see `getEvery*`).
+   */
+  protected static readonly MAX_PAGE_SIZE = 100;
+
   protected get fullUrl(): string {
     return `${environment.apiUrl}${this.basePath}`;
   }
@@ -26,7 +39,8 @@ export abstract class BaseCrudService<TResponse, TRequest, TId = string> {
   // ---------------------------------------------------------------------------
 
   protected buildBaseParams(params: BaseListParams): HttpParams {
-    let httpParams = new HttpParams().set('page', params.page ?? 0).set('size', params.size ?? 20);
+    const size = Math.min(params.size ?? 20, BaseCrudService.MAX_PAGE_SIZE);
+    let httpParams = new HttpParams().set('page', params.page ?? 0).set('size', size);
 
     if (params.search?.trim()) {
       httpParams = httpParams.set('search', params.search.trim());

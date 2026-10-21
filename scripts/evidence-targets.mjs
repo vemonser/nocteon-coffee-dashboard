@@ -455,6 +455,65 @@ export const TARGET_SETS = {
       },
     },
   ],
+
+  'global-search': [
+    {
+      id: 'gsp-empty',
+      url: '/dashboard?days=30',
+      action: async (page) => {
+        await page.keyboard.press('Control+k');
+        await page.waitForTimeout(300);
+        return { state: 'empty' };
+      },
+      measure: async (page) => page.evaluate(() => ({ modalWidth: (document.querySelector('[role="dialog"]')||{}).getBoundingClientRect?.()?.width||null, groups: document.querySelectorAll('[role="listbox"] .tracking-wider').length, activeReachable: !!document.querySelector('[role="option"]') })),
+    },
+    {
+      id: 'gsp-results-ah',
+      url: '/dashboard?days=30',
+      action: async (page) => {
+        await page.keyboard.press('Control+k');
+        await page.waitForTimeout(200);
+        await page.keyboard.type('ahmed', { delay: 20 });
+        await page.waitForTimeout(800);
+        return { state: 'results-ah' };
+      },
+      measure: async (page) => page.evaluate(() => ({ modalWidth: (document.querySelector('[role="dialog"]')||{}).getBoundingClientRect?.()?.width||null, groups: document.querySelectorAll('[role="listbox"] .tracking-wider').length, activeReachable: !!document.querySelector('[role="option"]') })),
+    },
+    {
+      id: 'gsp-results-ar',
+      url: '/dashboard?days=30',
+      action: async (page) => {
+        await page.keyboard.press('Control+k');
+        await page.waitForTimeout(200);
+        await page.keyboard.type('احمد', { delay: 20 });
+        await page.waitForTimeout(800);
+        return { state: 'results-ar' };
+      },
+      measure: async (page) => page.evaluate(() => ({ modalWidth: (document.querySelector('[role="dialog"]')||{}).getBoundingClientRect?.()?.width||null, groups: document.querySelectorAll('[role="listbox"] .tracking-wider').length, activeReachable: !!document.querySelector('[role="option"]') })),
+    },
+    {
+      id: 'gsp-no-results',
+      url: '/dashboard?days=30',
+      action: async (page) => {
+        await page.keyboard.press('Control+k');
+        await page.waitForTimeout(200);
+        await page.keyboard.type('zzzzzz', { delay: 20 });
+        await page.waitForTimeout(800);
+        return { state: 'no-results' };
+      },
+      measure: async (page) => page.evaluate(() => ({ modalWidth: (document.querySelector('[role="dialog"]')||{}).getBoundingClientRect?.()?.width||null, groups: document.querySelectorAll('[role="listbox"] .tracking-wider').length, activeReachable: !!document.querySelector('[role="option"]') })),
+    },
+    {
+      id: 'gsp-error',
+      url: '/dashboard?days=30',
+      action: async (page) => {
+        await page.keyboard.press('Control+k');
+        await page.waitForTimeout(200);
+        await page.keyboard.type('error', { delay: 20 });
+        await page.waitForTimeout(800);
+        return { state: 'error' };
+      },
+      measure: async (page) => page.evaluate(() => ({ modalWidth: (document.querySelector('[role="dialog"]')||{}).getBoundingClientRect?.()?.width||null, groups: document.querySelectorAll('[role="listbox"] .tracking-wider').length, activeReachable: !!document.querySelector('[role="option"]') })),
   'contact-reviews': [
     {
       id: 'contact-list',

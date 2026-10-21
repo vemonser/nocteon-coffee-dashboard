@@ -1,4 +1,4 @@
-﻿import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -503,6 +503,9 @@ export class OrdersListComponent {
       all: this.orderService.getStats({}),
       // Full read of the filtered set to compute revenue/avg until the
       // backend exposes them on the stats endpoint (see API_GAPS.md).
+      // It WALKS the pages: the API caps a page at 100 rows, so a single
+      // "size: 1000" request was a 400 — and a 400 inside this forkJoin
+      // left the whole list stuck on "Loading".
       // Walks the pages: the API caps a page at 100 rows.
       kpiRows: this.orderService.getEveryOrder({
         status: status === 'ALL' ? undefined : status,

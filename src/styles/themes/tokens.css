@@ -19,6 +19,7 @@
  */
 :root {
   --overlay: rgba(0, 0, 0, 0.32);
+  --search-highlight: color-mix(in srgb, var(--primary) 18%, transparent);
   --control-height: 2.5rem;
   --control-height-compact: 2rem;
   --control-font-size: 0.875rem;
@@ -65,6 +66,7 @@
     --color-destructive-text: var(--destructive-text);
     --color-destructive-soft: var(--destructive-soft);
     --color-overlay: var(--overlay);
+    --color-search-highlight: var(--search-highlight);
     --color-chart-1: var(--chart-1);
     --color-chart-2: var(--chart-2);
     --color-chart-3: var(--chart-3);

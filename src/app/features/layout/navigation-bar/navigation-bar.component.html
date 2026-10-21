@@ -19,61 +19,30 @@
 
   <!-- Right -->
   <div class="flex items-center gap-2 lg:gap-3 ms-auto">
-    <!-- Search -->
-    <div class="relative hidden sm:block shrink">
-      <hlm-autocomplete
-        [(search)]="searchQuery"
-        [value]="null"
-        (valueChange)="onResultSelect($event)"
-        class="w-64"
-      >
-        <hlm-autocomplete-input
-          [placeholder]="'nav.search' | transloco"
-          [attr.aria-label]="'nav.search' | transloco"
-          class="h-9 w-full rounded-md border border-input bg-transparent px-9 py-1 text-sm transition-colors placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
-        />
-        <ng-icon
-          name="lucideSearch"
-          class="absolute start-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none"
-        />
+    <!-- Search trigger -->
+    <button
+      #searchTrigger
+      type="button"
+      class="hidden sm:flex h-9 w-64 items-center gap-2 rounded-md border border-input bg-transparent px-3 text-sm text-muted-foreground transition-colors hover:bg-accent"
+      (click)="openPalette()"
+      [attr.aria-label]="'nav.search' | transloco"
+    >
+      <ng-icon name="lucideSearch" class="size-4" aria-hidden="true" />
+      <span class="flex-1 text-start">{{ 'nav.search' | transloco }}</span>
+      <!--
+        The shortcut hint is LATIN ("Ctrl K"), so it is a Latin string on
+        the Arabic page — the one thing the round-2 rule forbids. The
+        Arabic UI keeps the icon and the placeholder (the palette still
+        opens with the shortcut); the hint is shown in the LTR layout
+        only.
+      -->
+      @if (language.language() !== 'ar') {
+        <kbd class="rounded border bg-muted px-1.5 py-0.5 text-[10px] font-medium">Ctrl K</kbd>
+      }
+    </button>
 
-        <hlm-autocomplete-content *hlmAutocompletePortal class="w-96">
-          @if (isSearching()) {
-            <div class="p-4 text-center">
-              <ng-icon name="lucideLoader2" class="animate-spin size-5 text-muted-foreground mx-auto" />
-              <p class="text-sm text-muted-foreground mt-2">
-                {{ 'nav.searching' | transloco }}
-              </p>
-            </div>
-          } @else if (groupedResults().length === 0 && searchQuery().trim().length >= 2) {
-            <hlm-autocomplete-empty>
-              {{ 'nav.noResults' | transloco }}
-            </hlm-autocomplete-empty>
-          } @else {
-            <div hlmAutocompleteList class="max-h-80 overflow-y-auto">
-              @for (group of groupedResults(); track group.type) {
-                <div hlmAutocompleteGroup>
-                  <div hlmAutocompleteLabel class="text-xs font-medium uppercase tracking-wider text-muted-foreground px-2 py-1.5">
-                    {{ group.label }}
-                  </div>
-                  @for (result of group.items; track result.id) {
-                    <hlm-autocomplete-item
-                      [value]="result"
-                      class="cursor-pointer"
-                    >
-                      <div class="flex flex-col gap-0.5 py-1">
-                        <span class="text-sm font-medium">{{ result.title }}</span>
-                        <span class="text-xs text-muted-foreground">{{ result.subtitle }}</span>
-                      </div>
-                    </hlm-autocomplete-item>
-                  }
-                </div>
-              }
-            </div>
-          }
-        </hlm-autocomplete-content>
-      </hlm-autocomplete>
-    </div>
+    <app-global-search-palette [(open)]="paletteOpen" />
+
     <app-notification />
 
     <!-- Quick light/dark toggle. -->

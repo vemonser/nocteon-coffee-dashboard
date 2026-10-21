@@ -16,8 +16,17 @@ export class ProductService {
   private http = inject(HttpClient);
   private base = `${environment.apiUrl}/api/dashboard/products`;
 
+  /** The biggest page the API accepts (`size` is validated, max 100). */
+  private static readonly MAX_PAGE_SIZE = 100;
+
   getAll(params: ProductListParams = {}): Observable<ApiResponse<PageResponse<ProductListItem>>> {
-    let p = new HttpParams().set('page', params.page ?? 0).set('size', params.size ?? 20);
+    // The API validates `size` and answers 400 for anything above 100
+    // ("must be less than or equal to 100"), so a request that asks for
+    // more than a page is a FAILED page, not a bigger one. The product
+    // service does not extend the base CRUD service, so the cap is
+    // applied here.
+    const size = Math.min(params.size ?? 20, ProductService.MAX_PAGE_SIZE);
+    let p = new HttpParams().set('page', params.page ?? 0).set('size', size);
 
     if (params.search) p = p.set('search', params.search);
     if (params.categorySlug) p = p.set('categorySlug', params.categorySlug);
