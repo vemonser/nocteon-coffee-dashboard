@@ -1,6 +1,7 @@
 import {
   Component,
   ElementRef,
+  computed,
   effect,
   inject,
   input,
@@ -21,18 +22,18 @@ import { TranslocoPipe } from '@jsverse/transloco';
   template: `
     @if (open()) {
       <div
-        class="fixed inset-0 z-50 flex items-center justify-center bg-overlay p-4 backdrop-blur-sm"
+        [class]="backdropClass()"
         (click)="onBackdrop($event)"
         (keydown)="onKeydown($event)"
       >
         <div
           #panel
-          role="dialog"
+          [attr.role]="panelRole()"
           aria-modal="true"
           tabindex="-1"
           [attr.data-testid]="testId()"
           [attr.aria-labelledby]="testId() + '-title'"
-          class="flex w-full max-w-lg max-h-[90vh] flex-col rounded-[var(--radius-card)] border bg-card shadow-2xl outline-none"
+          [class]="panelClass()"
         >
           <header class="flex items-start justify-between gap-3 border-b px-6 py-4">
             <div class="min-w-0">
@@ -77,10 +78,42 @@ export class DialogShellComponent {
   readonly subtitle = input<string>('');
   readonly testId = input<string>('dialog-shell');
 
+  /**
+   * The dialog is a FULL-WIDTH SHEET on a phone, and a centred card from
+   * `sm` up. The body scrolls and the footer stays put, so the actions are
+   * always reachable — a phone dialog that grows with its content pushes the
+   * actions off the screen, and the actions are the reason it is open.
+   */
+  readonly mobileSheet = input<boolean>(false);
+
+  /**
+   * The role of the panel. A confirmation that destroys something is an
+   * `alertdialog`, not a `dialog`: the difference is what a screen reader
+   * announces when the panel opens.
+   */
+  readonly panelRole = input<'dialog' | 'alertdialog'>('dialog');
+
   readonly closed = output<void>();
 
   private readonly panel = viewChild<ElementRef<HTMLElement>>('panel');
   private lastFocused: HTMLElement | null = null;
+
+  /**
+   * The scrim. On a phone the sheet reaches the edges of the screen, so the
+   * padding that frames the card is dropped below `sm`.
+   */
+  protected readonly backdropClass = computed(() =>
+    this.mobileSheet()
+      ? 'fixed inset-0 z-50 flex items-center justify-center bg-overlay backdrop-blur-sm sm:p-4'
+      : 'fixed inset-0 z-50 flex items-center justify-center bg-overlay p-4 backdrop-blur-sm',
+  );
+
+  /** The panel: a full-height sheet on a phone, a centred card above it. */
+  protected readonly panelClass = computed(() =>
+    this.mobileSheet()
+      ? 'flex h-[100dvh] max-h-[100dvh] w-full max-w-none flex-col border bg-card shadow-2xl outline-none sm:h-auto sm:max-h-[90vh] sm:max-w-lg sm:rounded-[var(--radius-card)]'
+      : 'flex w-full max-w-lg max-h-[90vh] flex-col rounded-[var(--radius-card)] border bg-card shadow-2xl outline-none',
+  );
 
   constructor() {
     effect(() => {

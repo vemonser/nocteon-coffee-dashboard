@@ -61,3 +61,36 @@ EOF
 - Exact rating filter: backend exposes `minRating` only; the distribution bars filter by `minRating` (N and up) because there is no `maxRating`/exact param.
 - Reviewer full name: backend returns `username` (lowercase) only; no full name. Frontend title-cases the username.
 - Verified purchase: backend now returns `orderId`/`orderNumber` (present in model); seed audit of which reviews are verified is reported in SEED_PROPOSAL.md.
+
+## Review details dialog v3 (ui/review-dialog-v3)
+
+Every line below was checked against the RUNNING backend (`main`, live call on
+2026-10-21, `GET /api/dashboard/reviews`), not against the DTO on disk.
+
+- **The verified-purchase order is not in the response — BLOCKED on backend.**
+  The live `ReviewResponse` carries `id, username, avatarUrl, rating, comment,
+  verified, approved, productName, productSlug, primaryImageUrl, createdAt` and
+  NO `orderId` / `orderNumber`. The "View order ORD-…" link in the dialog is
+  therefore rendered only when the fields arrive; with the API as it is today
+  the link does not appear, and nothing is invented to fill it. The DTO with
+  `orderId` / `orderNumber` exists on the backend branch
+  `feature/reviews-messages-backend` but is NOT deployed. The dashboard model
+  keeps both fields optional (`number | null`), so the day the backend ships
+  them the link appears with no frontend change. (gap)
+- **No reject action, no rejected state — BLOCKED on backend.**
+  `ReviewController` exposes `PATCH /api/dashboard/reviews/{id}/approval?approved=`
+  and `DELETE /api/dashboard/reviews/{id}`; there is no reject endpoint and
+  `approved` is a boolean, so a rejected review has nowhere to live. The
+  Pending dialog therefore offers Approve (primary), Close and Delete only.
+  A "Reject" button is NOT rendered disabled either: a dead button reads as a
+  broken product. (gap)
+- **No admin reply — BLOCKED on backend.**
+  There is no endpoint and no column for a public answer from the dashboard.
+  The reply feature is skipped in this round and logged in DECISIONS.md. (gap)
+- **The reviewer still has no full name.** `username` is the only identity the
+  API returns; the dialog title-cases it, as the list does. (gap, unchanged)
+- **The product page of the dashboard has no read-only route.** Not an API
+  gap: `/dashboard/products/:slug` does not exist as a route, so the product
+  name in the dialog links to `/dashboard/products/:slug/edit`, the only
+  product page the dashboard has. A read-only product page would be a routing
+  task, not an API one. (gap, frontend)

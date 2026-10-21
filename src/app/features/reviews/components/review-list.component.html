@@ -357,16 +357,26 @@
 <app-dialog-shell
   [open]="viewing() !== null"
   [title]="'reviews.details' | transloco"
+  [mobileSheet]="true"
   (closed)="closeView()"
 >
   @if (viewing(); as review) {
     <div class="space-y-5">
-      <div class="flex items-center gap-3">
+      <!-- The product and the reviewer: what the review is about, and who
+           wrote it. The name is a link to the product page. -->
+      <div class="flex items-start gap-3">
         @if (review.primaryImageUrl) {
-          <img [src]="review.primaryImageUrl" [alt]="review.productName ?? review.productSlug" class="size-12 rounded-[var(--radius-control)] object-cover" />
+          <img
+            [src]="review.primaryImageUrl"
+            [alt]="review.productName ?? review.productSlug"
+            class="size-12 shrink-0 rounded-[var(--radius-control)] object-cover"
+          />
         }
-        <div class="min-w-0">
-          <a class="font-medium hover:underline" [routerLink]="['/dashboard/products', review.productSlug]">
+        <div class="min-w-0 flex-1">
+          <a
+            class="font-medium hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            [routerLink]="productLink(review)"
+          >
             <bdi>{{ review.productName ?? review.productSlug }}</bdi>
           </a>
           <div class="mt-1 flex items-center gap-2">
@@ -374,87 +384,146 @@
             <span class="text-sm"><bdi>{{ toDisplayName(review.username) }}</bdi></span>
             <app-verified-badge [verified]="review.verified" />
           </div>
-          <p class="text-xs text-muted-foreground">
+          <p class="mt-1 text-xs text-muted-foreground">
             <app-localized-date [value]="review.createdAt" [showTime]="true" />
           </p>
         </div>
       </div>
 
+      <!-- The rating: the stars, and the number RIGHT NEXT to them. The
+           stars carry their own English aria-label, so they are hidden from
+           the screen reader and the translated label below replaces them. -->
       <div class="flex items-center gap-2">
-        <app-rating-stars [rating]="review.rating" [showText]="true" />
+        <span class="sr-only">
+          {{ 'reviews.dialog.ratingLabel' | transloco: { rating: review.rating } }}
+        </span>
+        <app-rating-stars aria-hidden="true" class="[&_svg]:size-6" [rating]="review.rating" />
+        <span
+          dir="ltr"
+          data-testid="review-dialog-rating"
+          class="text-sm font-medium tabular-nums"
+          >{{ review.rating }} / 5</span
+        >
       </div>
 
-      <blockquote class="rounded-[var(--radius-control)] border bg-muted/40 p-4 text-sm">
+      <!-- The comment: a quote, with its line breaks kept, and a scroll area
+           when it is long. A dialog that grows with its content pushes the
+           actions off the screen, and the actions are why it is open. The
+           area is focusable, because a scrollable region a keyboard cannot
+           reach is a region a keyboard cannot read. -->
+      <blockquote
+        tabindex="0"
+        [attr.aria-label]="'reviews.comment' | transloco"
+        class="max-h-40 overflow-y-auto whitespace-pre-wrap rounded-[var(--radius-control)] border bg-muted/40 p-4 text-sm"
+      >
         <bdi>{{ review.comment }}</bdi>
       </blockquote>
 
-      <div class="flex items-center gap-2">
+      <!-- The status: a LABELLED row. A badge on its own says "something is
+           approved" without saying what it is. -->
+      <div class="flex items-center gap-2 text-sm">
+        <span class="text-muted-foreground">{{ 'common.status' | transloco }}:</span>
         <app-status-badge
           [status]="review.approved ? 'approved' : 'pending'"
           [customLabel]="review.approved ? 'reviews.status.approved' : 'reviews.status.pending'"
         />
-        @if (review.verified && review.orderNumber) {
-          <a
-            class="inline-flex items-center gap-1 text-sm text-primary hover:underline"
-            [routerLink]="['/dashboard/orders', review.orderId]"
-          >
-            {{ review.orderNumber }}
-          </a>
-        }
       </div>
+
+      <!-- The order behind a verified purchase. The API does not send the
+           order yet, so the link appears when it does. -->
+      @if (review.verified && review.orderId && review.orderNumber) {
+        <a
+          class="inline-flex items-center gap-1 text-sm text-primary hover:underline"
+          [routerLink]="['/dashboard/orders', review.orderId]"
+        >
+          {{ 'reviews.dialog.viewOrder' | transloco }}
+          <bdi>{{ review.orderNumber }}</bdi>
+        </a>
+      }
     </div>
   }
 
   <div dialog-footer-start>
-    @if (viewing()) {
+    @if (viewing(); as review) {
       <button
         *hasPermission="'review:delete'"
         hlmBtn
         variant="ghost"
+        type="button"
         class="text-destructive-text hover:bg-destructive/10"
-        (click)="confirmDelete(viewing()!)"
+        (click)="confirmDelete(review)"
       >
         {{ 'common.delete' | transloco }}
       </button>
     }
   </div>
-  <div dialog-footer-end>
-    <button hlmBtn variant="outline" type="button" (click)="closeView()">
+
+  <!-- The end side: Close first, then THE action of this review. The gap is
+       12px, and the two never look the same: Close is a ghost, and the
+       action is the primary button (or the secondary one, when the action
+       is a reversal). -->
+  <div dialog-footer-end class="flex items-center gap-3">
+    <button hlmBtn variant="ghost" type="button" (click)="closeView()">
       {{ 'common.close' | transloco }}
     </button>
     @if (viewing(); as review) {
       @if (!review.approved) {
-        <button hlmBtn type="button" (click)="toggleApprovalFromDialog()">
-          {{ 'reviews.approve' | transloco }}
+        <button
+          hlmBtn
+          type="button"
+          [disabled]="dialogBusy()"
+          (click)="setApprovalFromDialog(review, true)"
+        >
+          {{
+            dialogBusy()
+              ? ('reviews.action.approving' | transloco)
+              : ('reviews.approve' | transloco)
+          }}
         </button>
       } @else {
-        <button hlmBtn variant="outline" type="button" (click)="toggleApprovalFromDialog()">
-          {{ 'reviews.withdrawApproval' | transloco }}
+        <button
+          hlmBtn
+          variant="secondary"
+          type="button"
+          [disabled]="dialogBusy()"
+          (click)="setApprovalFromDialog(review, false)"
+        >
+          {{
+            dialogBusy()
+              ? ('reviews.action.withdrawing' | transloco)
+              : ('reviews.withdrawApproval' | transloco)
+          }}
         </button>
       }
     }
   </div>
 </app-dialog-shell>
 
-<!-- The delete confirmation -->
-@if (deleting(); as review) {
-  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-    <div class="w-full max-w-sm rounded-xl border bg-card p-6 shadow-2xl" role="alertdialog">
-      <h2 class="text-lg font-medium">{{ 'reviews.deleteTitle' | transloco }}</h2>
-      <p class="mt-1 text-sm text-muted-foreground">{{ 'reviews.deleteConfirm' | transloco }}</p>
-      <div class="mt-6 flex justify-end gap-3">
-        <button hlmBtn variant="outline" (click)="deleting.set(null)">
-          {{ 'common.cancel' | transloco }}
-        </button>
-        <button
-          hlmBtn
-          variant="destructive"
-          [disabled]="deletingBusy()"
-          (click)="submitDelete()"
-        >
-          {{ deletingBusy() ? ('common.deleting' | transloco) : ('common.delete' | transloco) }}
-        </button>
-      </div>
-    </div>
+<!-- The delete confirmation. It NAMES the review: "delete this one" is a
+     question only the admin can answer, and the answer is not "yes" by
+     default. -->
+<app-dialog-shell
+  [open]="deleting() !== null"
+  [title]="'reviews.deleteTitle' | transloco"
+  [subtitle]="deleteTargetLabel()"
+  panelRole="alertdialog"
+  testId="review-delete-confirm"
+  (closed)="cancelDelete()"
+>
+  <p class="text-sm text-muted-foreground">{{ 'reviews.deleteConfirmNamed' | transloco }}</p>
+
+  <div dialog-footer-end class="flex items-center gap-3">
+    <button hlmBtn variant="ghost" type="button" (click)="cancelDelete()">
+      {{ 'common.cancel' | transloco }}
+    </button>
+    <button
+      hlmBtn
+      variant="destructive"
+      type="button"
+      [disabled]="deletingBusy()"
+      (click)="submitDelete()"
+    >
+      {{ deletingBusy() ? ('common.deleting' | transloco) : ('common.delete' | transloco) }}
+    </button>
   </div>
-}
+</app-dialog-shell>

@@ -136,6 +136,8 @@ export class ReviewListComponent {
   readonly viewing = signal<ReviewResponse | null>(null);
   readonly deleting = signal<ReviewResponse | null>(null);
   readonly deletingBusy = signal(false);
+  /** The dialog's own request: the action button waits for the answer. */
+  readonly dialogBusy = signal(false);
 
   private readonly VIEW_KEY = 'nocteon-reviews-view-mode';
   readonly viewMode = signal<ViewMode>(this.readViewMode());
@@ -571,11 +573,59 @@ export class ReviewListComponent {
     this.viewing.set(review);
   }
 
-  /** The modal's confirm button: approve, or withdraw the approval. */
-  protected toggleApprovalFromDialog(): void {
-    const review = this.viewing();
-    if (!review) return;
-    this.setApproval(review, !review.approved);
+  /**
+   * The product page of the dashboard.
+   *
+   * <p>`/dashboard/products/{slug}` is not a route — the router has
+   * `products`, `products/new` and `products/:slug/edit` — so the product
+   * name used to link to a URL that resolved to nothing. The edit page is
+   * the product page the dashboard has, and the one the category, farm and
+   * origin pages link to as well.
+   */
+  protected productLink(review: ReviewResponse): string[] {
+    return ['/dashboard/products', review.productSlug, 'edit'];
+  }
+
+  /**
+   * The review the delete confirmation is about: its product and its
+   * reviewer. "Delete this one" is a question only the admin can answer, so
+   * the confirmation names the review instead of saying "this item".
+   */
+  protected readonly deleteTargetLabel = computed(() => {
+    const review = this.deleting();
+    if (!review) return '';
+    return `${review.productName ?? review.productSlug} (${this.toDisplayName(review.username)})`;
+  });
+
+  /**
+   * Approve, or withdraw the approval, FROM THE DIALOG.
+   *
+   * <p>The row's own Approve button keeps its own behaviour: the dialog
+   * toasts, because the admin is reading a dialog and not watching a table
+   * cell change under the cursor. The button is disabled while the request
+   * is in flight, so a double press cannot approve twice.
+   */
+  protected setApprovalFromDialog(review: ReviewResponse, approved: boolean): void {
+    if (this.dialogBusy()) return;
+    this.dialogBusy.set(true);
+    this.reviewService.setSingleApproval(review.id, approved).subscribe({
+      next: (res) => {
+        this.dialogBusy.set(false);
+        if (res?.data) {
+          this.items.update((list) => list.map((r) => (r.id === review.id ? res.data! : r)));
+          this.viewing.set(res.data);
+        }
+        this.notify.success(
+          approved ? 'reviews.action.approved' : 'reviews.action.approvalWithdrawn',
+          approved ? 'Review approved' : 'Approval withdrawn',
+        );
+        this.loadStats();
+      },
+      error: (err) => {
+        this.dialogBusy.set(false);
+        this.notify.apiError(err, 'notify.errorFallback', 'Could not update the review');
+      },
+    });
   }
 
   protected closeView(): void {
@@ -584,6 +634,11 @@ export class ReviewListComponent {
 
   protected confirmDelete(review: ReviewResponse): void {
     this.deleting.set(review);
+  }
+
+  protected cancelDelete(): void {
+    if (this.deletingBusy()) return;
+    this.deleting.set(null);
   }
 
   protected submitDelete(): void {

@@ -1646,3 +1646,67 @@ wants the whole set asks for page 0, 1, 2 … until one page is short.
 - Grid: RatingStars + `N/5`; reviewer line with VerifiedBadge; status badge in card header corner; Pending footer has Approve + Eye + kebab, Approved footer has Eye + kebab only (shrinks); comment clamped to 3 lines; stable min-height; last row left-aligned; view toggle persists via `view` URL param with `aria-pressed` and tooltips.
 - Star distribution: 5 horizontal bars labelled with the star level and count; clicking a bar filters by that rating (minRating).
 - View toggle persisted via `view` query param (and localStorage) with aria-pressed and tooltips.
+
+## Review details dialog v3 (ui/review-dialog-v3)
+
+The scope is the REVIEW DETAILS DIALOG only — the table and the grid are not
+touched. The branch is `ui/review-dialog-v3`, cut from `main` (e9bedb65).
+
+### The evidence harness was BROKEN on main — fixed first
+
+`npm run evidence` could not even parse: `scripts/evidence-targets.mjs` was
+missing the `},` that closes the last `global-search` target, so the
+`'contact-reviews'` target set was parsed as a property of that target and
+the object literal ended early. The file was broken by the merge `9997e176`
+("Merge branch 'main' into ui/global-search-v2") and the breakage reached
+`main` through `e9bedb65`. A missing `},` (one line) is fixed in this branch,
+because nothing in the evidence round can run without it. The fix is in the
+harness, not in the app.
+
+### The harness grew three things
+
+- `--widths` — the matrix width list is now a flag. The review-dialog round
+  needs 1440 and 390; the app's own ladder (375/768/1024/1440/1920) is the
+  default, so every other phase is unchanged.
+- `--out` — the run writes where it is told to, so the round's evidence lands
+  in `evidence/review-dialog/before/` and `evidence/review-dialog/after/`.
+- Phase hooks (`PHASE_HOOKS`) — a phase can make its own fixture before the
+  matrix and clean it up after it.
+
+### The long-comment fixture is a REAL review
+
+The seed has no comment over 200 characters, so the "600+ characters" state
+is created through the PUBLIC API (`POST /api/products/reviews`, the same
+call the storefront makes) and removed through the admin delete endpoint
+(`DELETE /api/dashboard/reviews/{id}`, a soft delete). The setup REUSES an
+existing long review when it finds one, so the "before" and the "after" runs
+show the same review and the two are comparable. The fixture is labelled
+`fixture` in results.json — it is never a hidden row in the evidence.
+
+### The product link points at the product page that EXISTS
+
+`/dashboard/products/:slug` is not a route in the dashboard (the router has
+`products`, `products/new` and `products/:slug/edit`), so the product name in
+the dialog linked to a URL that resolves to nothing. It now links to
+`/dashboard/products/:slug/edit` — the only product page the dashboard has,
+and the same target the category, farm and origin detail pages use.
+
+### No Reject button, and no dead one either
+
+The backend has no reject endpoint and no rejected state (`approved` is a
+boolean), so a "Reject" button would be a promise the API cannot keep. It is
+not rendered — not even disabled: a dead button reads as a broken product.
+The Pending dialog offers Approve (primary), Close and Delete. Logged in
+API_GAPS.md.
+
+### The admin reply is skipped
+
+There is no endpoint and no column for a public answer to a review, so the
+reply feature is out of this round. Logged in API_GAPS.md.
+
+### The order link is rendered only when the API sends the order
+
+`orderId` / `orderNumber` are in the dashboard model but NOT in the live
+backend response, so the "View order ORD-…" link appears only when both
+arrive. Nothing is invented to fill them. The link is wired, the data is
+not — see API_GAPS.md.
