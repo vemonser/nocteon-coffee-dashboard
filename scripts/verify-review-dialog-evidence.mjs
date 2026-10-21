@@ -113,20 +113,21 @@ const checks = {
   },
   'AC-08': () => {
     const esc = afterTargets.every((t) => t.own?.escape?.closes === true);
-    // The focus must land on the SAME control that opened the dialog — not
-    // on "some button".
+    // The focus must land on the SAME control that OPENED the dialog — the
+    // one that was clicked, not "some button", and not the close X (the
+    // dialog takes the focus the moment it opens).
     const focus = afterTargets.every((t) => {
       const e = t.own?.escape;
-      if (!e?.focusBefore || !e?.focusAfter) return false;
+      if (!e?.trigger || !e?.focusAfter) return false;
       return (
-        e.focusBefore.tag === e.focusAfter.tag &&
-        e.focusBefore.ariaLabel === e.focusAfter.ariaLabel &&
-        e.focusBefore.rowIndex === e.focusAfter.rowIndex
+        e.trigger.tag === e.focusAfter.tag &&
+        e.trigger.ariaLabel === e.focusAfter.ariaLabel &&
+        e.trigger.rowIndex === e.focusAfter.rowIndex
       );
     });
     return {
       ok: esc && focus,
-      detail: `escape closes: ${esc}; the focus returns to the SAME control (${afterTargets[0]?.own?.escape?.focusBefore?.ariaLabel}, row ${afterTargets[0]?.own?.escape?.focusBefore?.rowIndex}): ${focus}`,
+      detail: `escape closes: ${esc}; the focus returns to the SAME control it was opened from (${afterTargets[0]?.own?.escape?.trigger?.ariaLabel}, row ${afterTargets[0]?.own?.escape?.trigger?.rowIndex}): ${focus}`,
     };
   },
   'AC-09': () => {

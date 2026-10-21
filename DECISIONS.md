@@ -1796,3 +1796,73 @@ button waits for the answer (disabled, "Approving…" / "Withdrawing…"). The
 ROW's own Approve button keeps its silent behaviour: the table is not
 this task's scope, and the admin is reading a dialog, not watching a cell
 change under the cursor.
+
+## The review round (what the independent review found)
+
+The branch was reviewed by an agent that did not write it. It found two
+real defects and a list of minor ones. All of them are fixed.
+
+### The dialog re-opened itself after an in-flight response
+
+`setApprovalFromDialog()` wrote the response back with
+`this.viewing.set(res.data)` — unconditionally. The admin can close the
+dialog while the request is in flight, and the response then popped the
+dialog back open: "Close" did not close. The write-back now happens only
+when the dialog is STILL OPEN on the same review, which is what the row's
+own sibling already did.
+
+### Two panels claimed aria-modal at the same time
+
+The delete confirmation is a sibling of the review panel, and both were
+open at once: the background panel still said `aria-modal="true"`, so a
+screen reader could reach — and with some readers, activate — the
+background dialog's **Approve** button while a "delete?" prompt was up.
+The review panel is now `inert` while the confirmation is open (a new
+additive `inert` input on the shared shell).
+
+### The keys are handled on the DOCUMENT, not on the panel
+
+Found by the e2e suite, not by reading: a control that becomes disabled
+(the approve button while its request is in flight) drops the focus to the
+body, and a key pressed there never reaches the panel — so **Escape stopped
+working exactly while the admin was waiting for the app**. The shared shell
+now listens on the document while it is open, which also closes the trap's
+hole when the panel itself holds the focus (Shift+Tab walked out of the
+dialog).
+
+### The smaller ones
+
+- The comment's scroll area is focusable ONLY when it actually scrolls: a
+  focusable box that does not scroll is a dead stop in the tab order, and
+  most comments are short.
+- The confirmation has an accessible DESCRIPTION (`aria-describedby`), and
+  it names the review in the body inside a `<bdi>` — the sentence that says
+  what will happen is announced WITH the question, not after it.
+- The Cancel button is disabled while the delete request is in flight: a
+  dead-looking control next to a live destructive one reads as a broken
+  dialog.
+- `toDisplayName()` split on `/\\s+/` (a literal backslash and an "s"),
+  not `/\s+/`, so a multi-word username was not proper-cased. It was
+  pre-existing on `main`; the round's "proper-cased name" claim inherits
+  it, so it is fixed here. With the current seed (one-word usernames)
+  nothing on screen changes.
+- The e2e spec pins the language (it asserted English strings and the
+  app falls back to `navigator.language`), and it now proves what the
+  evidence could not: the toast, the disabled button while in flight, the
+  focus trap, the star size, the RTL mirroring, and that a closed dialog
+  stays closed.
+- The e2e suite restores the review it approves: the seed is the
+  backend's, and a test that changes it changes every test after it.
+- The harness measures what the review said was never measured: the
+  rendered WIDTH of a star, the x positions of the footer groups and the
+  stars (the mirroring), and the IDENTITY of the focused control (the same
+  row, not "some button"). It also records the command it really ran and
+  the commit of the app it measured.
+
+### What the review did NOT count as a defect
+
+The absent "View order" link, the absent Reject action and the absent
+admin reply: the backend sends no `orderId`/`orderNumber`, has no reject
+endpoint and no reply column. The frontend does not claim they work —
+they are logged in `API_GAPS.md`. The shared `RatingStars`, the reviews
+table and the reviews grid were out of scope and are untouched.

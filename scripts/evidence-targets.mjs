@@ -419,6 +419,34 @@ const REVIEW_ROW_INDEX = () => {
   };
 };
 
+/**
+ * The identity of a control: its tag, its accessible name, and WHICH row
+ * or card it belongs to.
+ *
+ * <p>"Focus is on some button" is not a claim; "focus is on the SAME
+ * button that opened the dialog" is. The row index is what makes two
+ * controls comparable.
+ */
+const identityOf = (locator) =>
+  locator.evaluate((el) => {
+    const card = el.closest('tr, hlm-card');
+    const siblings = card?.parentElement ? Array.from(card.parentElement.children) : [];
+    return {
+      tag: el.tagName.toLowerCase(),
+      ariaLabel: el.getAttribute('aria-label'),
+      rowIndex: card ? siblings.indexOf(card) : -1,
+    };
+  });
+
+/**
+ * The control that opened the dialog, recorded WHEN it was clicked.
+ *
+ * <p>The measurement runs after the dialog is open, and the dialog takes
+ * the focus the moment it opens — so the trigger has to be remembered at
+ * click time, or "the focus came back" cannot be compared with anything.
+ */
+let lastTrigger = null;
+
 /** Open the dialog on the first row of the given kind. */
 async function openReviewDialog(page, kind) {
   const index = await page.evaluate(REVIEW_ROW_INDEX);
@@ -428,6 +456,7 @@ async function openReviewDialog(page, kind) {
   }
   const button = page.locator('tbody tr').nth(rowIndex).locator(VIEW_BUTTON_SELECTOR).first();
   if ((await button.count()) === 0) return { present: false, reason: 'no view button' };
+  lastTrigger = await identityOf(button);
   await button.click();
   await page.waitForTimeout(700);
   return { present: await dialogOpen(page, 'dialog-shell'), opened: true, rowIndex };
@@ -439,6 +468,7 @@ async function openReviewDialogFromGrid(page) {
   if ((await cards.count()) === 0) return { present: false, reason: 'no grid cards' };
   const button = cards.first().locator(VIEW_BUTTON_SELECTOR).first();
   if ((await button.count()) === 0) return { present: false, reason: 'no view button on the card' };
+  lastTrigger = await identityOf(button);
   await button.click();
   await page.waitForTimeout(700);
   return { present: await dialogOpen(page, 'dialog-shell'), opened: true, trigger: 'grid-card' };
@@ -619,18 +649,24 @@ async function measureReviewDialog(page) {
   const afterEscape = await focusKey();
   const dialogOpen = await page.evaluate(() => !!document.querySelector('[role="dialog"]'));
 
+  // The focus must come back to the control that OPENED the dialog — the
+  // one that was clicked, not "some button".
+  const expected = lastTrigger ?? trigger;
+  const sameControl =
+    !!expected &&
+    !!afterEscape &&
+    expected.tag === afterEscape.tag &&
+    expected.ariaLabel === afterEscape.ariaLabel &&
+    expected.rowIndex === afterEscape.rowIndex;
+
   return {
     ...open,
     escape: {
       closes: !dialogOpen,
-      focusReturned:
-        !!trigger &&
-        !!afterEscape &&
-        trigger.tag === afterEscape.tag &&
-        trigger.ariaLabel === afterEscape.ariaLabel &&
-        trigger.rowIndex === afterEscape.rowIndex,
+      focusReturned: sameControl,
       focusBefore: trigger,
       focusAfter: afterEscape,
+      trigger: expected,
     },
   };
 }

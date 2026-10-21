@@ -30,14 +30,14 @@
           "path": "evidence/review-dialog/after/en-light/review-dialog-approved-1440.png",
           "command": "node scripts/verify-review-dialog-evidence.mjs --criterion AC-01",
           "exitCode": 0,
-          "recordedAt": "2026-10-21T11:25:45.675Z"
+          "recordedAt": "2026-10-21T12:23:24.892Z"
         },
         {
           "type": "static-analysis",
           "path": ".quality/runs/2026-10-21T13-00-00Z/artifacts/AC-01.log",
           "command": "node scripts/verify-review-dialog-evidence.mjs --criterion AC-01",
           "exitCode": 0,
-          "recordedAt": "2026-10-21T11:25:45.761Z"
+          "recordedAt": "2026-10-21T12:23:25.031Z"
         }
       ]
     },
@@ -63,21 +63,14 @@
           "path": "evidence/review-dialog/after/en-light/review-dialog-approved-1440.png",
           "command": "node scripts/verify-review-dialog-evidence.mjs --criterion AC-02",
           "exitCode": 0,
-          "recordedAt": "2026-10-21T11:25:45.840Z"
+          "recordedAt": "2026-10-21T12:23:25.176Z"
         },
         {
           "type": "static-analysis",
           "path": ".quality/runs/2026-10-21T13-00-00Z/artifacts/AC-02.log",
           "command": "node scripts/verify-review-dialog-evidence.mjs --criterion AC-02",
           "exitCode": 0,
-          "recordedAt": "2026-10-21T11:25:45.930Z"
-        },
-        {
-          "type": "e2e",
-          "path": ".quality/runs/2026-10-21T13-00-00Z/artifacts/e2e-review-dialog-gap.log",
-          "command": "npx playwright test e2e/review-dialog.spec.ts --reporter=list",
-          "exitCode": 0,
-          "recordedAt": "2026-10-21T11:26:57.143Z"
+          "recordedAt": "2026-10-21T12:23:25.323Z"
         }
       ]
     },
@@ -103,14 +96,14 @@
           "path": "evidence/review-dialog/after/en-light/review-dialog-approved-1440.png",
           "command": "node scripts/verify-review-dialog-evidence.mjs --criterion AC-03",
           "exitCode": 0,
-          "recordedAt": "2026-10-21T11:25:46.020Z"
+          "recordedAt": "2026-10-21T12:23:25.476Z"
         },
         {
           "type": "static-analysis",
           "path": ".quality/runs/2026-10-21T13-00-00Z/artifacts/AC-03.log",
           "command": "node scripts/verify-review-dialog-evidence.mjs --criterion AC-03",
           "exitCode": 0,
-          "recordedAt": "2026-10-21T11:25:46.104Z"
+          "recordedAt": "2026-10-21T12:23:25.669Z"
         }
       ]
     },
@@ -136,14 +129,14 @@
           "path": "evidence/review-dialog/after/en-light/review-dialog-approved-1440.png",
           "command": "node scripts/verify-review-dialog-evidence.mjs --criterion AC-04",
           "exitCode": 0,
-          "recordedAt": "2026-10-21T11:25:46.181Z"
+          "recordedAt": "2026-10-21T12:23:25.849Z"
         },
         {
           "type": "static-analysis",
           "path": ".quality/runs/2026-10-21T13-00-00Z/artifacts/AC-04.log",
           "command": "node scripts/verify-review-dialog-evidence.mjs --criterion AC-04",
           "exitCode": 0,
-          "recordedAt": "2026-10-21T11:25:46.258Z"
+          "recordedAt": "2026-10-21T12:23:26.042Z"
         }
       ]
     },
@@ -170,14 +163,14 @@
           "path": "evidence/review-dialog/after/en-light/review-dialog-approved-1440.png",
           "command": "node scripts/verify-review-dialog-evidence.mjs --criterion AC-05",
           "exitCode": 0,
-          "recordedAt": "2026-10-21T11:25:46.337Z"
+          "recordedAt": "2026-10-21T12:23:26.213Z"
         },
         {
           "type": "static-analysis",
           "path": ".quality/runs/2026-10-21T13-00-00Z/artifacts/AC-05.log",
           "command": "node scripts/verify-review-dialog-evidence.mjs --criterion AC-05",
           "exitCode": 0,
-          "recordedAt": "2026-10-21T11:25:46.418Z"
+          "recordedAt": "2026-10-21T12:23:26.381Z"
         }
       ]
     },
@@ -204,14 +197,14 @@
           "path": "evidence/review-dialog/after/en-light/review-dialog-verified-1440.png",
           "command": "node scripts/verify-review-dialog-evidence.mjs --criterion AC-06",
           "exitCode": 0,
-          "recordedAt": "2026-10-21T11:25:46.504Z"
+          "recordedAt": "2026-10-21T12:23:26.545Z"
         },
         {
           "type": "static-analysis",
           "path": ".quality/runs/2026-10-21T13-00-00Z/artifacts/AC-06.log",
           "command": "node scripts/verify-review-dialog-evidence.mjs --criterion AC-06",
           "exitCode": 0,
-          "recordedAt": "2026-10-21T11:25:46.582Z"
+          "recordedAt": "2026-10-21T12:23:26.733Z"
         }
       ]
     },
@@ -237,14 +230,14 @@
           "path": "evidence/review-dialog/after/en-light/review-dialog-long-comment-1440.png",
           "command": "node scripts/verify-review-dialog-evidence.mjs --criterion AC-07",
           "exitCode": 0,
-          "recordedAt": "2026-10-21T11:25:46.660Z"
+          "recordedAt": "2026-10-21T12:23:26.941Z"
         },
         {
           "type": "static-analysis",
           "path": ".quality/runs/2026-10-21T13-00-00Z/artifacts/AC-07.log",
           "command": "node scripts/verify-review-dialog-evidence.mjs --criterion AC-07",
           "exitCode": 0,
-          "recordedAt": "2026-10-21T11:25:46.745Z"
+          "recordedAt": "2026-10-21T12:23:27.196Z"
         }
       ]
     },
@@ -270,21 +263,21 @@
           "path": "evidence/review-dialog/after/ar-dark/review-dialog-pending-1440.png",
           "command": "node scripts/verify-review-dialog-evidence.mjs --criterion AC-08",
           "exitCode": 0,
-          "recordedAt": "2026-10-21T11:25:46.830Z"
+          "recordedAt": "2026-10-21T12:23:27.351Z"
         },
         {
           "type": "static-analysis",
           "path": ".quality/runs/2026-10-21T13-00-00Z/artifacts/AC-08.log",
           "command": "node scripts/verify-review-dialog-evidence.mjs --criterion AC-08",
           "exitCode": 0,
-          "recordedAt": "2026-10-21T11:25:46.911Z"
+          "recordedAt": "2026-10-21T12:23:27.487Z"
         },
         {
           "type": "e2e",
           "path": ".quality/runs/2026-10-21T13-00-00Z/artifacts/e2e-review-dialog.log",
           "command": "npx playwright test e2e/review-dialog.spec.ts --reporter=list",
           "exitCode": 0,
-          "recordedAt": "2026-10-21T11:26:10.064Z"
+          "recordedAt": "2026-10-21T12:24:37.528Z"
         }
       ]
     },
@@ -311,14 +304,14 @@
           "path": "evidence/review-dialog/after/en-dark/review-dialog-approved-1440.png",
           "command": "node scripts/verify-review-dialog-evidence.mjs --criterion AC-09",
           "exitCode": 0,
-          "recordedAt": "2026-10-21T11:25:46.993Z"
+          "recordedAt": "2026-10-21T12:23:27.624Z"
         },
         {
           "type": "static-analysis",
           "path": ".quality/runs/2026-10-21T13-00-00Z/artifacts/AC-09.log",
           "command": "node scripts/verify-review-dialog-evidence.mjs --criterion AC-09",
           "exitCode": 0,
-          "recordedAt": "2026-10-21T11:25:47.075Z"
+          "recordedAt": "2026-10-21T12:23:27.760Z"
         }
       ]
     },
@@ -345,14 +338,14 @@
           "path": "evidence/review-dialog/after/en-light/review-dialog-approved-390.png",
           "command": "node scripts/verify-review-dialog-evidence.mjs --criterion AC-10",
           "exitCode": 0,
-          "recordedAt": "2026-10-21T11:25:47.153Z"
+          "recordedAt": "2026-10-21T12:23:27.939Z"
         },
         {
           "type": "static-analysis",
           "path": ".quality/runs/2026-10-21T13-00-00Z/artifacts/AC-10.log",
           "command": "node scripts/verify-review-dialog-evidence.mjs --criterion AC-10",
           "exitCode": 0,
-          "recordedAt": "2026-10-21T11:25:47.235Z"
+          "recordedAt": "2026-10-21T12:23:28.162Z"
         }
       ]
     },
@@ -378,14 +371,14 @@
           "path": "evidence/review-dialog/after/ar-dark/review-dialog-approved-1440.png",
           "command": "node scripts/verify-review-dialog-evidence.mjs --criterion AC-11",
           "exitCode": 0,
-          "recordedAt": "2026-10-21T11:25:47.355Z"
+          "recordedAt": "2026-10-21T12:23:28.395Z"
         },
         {
           "type": "static-analysis",
           "path": ".quality/runs/2026-10-21T13-00-00Z/artifacts/AC-11.log",
           "command": "node scripts/verify-review-dialog-evidence.mjs --criterion AC-11",
           "exitCode": 0,
-          "recordedAt": "2026-10-21T11:25:47.464Z"
+          "recordedAt": "2026-10-21T12:23:28.561Z"
         }
       ]
     },
@@ -412,14 +405,21 @@
           "path": "evidence/review-dialog/after/en-light/review-dialog-pending-1440.png",
           "command": "node scripts/verify-review-dialog-evidence.mjs --criterion AC-12",
           "exitCode": 0,
-          "recordedAt": "2026-10-21T11:25:47.568Z"
+          "recordedAt": "2026-10-21T12:23:28.722Z"
         },
         {
           "type": "static-analysis",
           "path": ".quality/runs/2026-10-21T13-00-00Z/artifacts/AC-12.log",
           "command": "node scripts/verify-review-dialog-evidence.mjs --criterion AC-12",
           "exitCode": 0,
-          "recordedAt": "2026-10-21T11:25:47.662Z"
+          "recordedAt": "2026-10-21T12:23:28.884Z"
+        },
+        {
+          "type": "e2e",
+          "path": ".quality/runs/2026-10-21T13-00-00Z/artifacts/e2e-review-dialog-toast.log",
+          "command": "npx playwright test e2e/review-dialog.spec.ts --reporter=list",
+          "exitCode": 0,
+          "recordedAt": "2026-10-21T12:25:23.093Z"
         }
       ]
     },
@@ -446,14 +446,14 @@
           "path": "evidence/review-dialog/after/en-light/review-dialog-approved-1440.png",
           "command": "node scripts/verify-review-dialog-evidence.mjs --criterion AC-13",
           "exitCode": 0,
-          "recordedAt": "2026-10-21T11:25:47.754Z"
+          "recordedAt": "2026-10-21T12:23:29.106Z"
         },
         {
           "type": "static-analysis",
           "path": ".quality/runs/2026-10-21T13-00-00Z/artifacts/AC-13.log",
           "command": "node scripts/verify-review-dialog-evidence.mjs --criterion AC-13",
           "exitCode": 0,
-          "recordedAt": "2026-10-21T11:25:47.841Z"
+          "recordedAt": "2026-10-21T12:23:29.298Z"
         }
       ]
     },
@@ -479,14 +479,14 @@
           "path": "evidence/review-dialog/after/en-light/review-dialog-pending-1440.png",
           "command": "node scripts/verify-review-dialog-evidence.mjs --criterion AC-14",
           "exitCode": 0,
-          "recordedAt": "2026-10-21T11:25:47.923Z"
+          "recordedAt": "2026-10-21T12:23:29.461Z"
         },
         {
           "type": "static-analysis",
           "path": ".quality/runs/2026-10-21T13-00-00Z/artifacts/AC-14.log",
           "command": "node scripts/verify-review-dialog-evidence.mjs --criterion AC-14",
           "exitCode": 0,
-          "recordedAt": "2026-10-21T11:25:48.007Z"
+          "recordedAt": "2026-10-21T12:23:29.592Z"
         }
       ]
     },
@@ -511,18 +511,18 @@
       "naReason": null,
       "evidence": [
         {
-          "type": "static-analysis",
-          "path": ".quality/runs/2026-10-21T13-00-00Z/artifacts/AC-15.log",
-          "command": "node scripts/verify-review-dialog-evidence.mjs --criterion AC-15",
-          "exitCode": 0,
-          "recordedAt": "2026-10-21T11:25:48.170Z"
-        },
-        {
           "type": "screenshot",
           "path": "evidence/review-dialog/after/results.json",
           "command": "node scripts/verify-review-dialog-evidence.mjs --criterion AC-15",
           "exitCode": 0,
-          "recordedAt": "2026-10-21T11:27:10.739Z"
+          "recordedAt": "2026-10-21T12:23:29.714Z"
+        },
+        {
+          "type": "static-analysis",
+          "path": ".quality/runs/2026-10-21T13-00-00Z/artifacts/AC-15.log",
+          "command": "node scripts/verify-review-dialog-evidence.mjs --criterion AC-15",
+          "exitCode": 0,
+          "recordedAt": "2026-10-21T12:23:29.851Z"
         }
       ]
     },
@@ -548,14 +548,14 @@
           "path": "evidence/review-dialog/after/en-light/review-dialog-approved-1440.png",
           "command": "node scripts/verify-review-dialog-evidence.mjs --criterion AC-16",
           "exitCode": 0,
-          "recordedAt": "2026-10-21T11:25:48.245Z"
+          "recordedAt": "2026-10-21T12:23:30.025Z"
         },
         {
           "type": "static-analysis",
           "path": ".quality/runs/2026-10-21T13-00-00Z/artifacts/AC-16.log",
           "command": "node scripts/verify-review-dialog-evidence.mjs --criterion AC-16",
           "exitCode": 0,
-          "recordedAt": "2026-10-21T11:25:48.326Z"
+          "recordedAt": "2026-10-21T12:23:30.208Z"
         }
       ]
     }
