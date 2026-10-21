@@ -178,6 +178,12 @@ export class ReviewListComponent {
   protected toggleView(mode: ViewMode): void {
     this.viewMode.set(mode);
     localStorage.setItem(this.VIEW_KEY, mode);
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { view: mode === 'grid' ? 'grid' : null },
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
   }
 
   // ── the URL state ─────────────────────────────────────────────────────────
@@ -187,6 +193,11 @@ export class ReviewListComponent {
     const status = params.get('status');
     if (status === 'pending' || status === 'approved' || status === 'all') {
       this.status.set(status);
+    }
+    const view = params.get('view');
+    if (view === 'grid' || view === 'list') {
+      this.viewMode.set(view);
+      localStorage.setItem(this.VIEW_KEY, view);
     }
     this.productSlug.set(params.get('product') ?? '');
     this.search.set(params.get('q') ?? '');
@@ -403,7 +414,7 @@ export class ReviewListComponent {
       ),
       this.columnHelper.accessor(
         (row) => ({
-          name: row.username,
+          name: this.toDisplayName(row.username),
           avatarUrl: row.avatarUrl,
           verified: row.verified,
           orderId: row.orderId,
@@ -415,6 +426,7 @@ export class ReviewListComponent {
         id: 'rating',
         header: 'Rating',
         enableSorting: true,
+        meta: { width: '150px' },
       }),
       this.columnHelper.accessor((row) => row.comment, {
         id: 'comment',
@@ -467,9 +479,14 @@ export class ReviewListComponent {
    * for on a row, and hiding them behind a kebab menu means two clicks to
    * read a review.
    */
-  protected readonly menuActions: RowMenuAction[] = [
-    { id: 'withdraw', label: 'reviews.withdrawApproval', icon: 'lucideX' },
-  ];
+  private readonly withdrawAction: RowMenuAction = { id: 'withdraw', label: 'reviews.withdrawApproval', icon: 'lucideX' };
+  private readonly deleteAction: RowMenuAction = { id: 'delete', label: 'common.delete', icon: 'lucideTrash2', danger: true };
+
+  protected readonly menuActions: RowMenuAction[] = [this.withdrawAction, this.deleteAction];
+
+  /** Per-row kebab: Withdraw only on Approved rows, Delete always. */
+  protected readonly menuActionsFor = (row: ReviewResponse): RowMenuAction[] =>
+    row.approved ? [this.withdrawAction, this.deleteAction] : [this.deleteAction];
 
   protected onMenuAction(event: { id: string; item: ReviewResponse }): void {
     const review = event.item;
@@ -591,6 +608,12 @@ export class ReviewListComponent {
 
   // ── the statistics strip ──────────────────────────────────────────────────
 
+  protected barPercent(star: number): number {
+    const counts = this.stats().distribution ?? {};
+    const max = Math.max(1, ...Object.values(counts).map((n) => Number(n) || 0));
+    return Math.round(((Number(counts[String(star)]) || 0) / max) * 100);
+  }
+
   protected barHeight(star: number): number {
     const counts = this.stats().distribution ?? {};
     const max = Math.max(1, ...Object.values(counts).map((n) => Number(n) || 0));
@@ -602,6 +625,15 @@ export class ReviewListComponent {
     return [5, 4, 3, 2, 1]
       .map((star) => `${star}: ${counts[String(star)] ?? 0}`)
       .join(', ');
+  }
+
+  /** Proper-case a username for display; the API has no full name (see API_GAPS). */
+  protected toDisplayName(value: string | null | undefined): string {
+    if (!value) return '';
+    return value
+      .split(/\\s+/)
+      .map((part) => (part ? part.charAt(0).toUpperCase() + part.slice(1) : part))
+      .join(' ');
   }
 
   protected readonly emptyMessage = computed(() => {

@@ -48,3 +48,16 @@ EOF
 - **Admin response to review**: no backend support. (gap)
 - **Bulk approval**: backend `setApproval` accepts `ids[]` (exists). OK.
 - **Product name sort**: backend sorts by entity field; `product.name` nested path may or may not be supported. (gap, verify)
+
+## Orders list v3 (ui/orders-list-v3)
+
+- `refunded_amount` / refund amount not in `OrderResponse`; list shows secondary "Refunded" line only when present (optional field added). Backend gap: expose refunded amount on order/payment.
+- Resend email: no backend endpoint; action reports unavailable.
+- Bulk status change: no bulk endpoint; frontend applies per selected order.
+
+## Reviews v3 (ui/reviews-v3)
+
+- Approved-only average rating: `ReviewStatsResponse.averageRating` is computed over all reviews (4.0). An approved-only figure (4.31) needs a dedicated aggregate or a new param; frontend keeps the all-reviews value and labels it accordingly.
+- Exact rating filter: backend exposes `minRating` only; the distribution bars filter by `minRating` (N and up) because there is no `maxRating`/exact param.
+- Reviewer full name: backend returns `username` (lowercase) only; no full name. Frontend title-cases the username.
+- Verified purchase: backend now returns `orderId`/`orderNumber` (present in model); seed audit of which reviews are verified is reported in SEED_PROPOSAL.md.

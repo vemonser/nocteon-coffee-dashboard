@@ -21,6 +21,7 @@
           size="icon"
           (click)="toggleView('list')"
           [attr.aria-label]="'common.listView' | transloco"
+          [attr.aria-pressed]="viewMode() === 'list'"
           [title]="'common.listView' | transloco"
         >
           <ng-icon name="lucideList" class="size-4" />
@@ -31,6 +32,7 @@
           size="icon"
           (click)="toggleView('grid')"
           [attr.aria-label]="'common.gridView' | transloco"
+          [attr.aria-pressed]="viewMode() === 'grid'"
           [title]="'common.gridView' | transloco"
         >
           <ng-icon name="lucideGrid3x3" class="size-4" />
@@ -166,16 +168,24 @@
 
     <div class="rounded-[var(--radius-card)] border bg-card p-4" data-testid="reviews-stat-distribution">
       <p class="text-sm text-muted-foreground">{{ 'reviews.stats.distribution' | transloco }}</p>
-      <div class="mt-2 flex items-end gap-1" aria-hidden="true">
+      <div class="mt-2 flex flex-col gap-1">
         @for (star of [5, 4, 3, 2, 1]; track star) {
           <button
             type="button"
-            class="flex w-4 flex-col items-center gap-1"
+            class="flex items-center gap-2 text-start"
             (click)="rating.set(String(star)); applyFilter()"
             [attr.aria-label]="'Rating ' + star"
           >
-            <div class="w-4 rounded-sm bg-warning/70" [style.height.px]="barHeight(star)"></div>
-            <span class="text-[10px] tabular-nums text-muted-foreground">{{ stats().distribution[String(star)] ?? 0 }}</span>
+            <span class="w-6 text-xs tabular-nums text-muted-foreground">{{ star }}★</span>
+            <div class="h-2 flex-1 overflow-hidden rounded-full bg-muted">
+              <div
+                class="h-full rounded-full bg-warning/70"
+                [style.width.%]="barPercent(star)"
+              ></div>
+            </div>
+            <span class="w-6 text-end text-xs tabular-nums text-muted-foreground">
+              {{ stats().distribution[String(star)] ?? 0 }}
+            </span>
           </button>
         }
       </div>
@@ -237,12 +247,13 @@
         [loading]="loading()"
         [emptyMessage]="emptyMessage()"
         [showEdit]="false"
-        [showDelete]="true"
+        [showDelete]="false"
         [showView]="true"
         [selectable]="true"
         [selectedIds]="selectedIds()"
         [rowId]="rowId"
         [menuActions]="menuActions"
+        [menuActionsFor]="menuActionsFor"
         [primaryActionFor]="primaryActionFor"
         [hideSlug]="true"
         [minWidth]="'975px'"
@@ -268,12 +279,19 @@
               />
             }
             <div class="min-w-0 flex-1">
-              <p class="truncate text-sm font-medium">
-                <bdi>{{ item.productName ?? item.productSlug }}</bdi>
-              </p>
-              <div class="mt-1 flex items-center gap-2">
+              <div class="flex items-start justify-between gap-2">
+                <p class="truncate text-sm font-medium">
+                  <bdi>{{ item.productName ?? item.productSlug }}</bdi>
+                </p>
+                <app-status-badge
+                  class="shrink-0"
+                  [status]="item.approved ? 'approved' : 'pending'"
+                  [customLabel]="item.approved ? 'reviews.status.approved' : 'reviews.status.pending'"
+                />
+              </div>
+              <div class="mt-1 flex items-center gap-1.5">
                 <app-user-avatar [src]="item.avatarUrl" [name]="item.username" size="sm" />
-                <span class="truncate text-xs"><bdi>{{ item.username }}</bdi></span>
+                <span class="truncate text-xs"><bdi>{{ toDisplayName(item.username) }}</bdi></span>
                 <app-verified-badge [verified]="item.verified" />
               </div>
               <p class="text-xs text-muted-foreground">
@@ -281,10 +299,7 @@
               </p>
               <div class="mt-1 flex items-center gap-1.5">
                 <app-rating-stars [rating]="item.rating" />
-                <app-status-badge
-                  [status]="item.approved ? 'approved' : 'pending'"
-                  [customLabel]="item.approved ? 'reviews.status.approved' : 'reviews.status.pending'"
-                />
+                <span class="text-xs tabular-nums text-muted-foreground">{{ item.rating }}/5</span>
               </div>
               <p class="mt-1 line-clamp-3 text-xs text-muted-foreground">
                 <bdi>{{ item.comment }}</bdi>
@@ -305,9 +320,9 @@
             <app-actions-cell
               [item]="item"
               [showEdit]="false"
-              [showDelete]="true"
+              [showDelete]="false"
               [showView]="true"
-              [menuActions]="menuActions"
+              [menuActions]="menuActionsFor(item)"
               (menuAction)="onMenuAction($event)"
               (view)="openView(item)"
             />
@@ -356,7 +371,7 @@
           </a>
           <div class="mt-1 flex items-center gap-2">
             <app-user-avatar [src]="review.avatarUrl" [name]="review.username" size="sm" />
-            <span class="text-sm"><bdi>{{ review.username }}</bdi></span>
+            <span class="text-sm"><bdi>{{ toDisplayName(review.username) }}</bdi></span>
             <app-verified-badge [verified]="review.verified" />
           </div>
           <p class="text-xs text-muted-foreground">

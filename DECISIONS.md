@@ -1619,3 +1619,30 @@ Two rules now hold everywhere:
 
 The rule for the future: the API's cap is 100 rows per page. Anything that
 wants the whole set asks for page 0, 1, 2 … until one page is short.
+
+## Orders list v3 (ui/orders-list-v3)
+
+- KPI Revenue = sum of `totalAmount` of PAID orders only (COD pending and refunded excluded); AOV = Revenue / paid count; cancel rate = cancelled / all. KPIs follow active filters. Basis stated via card tooltip.
+- Open = Pending + Confirmed + Processing + Shipped (OPEN_STATUSES updated to include Shipped).
+- Customer column uses shared `CustomerCellComponent` with avatar; width 220px.
+- Created at renders on one line (stackTime false).
+- "No items" renders warning icon + tooltip.
+- COD + Cancelled payment status maps to "Not collected" (frontend mapping; logged).
+- Order # renders as accent link via data-table cellHref.
+- Row hover highlights full row including checkbox/actions; focus-visible + keyboard Enter.
+- Sort indicators use shared `SortHeaderComponent` (chevrons inactive, arrows active) with aria-sort.
+- Filters: label inside control, active count on Clear filters.
+- Bulk bar: allowed transitions only, Export selected, confirm dialog.
+- Row kebab: View, Update status, Print invoice, Resend email, Copy order number, separator, Cancel.
+- Refunded secondary line shown only when `refundedAmount` present.
+
+## Reviews v3 (ui/reviews-v3)
+
+- RatingStars: every star was hollow because the component used Lucide's outline `star` icon and toggled `fill-warning` on the host. Lucide's SVG carries `fill="none"`, so the CSS fill never reached the path and no star ever filled. Fix lives in `src/app/shared/ui/rating-stars/rating-stars.component.ts`: both states are now inline SVGs with an explicit `fill="currentColor"` (filled) / `fill="none"` (empty), coloured with the `warning` / `muted` tokens. Aria-label is now `N out of 5`.
+- Average rating basis: kept the backend's value (computed over ALL reviews, 4.0) because the API has no approved-only average; labelled `reviews.stats.averageRating` as "Average rating · all" so the basis is explicit. Approved-only would be 4.31 but requires a new endpoint (see API_GAPS).
+- VerifiedBadge: created `src/app/shared/ui/verified-badge/verified-badge.component.ts` (was missing) using a badge-check icon in the primary token with a visible tooltip + aria-label "Verified purchase", visually distinct from the green Approved StatusBadge.
+- Reviewer display name: backend returns lowercase `username` only; no full name exists, so the UI title-cases the username (`toDisplayName`) and shows the full value in a tooltip. Full-name source remains an API gap.
+- Table: Rating column sized to 150px with a 16px gap before Comment; Comment clamped to 2 lines with tooltip; no horizontal overflow at 1440/1280; Approve only on Pending rows via `primaryActionFor`; kebab holds Withdraw (approved rows) + Delete (confirm). Always-visible red trash removed (`showDelete="false"`).
+- Grid: RatingStars + `N/5`; reviewer line with VerifiedBadge; status badge in card header corner; Pending footer has Approve + Eye + kebab, Approved footer has Eye + kebab only (shrinks); comment clamped to 3 lines; stable min-height; last row left-aligned; view toggle persists via `view` URL param with `aria-pressed` and tooltips.
+- Star distribution: 5 horizontal bars labelled with the star level and count; clicking a bar filters by that rating (minRating).
+- View toggle persisted via `view` query param (and localStorage) with aria-pressed and tooltips.

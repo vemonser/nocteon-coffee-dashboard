@@ -1,8 +1,12 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal, viewChild, ElementRef } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucideSearch, lucideMenu, lucideCommand } from '@ng-icons/lucide';
+import {
+  lucideSearch,
+  lucideMenu,
+  lucideCommand,
+} from '@ng-icons/lucide';
 import { HlmSidebarImports } from '@spartan-ng/helm/sidebar';
 import { HlmSeparatorImports } from '@spartan-ng/helm/separator';
 import { HlmBreadcrumbImports } from '@spartan-ng/helm/breadcrumb';
@@ -10,6 +14,7 @@ import { HlmInputGroupImports } from '@spartan-ng/helm/input-group';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { FormsModule } from '@angular/forms';
 import { TranslocoPipe } from '@jsverse/transloco';
+
 import { AuthService } from '../../../core/auth/auth.service';
 import { LanguageService } from '../../../core/i18n/language.service';
 import { TranslocoService } from '@jsverse/transloco';
@@ -22,17 +27,51 @@ import { GlobalSearchPaletteComponent } from './global-search/global-search-pale
 @Component({
   selector: 'app-navigation-bar',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, HlmSidebarImports, HlmSeparatorImports, HlmBreadcrumbImports, HlmInputGroupImports, HlmButtonImports, NgIcon, BreadcrumbComponent, NotificationComponent, ThemeToggleComponent, UserMenuComponent, TranslocoPipe, GlobalSearchPaletteComponent],
-  providers: [provideIcons({ lucideSearch, lucideMenu, lucideCommand })],
+  imports: [
+    CommonModule,
+    RouterModule,
+    FormsModule,
+    HlmSidebarImports,
+    HlmSeparatorImports,
+    HlmBreadcrumbImports,
+    HlmInputGroupImports,
+    HlmButtonImports,
+    NgIcon,
+    BreadcrumbComponent,
+    NotificationComponent,
+    ThemeToggleComponent,
+    UserMenuComponent,
+    TranslocoPipe,
+    GlobalSearchPaletteComponent,
+  ],
+  providers: [
+    provideIcons({
+      lucideSearch,
+      lucideMenu,
+      lucideCommand,
+    }),
+  ],
   templateUrl: './navigation-bar.component.html',
 })
 export class NavigationBarComponent {
   protected readonly auth = inject(AuthService);
   protected readonly language = inject(LanguageService);
   private readonly transloco = inject(TranslocoService);
-  protected readonly toggleSidebarLabel = computed(() => { this.language.language(); return this.transloco.translate('common.toggleSidebar'); });
   private readonly router = inject(Router);
+
+  protected readonly toggleSidebarLabel = computed(() => {
+    this.language.language();
+    return this.transloco.translate('common.toggleSidebar');
+  });
+
   readonly paletteOpen = signal(false);
-  openPalette(): void { this.paletteOpen.set(true); }
-  closePalette(): void { this.paletteOpen.set(false); }
+  readonly paletteTrigger = viewChild<ElementRef<HTMLElement>>('searchTrigger');
+
+  openPalette(): void {
+    this.paletteOpen.set(true);
+  }
+
+  closePalette(): void {
+    this.paletteOpen.set(false);
+  }
 }

@@ -456,6 +456,12 @@ export const TARGET_SETS = {
     },
   ],
 
+  reviews: [
+    { id: 'reviews-table', url: '/dashboard/reviews?view=list' },
+    { id: 'reviews-grid', url: '/dashboard/reviews?view=grid' },
+    { id: 'reviews-pending', url: '/dashboard/reviews?status=pending' },
+  ],
+
   'global-search': [
     {
       id: 'gsp-empty',

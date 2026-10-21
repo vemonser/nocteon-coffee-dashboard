@@ -12,10 +12,10 @@ import { TranslocoPipe } from '@jsverse/transloco';
     @if (verified()) {
       <span
         class="inline-flex items-center"
+        [attr.title]="'reviews.columns.verifiedPurchase' | transloco"
         [attr.aria-label]="'reviews.columns.verifiedPurchase' | transloco"
-        [title]="'reviews.columns.verifiedPurchase' | transloco"
       >
-        <ng-icon name="lucideBadgeCheck" class="size-4 text-success" aria-hidden="true" />
+        <ng-icon name="lucideBadgeCheck" class="size-4 text-primary" aria-hidden="true" />
       </span>
     }
   `,

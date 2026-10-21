@@ -543,7 +543,7 @@
                     [showView]="showView()"
                     [showDelete]="showDelete()"
                     [showRestore]="showRestore()"
-                    [menuActions]="menuActions()"
+                    [menuActions]="menuActionsFor() ? menuActionsFor()!(row.original) : menuActions()"
                     [primaryAction]="primaryActionFor() ? primaryActionFor()!(row.original) : primaryAction()"
                     [editHref]="hrefFor(row.original)"
                     (edit)="edit.emit($event)"
