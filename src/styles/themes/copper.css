@@ -1,0 +1,114 @@
+:root {
+  color-scheme: light;
+
+  --background: #faf8f5;
+  --foreground: #231a14;
+
+  --card: #ffffff;
+  --card-foreground: #231a14;
+  --popover: #ffffff;
+  --popover-foreground: #231a14;
+
+  /* Brand: roasted copper. White text: 6.75:1 */
+  --primary: #8a4b22;
+  --primary-foreground: #ffffff;
+
+  --secondary: #f1ece5;
+  --secondary-foreground: #231a14;
+  --muted: #f6f2ed;
+  --muted-foreground: #6b5d52;
+  --accent: #f1ece5;
+  --accent-foreground: #231a14;
+
+  /* Semantic states: never the brand color */
+  --destructive: #b83232;
+  --destructive-foreground: #ffffff;
+  --destructive-soft: #fceae8;
+  --destructive-text: #b83232;
+
+  --success: #137333;
+  --success-soft: #e7f5ec;
+  --success-foreground: #ffffff;
+  --warning: #7a5700;
+  --warning-soft: #fef3c7;
+  --info: #0e7490;
+  --info-soft: #e0f4f8;
+
+  /* --border is decorative (soft). --input must reach 3:1 (form controls). */
+  --border: #e7dfd5;
+  --input: #978878;
+  --ring: #8a4b22;
+
+  --sidebar: #fcfaf7;
+  --sidebar-foreground: #231a14;
+  --sidebar-primary: #8a4b22;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f1ece5;
+  --sidebar-accent-foreground: #231a14;
+  --sidebar-border: #e7dfd5;
+  --sidebar-ring: #8a4b22;
+
+  --chart-1: #8a4b22;
+  --chart-2: #0e7490;
+  --chart-3: #4f6ba0;
+  --chart-4: #5f7a1f;
+  --chart-5: #8b4a7b;
+
+  --radius: 0.5rem;
+}
+
+:root.dark {
+  color-scheme: dark;
+
+  --background: #14100d;
+  --foreground: #f5efe8;
+
+  --card: #1e1813;
+  --card-foreground: #f5efe8;
+  --popover: #1e1813;
+  --popover-foreground: #f5efe8;
+
+  /* Same copper hue, lifted in lightness. Dark text on it: 7.44:1 */
+  --primary: #d9955b;
+  --primary-foreground: #1a110a;
+
+  --secondary: #2a221c;
+  --secondary-foreground: #f5efe8;
+  --muted: #191410;
+  --muted-foreground: #a89a8c;
+  --accent: #2a221c;
+  --accent-foreground: #f5efe8;
+
+  /* --destructive is a fill (white text). --destructive-text is for text/icons on dark surfaces. */
+  --destructive: #c94242;
+  --destructive-foreground: #ffffff;
+  --destructive-soft: #3a1a18;
+  --destructive-text: #f28b82;
+
+  --success: #4ade80;
+  --success-soft: #14291c;
+  --success-foreground: #06240f;
+  --warning: #fbbf24;
+  --warning-soft: #33280a;
+  --info: #22d3ee;
+  --info-soft: #0d2b31;
+
+  --border: #3a2f27;
+  --input: #7d6f62;
+  --ring: #d9955b;
+
+  --sidebar: #181310;
+  --sidebar-foreground: #f5efe8;
+  --sidebar-primary: #d9955b;
+  --sidebar-primary-foreground: #1a110a;
+  --sidebar-accent: #231c16;
+  --sidebar-accent-foreground: #f5efe8;
+  --sidebar-border: #3a2f27;
+  --sidebar-ring: #d9955b;
+
+  --chart-1: #d9955b;
+  --chart-2: #3db8d4;
+  --chart-3: #8fa8e0;
+  --chart-4: #a3c45a;
+  --chart-5: #d08bc0;
+}

@@ -1,0 +1,44 @@
+<div class="flex items-center gap-3" [dir]="langDir()">
+  <!-- Thumbnail -->
+  <!--
+    Entity thumbnail: a rounded square, not a circle. Circles read as avatars
+    (people), and the avatar column next to it keeps rounded-full — the two are
+    deliberately different shapes so they never read as the same kind of thing.
+  -->
+  <div class="w-10 h-10 flex-shrink-0 rounded-[var(--radius-control)] overflow-hidden bg-muted">
+    @if (data().imageUrl) {
+      <img [src]="data().imageUrl" [alt]="data().name" class="w-full h-full object-cover" />
+    } @else {
+      <div class="w-full h-full flex items-center justify-center text-muted-foreground/40">
+        <ng-icon name="lucidePackage" class="size-5" />
+      </div>
+    }
+  </div>
+
+  <!-- Name + Slug -->
+  <div class="min-w-0 flex-1">
+    <span class="block truncate font-medium">
+      <bdi [attr.dir]="langDir()">{{ data().name }}</bdi>
+    </span>
+    <!--
+      The slug is the row's handle on its own detail page. It has no column of
+      its own here, so when the host marks the table navigable this line becomes
+      the control (`navigableColumn`); otherwise it stays plain text.
+      The host owns the destination and its guards — this only reports the click.
+    -->
+    @if (navigable()) {
+      <button
+        type="button"
+        data-testid="slug-link"
+        class="block max-w-full cursor-pointer truncate text-start text-xs text-muted-foreground hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+        (click)="slugClick.emit()"
+      >
+        <bdi>{{ data().slug }}</bdi>
+      </button>
+    } @else {
+      <span class="block truncate text-xs text-muted-foreground">
+        <bdi>{{ data().slug }}</bdi>
+      </span>
+    }
+  </div>
+</div>

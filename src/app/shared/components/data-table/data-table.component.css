@@ -1,0 +1,49 @@
+/* §8: secondary columns (dates + ID) hide on narrow screens instead of forcing
+   horizontal scroll. The full record (with dates) stays one click away
+   on the detail page. The Columns menu in the toolbar toggles them back
+   on wide screens. */
+@media (max-width: 1023.5px) {
+  .col-narrow-hide {
+    display: none;
+  }
+}
+
+/* Tighten low-content columns (ID + the bilingual name pair) so short values
+   don't swim in padding and the EN + AR names sit close together. */
+.col-tight {
+  padding-inline: 0.5rem;
+}
+
+/* Row height: 56px default for entity lists without images */
+tbody tr {
+  height: 56px;
+}
+
+/* Numeric columns: tabular figures. Headers and cells are start-aligned so the
+   header sits exactly over its values (a th[data-numeric] previously took
+   text-align: end while every cell renders through an inner
+   `display: block; text-align: start` span — the sort label ended up ~350px
+   away from its values on the products price column). No template case
+   renders end-aligned cell text, so `text-align` stays untouched and only the
+   tabular figures are applied. */
+:where(td, th)[data-numeric] {
+  font-variant-numeric: tabular-nums;
+}
+:where(td, th)[data-numeric][dir="rtl"],
+:where(td, th)[dir="rtl"] [data-numeric] {
+  /* bdi already wraps the value in the template; this ensures alignment */
+  direction: rtl;
+}
+
+/* Low/critical value indicator */
+.value-low {
+  color: var(--warning);
+  font-weight: 500;
+}
+.value-critical {
+  color: var(--destructive);
+  font-weight: 500;
+}
+
+/* Checkbox visuals live in src/styles/index.css (.table-check) — shared by
+   the DataTable and the Columns menu so the two never drift apart. */

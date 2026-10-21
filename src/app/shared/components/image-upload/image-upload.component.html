@@ -1,12 +1,22 @@
-<input
-  type="file"
-  accept="image/*"
-  (change)="onSelect($event)"
-/>
+<!--
+  Native file input, styled as the app's upload affordance: an sr-only
+  <input type="file"> inside a label chip — the label is the control, so
+  click/keyboard/screen-reader paths are all the browser's own.
+-->
+<div class="flex min-h-10 items-center gap-3">
+  <label
+    class="flex cursor-pointer items-center gap-2 rounded-md border border-border bg-card px-3 py-1.5 text-sm font-medium text-foreground transition-colors duration-150 hover:bg-accent"
+  >
+    <ng-icon name="lucideUpload" class="size-4" aria-hidden="true" />
+    {{ (preview() ? 'common.changeImage' : 'common.uploadImage') | transloco }}
+    <input type="file" accept="image/*" class="sr-only" (change)="onSelect($event)" />
+  </label>
 
-@if (preview()) {
-<img
-  [src]="preview()"
-  class="w-20 h-20 rounded-md object-cover"
-/>
-}
+  @if (preview()) {
+    <img
+      [src]="preview()"
+      class="h-10 w-10 rounded-[var(--radius-control)] border object-cover"
+      [alt]="image()?.name ?? ''"
+    />
+  }
+</div>
