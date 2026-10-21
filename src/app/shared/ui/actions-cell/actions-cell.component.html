@@ -8,21 +8,39 @@
 -->
 <div class="flex items-center gap-0.5">
   @if (showEdit()) {
-    <button
-      *hasPermission="editPermission()"
-      type="button"
-      hlmBtn
-      variant="ghost"
-      size="icon"
-      class="size-8 text-muted-foreground hover:text-foreground"
-      hlmTooltip
-      position="top"
-      [brnTooltip]="'common.edit' | transloco"
-      [attr.aria-label]="'common.edit' | transloco"
-      (click)="edit.emit(item())"
-    >
-      <ng-icon name="lucidePencil" class="size-4" aria-hidden="true" />
-    </button>
+    @if (editHref(); as href) {
+      <!-- Real anchor: the detail page is this list's single edit surface. -->
+      <a
+        *hasPermission="editPermission()"
+        [routerLink]="href"
+        hlmBtn
+        variant="ghost"
+        size="icon"
+        class="text-muted-foreground hover:text-foreground"
+        hlmTooltip
+        position="top"
+        [brnTooltip]="'common.edit' | transloco"
+        [attr.aria-label]="'common.edit' | transloco"
+      >
+        <ng-icon name="lucidePencil" class="size-4" aria-hidden="true" />
+      </a>
+    } @else {
+      <button
+        *hasPermission="editPermission()"
+        type="button"
+        hlmBtn
+        variant="ghost"
+        size="icon"
+        class="text-muted-foreground hover:text-foreground"
+        hlmTooltip
+        position="top"
+        [brnTooltip]="'common.edit' | transloco"
+        [attr.aria-label]="'common.edit' | transloco"
+        (click)="edit.emit(item())"
+      >
+        <ng-icon name="lucidePencil" class="size-4" aria-hidden="true" />
+      </button>
+    }
   }
 
   @if (showView()) {
@@ -31,7 +49,7 @@
       hlmBtn
       variant="ghost"
       size="icon"
-      class="size-8 text-muted-foreground hover:text-foreground"
+      class="text-muted-foreground hover:text-foreground"
       hlmTooltip
       position="top"
       [brnTooltip]="'common.view' | transloco"
@@ -48,7 +66,6 @@
       hlmBtn
       variant="ghost"
       size="icon"
-      class="size-8"
       [class]="deleteColorClass()"
       hlmTooltip
       position="top"
@@ -64,16 +81,15 @@
     <button
       type="button"
       hlmBtn
-      variant="ghost"
-      size="icon"
-      class="size-8 text-success hover:bg-success/10"
+      variant="secondary"
+      size="sm"
       hlmTooltip
       position="top"
       [brnTooltip]="restoreLabel() | transloco"
       [attr.aria-label]="restoreLabel() | transloco"
       (click)="restore.emit(item())"
     >
-      <ng-icon name="lucideRotateCcw" class="size-4" aria-hidden="true" />
+      {{ restoreLabel() | transloco }}
     </button>
   }
 
@@ -82,16 +98,15 @@
       *hasPermission="permanentDeletePermission()"
       type="button"
       hlmBtn
-      variant="ghost"
-      size="icon"
-      class="size-8 text-destructive hover:bg-destructive/10"
+      variant="destructive"
+      size="sm"
       hlmTooltip
       position="top"
       [brnTooltip]="permanentDeleteLabel() | transloco"
       [attr.aria-label]="permanentDeleteLabel() | transloco"
       (click)="permanentDelete.emit(item())"
     >
-      <ng-icon name="lucideTrash" class="size-4" aria-hidden="true" />
+      {{ permanentDeleteLabel() | transloco }}
     </button>
   }
 </div>

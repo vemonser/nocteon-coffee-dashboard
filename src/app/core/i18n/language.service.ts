@@ -18,9 +18,22 @@ export class LanguageService {
     private readonly flip: FlipService,
   ) {}
 
-  initialize(): void {
+  /**
+   * Load the dictionary for the stored language BEFORE the app renders.
+   *
+   * `TranslocoService.setActiveLang()` is synchronous and does NOT load the
+   * JSON — the dictionary is fetched separately. Between the two, the active
+   * language points at a dictionary that is not there yet, and
+   * `translate()` then returns THE KEY ITSELF (Transloco's missing-key
+   * handler returns the key). That is where the raw
+   * "orders.statuses.DELIVERED" strings on the dashboard came from.
+   *
+   * So the order is: load -> setActiveLang -> flip the signal. Nothing
+   * observes the switch until the dictionary is present.
+   */
+  initialize(): Promise<void> {
     const lang = this.resolveInitialLanguage();
-    this.applyLanguage(lang);
+    return this.loadDictionary(lang).then(() => this.applyLanguage(lang));
   }
 
   current(): Language {
@@ -39,12 +52,15 @@ export class LanguageService {
     lang: Language,
     animate = true,
   ): void {
-    if (lang === this.current()) {
+    if (
+      lang === this.current() &&
+      this.transloco.getActiveLang() === lang
+    ) {
       return;
     }
 
     const action = () => {
-      this.applyLanguage(lang);
+      void this.loadDictionary(lang).then(() => this.applyLanguage(lang));
     };
 
     animate
@@ -52,12 +68,26 @@ export class LanguageService {
       : action();
   }
 
+  /** Load the dictionary for `lang`; resolves even if the fetch fails. */
+  private loadDictionary(lang: Language): Promise<void> {
+    try {
+      return new Promise<void>((resolve) => {
+        this.transloco.load(lang).subscribe({
+          next: () => resolve(),
+          error: () => resolve(),
+        });
+      });
+    } catch {
+      return Promise.resolve();
+    }
+  }
+
   private applyLanguage(
     lang: Language,
   ): void {
-    this.language.set(lang);
-
     this.transloco.setActiveLang(lang);
+
+    this.language.set(lang);
 
     localStorage.setItem(
       LANGUAGE_STORAGE_KEY,

@@ -13,9 +13,9 @@ import { classes } from '@spartan-ng/helm/utils';
 export class HlmButtonGroupSeparator {
   constructor() {
     classes(() => [
-      'bg-input relative self-stretch data-horizontal:mx-px data-horizontal:w-auto data-vertical:my-px data-vertical:h-auto',
+      'bg-border relative self-stretch data-horizontal:mx-px data-horizontal:w-auto data-vertical:my-px data-vertical:h-auto',
       // separator classes
-      'shrink-0 data-horizontal:h-px data-vertical:w-px data-vertical:self-stretch',
+      'shrink-0 data-horizontal:h-px data-vertical:w-px data-vertical:self-center',
     ]);
   }
 }

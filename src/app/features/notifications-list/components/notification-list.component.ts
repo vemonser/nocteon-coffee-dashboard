@@ -19,6 +19,7 @@ import {
 } from '@ng-icons/lucide';
 
 import { NotificationService } from '../services/notification.service';
+import { LocalizedDateComponent } from '../../../shared/ui/localized-date/localized-date.component';
 
 import { PageResponse } from '../../../core/models/api-response.model';
 import {
@@ -28,13 +29,16 @@ import {
 import { toSignal } from '@angular/core/rxjs-interop';
 import { map } from 'rxjs';
 
-import { TranslocoPipe } from '@jsverse/transloco';
+import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
+import { PagerComponent } from '../../../shared/components/pager/pager.component';
+import { NotifyService } from '../../../core/notify/notify.service';
 type StatusFilter = 'all' | 'unread';
 
 @Component({
   selector: 'app-notification-list',
   standalone: true,
   imports: [
+    PagerComponent,
     CommonModule,
     FormsModule,
     HlmCardImports,
@@ -43,6 +47,7 @@ type StatusFilter = 'all' | 'unread';
     HlmSelectImports,
     NgIcon,
     TranslocoPipe,
+    LocalizedDateComponent,
   ],
   providers: [
     provideIcons({
@@ -59,8 +64,17 @@ type StatusFilter = 'all' | 'unread';
 })
 export class NotificationListComponent {
   private notificationService = inject(NotificationService);
+  private notify = inject(NotifyService);
+  private readonly transloco = inject(TranslocoService);
+  private readonly statusLabel = {
+    all: toSignal(this.transloco.selectTranslate('notifications.all'), { initialValue: 'All' }),
+    unread: toSignal(this.transloco.selectTranslate('notifications.unreadOnly'), {
+      initialValue: 'Unread',
+    }),
+  };
   router = inject(Router);
   private route = inject(ActivatedRoute);
+
   viewing = signal<NotificationResponse | null>(null);
 
   protected readonly Math = Math;
@@ -117,11 +131,12 @@ export class NotificationListComponent {
   }
 
   itemToString = (value: string) => {
-    const labels: Record<string, string> = {
-      all: 'All Notifications',
-      unread: 'Unread Only',
-    };
-    return labels[value] ?? value;
+    switch (value) {
+      case 'unread':
+        return this.statusLabel.unread();
+      default:
+        return this.statusLabel.all();
+    }
   };
 
   private readonly typeIconMap: Record<NotificationType, string> = {
@@ -149,7 +164,10 @@ export class NotificationListComponent {
           this.items.set(res.data.content);
           this.loading.set(false);
         },
-        error: () => this.loading.set(false),
+        error: (err) => {
+          this.loading.set(false);
+          this.notify.apiError(err, 'notify.errorFallback', 'Could not load notifications');
+        },
       });
   }
 
@@ -172,6 +190,8 @@ export class NotificationListComponent {
           list.map((n) => (n.id === notification.id ? { ...n, read: true } : n)),
         );
       },
+      error: (err) =>
+        this.notify.apiError(err, 'notify.errorFallback', 'Could not mark as read'),
     });
   }
 
@@ -179,7 +199,10 @@ export class NotificationListComponent {
     this.notificationService.markAllAsRead().subscribe({
       next: () => {
         this.items.update((list) => list.map((n) => ({ ...n, read: true })));
+        this.notify.success('notify.allMarkedAsRead', 'All marked as read');
       },
+      error: (err) =>
+        this.notify.apiError(err, 'notify.errorFallback', 'Could not mark all as read'),
     });
   }
 }

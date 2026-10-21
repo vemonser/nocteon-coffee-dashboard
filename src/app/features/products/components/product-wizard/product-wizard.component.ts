@@ -15,6 +15,7 @@ import { HlmTabsImports } from '@spartan-ng/helm/tabs';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { TranslocoPipe } from '@jsverse/transloco';
+import { NotifyService } from '../../../../core/notify/notify.service';
 import {
   lucideArrowLeft,
   lucideArrowRight,
@@ -23,6 +24,7 @@ import {
   lucideChevronRight,
   lucideSearch,
   lucideX,
+  lucideLoader2,
 } from '@ng-icons/lucide';
 
 @Component({
@@ -49,7 +51,9 @@ import {
       lucideChevronRight,
       lucideArrowRight,
       lucideArrowLeft,
-      lucideX
+      lucideX,
+      lucideCheck,
+      lucideLoader2
     }),
   ],
   templateUrl: './product-wizard.component.html',
@@ -60,6 +64,7 @@ export class ProductWizardComponent {
   private translationHelper = inject(TranslationFormHelper);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private notify = inject(NotifyService);
 
   loadingDetail = signal(false);
   submitting = signal(false);
@@ -164,12 +169,17 @@ export class ProductWizardComponent {
         ? this.productService.update(slug, request, mediaFiles)
         : this.productService.create(request, mediaFiles);
 
+    const wasEdit = this.state.isEditMode() && !!slug;
     call$.subscribe({
       next: () => {
         this.submitting.set(false);
+        this.notify.success(wasEdit ? 'notify.updated' : 'notify.created', wasEdit ? 'Updated successfully' : 'Created successfully');
         this.router.navigate(['/dashboard/products']);
       },
-      error: () => this.submitting.set(false),
+      error: (err) => {
+        this.submitting.set(false);
+        this.notify.apiError(err, 'notify.errorFallback', 'Could not save the product');
+      },
     });
   }
 
@@ -207,7 +217,9 @@ export class ProductWizardComponent {
         sku: v.sku,
         price: v.price,
         compareAtPrice: v.compareAtPrice || undefined,
+        costPrice: v.costPrice || undefined,
         stockQuantity: v.stockQuantity,
+        reorderThreshold: v.reorderThreshold ?? undefined,
         isActive: v.isActive,
         optionValueIds: (v.optionPicks ?? [])
           .map((p: any) => (p.valueId != null ? Number(p.valueId) : null))

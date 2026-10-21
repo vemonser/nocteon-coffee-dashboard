@@ -26,13 +26,13 @@ tbody tr {
    away from its values on the products price column). No template case
    renders end-aligned cell text, so `text-align` stays untouched and only the
    tabular figures are applied. */
+/* Correction C (T1): per-cell [attr.dir] was removed from th/td — alignment
+   now resolves from the TABLE's direction (= the UI direction), so the
+   former `td[...][dir="rtl"] { direction: rtl }` overrides below were deleted
+   as dead selectors. The bdi wrappers in the template still pin content
+   direction for mixed-script values. */
 :where(td, th)[data-numeric] {
   font-variant-numeric: tabular-nums;
-}
-:where(td, th)[data-numeric][dir="rtl"],
-:where(td, th)[dir="rtl"] [data-numeric] {
-  /* bdi already wraps the value in the template; this ensures alignment */
-  direction: rtl;
 }
 
 /* Low/critical value indicator */

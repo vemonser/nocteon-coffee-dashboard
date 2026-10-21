@@ -9,6 +9,7 @@ export interface OriginResponse {
   slug: string;
   code: string;
   createdAt?: string;
+  deletedAt?: string;
   imageUrl: string | null;
   translations: OriginTranslation[];
 }
@@ -18,6 +19,8 @@ export interface DashboardOriginResponse {
   slug: string;
   code: string;
   imageUrl: string | null;
+  createdAt?: string;
+  deletedAt?: string;
   translations: OriginTranslation[];
 }
 

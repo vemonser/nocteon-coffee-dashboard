@@ -1,0 +1,9 @@
+@if (parts(); as p) {
+  <span class="inline-flex gap-1 tabular-nums">
+    <span>{{ p.day }}</span>
+    <span>{{ p.month }}</span>
+    <span>{{ p.year }}</span>
+  </span>
+} @else {
+  {{ fallback() }}
+}

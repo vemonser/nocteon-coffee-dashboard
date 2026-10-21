@@ -1,0 +1,16 @@
+<div
+  role="status"
+  class="flex flex-wrap items-center gap-2 rounded-lg border border-warning/40 bg-warning-soft px-3 py-2 text-sm text-warning"
+>
+  <ng-icon name="lucideTriangleAlert" class="size-4 shrink-0" aria-hidden="true" />
+  <span class="flex-1">{{ message() }}</span>
+  @if (actionLabel()) {
+    <button
+      type="button"
+      (click)="action.emit()"
+      class="rounded-md border border-warning/40 bg-card px-2.5 py-1 text-xs font-medium text-warning transition-colors duration-150 hover:bg-card/80"
+    >
+      {{ actionLabel() }}
+    </button>
+  }
+</div>

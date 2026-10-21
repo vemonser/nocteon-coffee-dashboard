@@ -1,24 +1,37 @@
 <div class="p-6 max-w-4xl mx-auto">
   @if (loading()) {
     <div class="text-center py-20 text-muted-foreground">{{ 'orders.loading' | transloco }}</div>
+  } @else if (error()) {
+    <div class="text-center py-20 space-y-4">
+      <p class="text-destructive">{{ error() }}</p>
+      <div class="flex items-center justify-center gap-2">
+        <button hlmBtn variant="outline" (click)="retry()">{{ 'common.retry' | transloco }}</button>
+        <button hlmBtn variant="ghost" (click)="goBack()">{{ 'orders.detail.back' | transloco }}</button>
+      </div>
+    </div>
   } @else if (order()) {
     <div class="flex items-center justify-between mb-6">
-      <button hlmBtn variant="ghost" size="icon" (click)="goBack()">
-        <ng-icon name="lucideArrowLeft" class="size-4" />
+      <button hlmBtn variant="ghost" size="icon" class="min-h-11 min-w-11" (click)="goBack()" [attr.aria-label]="'orders.detail.back' | transloco">
+        <ng-icon name="lucideArrowLeft" class="size-4 rtl:rotate-180" />
       </button>
-      <h1 class="text-2xl font-bold tracking-tight">{{ 'orders.detail.title' | transloco }} #{{ order()!.id }}</h1>
+      <h1 class="text-2xl font-medium tracking-tight">{{ 'orders.detail.title' | transloco }} #{{ order()!.id }}</h1>
     </div>
 
     <!-- Status & Actions -->
     <div class="flex items-center justify-between gap-4 mb-6">
       <div class="flex items-center gap-3">
         <span class="px-3 py-1 rounded-full text-sm font-medium" [class]="statusBadgeClass(order()!.status)">
-          {{ 'orders.status.' + order()!.status.toLowerCase() | transloco }}
+          {{ 'orders.statuses.' + order()!.status | transloco }}
         </span>
       </div>
       <div class="flex items-center gap-2">
-        <select
-          hlmSelect
+        <!--
+          hlm-select is a COMPONENT, not an attribute for a native <select>.
+          Built on <select>, the trigger and the content below were invalid
+          children of a native select, so the browser dropped them and the
+          status dropdown rendered as an unstyled native control.
+        -->
+        <hlm-select
           [value]="order()!.status"
           (valueChange)="updateStatus($event)"
           [disabled]="updating()"
@@ -30,20 +43,20 @@
           <hlm-select-content *hlmSelectPortal>
             <hlm-select-group>
               @for (status of statusOptions; track status) {
-                <hlm-select-item [value]="status">{{ 'orders.status.' + status.toLowerCase() | transloco }}</hlm-select-item>
+                <hlm-select-item [value]="status">{{ 'orders.statuses.' + status | transloco }}</hlm-select-item>
               }
             </hlm-select-group>
           </hlm-select-content>
-        </select>
+        </hlm-select>
       </div>
     </div>
 
     <!-- Order Info Grid -->
-    <div class="grid gap-6 lg:grid-cols-3 mb-8">
+    <div class="grid gap-6 lg:grid-cols-2 mb-8">
       <!-- Order Summary -->
       <hlm-card class="lg:col-span-2">
         <hlm-card-header>
-          <h3 hlmCardTitle>{{ 'orders.detail.summary' | transloco }}</h3>
+          <h2 hlmCardTitle>{{ 'orders.detail.summary' | transloco }}</h2>
         </hlm-card-header>
         <div hlmCardContent class="space-y-3">
           <div class="grid grid-cols-2 gap-4">
@@ -53,7 +66,7 @@
             </div>
             <div>
               <p class="text-sm text-muted-foreground">{{ 'orders.detail.paymentStatus' | transloco }}</p>
-              <p class="font-medium">{{ 'orders.paymentStatus.' + order()!.paymentStatus.toLowerCase() | transloco }}</p>
+              <p class="font-medium">{{ 'orders.paymentStatuses.' + order()!.paymentStatus | transloco }}</p>
             </div>
             <div>
               <p class="text-sm text-muted-foreground">{{ 'orders.detail.paymentMethod' | transloco }}</p>
@@ -65,23 +78,52 @@
             </div>
             <div>
               <p class="text-sm text-muted-foreground">{{ 'orders.detail.shippingCost' | transloco }}</p>
-              <p class="font-medium">{{ order()!.shippingCost | currency }}</p>
+              <p class="font-medium">{{ order()!.shippingCost | money }}</p>
             </div>
             <div>
               <p class="text-sm text-muted-foreground">{{ 'orders.detail.discountAmount' | transloco }}</p>
-              <p class="font-medium">{{ order()!.discountAmount | currency }}</p>
+              <p class="font-medium">{{ order()!.discountAmount | money }}</p>
             </div>
           </div>
         </div>
       </hlm-card>
 
+      <!-- Customer -->
+      @if (order()!.customer) {
+        <hlm-card>
+          <hlm-card-header>
+            <h2 hlmCardTitle>{{ 'orders.detail.customer' | transloco }}</h2>
+          </hlm-card-header>
+          <div hlmCardContent class="space-y-2">
+            <p class="font-medium">{{ order()!.customer!.name }}</p>
+            <p class="text-sm text-muted-foreground">{{ order()!.customer!.email }}</p>
+          </div>
+        </hlm-card>
+      }
+
+      <!-- Shipping Address -->
+      @if (order()!.address) {
+        <hlm-card>
+          <hlm-card-header>
+            <h2 hlmCardTitle>{{ 'orders.detail.shippingAddress' | transloco }}</h2>
+          </hlm-card-header>
+          <div hlmCardContent class="space-y-1 text-sm">
+            <p class="font-medium">{{ order()!.address!.fullName }}</p>
+            <p>{{ order()!.address!.street }}</p>
+            <p>{{ order()!.address!.city }}{{ order()!.address!.state ? ', ' + order()!.address!.state : '' }}</p>
+            <p>{{ order()!.address!.country }}{{ order()!.address!.postalCode ? ' ' + order()!.address!.postalCode : '' }}</p>
+            <p class="text-muted-foreground">{{ order()!.address!.phone }}</p>
+          </div>
+        </hlm-card>
+      }
+
       <!-- Total -->
       <hlm-card>
         <hlm-card-header>
-          <h3 hlmCardTitle>{{ 'orders.detail.total' | transloco }}</h3>
+          <h2 hlmCardTitle>{{ 'orders.detail.total' | transloco }}</h2>
         </hlm-card-header>
         <div hlmCardContent>
-          <div class="text-3xl font-bold">{{ order()!.totalAmount | currency }}</div>
+          <div class="text-2xl font-medium">{{ order()!.totalAmount | money }}</div>
         </div>
       </hlm-card>
     </div>
@@ -89,11 +131,11 @@
     <!-- Order Items -->
     <hlm-card>
       <hlm-card-header>
-        <h3 hlmCardTitle>{{ 'orders.detail.items' | transloco }}</h3>
+        <h2 hlmCardTitle>{{ 'orders.detail.items' | transloco }}</h2>
       </hlm-card-header>
       <div hlmCardContent>
-        <div class="rounded-md border">
-          <table class="w-full">
+        <div class="rounded-md border overflow-x-auto">
+          <table class="w-full min-w-full">
             <thead>
               <tr class="border-b text-left text-sm text-muted-foreground">
                 <th class="px-4 py-3">{{ 'orders.detail.product' | transloco }}</th>
@@ -106,19 +148,30 @@
               @for (item of order()!.items; track item.id) {
                 <tr>
                   <td class="px-4 py-3">
-                    <div class="font-medium">SKU: {{ item.sku }}</div>
-                    <div class="text-sm text-muted-foreground">Product: {{ item.productSlug }}</div>
+                    <div class="flex items-center gap-3">
+                      @if (item.primaryImageUrl) {
+                        <img [src]="item.primaryImageUrl" [alt]="item.productName" width="40" height="40" class="h-10 w-10 rounded-md object-cover" />
+                      }
+                      <div>
+                        <div class="font-medium">{{ item.productName ?? item.productSlug }}</div>
+                        <div class="text-sm text-muted-foreground">SKU: {{ item.sku }}</div>
+                      </div>
+                    </div>
                   </td>
-                  <td class="px-4 py-3">{{ item.quantity }}</td>
-                  <td class="px-4 py-3 text-right">{{ item.unitPrice | currency }}</td>
-                  <td class="px-4 py-3 text-right font-medium">{{ item.totalPrice | currency }}</td>
+                  <td class="px-4 py-3 tabular-nums">{{ item.quantity }}</td>
+                  <td class="px-4 py-3 text-right tabular-nums">{{ item.unitPrice | money }}</td>
+                  <td class="px-4 py-3 text-right font-medium tabular-nums">{{ item.totalPrice | money }}</td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="4" class="px-4 py-6 text-center text-muted-foreground">{{ 'orders.detail.noItems' | transloco }}</td>
                 </tr>
               }
             </tbody>
             <tfoot>
-              <tr class="border-t font-bold">
+              <tr class="border-t font-medium">
                 <td colspan="3" class="px-4 py-3 text-right">{{ 'orders.detail.totalAmount' | transloco }}</td>
-                <td class="px-4 py-3 text-right">{{ order()!.totalAmount | currency }}</td>
+                <td class="px-4 py-3 text-right">{{ order()!.totalAmount | money }}</td>
               </tr>
             </tfoot>
           </table>

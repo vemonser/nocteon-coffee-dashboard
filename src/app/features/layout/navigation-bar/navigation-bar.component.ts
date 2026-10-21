@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal, DestroyRef } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { NgIcon, provideIcons } from '@ng-icons/core';
@@ -16,10 +16,11 @@ import { FormsModule } from '@angular/forms';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { debounceTime, distinctUntilChanged, switchMap, catchError, of, tap } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { AuthService } from '../../../core/auth/auth.service';
+import { NotifyService } from '../../../core/notify/notify.service';
 import { LanguageService } from '../../../core/i18n/language.service';
-import { ThemeService } from '../../../core/theme/theme.service';
 import { ThemeToggleComponent } from '../../../core/theme/theme-toggle.component';
 
 import { NotificationComponent } from '../../notification/components/notification.component';
@@ -59,16 +60,14 @@ import { SearchResultDto } from './global-search/model/search.model';
 export class NavigationBarComponent {
   protected readonly auth = inject(AuthService);
   protected readonly language = inject(LanguageService);
-  protected readonly theme = inject(ThemeService);
   private readonly router = inject(Router);
   private readonly globalSearch = inject(GlobalSearchService);
-
-  readonly isDark = computed(() => this.theme.theme() === 'dark');
 
   // ─── Search State ───────────────────────────────────────────────────────────
   readonly searchQuery = signal('');
   readonly searchResults = signal<SearchResultDto[]>([]);
   readonly isSearching = signal(false);
+  private readonly notify = inject(NotifyService);
 
   readonly groupedResults = computed(() => {
     const results = this.searchResults();
@@ -87,8 +86,10 @@ export class NavigationBarComponent {
   });
 
   constructor() {
+    const destroyRef = inject(DestroyRef);
     toObservable(this.searchQuery)
       .pipe(
+        takeUntilDestroyed(destroyRef),
         debounceTime(300),
         distinctUntilChanged(),
         switchMap((q) => {
@@ -99,11 +100,19 @@ export class NavigationBarComponent {
           this.isSearching.set(true);
           return this.globalSearch
             .search(q)
-            .pipe(catchError(() => of({ results: [], totalCount: 0 })));
+            .pipe(
+              catchError((err) => {
+                // A failed search must NOT read as "no results": keep the
+                // previous results and tell the user via toast.
+                this.notify.apiError(err, 'notify.errorFallback', 'Search failed. Please try again.');
+                return of(null);
+              }),
+            );
         }),
         tap(() => this.isSearching.set(false)),
       )
       .subscribe((res) => {
+        // null = the request failed (toast already shown); keep prior results.
         if (res) this.searchResults.set(res.results);
       });
   }
@@ -117,7 +126,7 @@ export class NavigationBarComponent {
     // result.type is now the backend-provided route segment
     // (e.g. "products", "orders", "promo-codes") thanks to
     // @JsonValue on SearchResultType, so no local mapping is needed.
-    this.router.navigate([`/dashboard/${result.type}/${result.identifier}`]);
+    this.router.navigate([`/dashboard/${result.type}/${encodeURIComponent(result.identifier)}`]);
   }
   private formatTypeLabel(type: string): string {
     const labels: Record<string, string> = {

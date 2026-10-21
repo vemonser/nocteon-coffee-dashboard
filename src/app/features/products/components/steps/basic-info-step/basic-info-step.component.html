@@ -1,5 +1,5 @@
 ﻿<div [formGroup]="state.form" class="space-y-5">
-  <h2 class="text-lg font-bold mb-4">{{ 'products.basicInfo' | transloco }}</h2>
+  <h2 class="text-lg font-medium mb-4">{{ 'products.basicInfo' | transloco }}</h2>
 
   <!-- Product Type -->
   <div class="space-y-1.5">
@@ -83,8 +83,8 @@
 
   <!-- Coffee Details -->
   @if (isCoffee) {
-    <div class="border border-amber-200 rounded-md p-4 bg-amber-50/50 space-y-4">
-      <h3 class="text-sm font-semibold text-amber-800 uppercase tracking-wide">{{ 'products.coffeeDetails' | transloco }}</h3>
+    <div class="border border-border rounded-md p-4 bg-muted/50 space-y-4">
+      <h3 class="text-sm font-medium text-foreground uppercase tracking-wide">{{ 'products.coffeeDetails' | transloco }}</h3>
 
       <div class="grid grid-cols-2 gap-3">
         <div class="space-y-1.5">
@@ -181,7 +181,7 @@
     @for (group of state.translationsArray.controls; track $index; let i = $index) {
       <div [formGroupName]="i" class="border rounded-md p-4 mb-4">
         <div class="flex items-center gap-2 mb-3">
-          <span class="px-2 py-0.5 bg-primary/10 text-primary rounded text-xs font-bold uppercase">
+          <span class="px-2 py-0.5 bg-primary/10 text-primary rounded text-xs font-medium uppercase">
             {{ translationHelper.getLangLabel(group.get('language')?.value) }}
           </span>
         </div>

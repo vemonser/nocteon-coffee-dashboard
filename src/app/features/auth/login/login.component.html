@@ -39,12 +39,12 @@
       <div
         class="flex items-center gap-1 rounded-full border border-border bg-muted/60 p-1"
         role="group"
-        aria-label="Language"
+        [attr.aria-label]="'loginPage.languageToggle' | transloco"
       >
         <button
           type="button"
           (click)="setLanguage('en')"
-          class="cursor-pointer rounded-full px-3.5 py-1.5 text-xs font-semibold tracking-wide transition-colors"
+          class="cursor-pointer rounded-full px-3.5 py-1.5 text-xs font-medium tracking-wide transition-colors"
           [class.bg-background]="language.current() === 'en'"
           [class.text-foreground]="language.current() === 'en'"
           [class.shadow-sm]="language.current() === 'en'"
@@ -55,7 +55,7 @@
         <button
           type="button"
           (click)="setLanguage('ar')"
-          class="cursor-pointer rounded-full px-3.5 py-1.5 text-xs font-semibold tracking-wide transition-colors"
+          class="cursor-pointer rounded-full px-3.5 py-1.5 text-xs font-medium tracking-wide transition-colors"
           [class.bg-background]="language.current() === 'ar'"
           [class.text-foreground]="language.current() === 'ar'"
           [class.shadow-sm]="language.current() === 'ar'"
@@ -90,7 +90,6 @@
                 }}</label>
                 <input
                   hlmInput
-                  class="rounded-lg"
                   type="text"
                   id="identifier"
                   [placeholder]="'loginPage.form.identifierPlaceholder' | transloco"
@@ -116,7 +115,7 @@
                 <div class="relative">
                   <input
                     hlmInput
-                    class="rounded-lg pe-11"
+                    class="pe-11"
                     [type]="showPassword() ? 'text' : 'password'"
                     id="password"
                     [placeholder]="'loginPage.form.passwordPlaceholder' | transloco"
@@ -126,7 +125,10 @@
                     type="button"
                     (click)="togglePassword()"
                     class="absolute inset-y-0 end-0 flex w-11 cursor-pointer items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
-                    [attr.aria-label]="showPassword() ? 'Hide password' : 'Show password'"
+                    [attr.aria-label]="
+                      (showPassword() ? 'loginPage.form.hidePassword' : 'loginPage.form.showPassword')
+                        | transloco
+                    "
                   >
                     <ng-icon
                       [name]="showPassword() ? 'lucideEyeOff' : 'lucideEye'"
@@ -143,7 +145,8 @@
             <!-- CTA -->
             <button
               hlmBtn
-              class="mt-8 w-full cursor-pointer rounded-lg py-6 font-heading text-sm uppercase tracking-widest transition-colors hover:bg-primary/85"
+              size="lg"
+              class="mt-8 w-full cursor-pointer font-heading uppercase tracking-widest transition-colors hover:bg-primary/85"
               type="submit"
               [disabled]="form.invalid || loading() || success()"
             >
@@ -185,7 +188,8 @@
             <button
               hlmBtn
               variant="outline"
-              class="w-full cursor-pointer rounded-lg py-5 text-sm tracking-wide transition-colors hover:border-primary/40"
+              size="lg"
+              class="w-full cursor-pointer tracking-wide transition-colors hover:border-primary/40"
               type="button"
             >
               <ng-icon name="matfGoogleColored" class="text-lg" />

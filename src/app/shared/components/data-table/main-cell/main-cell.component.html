@@ -1,44 +1,55 @@
-<div class="flex items-center gap-3" [dir]="langDir()">
+<!-- No dir on this container: the flex row follows the UI direction, so the
+     thumbnail always sits on the same edge as every other cell (correction C —
+     a content-dir here pushed the other language's name to the far edge).
+     The name below carries its own direction on the <bdi>. -->
+<div class="flex items-center gap-3">
   <!-- Thumbnail -->
   <!--
     Entity thumbnail: a rounded square, not a circle. Circles read as avatars
     (people), and the avatar column next to it keeps rounded-full — the two are
     deliberately different shapes so they never read as the same kind of thing.
   -->
-  <div class="w-10 h-10 flex-shrink-0 rounded-[var(--radius-control)] overflow-hidden bg-muted">
-    @if (data().imageUrl) {
-      <img [src]="data().imageUrl" [alt]="data().name" class="w-full h-full object-cover" />
-    } @else {
-      <div class="w-full h-full flex items-center justify-center text-muted-foreground/40">
-        <ng-icon name="lucidePackage" class="size-5" />
-      </div>
-    }
-  </div>
+  @if (!data().hideThumbnail) {
+    <div class="w-10 h-10 flex-shrink-0 rounded-[var(--radius-control)] overflow-hidden bg-muted flex items-center justify-center">
+      @if (data().imageUrl) {
+        <img [src]="data().imageUrl" [alt]="data().name" class="w-full h-full object-cover" />
+      } @else if (data().color) {
+        <div class="w-6 h-6 rounded-full border shadow-sm" [style.background]="data().color"></div>
+      } @else {
+        <div class="w-full h-full flex items-center justify-center text-muted-foreground/40">
+          <ng-icon name="lucidePackage" class="size-5" />
+        </div>
+      }
+    </div>
+  }
 
   <!-- Name + Slug -->
   <div class="min-w-0 flex-1">
-    <span class="block truncate font-medium">
-      <bdi [attr.dir]="langDir()">{{ data().name }}</bdi>
-    </span>
     <!--
-      The slug is the row's handle on its own detail page. It has no column of
-      its own here, so when the host marks the table navigable this line becomes
-      the control (`navigableColumn`); otherwise it stays plain text.
-      The host owns the destination and its guards — this only reports the click.
+      When the host supplies an href the name is the row's primary link: a real
+      <a> with routerLink, so middle-click / open-in-new-tab work. The slug line
+      below stays the `slug-link` control for the existing test contract.
     -->
-    @if (navigable()) {
-      <button
-        type="button"
-        data-testid="slug-link"
-        class="block max-w-full cursor-pointer truncate text-start text-xs text-muted-foreground hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-        (click)="slugClick.emit()"
+    @if (navigable() && navigableHref(); as href) {
+      <a
+        [routerLink]="href"
+        data-testid="name-link"
+        class="block truncate font-medium text-foreground hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
       >
-        <bdi>{{ data().slug }}</bdi>
-      </button>
+        <bdi [attr.dir]="langDir()">{{ data().name }}</bdi>
+      </a>
     } @else {
-      <span class="block truncate text-xs text-muted-foreground">
-        <bdi>{{ data().slug }}</bdi>
+      <span class="block truncate font-medium">
+        <bdi [attr.dir]="langDir()">{{ data().name }}</bdi>
       </span>
     }
+    <!--
+      The slug stays plain text: the NAME above is the row's single link
+      (one clickable control per row — the name). The slug is a handle for
+      reading, not a second way into the detail page.
+    -->
+    <span class="block truncate text-xs text-muted-foreground" data-testid="slug-text">
+      <bdi>{{ data().slug }}</bdi>
+    </span>
   </div>
 </div>

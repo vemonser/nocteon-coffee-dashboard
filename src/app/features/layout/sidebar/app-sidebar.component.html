@@ -27,7 +27,7 @@
     <hlm-sidebar-content #nav class="thin-scroll">
       <!-- Home: pinned above the scroll so it never scrolls out of view. -->
       <ul hlmSidebarMenu class="sticky top-0 z-10 bg-sidebar pb-1">
-        <li hlmSidebarMenuItem class="py-3">
+        <li hlmSidebarMenuItem class="py-1.5">
           <a
             hlmSidebarMenuButton
             [routerLink]="dashboardItem().route"
@@ -50,13 +50,13 @@
       @for (section of sections(); track section.key) {
         <ul hlmSidebarMenu>
           @for (parentItem of section.items; track parentItem.route) {
-            <li hlmSidebarMenuItem class="py-1">
+            <li hlmSidebarMenuItem class="py-0">
               <!-- Group label: the control that opens and closes the group. -->
               <button
                 type="button"
                 (click)="toggleItem(parentItem.route)"
                 [attr.aria-expanded]="!isItemCollapsed(parentItem.route)"
-                class="flex h-9 w-full cursor-pointer items-center justify-between px-3 text-sm font-medium text-sidebar-foreground/50 transition-colors duration-150 hover:text-sidebar-foreground ltr:uppercase ltr:tracking-wider"
+                class="flex h-9 w-full cursor-pointer items-center justify-between px-3 text-xs font-medium text-sidebar-foreground/70 transition-colors duration-150 hover:text-sidebar-foreground ltr:uppercase ltr:tracking-wider"
               >
                 <span class="flex items-center gap-2">
                   <span>{{ parentItem.label }}</span>
@@ -81,7 +81,7 @@
               >
                 <ul hlmSidebarMenu class="min-h-0 overflow-hidden ps-6">
                   @for (child of parentItem.children; track child.route) {
-                    <li hlmSidebarMenuItem class="py-0.5">
+                    <li hlmSidebarMenuItem class="py-0">
                       <a
                         hlmSidebarMenuButton
                         [routerLink]="child.route"

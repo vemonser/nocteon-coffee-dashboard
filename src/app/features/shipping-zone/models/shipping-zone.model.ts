@@ -6,6 +6,7 @@ export interface ShippingZoneResponse {
   active: boolean;
   createdAt?: string;
   updatedAt?: string;
+  deletedAt?: string;
 }
 
 export interface ShippingZoneRequest {

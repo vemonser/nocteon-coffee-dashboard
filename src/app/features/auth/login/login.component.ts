@@ -18,7 +18,7 @@ import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../core/auth/auth.service';
 import { LanguageService } from '../../../core/i18n/language.service';
 import type { Language } from '../../../core/i18n/language';
-import { TranslocoPipe } from '@jsverse/transloco';
+import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 
 @Component({
   selector: 'app-login',
@@ -51,6 +51,7 @@ export class LoginComponent {
   private fb = inject(FormBuilder);
   private auth = inject(AuthService);
   private router = inject(Router);
+  private trx = inject(TranslocoService);
 
   loading = signal(false);
   error = signal('');
@@ -77,9 +78,20 @@ export class LoginComponent {
     this.success.set(false);
 
     this.auth.login(this.form.value.identifier!, this.form.value.password!).subscribe({
-      next: () => {
-        this.success.set(true);
+      next: (res) => {
         this.loading.set(false);
+
+        // The backend authenticates any valid account (200 for a CUSTOMER
+        // too), so the status alone can't gate the dashboard — the role can.
+        // A non-admin is shown the access-denied copy and dropped back out
+        // (no session, no navigation); authGuard covers deep links/reloads.
+        if (res.data?.user?.role !== 'ADMIN') {
+          this.error.set(this.trx.translate('unauthorized.message'));
+          this.auth.clearSession();
+          return;
+        }
+
+        this.success.set(true);
         this.router.navigate(['/dashboard']);
       },
       error: (err) => {

@@ -32,6 +32,7 @@ import {
   lucideChevronLeft,
   lucideChevronRight,
   lucideStar,
+  lucideEye,
 } from '@ng-icons/lucide';
 import { heroStarSolid } from '@ng-icons/heroicons/solid';
 import { ViewMode } from '../../../core/crud/base-list.component';
@@ -39,11 +40,14 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { map } from 'rxjs';
 import { heroStar } from '@ng-icons/heroicons/outline';
 
-import { TranslocoPipe } from '@jsverse/transloco';
+import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
+import { PagerComponent } from '../../../shared/components/pager/pager.component';
+import { NotifyService } from '../../../core/notify/notify.service';
 @Component({
   selector: 'app-review-list',
   standalone: true,
   imports: [
+    PagerComponent,
     CommonModule,
     FormsModule,
     HasPermissionDirective,
@@ -73,6 +77,7 @@ import { TranslocoPipe } from '@jsverse/transloco';
       lucideTrash2,
       heroStarSolid,
       lucideStar,
+      lucideEye,
       lucideX,
       lucideCheck,
       lucideImage,
@@ -84,6 +89,15 @@ import { TranslocoPipe } from '@jsverse/transloco';
 })
 export class ReviewListComponent {
   private reviewService = inject(ReviewService);
+  private notify = inject(NotifyService);
+  private readonly transloco = inject(TranslocoService);
+  private readonly statusLabel = {
+    all: toSignal(this.transloco.selectTranslate('common.all'), { initialValue: 'All' }),
+    approved: toSignal(this.transloco.selectTranslate('reviews.approved'), { initialValue: 'Approved' }),
+    unapproved: toSignal(this.transloco.selectTranslate('reviews.unapproved'), {
+      initialValue: 'Unapproved',
+    }),
+  };
   private router = inject(Router);
   private route = inject(ActivatedRoute);
 
@@ -177,12 +191,14 @@ export class ReviewListComponent {
     this.loadPage();
   }
   itemToString = (value: string) => {
-    const labels: Record<string, string> = {
-      all: 'All Status',
-      approved: 'Approved',
-      unapproved: 'Un Approved',
-    };
-    return labels[value] ?? value;
+    switch (value) {
+      case 'approved':
+        return this.statusLabel.approved();
+      case 'unapproved':
+        return this.statusLabel.unapproved();
+      default:
+        return this.statusLabel.all();
+    }
   };
 
   // ===============================================================
@@ -190,6 +206,12 @@ export class ReviewListComponent {
   // ===============================================================
 
   constructor() {
+    // The dashboard's "reviews awaiting moderation" drill-down asks for the
+    // UNAPPROVED ones: /dashboard/reviews?status=pending
+    const status = this.route.snapshot.queryParamMap.get('status');
+    if (status === 'pending' || status === 'unapproved') {
+      this.isApprovedFilter = false;
+    }
     this.loadPage();
 
     effect(() => {
@@ -238,7 +260,10 @@ export class ReviewListComponent {
           this.items.set(res.data.content);
           this.loading.set(false);
         },
-        error: () => this.loading.set(false),
+        error: (err) => {
+          this.loading.set(false);
+          this.notify.apiError(err, 'notify.errorFallback', 'Could not load reviews');
+        },
       });
   }
 
@@ -274,7 +299,10 @@ export class ReviewListComponent {
         if (this.viewing()?.id === review.id) {
           this.viewing.set(res.data);
         }
+        this.notify.success('notify.statusUpdated', 'Status updated');
       },
+      error: (err) =>
+        this.notify.apiError(err, 'notify.errorFallback', 'Could not update approval'),
     });
   }
 
@@ -292,8 +320,12 @@ export class ReviewListComponent {
         this.submitting.set(false);
         this.deleting.set(null);
         this.loadPage();
+        this.notify.success('notify.deleted', 'Deleted successfully');
       },
-      error: () => this.submitting.set(false),
+      error: (err) => {
+        this.submitting.set(false);
+        this.notify.apiError(err, 'notify.errorFallback', 'Could not delete review');
+      },
     });
   }
 

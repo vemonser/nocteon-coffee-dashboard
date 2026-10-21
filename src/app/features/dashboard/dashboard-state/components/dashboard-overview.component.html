@@ -9,17 +9,17 @@
     <div class="text-center py-10">{{ 'common.loading' | transloco }}</div>
   } @else if (statsService.statsCards(); as stats) {
     <div class="grid grid-cols-3 gap-4 mb-8">
-      <div class="bg-white rounded-md p-4 shadow">
-        <div class="text-gray-500 text-sm">{{ 'dashboard.metrics.totalRevenue' | transloco }}</div>
-        <div class="text-2xl font-bold">{{ stats.totalRevenue | number:'1.2-2' }}</div>
+      <div class="bg-card rounded-xl border p-4">
+        <div class="text-muted-foreground text-sm">{{ 'dashboard.metrics.totalRevenue' | transloco }}</div>
+        <div class="text-2xl font-medium">{{ stats.totalRevenue | money }}</div>
       </div>
-      <div class="bg-white rounded-md p-4 shadow">
-        <div class="text-gray-500 text-sm">{{ 'dashboard.metrics.totalOrders' | transloco }}</div>
-        <div class="text-2xl font-bold">{{ stats.totalOrders }}</div>
+      <div class="bg-card rounded-xl border p-4">
+        <div class="text-muted-foreground text-sm">{{ 'dashboard.metrics.totalOrders' | transloco }}</div>
+        <div class="text-2xl font-medium">{{ stats.totalOrders }}</div>
       </div>
-      <div class="bg-white rounded-md p-4 shadow">
-        <div class="text-gray-500 text-sm">{{ 'dashboard.metrics.avgOrderValue' | transloco }}</div>
-        <div class="text-2xl font-bold">{{ stats.averageOrderValue | number:'1.2-2' }}</div>
+      <div class="bg-card rounded-xl border p-4">
+        <div class="text-muted-foreground text-sm">{{ 'dashboard.metrics.avgOrderValue' | transloco }}</div>
+        <div class="text-2xl font-medium">{{ stats.averageOrderValue | money }}</div>
       </div>
     </div>
 

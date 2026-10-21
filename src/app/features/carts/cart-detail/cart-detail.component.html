@@ -4,9 +4,9 @@
   } @else if (cart()) {
     <div class="flex items-center justify-between mb-6">
       <button hlmBtn variant="ghost" size="icon" (click)="goBack()">
-        <ng-icon name="lucideArrowLeft" class="size-4" />
+        <ng-icon name="lucideArrowLeft" class="size-4 rtl:rotate-180" />
       </button>
-      <h1 class="text-2xl font-bold tracking-tight">{{ 'carts.detail.title' | transloco }} #{{ cart()!.id }}</h1>
+      <h1 class="text-2xl font-medium tracking-tight">{{ 'carts.detail.title' | transloco }} #{{ cart()!.id }}</h1>
     </div>
 
     <!-- Cart Info -->
@@ -45,7 +45,7 @@
           <h3 hlmCardTitle>{{ 'carts.detail.total' | transloco }}</h3>
         </hlm-card-header>
         <div hlmCardContent>
-          <div class="text-3xl font-bold">{{ cart()!.total | currency }}</div>
+          <div class="text-2xl font-medium">{{ cart()!.total | money }}</div>
         </div>
       </hlm-card>
 
@@ -83,15 +83,15 @@
                     <div class="text-sm text-muted-foreground">SKU: {{ item.sku }}</div>
                   </td>
                   <td class="px-4 py-3">{{ item.quantity }}</td>
-                  <td class="px-4 py-3 text-right">{{ item.price | currency }}</td>
-                  <td class="px-4 py-3 text-right font-medium">{{ item.subtotal | currency }}</td>
+                  <td class="px-4 py-3 text-right">{{ item.price | money }}</td>
+                  <td class="px-4 py-3 text-right font-medium">{{ item.subtotal | money }}</td>
                 </tr>
               }
             </tbody>
             <tfoot>
-              <tr class="border-t font-bold">
+              <tr class="border-t font-medium">
                 <td colspan="3" class="px-4 py-3 text-right">{{ 'carts.detail.total' | transloco }}</td>
-                <td class="px-4 py-3 text-right">{{ cart()!.total | currency }}</td>
+                <td class="px-4 py-3 text-right">{{ cart()!.total | money }}</td>
               </tr>
             </tfoot>
           </table>

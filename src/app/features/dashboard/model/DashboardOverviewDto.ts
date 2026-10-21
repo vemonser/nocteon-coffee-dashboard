@@ -1,4 +1,5 @@
 export interface DashboardOverviewDto {
+  // Current period
   totalRevenue: number;
   totalOrders: number;
   averageOrderValue: number;
@@ -16,6 +17,19 @@ export interface DashboardOverviewDto {
   lowStockProducts: LowStockProductDto[];
   ordersByPaymentMethod: OrdersByPaymentMethodDto[];
   repeatPurchaseRate: RepeatPurchaseRateDto;
+
+  // Previous period (for delta calculations)
+  previousTotalRevenue?: number;
+  previousTotalOrders?: number;
+  previousAverageOrderValue?: number;
+  previousCoffeeSoldKg?: number;
+
+  // Attention counts
+  pendingReviewsCount?: number;
+  unreadContactMessagesCount?: number;
+
+  // Store currency
+  storeCurrency?: string;
 }
 
 export interface UserGrowthDto {
@@ -79,6 +93,9 @@ export interface LowStockProductDto {
   name: string;
   imageUrl: string | null;
   stockQuantity: number;
+  reservedQuantity?: number;
+  reorderThreshold?: number;
+  costPrice?: number;
 }
 
 export interface OrdersByPaymentMethodDto {

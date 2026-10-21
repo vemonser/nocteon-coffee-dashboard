@@ -14,6 +14,7 @@ export interface ProcessingMethodResponse {
   id: number;
   slug: string;
   createdAt?: string;
+  deletedAt?: string;
   translations: ProcessingMethodTranslation[];
 }
 
@@ -22,22 +23,6 @@ export interface DashboardProcessingMethodResponse {
   slug: string;
   createdAt?: string;
   translations: ProcessingMethodTranslation[];
-}
-
-export interface ProcessingMethodRequest {
-  translations: ProcessingMethodTranslation[];
-}
-
-export interface ProcessingMethodResponse {
-  id: number;
-  slug: string;
-  translations: ProcessingMethodTranslation[];
-}
-
-export interface ProcessingMethodTranslation {
-  language: string;
-  name: string;
-  description?: string;
 }
 
 export interface ProcessingMethodRequest {

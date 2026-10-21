@@ -8,7 +8,7 @@ export interface PromoCodeCategoryRef {
 }
 
 export interface PromoCodeResponse {
-  id: string;
+  id: number;
   code: string;
   discountType: PromoCodeDiscountType;
   discountValue: number | null;
@@ -24,6 +24,7 @@ export interface PromoCodeResponse {
   totalDiscountGiven: number;
   usageRate: number;
   createdAt: string;
+  deletedAt?: string;
 }
 
 export interface PromoCodeAnalyticsResponse {

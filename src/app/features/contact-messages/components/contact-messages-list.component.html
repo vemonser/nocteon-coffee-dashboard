@@ -1,26 +1,15 @@
-<div class="flex flex-col gap-6 p-6">
+<div class="flex flex-col gap-4 p-6 max-w-[1440px] mx-auto w-full">
   <!-- Header -->
-  <div class="flex items-center justify-between">
-    <div>
-      <h1 class="text-2xl font-bold tracking-tight">{{ 'contactMessages.title' | transloco }}</h1>
-      <p class="text-muted-foreground">{{ items().length }} {{ 'common.of' | transloco }}</p>
+  <div class="flex items-start justify-between gap-4 min-h-[40px]">
+    <div class="min-w-0">
+      <h1 class="text-2xl font-medium tracking-tight">{{ 'contactMessages.title' | transloco }}</h1>
     </div>
   </div>
 
   <!-- Search -->
-  <div class="relative flex-1 max-w-md">
-    <ng-icon
-      name="lucideSearch"
-      class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground"
-    />
-    <input
-      hlmInput
-      type="text"
-      [(ngModel)]="searchQuery"
-      (input)="onSearch()"
-      [placeholder]="'contactMessages.search' | transloco"
-      class="pl-9 w-full"
-    />
+  <div class="relative w-full max-w-64 sm:w-64">
+    <ng-icon name="lucideSearch" class="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+    <input hlmInput type="search" [dir]="language.current() === 'ar' ? 'rtl' : 'ltr'" [(ngModel)]="searchQuery" (input)="onSearch()" [placeholder]="'contactMessages.search' | transloco" [attr.aria-label]="'contactMessages.search' | transloco" class="w-full ps-9" />
   </div>
 
   <!-- Loading -->
@@ -47,6 +36,7 @@
         <button
           type="button"
           class="w-full flex items-start gap-4 p-4 text-left hover:bg-muted/40 transition-colors"
+          [class.font-semibold]="!item.isRead"
           (click)="openMessage(item)"
         >
           <div class="mt-0.5 rounded-full bg-muted p-2 shrink-0">
@@ -65,39 +55,20 @@
     </div>
   }
 
-  <!-- Pagination -->
   @if (pageData() && !loading()) {
-    <div class="flex items-center justify-between">
-      <span class="text-sm text-muted-foreground">
-        {{ 'common.showing' | transloco }} {{ pageData()!.page * pageData()!.size + 1 }} -
-        {{ Math.min((pageData()!.page + 1) * pageData()!.size, pageData()!.totalElements) }}
-        {{ 'common.of' | transloco }} {{ pageData()!.totalElements }}
-      </span>
-      <div class="flex items-center gap-2">
-        <button
-          hlmBtn
-          variant="outline"
-          size="sm"
-          [disabled]="pageData()!.first"
-          (click)="goToPage(currentPage() - 1)"
-        >
-          <ng-icon name="lucideChevronLeft" class="size-4" />
-        </button>
-        <span class="text-sm text-muted-foreground px-2">
-          {{ 'common.page' | transloco }} {{ pageData()!.page + 1 }} {{ 'common.of' | transloco }}
-          {{ pageData()!.totalPages }}
-        </span>
-        <button
-          hlmBtn
-          variant="outline"
-          size="sm"
-          [disabled]="pageData()!.last"
-          (click)="goToPage(currentPage() + 1)"
-        >
-          <ng-icon name="lucideChevronRight" class="size-4" />
-        </button>
-      </div>
-    </div>
+    <app-pager
+      class="view-fade"
+      [page]="pageData()!.page"
+      [size]="pageData()!.size"
+      [totalElements]="pageData()!.totalElements"
+      [totalPages]="pageData()!.totalPages"
+      [first]="pageData()!.first"
+      [last]="pageData()!.last"
+      [showPageSize]="true"
+      [sizeOptions]="pageSizeOptions"
+      (pageChange)="goToPage($event)"
+      (sizeChange)="onPageSizeChange($event)"
+    />
   }
 </div>
 
@@ -120,6 +91,24 @@
         </div>
       </div>
       <div class="p-6 whitespace-pre-line text-sm">{{ selected()!.message }}</div>
+
+      @if (selected()!.isReplied && selected()!.replyContent) {
+        <div class="px-6 pb-4">
+          <p class="text-xs font-medium text-muted-foreground mb-1">{{ 'contactMessages.reply' | transloco }}</p>
+          <div class="rounded-md border bg-muted/30 p-3 text-sm whitespace-pre-line">{{ selected()!.replyContent }}</div>
+        </div>
+      }
+
+      <div class="p-6 border-t space-y-3">
+        <label hlmLabel>{{ 'contactMessages.replyContent' | transloco }}</label>
+        <textarea hlmInput class="w-full resize-none" rows="3" [ngModel]="replyText()" (ngModelChange)="replyText.set($event)"></textarea>
+        <div class="flex justify-end">
+          <button hlmBtn [disabled]="replying() || !replyText().trim()" (click)="sendReply()">
+            @if (replying()) { <span class="animate-spin mr-2">⟳</span> }
+            {{ 'contactMessages.sendReply' | transloco }}
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 }

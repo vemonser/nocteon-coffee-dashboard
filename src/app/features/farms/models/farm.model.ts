@@ -10,6 +10,7 @@ export interface FarmResponse {
   slug: string;
   originSlug: string;
   createdAt?: string;
+  deletedAt?: string;
   imageUrl: string | null;
   translations: FarmTranslation[];
 }

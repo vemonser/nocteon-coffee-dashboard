@@ -31,11 +31,11 @@ import {
   lucideChevronRight,
   lucideColumns,
   lucideInbox,
+  lucideLoader2,
 } from '@ng-icons/lucide';
 
 import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
 import { LifecycleTabsComponent } from '../../../shared/components/lifecycle-tabs/lifecycle-tabs.component';
-import { ConfirmTypedDialogComponent } from '../../../shared/components/confirm-typed-dialog/confirm-typed-dialog.component';
 import { TrashBannerComponent } from '../../../shared/components/trash-banner/trash-banner.component';
 import { CategoryFormComponent } from './category-form/category-form.component';
 import { Router } from '@angular/router';
@@ -49,11 +49,15 @@ import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmInputImports } from '@spartan-ng/helm/input';
 import { HlmLabelImports } from '@spartan-ng/helm/label';
 import { HlmSelectImports } from '@spartan-ng/helm/select';
+import { HlmSwitchImports } from '@spartan-ng/helm/switch';
 
 
 @Component({
   selector: 'app-categories-list',
   standalone: true,
+  host: {
+    '(document:keydown.escape)': 'onEscapeKey()',
+  },
   imports: [
     PagerComponent,
     CommonModule,
@@ -63,7 +67,6 @@ import { HlmSelectImports } from '@spartan-ng/helm/select';
     HasPermissionDirective,
     DataTableComponent,
     LifecycleTabsComponent,
-    ConfirmTypedDialogComponent,
     TrashBannerComponent,
     CategoryFormComponent,
     // Spartan
@@ -72,6 +75,7 @@ import { HlmSelectImports } from '@spartan-ng/helm/select';
     HlmInputImports,
     HlmLabelImports,
     HlmSelectImports,
+    HlmSwitchImports,
     NgIcon,
     TranslocoPipe,
   ],
@@ -89,11 +93,21 @@ import { HlmSelectImports } from '@spartan-ng/helm/select';
       lucideChevronRight,
       lucideColumns,
       lucideInbox,
+      lucideLoader2,
     }),
   ],
   templateUrl: './categories-list.component.html',
 })
 export class CategoriesListComponent extends BaseListComponent<CategoryResponse, CategoryRequest> {
+  /** Escape closes whichever confirm dialog asked for it (dialog parity). */
+  onEscapeKey(): void {
+    if (this.bulkConfirm()) return this.cancelBulkConfirm();
+    if (this.permanentDeleteTarget() && !this.permanentDeletePending()) {
+      return this.closePermanentDelete();
+    }
+    if (this.deleting() && !this.submitting()) this.deleting.set(null);
+  }
+
   private categoryService = inject(CategoryService);
   private auth = inject(AuthService);
   protected readonly language = inject(LanguageService);
@@ -132,6 +146,21 @@ export class CategoriesListComponent extends BaseListComponent<CategoryResponse,
 
   /** Opt into the shared soft-delete capability (tabs, counts, undo, restore). */
   protected override softDeleteEnabled = true;
+
+  /**
+   * Categories edit on their detail page, not in a dialog: the row's name and
+   * its edit action are real anchors to `/categories/:slug`.
+   */
+  protected override editMode: 'dialog' | 'page' = 'page';
+
+  /**
+   * RouterLink command for a row's detail page — the destination for the
+   * name/slug anchors and the edit action. Returns null for trashed rows
+   * (their detail page is unreachable), which `hrefFor` turns into "inert".
+   */
+  rowHref(row: CategoryResponse): any[] | null {
+    return this.listView() === 'trash' ? null : ['/dashboard/categories', row.slug];
+  }
   protected override canManageTrash = this.auth.hasPermission('category:delete');
   protected override statusFilterValue: boolean | undefined = undefined;
 
@@ -174,6 +203,7 @@ export class CategoriesListComponent extends BaseListComponent<CategoryResponse,
   private trashParams() {
     return {
       page: this.currentPage(),
+      size: this.pageSize(),
       search: this.searchQuery || undefined,
       sort: this.currentSort,
       direction: this.currentDirection,
@@ -201,12 +231,18 @@ export class CategoriesListComponent extends BaseListComponent<CategoryResponse,
     this.toggleSelection(event.id, event.checked);
   }
 
-  protected override confirmTokenOf(item: CategoryResponse): string {
-    return item.slug;
+  /** Current-UI-language name for dialog copy ("Move "X" to the trash?"). */
+  rowName(item: CategoryResponse): string {
+    return this.getTranslationName(item, this.language.language());
   }
 
   protected override undoItemLabel(item: CategoryResponse): string {
     return this.getTranslationName(item, 'en');
+  }
+
+  /** Deleting a category means moving it to the trash — the toast says that. */
+  protected override deleteToastKey(): string {
+    return 'categories.trash.movedToTrash';
   }
 
   // ─── Copy ────────────────────────────────────────────────────────────────────
@@ -263,10 +299,11 @@ export class CategoriesListComponent extends BaseListComponent<CategoryResponse,
         id: `main_${langCode}`,
         header: langCode === 'en' ? 'Category' : 'فئة',
         enableSorting: true,
-        // Proportional share (O1): the entity column owns ~30% of the row in
-        // `table-fixed`, so its width scales with the container instead of
-        // absorbing whatever is left over. The rest of the row spreads
-        // proportionally (see data-table.component.ts `columnWidths`).
+        // The entity column keeps the O1 proportional share (30% of the row in
+        // `table-fixed`). It does not absorb leftover — the other-language
+        // name column (`name_${otherLang}`) is the table's ONE flex column
+        // and takes whatever remains, so Actions never stretches. See
+        // data-table.component.ts `columnWidths`.
         meta: { width: '30%' },
       }
     );
@@ -356,10 +393,13 @@ export class CategoriesListComponent extends BaseListComponent<CategoryResponse,
         id: `name_${otherLang.code}`,
         header: otherNameHeaders[otherLang.code][currentLang],
         enableSorting: false,
-        // A proportional share, not a slug-sized box: the other language's name
-        // is an entity name too (O1: other-language ~28% vs entity ~30%).
-        // See data-table.component.ts `columnWidths`.
-        meta: { width: '28%' },
+        // The table's ONE flex column. `auto` OVERRIDES the shared map — the
+        // map pins `name_ar: '28%'`, but in EN-UI the other-language column's
+        // id IS `name_ar`, so without this override EN tables would have NO
+        // flex column and Chrome would smear the leftover across the metadata
+        // columns (Actions 116→182px et al). This column absorbs the leftover
+        // instead; Actions keeps its exact budget at any viewport.
+        meta: { width: 'auto' },
       }
     );
 
@@ -385,6 +425,7 @@ export class CategoriesListComponent extends BaseListComponent<CategoryResponse,
     return this.categoryService
       .getAll({
         page: this.currentPage(),
+        size: this.pageSize(),
         search: this.searchQuery || undefined,
         sort: this.currentSort,
         direction: this.currentDirection,
@@ -431,7 +472,7 @@ export class CategoriesListComponent extends BaseListComponent<CategoryResponse,
     return this.categoryService.delete(slug);
   }
 
-  goToDetail(item: CategoryResponse): void {
+  override goToDetail(item: CategoryResponse): void {
     // Trashed rows cannot open a detail page: `Category` extends
     // `SoftDeletableEntity` (`@SQLRestriction("deleted_at IS NULL")`), so every
     // detail query filters them out, and there is no single-trashed-entity
@@ -439,6 +480,11 @@ export class CategoriesListComponent extends BaseListComponent<CategoryResponse,
     // stays inert in that tab (see the `navigableColumn` note in the template).
     if (this.listView() === 'trash') return;
     this.router.navigate(['/dashboard/categories', item.slug]);
+  }
+
+  /** The create dialog lands the new category on its detail page (the edit surface). */
+  protected override afterCreate(item: CategoryResponse): void {
+    this.listRouter.navigate(['/dashboard/categories', item.slug]);
   }
 
   // ─── UI helpers ────────────────────────────────────────────────────────────

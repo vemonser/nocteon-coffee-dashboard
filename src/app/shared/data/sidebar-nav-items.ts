@@ -2,7 +2,7 @@ import { NavItem } from './sidebar-nav-items.model';
 import { Language } from '../../core/i18n/language';
 import { navI18n, NavKey } from '../i18n/nav-i18n';
 
-export type NavSectionKey = 'operations' | 'content' | 'catalog' | 'settings';
+export type NavSectionKey = 'operations' | 'content' | 'catalog' | 'coffeeData' | 'settings';
 
 export interface NavSection {
   key: NavSectionKey;
@@ -23,6 +23,7 @@ const icons: Record<NavKey, string> = {
   categories: 'lucideTags',
   notifications: 'lucideBellRing',
   categoryDetail: 'lucideTags',
+  orderDetail: 'lucidePackage',
   origins: 'lucideGlobe',
   farms: 'lucideSprout',
   roastLevels: 'lucideFlame',
@@ -41,6 +42,7 @@ const icons: Record<NavKey, string> = {
   productOptions: 'lucideSlidersHorizontal',
   broadcasts: 'lucideMegaphone',
   contactMessages: 'lucideMail',
+  coffeeData: 'lucideDatabase',
 };
 
 const sectionLabels: Record<Language, Record<NavSectionKey, string>> = {
@@ -48,15 +50,27 @@ const sectionLabels: Record<Language, Record<NavSectionKey, string>> = {
     operations: 'Operations',
     content: 'Content',
     catalog: 'Catalog',
+    coffeeData: 'Coffee data',
     settings: 'Settings',
   },
   ar: {
     operations: 'العمليات',
     content: 'المحتوى',
     catalog: 'الكتالوج',
+    coffeeData: 'بيانات القهوة',
     settings: 'الإعدادات',
   },
 };
+
+function makeParent(labelKey: string, icon: string, route: string, permission: string | undefined, children: NavItem[], t: Record<string, string>, s: Record<string, string>): NavItem {
+  return {
+    label: s[labelKey],
+    icon,
+    route,
+    permission,
+    children,
+  };
+}
 
 export function getNavItems(lang: Language) {
   const t = navI18n[lang];
@@ -68,124 +82,91 @@ export function getNavItems(lang: Language) {
     route: '/dashboard',
   };
 
-  const operations: NavItem[] = [
-    { label: t.orders, icon: icons.orders, route: '/dashboard/orders', permission: 'order:read' },
-    { label: t.carts, icon: icons.carts, route: '/dashboard/carts', permission: 'cart:manage' },
-    { label: t.users, icon: icons.users, route: '/dashboard/users', permission: 'user:read' },
-    {
-      label: t.reviews,
-      icon: icons.reviews,
-      route: '/dashboard/reviews',
-      permission: 'review:moderate',
-    },
-    {
-      label: t.contactMessages,
-      icon: icons.contactMessages,
-      route: '/dashboard/contact-messages',
-      permission: 'contact:read',
-    },
-  ];
+  // Operations parent with children
+  const operationsParent = makeParent(
+    'operations',  // Use section label key
+    icons.orders,
+    '/dashboard/orders',
+    'order:read',
+    [
+      { label: t.orders, icon: icons.orders, route: '/dashboard/orders', permission: 'order:read' },
+      { label: t.carts, icon: icons.carts, route: '/dashboard/carts', permission: 'cart:manage' },
+      { label: t.users, icon: icons.users, route: '/dashboard/users', permission: 'user:read' },
+      { label: t.reviews, icon: icons.reviews, route: '/dashboard/reviews', permission: 'review:moderate' },
+      { label: t.contactMessages, icon: icons.contactMessages, route: '/dashboard/contact-messages', permission: 'contact:read' },
+    ],
+    t,
+    s
+  );
 
-  const content: NavItem[] = [
-    { label: t.journal, icon: icons.journal, route: '/dashboard/journal', permission: 'journal:read' },
-    {
-      label: t.broadcasts,
-      icon: icons.broadcasts,
-      route: '/dashboard/broadcasts',
-      permission: 'broadcast:read',
-    },
-    {
-      label: t.notifications,
-      icon: icons.notifications,
-      route: '/dashboard/notifications',
-      permission: 'notification:read',
-    },
-  ];
+  // Content parent with children
+  const contentParent = makeParent(
+    'content',  // Use section label key
+    icons.journal,
+    '/dashboard/journal',
+    'journal:read',
+    [
+      { label: t.journal, icon: icons.journal, route: '/dashboard/journal', permission: 'journal:read' },
+      { label: t.broadcasts, icon: icons.broadcasts, route: '/dashboard/broadcasts', permission: 'broadcast:read' },
+      { label: t.notifications, icon: icons.notifications, route: '/dashboard/notifications', permission: 'notification:read' },
+    ],
+    t,
+    s
+  );
 
-  const catalog: NavItem[] = [
-    {
-      label: t.products,
-      icon: icons.products,
-      route: '/dashboard/products',
-      permission: 'product:read',
-    },
-    {
-      label: t.productOptions,
-      icon: icons.productOptions,
-      route: '/dashboard/product-options',
-      permission: 'product_option:read',
-    },
-    {
-      label: t.categories,
-      icon: icons.categories,
-      route: '/dashboard/categories',
-      permission: 'category:read',
-    },
-    {
-      label: t.origins,
-      icon: icons.origins,
-      route: '/dashboard/origins',
-      permission: 'origin:read',
-    },
-    { label: t.farms, icon: icons.farms, route: '/dashboard/farms', permission: 'farm:read' },
-    {
-      label: t.roastLevels,
-      icon: icons.roastLevels,
-      route: '/dashboard/roast-levels',
-      permission: 'roast_level:read',
-    },
-    {
-      label: t.processing,
-      icon: icons.processing,
-      route: '/dashboard/processing-methods',
-      permission: 'processing_method:read',
-    },
-    {
-      label: t.varieties,
-      icon: icons.varieties,
-      route: '/dashboard/coffee-varieties',
-      permission: 'coffee_variety:read',
-    },
-    {
-      label: t.tastingNotes,
-      icon: icons.tastingNotes,
-      route: '/dashboard/tasting-notes',
-      permission: 'tasting_note:read',
-    },
-    {
-      label: t.shippingZones,
-      icon: icons.shippingZones,
-      route: '/dashboard/shipping-zones',
-      permission: 'shipping:read',
-    },
-    {
-      label: t.promoCodes,
-      icon: icons.promoCodes,
-      route: '/dashboard/promo-codes',
-      permission: 'promo:read',
-    },
-    {
-      label: t.brewing,
-      icon: icons.brewing,
-      route: '/dashboard/brewing-methods',
-      permission: 'brewing_method:read',
-    },
-    {
-      label: t.pairings,
-      icon: icons.pairings,
-      route: '/dashboard/pairings',
-      permission: 'pairing:read',
-    },
-  ];
+  // Catalog parent with children
+  const catalogParent = makeParent(
+    'catalog',  // Use section label key
+    icons.products,
+    '/dashboard/products',
+    'product:read',
+    [
+      { label: t.products, icon: icons.products, route: '/dashboard/products', permission: 'product:read' },
+      { label: t.productOptions, icon: icons.productOptions, route: '/dashboard/product-options', permission: 'product_option:read' },
+      { label: t.categories, icon: icons.categories, route: '/dashboard/categories', permission: 'category:read' },
+    ],
+    t,
+    s
+  );
 
-  const settings: NavItem[] = [
-    {
-      label: t.storeSettings,
-      icon: icons.storeSettings,
-      route: '/dashboard/store-settings',
-      permission: 'settings:update',
-    },
-  ];
+  // Coffee Data parent with children (unchanged)
+  const coffeeDataParent: NavItem = {
+    label: t.coffeeData || 'Coffee data',
+    icon: icons.products,
+    route: '/dashboard/origins',
+    permission: 'origin:read',
+    children: [
+      { label: t.origins, icon: icons.origins, route: '/dashboard/origins', permission: 'origin:read' },
+      { label: t.farms, icon: icons.farms, route: '/dashboard/farms', permission: 'farm:read' },
+      { label: t.roastLevels, icon: icons.roastLevels, route: '/dashboard/roast-levels', permission: 'roast_level:read' },
+      { label: t.processing, icon: icons.processing, route: '/dashboard/processing-methods', permission: 'processing_method:read' },
+      { label: t.varieties, icon: icons.varieties, route: '/dashboard/coffee-varieties', permission: 'coffee_variety:read' },
+      { label: t.tastingNotes, icon: icons.tastingNotes, route: '/dashboard/tasting-notes', permission: 'tasting_note:read' },
+      { label: t.shippingZones, icon: icons.shippingZones, route: '/dashboard/shipping-zones', permission: 'shipping:read' },
+      { label: t.promoCodes, icon: icons.promoCodes, route: '/dashboard/promo-codes', permission: 'promo:read' },
+      { label: t.brewing, icon: icons.brewing, route: '/dashboard/brewing-methods', permission: 'brewing_method:read' },
+      { label: t.pairings, icon: icons.pairings, route: '/dashboard/pairings', permission: 'pairing:read' },
+    ],
+  };
+
+  // Settings parent with child
+  const settingsParent = makeParent(
+    'settings',
+    icons.storeSettings,
+    '/dashboard/store-settings',
+    'settings:update',
+    [
+      { label: t.storeSettings, icon: icons.storeSettings, route: '/dashboard/store-settings', permission: 'settings:update' },
+    ],
+    t,
+    s
+  );
+
+  const operations: NavItem[] = [operationsParent];
+  const content: NavItem[] = [contentParent];
+  const catalog: NavItem[] = [catalogParent];
+  const coffeeData: NavItem[] = [coffeeDataParent];
+  const settings: NavItem[] = [settingsParent];
 
   return {
     dashboard,
@@ -193,6 +174,7 @@ export function getNavItems(lang: Language) {
       { key: 'operations', label: s.operations, items: operations },
       { key: 'content', label: s.content, items: content },
       { key: 'catalog', label: s.catalog, items: catalog },
+      { key: 'coffeeData', label: s.coffeeData, items: coffeeData },
       { key: 'settings', label: s.settings, items: settings },
     ] satisfies NavSection[],
   };
@@ -208,6 +190,12 @@ export function sectionKeyForRoute(url: string): NavSectionKey | null {
   for (const section of getNavItems('en').sections) {
     if (section.items.some((item) => path === item.route || path.startsWith(`${item.route}/`))) {
       return section.key;
+    }
+    // Also check children
+    for (const item of section.items) {
+      if (item.children?.some((child) => path === child.route || path.startsWith(`${child.route}/`))) {
+        return section.key;
+      }
     }
   }
   return null;

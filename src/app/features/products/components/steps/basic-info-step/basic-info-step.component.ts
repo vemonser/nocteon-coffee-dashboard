@@ -17,6 +17,7 @@ import { FarmService } from '../../../../farms/services/farm.service';
 import { RoastLevelService } from '../../../../roast-level/services/roast-level.service';
 import { ProcessingMethodService } from '../../../../processing-method/services/processing-method.service';
 import { CoffeeVarietyService } from '../../../../coffee-variety/services/coffee-variety.service';
+import { NotifyService } from '../../../../../core/notify/notify.service';
 import { HlmSelectImports } from '@spartan-ng/helm/select';
 import { HlmInputImports } from '@spartan-ng/helm/input';
 import { HlmLabel } from '@spartan-ng/helm/label';
@@ -47,6 +48,7 @@ export class BasicInfoStepComponent {
   private roastLevelService = inject(RoastLevelService);
   private processingMethodService = inject(ProcessingMethodService);
   private coffeeVarietyService = inject(CoffeeVarietyService);
+  private notify = inject(NotifyService);
 
   categories = signal<CategoryResponse[]>([]);
   origins = signal<OriginOption[]>([]);
@@ -61,23 +63,39 @@ export class BasicInfoStepComponent {
   ];
 
   constructor() {
-    this.categoryService.getAll({ size: 200, isActive: true })
-      .subscribe({ next: (r) => this.categories.set(r.data.content) });
+    // A failed preload must not look like an empty catalog: toast on error.
+    const onErr = (what: string) => (err: unknown) =>
+      this.notify.apiError(err, 'notify.errorFallback', `Could not load ${what}`);
 
-    this.originService.getAllOptions()
-      .subscribe({ next: (r) => this.origins.set(r.data) });
+    this.categoryService.getAll({ size: 200, isActive: true }).subscribe({
+      next: (r) => this.categories.set(r.data.content),
+      error: onErr('categories'),
+    });
 
-    this.farmService.getAll({ size: 200 })
-      .subscribe({ next: (r) => this.farms.set(r.data.content) });
+    this.originService.getAllOptions().subscribe({
+      next: (r) => this.origins.set(r.data),
+      error: onErr('origins'),
+    });
 
-    this.roastLevelService.getAll({ size: 200 })
-      .subscribe({ next: (r) => this.roastLevels.set(r.data.content) });
+    this.farmService.getAll({ size: 200 }).subscribe({
+      next: (r) => this.farms.set(r.data.content),
+      error: onErr('farms'),
+    });
 
-    this.processingMethodService.getAll({ size: 200 })
-      .subscribe({ next: (r) => this.processingMethods.set(r.data.content) });
+    this.roastLevelService.getAll({ size: 200 }).subscribe({
+      next: (r) => this.roastLevels.set(r.data.content),
+      error: onErr('roast levels'),
+    });
 
-    this.coffeeVarietyService.getAll({ size: 200 })
-      .subscribe({ next: (r) => this.coffeeVarieties.set(r.data.content) });
+    this.processingMethodService.getAll({ size: 200 }).subscribe({
+      next: (r) => this.processingMethods.set(r.data.content),
+      error: onErr('processing methods'),
+    });
+
+    this.coffeeVarietyService.getAll({ size: 200 }).subscribe({
+      next: (r) => this.coffeeVarieties.set(r.data.content),
+      error: onErr('coffee varieties'),
+    });
   }
 
   get isCoffee(): boolean {

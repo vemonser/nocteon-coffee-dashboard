@@ -14,6 +14,7 @@ export interface CoffeeVarietyResponse {
   id: number;
   slug: string;
   createdAt?: string;
+  deletedAt?: string;
   translations: CoffeeVarietyTranslation[];
 }
 

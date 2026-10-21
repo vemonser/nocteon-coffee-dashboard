@@ -12,9 +12,9 @@
   @if (error() && !loading()) {
     <div class="flex flex-col items-center justify-center py-20 text-center">
       <ng-icon name="lucideImage" class="size-16 text-muted-foreground opacity-20 mb-4" />
-      <h2 class="text-xl font-semibold text-destructive">{{ error() }}</h2>
+      <h2 class="text-xl font-medium text-destructive">{{ error() }}</h2>
       <button hlmBtn variant="outline" class="mt-4" (click)="goBack()">
-        <ng-icon name="lucideArrowLeft" class="mr-2 size-4" />
+        <ng-icon name="lucideArrowLeft" class="me-2 size-4 rtl:rotate-180" />
         {{ 'brewingMethods.detail.backToBrewingMethods' | transloco }}
       </button>
     </div>
@@ -25,7 +25,7 @@
     <!-- Top Bar -->
     <div class="flex items-center justify-between">
       <button hlmBtn variant="ghost" class="cursor-pointer" size="sm" (click)="goBack()">
-        <ng-icon name="lucideArrowLeft" class="mr-2 size-4" />
+        <ng-icon name="lucideArrowLeft" class="me-2 size-4 rtl:rotate-180" />
         {{ 'brewingMethods.detail.back' | transloco }}
       </button>
 
@@ -111,7 +111,7 @@
     ═══════════════════════════════════════════ -->
     <div class="space-y-4">
       <div class="flex items-center justify-between">
-        <h2 class="text-xl font-bold tracking-tight flex items-center gap-2">
+        <h2 class="text-xl font-medium tracking-tight flex items-center gap-2">
           <ng-icon name="lucidePackage" class="size-5" />
           {{ 'brewingMethods.detail.linkedProducts' | transloco }}
           <hlm-badge variant="secondary">{{ productsPage()?.totalElements ?? 0 }}</hlm-badge>
@@ -122,7 +122,7 @@
           [value]="sortField() + ' ' + sortDir()"
           (valueChange)="onSortSelectChange($event)"
         >
-          <hlm-select-trigger class="rounded-sm h-9 w-40">
+          <hlm-select-trigger class="w-40">
             <hlm-select-value placeholder="{{ 'brewingMethods.detail.sortBy' | transloco }}" />
           </hlm-select-trigger>
           <hlm-select-content *hlmSelectPortal>
@@ -175,9 +175,9 @@
                     <td hlmTableCell class="font-medium">{{ item.product.name }}</td>
                     <td hlmTableCell class="text-muted-foreground">
                       @if (item.product.minPrice === item.product.maxPrice) {
-                        {{ item.product.minPrice | currency }}
+                        {{ item.product.minPrice | money }}
                       } @else {
-                        {{ item.product.minPrice | currency }} - {{ item.product.maxPrice | currency }}
+                        {{ item.product.minPrice | money }} - {{ item.product.maxPrice | money }}
                       }
                     </td>
                     <td hlmTableCell>
@@ -188,7 +188,6 @@
                         hlmBtn
                         variant="ghost"
                         size="icon"
-                        class="size-8"
                         (click)="$event.stopPropagation(); router.navigate(['/dashboard/products', item.product.slug])"
                       >
                         <ng-icon name="lucideEye" class="size-4" />
@@ -209,24 +208,15 @@
 
       <!-- Pagination -->
       @if (productsPage() && !productsLoading() && productsPage()!.totalPages > 1) {
-        <div class="flex items-center justify-between">
-          <span class="text-sm text-muted-foreground">
-            {{ 'common.showing' | transloco }} {{ productsPage()!.page * productsPage()!.size + 1 }} -
-            {{ Math.min((productsPage()!.page + 1) * productsPage()!.size, productsPage()!.totalElements) }}
-            {{ 'common.of' | transloco }} {{ productsPage()!.totalElements }}
-          </span>
-          <div class="flex items-center gap-2">
-            <button hlmBtn variant="outline" size="sm" [disabled]="productsPage()!.first" (click)="goToProductPage(currentProductPage() - 1)">
-              <ng-icon name="lucideChevronLeft" class="size-4" />
-            </button>
-            <span class="text-sm text-muted-foreground px-2">
-              {{ 'common.page' | transloco }} {{ productsPage()!.page + 1 }} {{ 'common.of' | transloco }} {{ productsPage()!.totalPages }}
-            </span>
-            <button hlmBtn variant="outline" size="sm" [disabled]="productsPage()!.last" (click)="goToProductPage(currentProductPage() + 1)">
-              <ng-icon name="lucideChevronRight" class="size-4" />
-            </button>
-          </div>
-        </div>
+        <app-pager
+          [page]="productsPage()!.page"
+          [size]="productsPage()!.size"
+          [totalElements]="productsPage()!.totalElements"
+          [totalPages]="productsPage()!.totalPages"
+          [first]="productsPage()!.first"
+          [last]="productsPage()!.last"
+          (pageChange)="goToProductPage($event)"
+        />
       }
     </div>
   }

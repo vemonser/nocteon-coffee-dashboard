@@ -1,0 +1,25 @@
+<app-widget-header [title]="'dashboard.deviceBreakdown' | transloco" />
+
+<!-- Two columns: the device list is a compact list, and a single column
+     makes the card taller than the widget next to it. -->
+<!-- Two columns and a tight row gap: the list is a list, and the last row
+     must not sit on the card's bottom edge. -->
+<ul class="mt-2 grid gap-x-6 gap-y-1.5 pb-1 sm:grid-cols-2">
+  @for (d of devices(); track d.deviceType) {
+    <li class="flex items-center gap-3">
+      <span class="w-20 shrink-0 truncate text-sm">{{ label(d.deviceType) }}</span>
+      <!-- The bar uses the FULL track: the largest device is 100 %. -->
+      <span class="h-2 flex-1 rounded-full bg-muted overflow-hidden">
+        <span
+          class="block h-full rounded-full bg-chart-1"
+          [style.width.%]="width(d.count)"
+        ></span>
+      </span>
+      <span class="w-24 shrink-0 whitespace-nowrap text-end text-sm tabular-nums text-muted-foreground">
+        {{ d.count }} {{ unit() }}
+      </span>
+    </li>
+  } @empty {
+    <li class="py-4 text-center text-sm text-muted-foreground">{{ 'common.noData' | transloco }}</li>
+  }
+</ul>

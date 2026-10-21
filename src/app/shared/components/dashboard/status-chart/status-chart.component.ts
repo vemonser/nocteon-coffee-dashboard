@@ -33,7 +33,7 @@ export class StatusChartComponent {
       'var(--color-success)',
       'var(--color-info)',
       'var(--color-accent)',
-      'var(--color-danger)',
+      'var(--color-destructive)',
     ],
     legend: {
       position: 'bottom' as const,

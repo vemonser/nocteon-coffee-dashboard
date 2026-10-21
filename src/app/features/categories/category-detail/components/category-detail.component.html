@@ -1,7 +1,7 @@
 <!-- Page root — same container the other pages use (origins/users/products-list:
      flex flex-col gap-6 p-6; no max-width in this layout). Detail content sits
      flush against the sidebar edge without it. -->
-<div class="flex flex-col gap-6 p-6">
+<div class="flex flex-col gap-6 p-6 max-w-[1440px] mx-auto w-full">
 @if (category() && !loading() && form) {
   <!-- Header: back link, h1 + status badge, actions -->
   <div class="flex flex-wrap items-center gap-3">
@@ -27,9 +27,53 @@
           {{ 'common.restore' | transloco }}
         </button>
       } @else {
-        <button hlmBtn variant="ghost" size="sm" (click)="showDeleteConfirm.set(true)">
-          <ng-icon name="lucideTrash2" class="me-2 size-4" />
-          {{ 'categories.detail.moveToTrash' | transloco }}
+              <!-- Hidden until the form is dirty: discards every pending edit and
+             rebuilds the form from the stored entity (see discardChanges). -->
+        @if (isDirty() && !saving() && !isDeleted()) {
+          <button
+            hlmBtn
+            variant="ghost"
+            size="icon"
+            class="sm:size-auto sm:px-3"
+            (click)="discardChanges()"
+            [attr.title]="'categories.detail.discard' | transloco"
+            [attr.aria-label]="'categories.detail.discard' | transloco"
+          >
+            <ng-icon name="lucideRotateCcw" class="size-4" />
+            <span class="hidden sm:inline sm:ms-2">
+              {{ 'categories.detail.discard' | transloco }}
+            </span>
+          </button>
+        }
+        <button
+          hlmBtn
+          size="sm"
+          (click)="saveChanges()"
+          [disabled]="!isDirty() || form.invalid || saving() || isDeleted()"
+          [attr.title]="'common.save' | transloco"
+          [attr.aria-label]="'common.save' | transloco"
+        >
+          @if (saving()) {
+            <ng-icon name="lucideLoader2" class="me-2 size-4 animate-spin" />
+          } @else {
+            <ng-icon name="lucideCheck" class="me-2 size-4" />
+          }
+          {{ saving() ? ('common.saving' | transloco) : ('common.save' | transloco) }}
+        </button>
+  
+        <button
+          hlmBtn
+          variant="ghost"
+          size="icon"
+          class="sm:size-auto sm:px-3"
+          (click)="showDeleteConfirm.set(true)"
+          [attr.title]="'categories.detail.moveToTrash' | transloco"
+          [attr.aria-label]="'categories.detail.moveToTrash' | transloco"
+        >
+          <ng-icon name="lucideTrash2" class="size-4" />
+          <span class="hidden sm:inline sm:ms-2">
+            {{ 'categories.detail.moveToTrash' | transloco }}
+          </span>
         </button>
       }
     </div>
@@ -44,23 +88,85 @@
     />
   }
 
-  <!-- Main: image + details + side panel -->
-  <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
-    <!-- Image: about one third -->
-    <hlm-card class="overflow-hidden pt-0">
-      <div class="aspect-square relative bg-muted">
+  <!-- Action failure kept visible on the page: the backend refuses certain
+       deletes (e.g. a category that still has products → 409) and the user
+       must see the WHY here, not only in the transient toast. -->
+  @if (error(); as msg) {
+    <div
+      class="flex items-start gap-3 rounded-md border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive"
+      role="alert"
+    >
+      <ng-icon name="lucideAlertCircle" class="mt-0.5 size-4 flex-shrink-0" />
+      <p class="min-w-0 break-words">{{ msg }}</p>
+      <!-- hlmBtn keeps the ratchet: the shared control scale, restyled to a bare icon. -->
+      <button
+        type="button"
+        hlmBtn
+        variant="ghost"
+        size="icon"
+        class="ms-auto size-5 text-destructive/70 hover:text-destructive"
+        [attr.aria-label]="'common.close' | transloco"
+        (click)="error.set(null)"
+      >
+        <ng-icon name="lucideX" class="size-4" />
+      </button>
+    </div>
+  }
+
+  <!-- Main: image + details + side panel. items-start: each card sizes to its
+       own content — grid stretch used to pad the shorter card out to the
+       other's height, leaving dead space under the switch row. -->
+  <div class="grid grid-cols-1 items-start gap-4 lg:grid-cols-3">
+    <!-- Image: about one third on wide screens. On narrow screens it must never
+         become a full-width square — 16:9 capped at 280px keeps it compact and
+         the form above the fold. -->
+    <hlm-card class="overflow-hidden pt-0 self-stretch">
+      <div class="relative aspect-video max-h-[280px] bg-muted lg:aspect-square lg:max-h-none h-full">
+        <!-- ONE hidden input drives both states (change-image overlay and the
+             no-image upload placeholder) — the buttons below are real buttons
+             (keyboard reachable, named), not label-wrapped inputs. -->
+        <input
+          #imageInput
+          type="file"
+          accept="image/*"
+          class="sr-only"
+          tabindex="-1"
+          aria-hidden="true"
+          (change)="onImageSelected($event)"
+        />
         @if (category()!.imageUrl) {
+          <!-- absolute for the same reason as the products grid: a static img
+               contributes its natural height and beats aspect-square -->
           <img
             [src]="category()!.imageUrl"
             [alt]="displayName()"
-            class="h-full w-full object-cover"
+            class="absolute inset-0 h-full w-full object-cover"
           />
+          @if (!isDeleted()) {
+            <!-- Change image button as overlay on the image, bottom-inline.
+                 Real button: focus-visible ring, always visible (no hover
+                 needed to discover it). The near-opaque pill over the image
+                 keeps its text legible over ANY image, white or black. -->
+            <button
+              hlmBtn
+              variant="ghost"
+              size="sm"
+              class="absolute bottom-3 start-3 bg-background/95 border border-border backdrop-blur-sm text-primary hover:bg-accent px-3 py-1.5 h-auto text-xs font-medium focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+              (click)="imageInput.click()"
+            >
+              {{ 'categories.detail.changeImage' | transloco }}
+            </button>
+          }
         } @else {
           <div class="flex h-full flex-col items-center justify-center gap-3 text-muted-foreground">
             <ng-icon name="lucideImage" class="size-20 opacity-20" />
             @if (!isDeleted()) {
-              <label
-                class="cursor-pointer rounded-md border border-border bg-card px-3 py-1.5 text-sm font-medium text-foreground transition-colors duration-150 hover:bg-accent"
+              <button
+                hlmBtn
+                variant="ghost"
+                size="sm"
+                class="border border-border bg-card text-foreground hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                (click)="imageInput.click()"
               >
                 @if (uploadingImage()) {
                   <ng-icon name="lucideLoader2" class="me-2 size-4 animate-spin" />
@@ -68,83 +174,76 @@
                   <ng-icon name="lucideUpload" class="me-2 size-4" />
                 }
                 {{ 'categories.detail.uploadImage' | transloco }}
-                <input type="file" accept="image/*" class="sr-only" (change)="onImageSelected($event)" />
-              </label>
+              </button>
             }
           </div>
         }
       </div>
-      @if (category()!.imageUrl && !isDeleted()) {
-        <div class="flex items-center justify-between p-3">
-          <span class="text-xs text-muted-foreground">{{ category()!.imageUrl }}</span>
-          <label class="cursor-pointer text-xs font-medium text-primary hover:underline">
-            {{ 'categories.detail.changeImage' | transloco }}
-            <input type="file" accept="image/*" class="sr-only" (change)="onImageSelected($event)" />
-          </label>
-        </div>
-      }
       @if (imageError()) {
         <p role="alert" class="px-3 pb-3 text-xs text-destructive">{{ imageError() }}</p>
       }
     </hlm-card>
 
-    <!-- Details: fields are always editable, Arabic fields dir="rtl" -->
-    <hlm-card class="lg:col-span-2">
-      <form [formGroup]="form">
-        <div hlmCardContent class="p-6">
-          <app-category-form
-            [translations]="translationsArray"
-            [emptyDescriptionHint]="'categories.detail.noDescription' | transloco"
-          />
+    <!-- Right column: the form card, then the Details panel under it. Keeping
+         the panel in this column (instead of full-width below) fills the space
+         beside the image instead of leaving it empty under the form. -->
+    <div class="flex flex-col gap-4 lg:col-span-2">
+      <!-- Form: fields are always editable, Arabic fields dir="rtl" -->
+      <hlm-card>
+        <form [formGroup]="form">
+          <div hlmCardContent class="p-6">
+            <app-category-form [translations]="translationsArray" />
 
-          <hlm-separator class="my-6" />
+            <hlm-separator class="my-6" />
 
-          <div class="flex items-center gap-3">
-            <hlm-switch
-              formControlName="isActive"
-              inputId="isActive"
-              [attr.aria-label]="'categories.detail.visibleInStore' | transloco"
-            />
-            <label for="isActive" class="text-sm font-medium">{{ 'categories.detail.visibleInStore' | transloco }}</label>
+            <div class="flex items-center gap-3">
+              <hlm-switch
+                formControlName="isActive"
+                inputId="isActive"
+                [attr.aria-label]="'categories.detail.visibleInStore' | transloco"
+              />
+              <label for="isActive" class="text-sm font-medium">{{ 'categories.detail.visibleInStore' | transloco }}</label>
+            </div>
+          </div>
+        </form>
+      </hlm-card>
+
+      <!-- Details panel: slug, ID, dates. The card gap (16px) is the whole
+           distance between the Details title and its values. -->
+      <hlm-card>
+        <div hlmCardHeader class="px-6 pb-0">
+          <h2 class="text-sm font-medium text-muted-foreground">{{ 'categories.detail.infoTitle' | transloco }}</h2>
+        </div>
+        <div hlmCardContent class="grid gap-4 p-6 pt-0 sm:grid-cols-3">
+          <div>
+            <p class="text-xs text-muted-foreground">{{ 'common.slug' | transloco }}</p>
+            <p class="mt-1 text-sm"><bdi class="font-mono">{{ category()!.slug }}</bdi></p>
+          </div>
+          <div>
+            <p class="text-xs text-muted-foreground">{{ 'common.id' | transloco }}</p>
+            <p class="mt-1 flex items-center gap-1 text-sm tabular-nums">
+              <bdi>{{ category()!.id }}</bdi>
+              <button
+                hlmBtn
+                variant="ghost"
+                size="icon"
+                class="size-6"
+                [attr.title]="'common.copyId' | transloco"
+                [attr.aria-label]="'common.copyId' | transloco"
+                (click)="copyId()"
+              >
+                <ng-icon name="lucideCopy" class="size-3" />
+              </button>
+            </p>
+          </div>
+          <div>
+            <p class="text-xs text-muted-foreground">{{ 'common.createdAt' | transloco }}</p>
+            <p class="mt-1 text-sm"><app-localized-date [value]="category()!.createdAt" variant="long" /></p>
           </div>
         </div>
-      </form>
-    </hlm-card>
+      </hlm-card>
+    </div>
   </div>
-
-  <!-- Side panel: slug, ID, dates -->
-  <hlm-card>
-    <div hlmCardHeader class="px-6 pb-0">
-      <h2 class="text-sm font-medium text-muted-foreground">{{ 'categories.detail.infoTitle' | transloco }}</h2>
-    </div>
-    <div hlmCardContent class="grid gap-4 p-6 sm:grid-cols-3">
-      <div>
-        <p class="text-xs text-muted-foreground">{{ 'common.slug' | transloco }}</p>
-        <p class="mt-1 text-sm"><bdi class="font-mono">{{ category()!.slug }}</bdi></p>
-      </div>
-      <div>
-        <p class="text-xs text-muted-foreground">{{ 'common.id' | transloco }}</p>
-        <p class="mt-1 flex items-center gap-1 text-sm tabular-nums">
-          <bdi>{{ category()!.id }}</bdi>
-          <button
-            hlmBtn
-            variant="ghost"
-            size="icon"
-            class="size-6"
-            [attr.title]="'common.copyId' | transloco"
-            [attr.aria-label]="'common.copyId' | transloco"
-            (click)="copyId()"
-          >
-            <ng-icon name="lucideCopy" class="size-3" />
-          </button>
-        </p>
-      </div>
-      <div>
-        <p class="text-xs text-muted-foreground">{{ 'common.createdAt' | transloco }}</p>
-        <p class="mt-1 text-sm"><app-localized-date [value]="category()!.createdAt" variant="long" /></p>
-      </div>
-    </div>
-  </hlm-card>
 }
 
 <!-- Products -->
@@ -156,7 +255,9 @@
       <hlm-badge variant="secondary" class="tabular-nums">{{ productsPage()?.totalElements ?? 0 }}</hlm-badge>
     </h2>
 
-    <div class="flex items-center gap-2">
+    <!-- With no products there is nothing to view all — hide the link so the
+         empty state is not framed by a dead control. -->
+    @if (productsPage()?.totalElements) {
       <button
         hlmBtn
         variant="link"
@@ -166,148 +267,155 @@
       >
         {{ 'categories.detail.viewAllProducts' | transloco }}
       </button>
-      <div class="flex items-center rounded-md border bg-card p-1">
-        <button
-          hlmBtn
-          [variant]="productViewMode() === 'list' ? 'secondary' : 'ghost'"
-          size="icon"
-          (click)="toggleProductView('list')"
-          [attr.aria-label]="'categories.detail.listView' | transloco"
-        >
-          <ng-icon name="lucideList" class="size-4" />
+    }
+  </div>
+
+  @if (productsLoading()) {
+    <!-- Table-shaped first-load skeleton: four stub rows, same shape the
+         shared DataTable draws for the list pages. -->
+    <div class="rounded-md border">
+      <div class="h-16 border-b bg-muted/50 animate-pulse" *ngFor="let _ of [1, 2, 3, 4]"></div>
+    </div>
+  } @else if (productsError()) {
+    <!-- A failed fetch must not masquerade as an empty category. -->
+    <div
+      role="alert"
+      class="view-fade rounded-lg border border-destructive/40 bg-destructive-soft px-4 py-6 text-center"
+    >
+      <p class="font-medium text-destructive">
+        {{ 'categories.detail.productsError' | transloco }}
+      </p>
+      <button hlmBtn variant="outline" size="sm" class="mt-3" (click)="retryProducts()">
+        {{ 'common.retry' | transloco }}
+      </button>
+    </div>
+  } @else if (products().length > 0) {
+    <!--
+      The shared DataTable, exactly like the catalog lists: an entity main-cell
+      (thumbnail + name + slug) instead of a separate Image column, shared
+      header style, shared StatusBadge for isActive. Type/Featured columns
+      appear only when they carry information (see the columns computed). The
+      name cell is the row's single control (a real anchor to the product's
+      editor); the table emits no row-level click, so nothing is nested in it.
+    -->
+    <app-data-table
+      [data]="products()"
+      [columns]="columns()"
+      [showId]="false"
+      [loading]="productsLoading()"
+      [selectable]="false"
+      [navigableColumn]="'slug'"
+      [navigableHref]="productHref"
+      [showEdit]="false"
+      [showView]="false"
+      [showDelete]="false"
+      [showRestore]="false"
+      [showPermanentDelete]="false"
+    />
+  } @else {
+    <div class="col-span-full text-center py-12 text-muted-foreground">
+      <ng-icon name="lucidePackage" class="mx-auto size-12 opacity-20 mb-4" />
+      <p class="text-lg font-medium">{{ 'categories.detail.noProducts' | transloco }}</p>
+      <!-- A create-product flow exists (/dashboard/products/new), so the empty
+           state offers the way out. -->
+      <button
+        *hasPermission="'product:create'"
+        hlmBtn
+        variant="outline"
+        size="sm"
+        class="mt-4"
+        [routerLink]="['/dashboard/products/new']"
+      >
+        <ng-icon name="lucidePlus" class="me-2 size-4" />
+        {{ 'products.add' | transloco }}
+      </button>
+    </div>
+  }
+
+  @if (productsPage() && !productsLoading()) {
+    <app-pager
+      [page]="productsPage()!.page"
+      [size]="productsPage()!.size"
+      [totalElements]="productsPage()!.totalElements"
+      [totalPages]="productsPage()!.totalPages"
+      [first]="productsPage()!.first"
+      [last]="productsPage()!.last"
+      [showPageSize]="true"
+      [sizeOptions]="productPageSizeOptions"
+      (pageChange)="goToProductPage($event)"
+      (sizeChange)="onProductPageSizeChange($event)"
+    />
+  }
+</div>
+</div>
+<!-- ══════════════════════════════════════════════════════════
+     Move-to-trash confirm — was missing entirely: the trash button set
+     showDeleteConfirm but nothing rendered it, so the call never went out.
+     On a backend refusal (category still has products → 409) the toast shows
+     the backend's reason and the destructive banner above keeps it visible.
+══════════════════════════════════════════════════════════ -->
+@if (showDeleteConfirm()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+    <div
+      class="w-full max-w-sm rounded-xl border bg-card p-6 shadow-2xl"
+      role="alertdialog"
+      aria-modal="true"
+      [attr.aria-label]="'categories.detail.moveToTrash' | transloco"
+    >
+      <h2 class="mb-2 text-lg font-medium">
+        {{ 'categories.detail.moveToTrash' | transloco }}
+      </h2>
+      <p class="mb-6 text-muted-foreground">
+        {{ 'categories.deleteConfirm' | transloco: { name: displayName() } }}
+      </p>
+      <div class="flex gap-3">
+        <button hlmBtn variant="outline" class="flex-1" (click)="showDeleteConfirm.set(false)">
+          {{ 'common.cancel' | transloco }}
         </button>
         <button
           hlmBtn
-          [variant]="productViewMode() === 'grid' ? 'secondary' : 'ghost'"
-          size="icon"
-          (click)="toggleProductView('grid')"
-          [attr.aria-label]="'categories.detail.gridView' | transloco"
+          class="flex-1"
+          [disabled]="deleting()"
+          (click)="moveToTrash()"
         >
-          <ng-icon name="lucideGrid3x3" class="size-4" />
+          @if (deleting()) {
+            <ng-icon name="lucideLoader2" class="me-2 size-4 animate-spin" />
+          }
+          {{ 'categories.detail.moveToTrash' | transloco }}
         </button>
       </div>
     </div>
   </div>
-
-  @if (productsLoading()) {
-    @if (productViewMode() === 'list') {
-      <div class="rounded-md border">
-        <div
-          class="h-16 border-b bg-muted/50 animate-pulse"
-          *ngFor="let _ of [1, 2, 3, 4]"
-        ></div>
-      </div>
-    } @else {
-      <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        <hlm-card *ngFor="let _ of [1, 2, 3, 4]" class="overflow-hidden">
-          <div class="aspect-video bg-muted animate-pulse"></div>
-          <div hlmCardContent class="p-4 space-y-2">
-            <div class="h-4 bg-muted animate-pulse rounded w-3/4"></div>
-            <div class="h-3 bg-muted animate-pulse rounded w-1/2"></div>
-          </div>
-        </hlm-card>
-      </div>
-    }
-  } @else {
-    @if (products().length > 0) {
-      <!--
-        List mode — the shared DataTable, exactly like the catalog lists:
-        an entity main-cell (thumbnail + name + slug) instead of a separate
-        Image column, shared header style, shared StatusBadge for isActive.
-        Type/Featured columns appear only when they carry information
-        (see the columns computed).
-      -->
-      @if (productViewMode() === 'list') {
-        <app-data-table
-          [data]="products()"
-          [columns]="columns()"
-          [showId]="false"
-          [loading]="productsLoading()"
-          [selectable]="false"
-          [navigableColumn]="'slug'"
-          (rowClick)="openProduct($any($event).slug)"
-          [showEdit]="false"
-          [showView]="false"
-          [showDelete]="false"
-          [showRestore]="false"
-          [showPermanentDelete]="false"
-        />
-      } @else {
-        <!--
-          Grid mode — real product cards (the toggle was cosmetic before R7 and
-          rendered the table in both modes). Same data, same labels and the
-          same row action (open the product) as the list, in card form.
-        -->
-        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          @for (p of products(); track p.id) {
-            <hlm-card
-              class="group cursor-pointer overflow-hidden transition-shadow"
-              (click)="openProduct(p.slug)"
-            >
-              <div class="relative aspect-video bg-muted">
-                @if (p.primaryImageUrl) {
-                  <img
-                    [src]="p.primaryImageUrl"
-                    [alt]="p.name"
-                    class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                  />
-                } @else {
-                  <div class="flex h-full items-center justify-center text-muted-foreground/40">
-                    <ng-icon name="lucideImage" class="size-10" />
-                  </div>
-                }
-                @if (p.discountPercentage) {
-                  <span
-                    class="absolute top-2 end-2 rounded-full bg-muted/90 px-2 py-0.5 text-xs font-medium tabular-nums"
-                  >
-                    {{ fmtPct(p.discountPercentage) }}
-                  </span>
-                }
-              </div>
-              <div hlmCardContent class="space-y-2 p-4">
-                <div class="flex items-start justify-between gap-2">
-                  <h3 class="min-w-0 truncate text-sm font-medium">
-                    <bdi>{{ p.name }}</bdi>
-                  </h3>
-                  @if (p.featured) {
-                    <ng-icon
-                      name="lucideStar"
-                      class="size-4 shrink-0 text-warning"
-                      role="img"
-                      [attr.aria-label]="'common.featured' | transloco"
-                    />
-                  }
-                </div>
-                <p class="truncate text-xs text-muted-foreground">
-                  <bdi>{{ p.slug }}</bdi>
-                </p>
-                <div class="flex items-center justify-between gap-2">
-                  <span class="text-sm font-medium tabular-nums">{{ priceLabel(p) }}</span>
-                  <app-status-badge [status]="p.isActive ? 'enabled' : 'disabled'" />
-                </div>
-              </div>
-            </hlm-card>
-          }
-        </div>
-      }
-    } @else {
-      <div class="col-span-full text-center py-12 text-muted-foreground">
-        <ng-icon name="lucidePackage" class="mx-auto size-12 opacity-20 mb-4" />
-        <p class="text-lg font-medium">{{ 'categories.detail.noProducts' | transloco }}</p>
-      </div>
-    }
-  }
-
-@if (productsPage() && !productsLoading() && productsPage()!.totalPages > 1) {
-  <app-pager
-    [page]="productsPage()!.page"
-    [size]="productsPage()!.size"
-    [totalElements]="productsPage()!.totalElements"
-    [totalPages]="productsPage()!.totalPages"
-    [first]="productsPage()!.first"
-    [last]="productsPage()!.last"
-    (pageChange)="goToProductPage($event)"
-  />
 }
-</div>
-</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     Unsaved-changes gate — replaces the old window.confirm() alert.
+     Opened by the route guard (canDeactivate) whenever the form is dirty
+     and a navigation away is attempted. Confirm discards the edits and
+     lets the router proceed; Cancel keeps them on the page.
+════════════════════════════════════════════════════════ -->
+@if (showLeaveModal()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+    <div
+      class="w-full max-w-sm rounded-xl border bg-card p-6 shadow-2xl"
+      role="alertdialog"
+      aria-modal="true"
+      [attr.aria-label]="'categories.detail.unsavedChanges' | transloco"
+    >
+      <h2 class="mb-2 text-lg font-medium">
+        {{ 'categories.detail.unsavedChanges' | transloco }}
+      </h2>
+      <p class="mb-6 text-muted-foreground">
+        {{ 'categories.detail.unsavedChangesBody' | transloco }}
+      </p>
+      <div class="flex gap-3">
+        <button hlmBtn variant="outline" class="flex-1" (click)="stayOnPage()">
+          {{ 'common.cancel' | transloco }}
+        </button>
+        <button hlmBtn class="flex-1" (click)="leaveWithoutSaving()">
+          {{ 'categories.detail.leaveWithoutSaving' | transloco }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

@@ -5,10 +5,11 @@ export interface PairingTranslation {
   description?: string;
 }
 export interface PairingResponse {
-  id: string;
+  id: number;
   slug: string;
   imageUrl: string | null;
   createdAt?: string;
+  deletedAt?: string;
   translations: PairingTranslation[];
 }
 export interface PairingRequest {
@@ -16,9 +17,11 @@ export interface PairingRequest {
 }
 
 export interface DashboardPairingResponse {
-  id: string;
+  id: number;
   slug: string;
   imageUrl: string | null;
   isActive: boolean;
+  createdAt?: string;
+  deletedAt?: string;
   translations: PairingTranslation[];
 }

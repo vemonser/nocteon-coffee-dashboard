@@ -20,14 +20,19 @@ import {
 import { PageResponse } from '../../../core/models/api-response.model';
 import { CartItemResponse, CartResponse } from '../models/cart.model';
 import { CartService } from '../services/cart.service';
+import { LanguageService } from '../../../core/i18n/language.service';
 import { ColumnDef, createColumnHelper } from '@tanstack/table-core';
 import { ViewMode } from '../../../core/crud/base-list.component';
+import { NotifyService } from '../../../core/notify/notify.service';
 
 import { TranslocoPipe } from '@jsverse/transloco';
+import { MoneyPipe } from '../../../shared/pipes/money.pipe';
+import { PagerComponent } from '../../../shared/components/pager/pager.component';
 @Component({
   selector: 'app-carts-list',
   standalone: true,
   imports: [
+    PagerComponent,
     CommonModule,
     FormsModule,
     DataTableComponent,
@@ -39,6 +44,7 @@ import { TranslocoPipe } from '@jsverse/transloco';
     HlmSkeletonImports,
     NgIcon,
     TranslocoPipe,
+    MoneyPipe,
   ],
   providers: [
     provideIcons({
@@ -52,8 +58,11 @@ import { TranslocoPipe } from '@jsverse/transloco';
   ],
   templateUrl: './carts-list.component.html',
 })
+
 export class CartsListComponent {
+  private notify = inject(NotifyService);
   private cartService = inject(CartService);
+  protected readonly language = inject(LanguageService);
 
   protected readonly Math = Math;
 
@@ -61,6 +70,8 @@ export class CartsListComponent {
   loading = signal(false);
   pageData = signal<PageResponse<CartResponse> | null>(null);
   currentPage = signal(0);
+  pageSize = signal(20);
+  readonly pageSizeOptions = [10, 20, 50] as const;
   currentSort = 'createdAt';
   currentDirection: 'asc' | 'desc' = 'desc';
   searchQuery = '';
@@ -75,9 +86,10 @@ export class CartsListComponent {
   columns: ColumnDef<CartResponse, any>[] = [
     this.columnHelper.accessor('id', { header: 'ID', enableSorting: true }),
     this.columnHelper.accessor('userFullName', { header: 'Customer', enableSorting: true }),
-    this.columnHelper.accessor('userEmail', { header: 'Email', enableSorting: false }),
-    this.columnHelper.accessor('itemCount', { header: 'Items', enableSorting: false }),
-    this.columnHelper.accessor('total', { header: 'Total', enableSorting: true }),
+    this.columnHelper.accessor('userEmail', { header: 'Email', enableSorting: false, meta: { width: '220px' } }),
+    this.columnHelper.accessor('items', { id: 'items', header: 'Items', enableSorting: false }),
+    this.columnHelper.accessor('itemCount', { header: 'Count', enableSorting: false }),
+    this.columnHelper.accessor('total', { header: 'Total', enableSorting: true, meta: { width: '140px' } }),
     this.columnHelper.accessor('createdAt', { header: 'Created', enableSorting: true }),
     this.columnHelper.display({ id: 'actions', header: 'Actions' }),
   ];
@@ -91,6 +103,8 @@ export class CartsListComponent {
     this.cartService
       .getAll({
         page: this.currentPage(),
+        size: this.pageSize(),
+        search: this.searchQuery || undefined,
         sort: this.currentSort,
         direction: this.currentDirection,
       })
@@ -100,7 +114,10 @@ export class CartsListComponent {
           this.items.set(res.data.content)
           this.loading.set(false);
         },
-        error: () => this.loading.set(false),
+        error: (err) => {
+          this.loading.set(false);
+          this.notify.apiError(err, 'notify.errorFallback', 'Could not load carts');
+        },
       });
   }
 
@@ -110,6 +127,13 @@ export class CartsListComponent {
       this.currentPage.set(0);
       this.loadPage();
     }, 400);
+  }
+
+  onPageSizeChange(size: number): void {
+    if (size === this.pageSize()) return;
+    this.pageSize.set(size);
+    this.currentPage.set(0);
+    this.loadPage();
   }
 
   goToPage(page: number): void {

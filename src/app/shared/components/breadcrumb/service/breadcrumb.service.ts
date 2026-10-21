@@ -1,4 +1,4 @@
-import { Injectable, signal, computed, effect } from '@angular/core';
+import { Injectable, signal, computed, effect, untracked } from '@angular/core';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs';
 
@@ -29,6 +29,41 @@ export class BreadcrumbService {
 
   private rebuild(): void {
     this.breadcrumbs.set(this.buildBreadcrumbs());
+    this.applyLastLabelOverride();
+  }
+
+  /**
+   * Detail pages override the last crumb with the entity's own name
+   * (`updateLastLabel`). A rebuild — every navigation AND every language
+   * switch — regenerates the trail from the static route data ("Category"),
+   * so the override must be remembered and re-applied, or the language
+   * toggle would throw the entity name away. The override is scoped to the
+   * URL it was set on and cleared as soon as the user leaves that view.
+   */
+  private lastLabelOverride = signal<{ url: string; label: string } | null>(null);
+
+  private applyLastLabelOverride(): void {
+    // This runs from the language-change effect, which already writes
+    // `breadcrumbs` — reading signals back inside that effect would track
+    // them and turn the write→read into an infinite synchronous loop.
+    untracked(() => {
+      const override = this.lastLabelOverride();
+      if (!override) return;
+      if (override.url !== this.currentPathUrl()) {
+        this.lastLabelOverride.set(null);
+        return;
+      }
+      const current = this.breadcrumbs();
+      if (current.length === 0) return;
+      const updated = [...current];
+      updated[updated.length - 1] = { ...updated[updated.length - 1], label: override.label };
+      this.breadcrumbs.set(updated);
+    });
+  }
+
+  /** router.url without query/hash — the segments the trail is built from. */
+  private currentPathUrl(): string {
+    return this.router.url.split('?')[0].split('#')[0];
   }
 
   /**
@@ -67,6 +102,7 @@ export class BreadcrumbService {
   updateLastLabel(label: string) {
     const current = this.breadcrumbs();
     if (current.length > 0) {
+      this.lastLabelOverride.set({ url: this.currentPathUrl(), label });
       const updated = [...current];
       updated[updated.length - 1] = { ...updated[updated.length - 1], label };
       this.breadcrumbs.set(updated);

@@ -62,6 +62,22 @@ export class ProductService {
   delete(slug: string): Observable<ApiResponse<void>> {
     return this.http.delete<ApiResponse<void>>(`${this.base}/${slug}`);
   }
+
+  getDeleted(params: ProductListParams = {}): Observable<ApiResponse<PageResponse<any>>> {
+    let p = new HttpParams().set('page', params.page ?? 0).set('size', params.size ?? 20);
+    if (params.search) p = p.set('search', params.search);
+    if (params.sort) p = p.set('sort', params.sort);
+    if (params.direction) p = p.set('direction', params.direction);
+    return this.http.get<ApiResponse<PageResponse<ProductListItem>>>(`${this.base}/deleted`, { params: p });
+  }
+
+  restore(id: number): Observable<ApiResponse<void>> {
+    return this.http.patch<ApiResponse<void>>(`${this.base}/${id}/restore`, null);
+  }
+
+  deletePermanently(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.base}/${id}/permanent`);
+  }
   toggleActive(slug: string, isActive: boolean): Observable<ApiResponse<void>> {
     const params = new HttpParams().set('value', isActive);
     return this.http.patch<ApiResponse<void>>(`${this.base}/${slug}/active`, null, { params });

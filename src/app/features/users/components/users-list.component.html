@@ -2,7 +2,7 @@
   <!-- Header -->
   <div class="flex items-center justify-between">
     <div>
-      <h1 class="text-2xl font-bold tracking-tight">{{ 'users.title' | transloco }}</h1>
+      <h1 class="text-2xl font-medium tracking-tight">{{ 'users.title' | transloco }}</h1>
       <p class="text-muted-foreground">
         {{ totalUsers() }} {{ 'common.of' | transloco }} · {{ activeUsers() }} {{ 'common.active' | transloco }} · {{ blockedUsers() }} {{ 'users.blocked' | transloco }} ·
         {{ unverifiedUsers() }} {{ 'users.unverified' | transloco }}
@@ -13,7 +13,6 @@
       <button
         *hasPermission="'user:create'"
         hlmBtn
-        class="p-4 min-h-10"
         (click)="openCreateDialog()"
       >
         <ng-icon name="lucidePlus" class="me-2 size-4" />
@@ -42,7 +41,7 @@
     <select
       [(ngModel)]="roleFilter"
       (change)="onFilterChange()"
-      class="h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm"
+      class="h-9 rounded-md border border-input bg-background px-3 py-1 text-sm"
     >
       <option value="ALL">{{ 'users.allRoles' | transloco }}</option>
       <option value="ADMIN">{{ 'users.admin' | transloco }}</option>
@@ -52,7 +51,7 @@
     <select
       [(ngModel)]="isActiveFilter"
       (change)="onFilterChange()"
-      class="h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm"
+      class="h-9 rounded-md border border-input bg-background px-3 py-1 text-sm"
     >
       <option [ngValue]="undefined">{{ 'common.all' | transloco }}</option>
       <option [ngValue]="true">{{ 'common.active' | transloco }}</option>
@@ -62,7 +61,7 @@
     <select
       [(ngModel)]="enabledFilter"
       (change)="onFilterChange()"
-      class="h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm"
+      class="h-9 rounded-md border border-input bg-background px-3 py-1 text-sm"
     >
       <option [ngValue]="undefined">{{ 'users.allVerification' | transloco }}</option>
       <option [ngValue]="true">{{ 'users.verified' | transloco }}</option>
@@ -96,36 +95,18 @@
 
   <!-- Pagination -->
   @if (pageData() && !loading()) {
-    <div class="flex items-center justify-between">
-      <span class="text-sm text-muted-foreground">
-        {{ 'common.showing' | transloco }} {{ pageData()!.page * pageData()!.size + 1 }} -
-        {{ Math.min((pageData()!.page + 1) * pageData()!.size, pageData()!.totalElements) }} {{ 'common.of' | transloco }}
-        {{ pageData()!.totalElements }}
-      </span>
-      <div class="flex items-center gap-2">
-        <button
-          hlmBtn
-          variant="outline"
-          size="sm"
-          [disabled]="pageData()!.first"
-          (click)="goToPage(currentPage() - 1)"
-        >
-          <ng-icon name="lucideChevronLeft" class="size-4" />
-        </button>
-        <span class="text-sm text-muted-foreground px-2"
-          >{{ 'common.page' | transloco }} {{ pageData()!.page + 1 }} {{ 'common.of' | transloco }} {{ pageData()!.totalPages }}</span
-        >
-        <button
-          hlmBtn
-          variant="outline"
-          size="sm"
-          [disabled]="pageData()!.last"
-          (click)="goToPage(currentPage() + 1)"
-        >
-          <ng-icon name="lucideChevronRight" class="size-4" />
-        </button>
-      </div>
-    </div>
+    <app-pager
+      [page]="pageData()!.page"
+      [size]="pageData()!.size"
+      [totalElements]="pageData()!.totalElements"
+      [totalPages]="pageData()!.totalPages"
+      [first]="pageData()!.first"
+      [last]="pageData()!.last"
+      [showPageSize]="true"
+      [sizeOptions]="pageSizeOptions"
+      (pageChange)="goToPage($event)"
+      (sizeChange)="onPageSizeChange($event)"
+    />
   }
 </div>
 
@@ -133,11 +114,11 @@
 @if (showDialog()) {
   <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
     <div
-      class="w-full max-w-lg max-h-[90vh] snap-y snap-mandatory scrollbar-hide gap-4 overflow-y-auto rounded-2xl bg-card shadow-2xl border"
+      class="w-full max-w-lg max-h-[90vh] snap-y snap-mandatory scrollbar-hide gap-4 overflow-y-auto rounded-xl bg-card shadow-2xl border"
     >
       <div class="flex items-center justify-between p-6 border-b sticky top-0 bg-card">
-        <h2 class="text-2xl font-bold">{{ (editing() ? 'users.editTitle' : 'users.addTitle') | transloco }}</h2>
-        <button hlmBtn variant="ghost" size="icon" class="size-8" (click)="closeDialog()">
+        <h2 class="text-2xl font-medium">{{ (editing() ? 'users.editTitle' : 'users.addTitle') | transloco }}</h2>
+        <button hlmBtn variant="ghost" size="icon" (click)="closeDialog()">
           <ng-icon name="lucideX" class="size-4" />
         </button>
       </div>
@@ -209,8 +190,8 @@
         <div class="space-y-1.5">
           <hlm-field>
             <label hlmFieldLabel for="role">{{ 'users.role' | transloco }}</label>
-            <hlm-select formControlName="role" class="w-full h-fit">
-              <hlm-select-trigger buttonId="role" size="default" class="w-full flex h-fit!">
+            <hlm-select formControlName="role" class="w-full">
+              <hlm-select-trigger buttonId="role" size="default" class="w-full flex">
                 <hlm-select-value class="px-1" [placeholder]="'users.selectRole' | transloco" />
               </hlm-select-trigger>
               <hlm-select-content class="p-1" *hlmSelectPortal>
@@ -248,13 +229,20 @@
           />
           <label for="isActive" class="text-sm font-medium">{{ 'users.accountActive' | transloco }}</label>
         </div>
+        <!-- Inline backend/validation error — above the buttons -->
+        @if (dialogError()) {
+          <p role="alert" class="text-sm font-medium text-destructive">
+            {{ dialogError() }}
+          </p>
+        }
+
         <div class="flex gap-3 pt-2">
           <button type="button" hlmBtn variant="outline" class="flex-1" (click)="closeDialog()">
             {{ 'common.cancel' | transloco }}
           </button>
           <button type="submit" hlmBtn class="flex-1" [disabled]="form.invalid || submitting()">
             @if (submitting()) {
-              <span class="animate-spin mr-2">⟳</span>
+              <ng-icon name="lucideLoader2" class="mr-2 size-4 animate-spin" />
             }
             {{ submitting() ? ('common.saving' | transloco) : ('common.save' | transloco) }}
           </button>
@@ -267,8 +255,8 @@
 <!-- Block / Unblock Confirm Dialog -->
 @if (deleting()) {
   <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-    <div class="w-full max-w-sm rounded-2xl bg-card shadow-2xl border p-6">
-      <h2 class="text-lg font-bold mb-2">
+    <div class="w-full max-w-sm rounded-xl bg-card shadow-2xl border p-6">
+      <h2 class="text-lg font-medium mb-2">
         {{ deleting()!.active ? ('users.blockUser' | transloco) : ('users.unblockUser' | transloco) }}
       </h2>
       <p class="text-muted-foreground mb-6">
@@ -287,7 +275,7 @@
           (click)="submitDelete()"
         >
           @if (submitting()) {
-            <span class="animate-spin mr-2">⟳</span>
+            <ng-icon name="lucideLoader2" class="mr-2 size-4 animate-spin" />
           }
           {{ submitting() ? ('users.processing' | transloco) : deleting()!.active ? ('users.block' | transloco) : ('users.unblock' | transloco) }}
         </button>

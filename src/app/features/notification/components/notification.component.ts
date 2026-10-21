@@ -1,10 +1,10 @@
 ﻿import { Component, ElementRef, HostListener, inject, signal } from '@angular/core';
 import { NotificationService } from '../services/notification.service';
+import { LocalizedDateComponent } from '../../../shared/ui/localized-date/localized-date.component';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { heroBell } from '@ng-icons/heroicons/outline';
 import { NotificationDto } from '../models/notification.model';
 import { Router, RouterLink } from '@angular/router';
-import { DatePipe } from '@angular/common';
 import { lucideChevronLeft } from '@ng-icons/lucide';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmPopoverImports } from '@spartan-ng/helm/popover';
@@ -12,18 +12,19 @@ import { SmoothScroll } from 'ngx-scrollbar/smooth-scroll';
 import { HlmSeparator } from '@spartan-ng/helm/separator';
 
 import { TranslocoPipe } from '@jsverse/transloco';
+import { NotifyService } from '../../../core/notify/notify.service';
 @Component({
   selector: 'app-notification',
   templateUrl: './notification.component.html',
   imports: [
     NgIcon,
-    DatePipe,
     HlmPopoverImports,
     HlmButtonImports,
     SmoothScroll,
     HlmSeparator,
     RouterLink,
       TranslocoPipe,
+      LocalizedDateComponent,
   ],
   providers: [
     provideIcons({
@@ -34,6 +35,7 @@ import { TranslocoPipe } from '@jsverse/transloco';
 })
 export class NotificationComponent {
   notificationService = inject(NotificationService);
+  private notify = inject(NotifyService);
   private router = inject(Router);
   private elementRef = inject(ElementRef);
   isOpen = signal(false);
@@ -63,9 +65,11 @@ export class NotificationComponent {
 
   onNotificationClick(notification: NotificationDto) {
     if (!notification.read) {
-      this.notificationService.markAsRead(notification.id).subscribe(() => {
+      this.notificationService.markAsRead(notification.id).subscribe({
         // نقلل العداد فورًا محليًا من غير ما نستنى الـ polling
-        this.notificationService.unreadCount.update((c) => Math.max(0, c - 1));
+        next: () => this.notificationService.unreadCount.update((c) => Math.max(0, c - 1)),
+        error: (err) =>
+          this.notify.apiError(err, 'notify.errorFallback', 'Could not mark as read'),
       });
     }
     this.isOpen.set(false);
@@ -73,9 +77,14 @@ export class NotificationComponent {
   }
 
   markAllAsRead() {
-    this.notificationService.markAllAsRead().subscribe(() => {
-      this.notifications.update((list) => list.map((n) => ({ ...n, isRead: true })));
-      this.notificationService.unreadCount.set(0);
+    this.notificationService.markAllAsRead().subscribe({
+      next: () => {
+        this.notifications.update((list) => list.map((n) => ({ ...n, isRead: true })));
+        this.notificationService.unreadCount.set(0);
+        this.notify.success('notify.allMarkedAsRead', 'All marked as read');
+      },
+      error: (err) =>
+        this.notify.apiError(err, 'notify.errorFallback', 'Could not mark all as read'),
     });
   }
 

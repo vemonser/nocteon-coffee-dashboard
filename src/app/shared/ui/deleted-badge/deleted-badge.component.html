@@ -1,0 +1,15 @@
+<!--
+  §4 "Deleted" (Trash tab): the relative time as plain text inside a `<time>`.
+  Not a badge — the chip rendered 34px wider than the column it sat in and
+  overlapped the neighbouring date column, and the absolute date it printed was
+  already a column of its own. The absolute timestamp is still available twice:
+  machine-readable in `datetime`, and human-readable in the tooltip plus the
+  screen-reader text (a `title` alone is not announced reliably).
+-->
+<time
+  class="text-xs text-muted-foreground tabular-nums"
+  [attr.datetime]="iso()"
+  [attr.title]="absolute()"
+>
+  {{ relative() }}<span class="sr-only"> ({{ absolute() }})</span>
+</time>

@@ -4,7 +4,7 @@ import { NotificationResponse } from '../../notification/models/notification.mod
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
 import { ApiResponse, PageResponse } from '../../../core/models/api-response.model';
-import { Observable, tap } from 'rxjs';
+import { Observable, catchError, of, tap } from 'rxjs';
 
 
 @Injectable({ providedIn: 'root' })
@@ -36,9 +36,14 @@ export class NotificationService {
   }
 
   refreshUnreadCount(): void {
+    // Background sync: a failure must not throw into the caller (the action
+    // itself already has its own feedback) — log and keep the last count.
     this.http
       .get<ApiResponse<number>>(`${this.fullUrl}/unread-count`)
-      .subscribe({ next: (res) => this.unreadCount.set(res.data) });
+      .subscribe({
+        next: (res) => this.unreadCount.set(res.data),
+        error: (err) => console.error('unread-count refresh failed', err),
+      });
   }
 
   markAsRead(id: number): Observable<ApiResponse<void>> {

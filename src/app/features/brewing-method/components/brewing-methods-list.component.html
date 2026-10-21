@@ -1,104 +1,165 @@
-<div class="flex flex-col gap-6 p-6">
-  <!-- Header -->
-  <div class="flex items-center justify-between">
-    <div>
-      <h1 class="text-2xl font-bold tracking-tight">{{ 'brewingMethods.title' | transloco }}</h1>
-      <p class="text-muted-foreground">{{ items().length }} {{ 'common.of' | transloco }}</p>
+<div
+  class="flex flex-col gap-4 p-6 max-w-[1440px] mx-auto w-full"
+  id="lifecycle-panel"
+  role="tabpanel"
+  [attr.aria-labelledby]="'lifecycle-tab-' + listView()"
+  [attr.data-view-phase]="viewPhase()"
+  (animationend)="onViewAnimationEnd($event)"
+>
+  <!-- Page header -->
+  <div class="flex items-start justify-between gap-4 min-h-[40px]">
+    <div class="min-w-0">
+      <h1 class="text-2xl font-medium tracking-tight">{{ 'brewingMethods.title' | transloco }}</h1>
     </div>
-
-    <div class="flex items-center gap-3">
-      <!-- Add Button -->
-      <button *hasPermission="'brewing-method:create'" hlmBtn (click)="openCreateDialog()">
+    @if (!isTrash()) {
+      <button *hasPermission="'brewing_method:create'" hlmBtn class="view-fade" (click)="openCreateDialog()">
         <ng-icon name="lucidePlus" class="me-2 size-4" />
         {{ 'brewingMethods.add' | transloco }}
       </button>
+    }
+  </div>
+
+  <!-- Lifecycle tabs + toolbar -->
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    @if (isTrashAllowed()) {
+      <app-lifecycle-tabs
+        [selected]="listView()"
+        [activeLabel]="'brewingMethods.trash.tabActive' | transloco"
+        [trashLabel]="'brewingMethods.trash.tabTrash' | transloco"
+        [activeCount]="activeCount()"
+        [trashCount]="trashCount()"
+        [tablistLabel]="'brewingMethods.trash.tabsLabel' | transloco"
+        (viewChange)="setListView($event)"
+      />
+    }
+    <div class="flex flex-1 items-center justify-end gap-3">
+    <div class="relative w-full max-w-64 sm:w-64">
+      <ng-icon name="lucideSearch" class="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+      <input hlmInput type="search" [dir]="language.current() === 'ar' ? 'rtl' : 'ltr'" [ngModel]="searchQuery" (ngModelChange)="searchQuery = $event; onSearch()" [placeholder]="'brewingMethods.search' | transloco" [attr.aria-label]="'brewingMethods.search' | transloco" class="w-full ps-9" />
+    </div>
+    <div class="relative">
+      <button hlmBtn variant="outline" type="button" (click)="columnsOpen.set(!columnsOpen())" (keydown.escape)="columnsOpen.set(false)" [attr.aria-expanded]="columnsOpen()" [attr.aria-label]="'common.columns' | transloco">
+        <ng-icon name="lucideList" class="me-2 size-4" aria-hidden="true" />
+        {{ 'common.columns' | transloco }}
+      </button>
+      @if (columnsOpen()) {
+        <div role="menu" class="absolute end-0 top-full z-20 mt-2 w-52 rounded-md border bg-card p-2 shadow-lg" (keydown.escape)="columnsOpen.set(false)">
+          <label class="flex cursor-pointer items-center gap-2 rounded px-2 py-1.5 text-sm hover:bg-accent">
+            <input type="checkbox" class="table-check size-4 rounded" [checked]="showId()" (change)="toggleShowId($any($event.target).checked)" />
+            {{ 'common.id' | transloco }}
+          </label>
+          <label class="flex cursor-pointer items-center gap-2 rounded px-2 py-1.5 text-sm hover:bg-accent">
+            <input type="checkbox" class="table-check size-4 rounded" [checked]="showDates()" (change)="toggleShowDates($any($event.target).checked)" />
+            {{ isTrash() ? ('common.deletedAt' | transloco) : ('common.createdAt' | transloco) }}
+          </label>
+        </div>
+      }
+    </div>
     </div>
   </div>
 
-  <!-- Filters: Search Only -->
-  <div class="flex flex-col gap-4 sm:flex-row sm:items-center">
-    <div class="relative flex-1 max-w-md">
-      <ng-icon
-        name="lucideSearch"
-        class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground"
-      />
-      <input
-        hlmInput
-        type="text"
-        [(ngModel)]="searchQuery"
-        (input)="onSearch()"
-        [placeholder]="'brewingMethods.search' | transloco"
-        class="pl-9 w-full"
-      />
-    </div>
-  </div>
-
-  <!-- Loading State -->
-  @if (loading()) {
-    <div class="rounded-md border">
-      <div class="h-12 border-b bg-muted/50 animate-pulse" *ngFor="let _ of [1, 2, 3, 4, 5]"></div>
+  <!-- Bulk actions -->
+  @if (hasSelection()) {
+    <div class="flex flex-wrap items-center gap-2 rounded-lg border bg-muted/50 px-3 py-2" role="region">
+      <span class="text-sm font-medium tabular-nums">{{ selectionCount() }}</span>
+      <div class="ms-auto flex items-center gap-2">
+        @if (!isTrash()) {
+          <button hlmBtn variant="outline" size="sm" (click)="requestBulkTrash()">{{ 'common.moveToTrash' | transloco }}</button>
+        } @else {
+          <button hlmBtn variant="outline" size="sm" (click)="bulkRestore()">{{ 'common.restore' | transloco }}</button>
+          <button hlmBtn variant="destructive" size="sm" (click)="requestBulkPermanentDelete()">{{ 'common.deletePermanently' | transloco }}</button>
+        }
+        <button hlmBtn variant="ghost" size="sm" (click)="clearSelection()">{{ 'common.cancel' | transloco }}</button>
+      </div>
     </div>
   }
 
-  <!-- List View Only -->
-  @if (!loading()) {
-    <div class="rounded-md border bg-card">
-      <app-data-table
-        [data]="items()"
-        [columns]="columns"
-        [loading]="loading()"
-        (edit)="openEditDialog($event)"
-        (delete)="confirmDelete($event)"
-        (sortChange)="onSortChange($event)"
-        (rowClick)="goToDetail($event)"
-      />
+  <!-- Trash banner -->
+  @if (isTrash()) {
+    <app-trash-banner class="view-fade" [message]="'brewingMethods.trash.banner' | transloco" />
+  }
+
+  <!-- Loading -->
+  @if (loading()) {
+    <div class="rounded-md border">
+      <div class="h-12 border-b bg-muted/50 animate-pulse" *ngFor="let _ of [1,2,3,4,5]"></div>
     </div>
+  }
+
+  <!-- Error state -->
+  @if (loadError()) {
+    <div role="alert" class="view-fade rounded-lg border border-destructive/40 bg-destructive-soft px-4 py-6 text-center">
+      <p class="font-medium text-destructive">{{ 'common.loadError' | transloco }}</p>
+      <button hlmBtn variant="outline" size="sm" class="mt-3" (click)="load()">{{ 'common.retry' | transloco }}</button>
+    </div>
+  } @else {
+    @if (loading() || items().length > 0) {
+      <div class="view-fade rounded-md border bg-card overflow-hidden">
+        <app-data-table
+          [data]="items()"
+          [columns]="columns()"
+          [showId]="showId()"
+          [loading]="loading()"
+          [selectable]="isTrashAllowed()"
+          [selectedIds]="selection()"
+          [rowId]="rowIdOf"
+          [selectAllLabel]="'brewingMethods.trash.selectAll' | transloco"
+          [selectRowLabel]="'brewingMethods.trash.selectRow' | transloco"
+          [navigableColumn]="''"
+          [initialSort]="{ column: currentSort, direction: currentDirection }"
+          [showEdit]="!isTrash()"
+          [showView]="false"
+          [showDelete]="!isTrash()"
+          [showRestore]="isTrash()"
+          [showPermanentDelete]="isTrash()"
+          [deleteLabel]="'brewingMethods.trash.moveToTrash'"
+          [destructiveDelete]="false"
+          [restoreLabel]="'common.restore'"
+          [permanentDeleteLabel]="'common.deletePermanently'"
+          (selectionChange)="onSelectionChange($event)"
+          (toggleAllChange)="toggleAll($event)"
+          (edit)="onEditAction($event)"
+          (delete)="confirmDelete($event)"
+          (restore)="restore($event)"
+          (permanentDelete)="openPermanentDelete($event)"
+          (sortChange)="onSortChange($event)"
+        />
+      </div>
+    }
+
+    <!-- Empty state -->
+    @if (!loading() && items().length === 0) {
+      <div class="view-fade rounded-md border bg-card px-4 py-12 text-center">
+        <ng-icon name="lucideSearch" class="mx-auto mb-3 size-10 text-muted-foreground/40" aria-hidden="true" />
+        <p class="font-medium">{{ 'common.noData' | transloco }}</p>
+        <p class="mt-1 text-sm text-muted-foreground">{{ 'common.tryAdjusting' | transloco }}</p>
+      </div>
+    }
   }
 
   <!-- Pagination -->
   @if (pageData() && !loading()) {
-    <div class="flex items-center justify-between">
-      <span class="text-sm text-muted-foreground">
-        {{ 'common.showing' | transloco }} {{ pageData()!.page * pageData()!.size + 1 }} -
-        {{ Math.min((pageData()!.page + 1) * pageData()!.size, pageData()!.totalElements) }}
-        {{ 'common.of' | transloco }} {{ pageData()!.totalElements }}
-      </span>
-
-      <div class="flex items-center gap-2">
-        <button
-          hlmBtn
-          variant="outline"
-          size="sm"
-          [disabled]="pageData()!.first"
-          (click)="goToPage(currentPage() - 1)"
-        >
-          <ng-icon name="lucideChevronLeft" class="size-4" />
-        </button>
-
-        <span class="text-sm text-muted-foreground px-2">
-          {{ 'common.page' | transloco }} {{ pageData()!.page + 1 }} {{ 'common.of' | transloco }} {{ pageData()!.totalPages }}
-        </span>
-
-        <button
-          hlmBtn
-          variant="outline"
-          size="sm"
-          [disabled]="pageData()!.last"
-          (click)="goToPage(currentPage() + 1)"
-        >
-          <ng-icon name="lucideChevronRight" class="size-4" />
-        </button>
-      </div>
-    </div>
+    <app-pager class="view-fade"
+      [page]="pageData()!.page"
+      [size]="pageData()!.size"
+      [totalElements]="pageData()!.totalElements"
+      [totalPages]="pageData()!.totalPages"
+      [first]="pageData()!.first"
+      [last]="pageData()!.last"
+      [showPageSize]="true"
+      [sizeOptions]="pageSizeOptions"
+      (pageChange)="goToPage($event)"
+      (sizeChange)="onPageSizeChange($event)"
+    />
   }
 </div>
 
 <!-- ══════════════════════════════════════════════════════════
      Create / Edit Dialog
-══════════════════════════════════════════════════════════ -->
+     ══════════════════════════════════════════════════════════ -->
 @if (showDialog()) {
   <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-    <div class="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl bg-card shadow-2xl border">
+    <div class="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl bg-card shadow-2xl border">
       <!-- Dialog Header -->
       <div class="flex items-center justify-between p-6 border-b sticky top-0 bg-card">
         <h2 class="text-lg font-bold">
@@ -110,30 +171,24 @@
       </div>
 
       <form [formGroup]="form" (ngSubmit)="onSubmit()" class="p-6 space-y-5">
-        <!-- Translations Only -->
-        <div formArrayName="translations">
+        <!-- Translations -->
+        <div formArrayName="translations" class="grid gap-6 sm:grid-cols-2">
           @for (group of translationsArray.controls; track $index; let i = $index) {
-            <div [formGroupName]="i" class="rounded-md border p-4 mb-4">
+            <div [formGroupName]="i" class="space-y-4">
               <!-- Language Badge -->
-              <div class="flex items-center gap-2 mb-3">
-                <hlm-badge variant="outline">
-                  {{ translationHelper.getLangLabel(group.get('language')?.value) }}
-                </hlm-badge>
-              </div>
+              <hlm-badge variant="outline">
+                {{ translationHelper.getLangLabel(group.get('language')?.value) }}
+              </hlm-badge>
 
               <!-- Name -->
-              <div class="space-y-1.5 mb-3">
+              <div class="space-y-1.5">
                 <label hlmLabel>{{ 'brewingMethods.name' | transloco }} *</label>
                 <input
                   hlmInput
                   formControlName="name"
                   type="text"
                   [dir]="translationHelper.getLangDir(group.get('language')?.value)"
-                  [placeholder]="
-                    group.get('language')?.value === 'ar'
-                      ? 'مثال: قهوة فرنش بريس'
-                      : 'e.g. French Press'
-                  "
+                  [placeholder]="group.get('language')?.value === 'ar' ? 'مثال: محمص خفيف' : 'e.g. Light Roast'"
                   class="w-full"
                 />
                 @if (group.get('name')?.invalid && group.get('name')?.touched) {
@@ -145,11 +200,11 @@
               <div class="space-y-1.5">
                 <label hlmLabel>{{ 'brewingMethods.description' | transloco }}</label>
                 <textarea
-                  hlmInput
+                  hlmTextarea
                   formControlName="description"
-                  rows="4"
+                  rows="3"
                   [dir]="translationHelper.getLangDir(group.get('language')?.value)"
-                  class="w-full resize-none h-fit rounded-md"
+                  class="w-full resize-none"
                 ></textarea>
               </div>
             </div>
@@ -175,18 +230,19 @@
 
 <!-- ══════════════════════════════════════════════════════════
      Delete Confirm Dialog
-══════════════════════════════════════════════════════════ -->
+     ══════════════════════════════════════════════════════════ -->
 @if (deleting()) {
   <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
     <div class="w-full max-w-sm rounded-2xl bg-card shadow-2xl border p-6">
       <h2 class="text-lg font-bold mb-2">{{ 'brewingMethods.deleteTitle' | transloco }}</h2>
       <p class="text-muted-foreground mb-6">
         {{ 'brewingMethods.deleteConfirm' | transloco }}
-        <strong class="text-foreground">{{ deleting()!.slug }}</strong
-        >?
+        <strong class="text-foreground">{{ deleting()!.slug }}</strong>?
       </p>
       <div class="flex gap-3">
-        <button hlmBtn variant="outline" class="flex-1" (click)="deleting.set(null)">{{ 'common.cancel' | transloco }}</button>
+        <button hlmBtn variant="outline" class="flex-1" (click)="deleting.set(null)">
+          {{ 'common.cancel' | transloco }}
+        </button>
         <button
           hlmBtn
           variant="destructive"
@@ -198,6 +254,60 @@
             <span class="animate-spin mr-2">⟳</span>
           }
           {{ submitting() ? ('common.deleting' | transloco) : ('common.delete' | transloco) }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+@if (permanentDeleteTarget()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+    <div class="w-full max-w-sm rounded-2xl bg-card shadow-2xl border p-6">
+      <h2 class="text-lg font-bold mb-2">{{ 'brewingMethods.trash.deletePermanently' | transloco }}</h2>
+      <p class="text-muted-foreground mb-6">
+        {{ 'brewingMethods.trash.permanentConfirm' | transloco }}
+        <strong class="text-foreground">{{ permanentDeleteTarget()!.slug }}</strong>?
+      </p>
+      <div class="flex gap-3">
+        <button hlmBtn variant="outline" class="flex-1" (click)="closePermanentDelete()">
+          {{ 'common.cancel' | transloco }}
+        </button>
+        <button
+          hlmBtn
+          variant="destructive"
+          class="flex-1"
+          [disabled]="permanentDeletePending()"
+          (click)="confirmPermanentDelete()"
+        >
+          @if (permanentDeletePending()) {
+            <span class="animate-spin mr-2">⟳</span>
+          }
+          {{ 'common.deletePermanently' | transloco }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (bulkConfirm()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+    <div class="w-full max-w-sm rounded-2xl bg-card shadow-2xl border p-6">
+      <h2 class="text-lg font-bold mb-2">
+        {{ bulkConfirm() === 'trash' ? ('brewingMethods.trash.bulkMoveToTrash' | transloco) : ('brewingMethods.trash.deletePermanently' | transloco) }}
+      </h2>
+      <p class="text-muted-foreground mb-6">
+        {{ selectionCount() }}
+      </p>
+      <div class="flex gap-3">
+        <button hlmBtn variant="outline" class="flex-1" (click)="cancelBulkConfirm()">
+          {{ 'common.cancel' | transloco }}
+        </button>
+        <button
+          hlmBtn
+          [variant]="bulkConfirm() === 'trash' ? 'default' : 'destructive'"
+          class="flex-1"
+          (click)="submitBulkConfirm()"
+        >
+          {{ bulkConfirm() === 'trash' ? ('brewingMethods.trash.bulkMoveToTrash' | transloco) : ('brewingMethods.trash.deletePermanently' | transloco) }}
         </button>
       </div>
     </div>

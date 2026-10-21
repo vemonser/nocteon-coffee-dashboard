@@ -1,6 +1,8 @@
 <div class="relative overflow-x-auto">
-  <!-- Loading overlay -->
-  @if (loading()) {
+  <!-- Loading overlay — REFRESH feedback only (rows already on screen). A
+       first load shows the in-tbody skeleton rows instead; a spinner on top
+       of them would be a double indicator. -->
+  @if (loading() && data().length > 0) {
     <div class="absolute inset-0 bg-card/80 flex items-center justify-center z-10 rounded-md backdrop-blur-[1px]">
       <div
         class="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin"
@@ -36,6 +38,13 @@
               [class.px-4]="header.column.id !== 'actions'"
               [class.px-2]="header.column.id === 'actions'"
               [style.width]="widthFor(header.column.id, header.column.columnDef)"
+              [style.max-width]="
+                header.column.id === 'main_en' || header.column.id === 'main_ar'
+                  ? '360px'
+                  : header.column.id === 'actions'
+                    ? widthFor(header.column.id, header.column.columnDef)
+                    : null
+              "
               [class.col-narrow-hide]="
                 header.column.id === 'createdAt' ||
                 header.column.id === 'updatedAt' ||
@@ -52,7 +61,6 @@
               [class.z-10]="header.column.id === 'actions'"
               [class.bg-card]="header.column.id === 'actions'"
               [style.insetInlineEnd.px]="header.column.id === 'actions' ? 0 : null"
-              [attr.dir]="contentDir(header.column.id) || null"
               [attr.data-numeric]="isNumericColumn(header.column.id) ? '' : null"
             >
               @if (!header.isPlaceholder) {
@@ -107,7 +115,75 @@
       }
     </thead>
 
-    <tbody class="divide-y divide-border">
+    <tbody class="divide-y divide-border"
+      [attr.aria-busy]="loading() ? 'true' : null"
+    >
+      <!-- ══════════════════════════════════════════════════════════
+           First-load skeleton: stub rows in the SAME shape as the table
+           (the thead above is the real header), so the page never flashes
+           "No data found" and then swaps in data. The empty state only
+           renders once the backend actually answered «empty».
+      ═════════════════════════════════════════════════════════ -->
+      @if (loading() && data().length === 0) {
+        @for (row of [1, 2, 3, 4, 5, 6, 7]; track row) {
+          <tr hlmTr aria-hidden="true">
+            @if (selectable()) {
+              <td class="px-4 py-3">
+                <div class="ml-1 size-4 animate-pulse rounded bg-foreground/10"></div>
+              </td>
+            }
+            @for (colId of skeletonColumns(); track colId) {
+              <td
+                class="py-3"
+                [class.px-4]="colId !== 'actions'"
+                [class.px-2]="colId === 'actions'"
+                [class.col-narrow-hide]="
+                  colId === 'createdAt' ||
+                  colId === 'updatedAt' ||
+                  colId === 'deletedAt'
+                "
+                [class.col-tight]="
+                  colId === 'name_en' ||
+                  colId === 'name_ar' ||
+                  isVisualColumn(colId)
+                "
+                [class.sticky]="colId === 'actions'"
+                [class.z-10]="colId === 'actions'"
+                [class.bg-card]="colId === 'actions'"
+                [style.insetInlineEnd.px]="colId === 'actions' ? 0 : null"
+              >
+                @if (isVisualColumn(colId)) {
+                  <div class="size-8 animate-pulse rounded-md bg-foreground/10"></div>
+                } @else {
+                  <div
+                    class="h-4 animate-pulse rounded bg-foreground/10"
+                    [style.width]="
+                      colId === 'actions'
+                        ? '55%'
+                        : colId === 'main_en' ||
+                            colId === 'main_ar' ||
+                            colId === 'name' ||
+                            colId === 'name_en' ||
+                            colId === 'name_ar' ||
+                            colId === 'username' ||
+                            colId === 'userFullName'
+                          ? 'min(70%, 220px)'
+                          : '75%'
+                    "
+                  ></div>
+                }
+              </td>
+            }
+          </tr>
+        }
+        <!-- Announced for assistive tech; the visual bars are aria-hidden. -->
+        <tr class="sr-only">
+          <td role="status" [attr.colspan]="renderedColumnCount() + (selectable() ? 1 : 0)">
+            {{ 'common.loading' | transloco }}
+          </td>
+        </tr>
+      }
+
       @if (data().length === 0 && !loading()) {
         <tr hlmTr>
           <td
@@ -154,8 +230,8 @@
               [class.z-10]="cell.column.id === 'actions'"
               [class.bg-card]="cell.column.id === 'actions'"
               [style.insetInlineEnd.px]="cell.column.id === 'actions' ? 0 : null"
-              [attr.dir]="contentDir(cell.column.id) || null"
               [attr.data-numeric]="isNumericColumn(cell.column.id) ? '' : null"
+              [style.max-width]="(cell.column.id === 'main_en' || cell.column.id === 'main_ar') ? '360px' : (cell.column.id === 'actions' ? widthFor(cell.column.id, cell.column.columnDef) : null)"
             >
               @switch (cell.column.id) {
                 @case ('id') {
@@ -168,7 +244,7 @@
                     [data]="$any(cell.getValue())"
                     [langDir]="'ltr'"
                     [navigable]="!!navigableColumn()"
-                    (slugClick)="rowClick.emit(row.original)"
+                    [navigableHref]="hrefFor(row.original)"
                   />
                 }
                 @case ('main_ar') {
@@ -176,7 +252,7 @@
                     [data]="$any(cell.getValue())"
                     [langDir]="'rtl'"
                     [navigable]="!!navigableColumn()"
-                    (slugClick)="rowClick.emit(row.original)"
+                    [navigableHref]="hrefFor(row.original)"
                   />
                 }
                 @case ('image') {
@@ -190,6 +266,25 @@
                     [src]="$any(cell.getValue())"
                     [alt]="row.original.slug ?? row.original.id"
                   />
+                }
+
+                @case ('items') {
+                  <div class="flex items-center -space-x-2 rtl:space-x-reverse">
+                    @for (item of $any(cell.getValue()).slice(0, 3); track item.id) {
+                      <img
+                        [src]="item.primaryImageUrl ?? ''"
+                        [alt]="item.productName"
+                        class="h-8 w-8 rounded-md border-2 border-card object-cover"
+                      />
+                    }
+                    @if ($any(cell.getValue()).length > 3) {
+                      <div
+                        class="flex h-8 w-8 items-center justify-center rounded-md border-2 border-card bg-muted text-xs font-medium"
+                      >
+                        +{{ $any(cell.getValue()).length - 3 }}
+                      </div>
+                    }
+                  </div>
                 }
 
                 @case ('avatar') {
@@ -217,6 +312,17 @@
 
                 @case ('color') {
                   <app-color-cell [color]="$any(cell.getValue())" />
+                }
+
+                @case ('total') {
+                  <span class="block text-start tabular-nums">
+                    {{ $any(cell.getValue()) | money }}
+                  </span>
+                }
+                @case ('totalAmount') {
+                  <span class="block text-start tabular-nums">
+                    {{ $any(cell.getValue()) | money }}
+                  </span>
                 }
                 @case ('createdAt') {
                   <span class="block text-xs text-muted-foreground">
@@ -295,6 +401,7 @@
                     [showView]="showView()"
                     [showDelete]="showDelete()"
                     [showRestore]="showRestore()"
+                    [editHref]="hrefFor(row.original)"
                     (edit)="edit.emit($event)"
                     (delete)="delete.emit($event)"
                     (restore)="restore.emit($event)"
@@ -320,21 +427,53 @@
 
                 @default {
                   @if (cell.column.id === navigableColumn()) {
-                    <button
-                      type="button"
-                      data-testid="slug-link"
-                      class="inline-block max-w-full cursor-pointer truncate text-start text-foreground hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                      (click)="rowClick.emit(row.original)"
+                    <!-- The slug column stays a plain, unclickable handle;
+                         the NAME is the row's single link (below). -->
+                    <span
+                      data-testid="slug-text"
+                      class="inline-block max-w-full truncate text-start text-muted-foreground"
                     >
-                      {{ cell.getValue() }}
-                    </button>
+                      <bdi [attr.dir]="contentDir(cell.column.id) || null">{{ cell.getValue() }}</bdi>
+                    </span>
+                  } @else if (isNameCell(cell.column.id)) {
+                    <!--
+                      The entity name is the row's only clickable control: a real
+                      anchor when the host supplies an href builder, so
+                      middle-click and open-in-new-tab work. The bdi carries the
+                      content's own direction (Latin vs Arabic) so mixed-direction
+                      text never flips the alignment.
+                    -->
+                    @if (hrefFor(row.original); as href) {
+                      <a
+                        [routerLink]="href"
+                        data-testid="name-link"
+                        class="inline-block max-w-full truncate text-start text-foreground hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                      >
+                        <bdi [attr.dir]="contentDir(cell.column.id) || null">{{ cell.getValue() }}</bdi>
+                      </a>
+                    } @else {
+                      <span
+                        class="block truncate text-start"
+                        [attr.title]="cell.getValue()"
+                        [attr.aria-label]="cell.getValue()"
+                      >
+                        <bdi [attr.dir]="contentDir(cell.column.id) || null">{{ cell.getValue() }}</bdi>
+                      </span>
+                    }
                   } @else {
                     <!--
-                      Direction comes from the column's content language
-                      (contentDir), set on th and td alike — never dir="auto"
-                      per cell, which split header and body onto opposite edges.
+                      text-align: start has no dir attribute to resolve against
+                      here, so it follows the table dir — the UI direction — and
+                      header and cells share one edge in both languages. The bdi
+                      carries the content's own direction (Latin slug vs Arabic
+                      name) so mixed-direction text never flips the alignment;
+                      it only reorders runs inside the line.
                     -->
-                    <span class="block truncate text-start">
+                    <span
+                      class="block truncate text-start"
+                      [attr.title]="(cell.column.id === 'name_en' || cell.column.id === 'name_ar') ? cell.getValue() : null"
+                      [attr.aria-label]="(cell.column.id === 'name_en' || cell.column.id === 'name_ar') ? cell.getValue() : null"
+                    >
                       <bdi [attr.dir]="contentDir(cell.column.id) || null">{{ cell.getValue() }}</bdi>
                     </span>
                   }

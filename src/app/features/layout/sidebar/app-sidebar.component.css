@@ -1,0 +1,38 @@
+/* Accordion open/close animation. The 0fr -> 1fr grid trick animates
+   dynamic-height content (a group can hold 3 or 13 links) without JS
+   measuring. visibility flips after the collapse so closed links leave the
+   tab order instead of hiding focusably. prefers-reduced-motion is covered
+   by the global rule in styles/index.css (transitions collapse to 0.01ms). */
+.nav-collapse {
+  display: grid;
+  grid-template-rows: 0fr;
+  visibility: hidden;
+  overflow: hidden;
+  transition:
+    grid-template-rows 200ms ease,
+    visibility 0s linear 200ms;
+}
+
+.nav-collapse-open {
+  grid-template-rows: 1fr;
+  visibility: visible;
+  transition: grid-template-rows 200ms ease;
+}
+
+/* hlm-sidebar-content is `flex flex-col overflow-y-auto`, so its children
+   (the Home list, then one list per section) are flex items that default to
+   flex-shrink: 1. Because .nav-collapse hides its overflow, its automatic
+   minimum size is 0 as well. With several groups open the column simply
+   squashed them — the nav's scrollHeight stayed equal to its clientHeight, so
+   no scrollbar appeared and the links inside those groups were clipped away
+   unreachable. Pinning every child to its natural height makes the column
+   overflow the nav, which is what turns the scrolling on. */
+hlm-sidebar-content > * {
+  flex-shrink: 0;
+}
+
+/* Table styling (row height, .col-tight, numeric columns, the low/critical
+   indicator, checkbox visuals) lives with the table that owns it:
+   shared/components/data-table/data-table.component.css. It used to be
+   duplicated here, where it could never match anything — this component's
+   styles are view-encapsulated, and the table markup belongs to DataTable. */

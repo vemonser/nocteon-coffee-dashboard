@@ -1,23 +1,23 @@
-<nav hlmBreadcrumb class="hidden sm:inline-block">
+<nav hlmBreadcrumb class="hidden sm:inline-block  items-center flex">
   <ol hlmBreadcrumbList>
     <!-- Home -->
-    <li hlmBreadcrumbItem>
+    <li hlmBreadcrumbItem class="flex items-center">
       <a hlmBreadcrumbLink routerLink="/dashboard">
         <ng-icon name="lucideHome" class="size-4" />
       </a>
     </li>
 
     @if (breadcrumbs().length > 0) {
-      <li hlmBreadcrumbSeparator>
+      <li hlmBreadcrumbSeparator class="self-center">
         <ng-icon
           [name]="languageService.current() === 'ar' ? 'lucideChevronLeft' : 'lucideChevronRight'"
-          class="size-4"
+          class="size-4 self-center"
         />
       </li>
     }
 
     @for (item of breadcrumbs(); track item.label; let last = $last) {
-      <li hlmBreadcrumbItem>
+      <li hlmBreadcrumbItem class="flex items-center">
         @if (!item.url) {
           <!-- Section crumb (e.g. Catalog) — not a destination -->
           <span hlmBreadcrumbLink class="text-muted-foreground">{{ item.label }}</span>
@@ -28,7 +28,7 @@
         }
       </li>
       @if (!last) {
-        <li hlmBreadcrumbSeparator>
+        <li hlmBreadcrumbSeparator class="flex items-center">
           <ng-icon
             [name]="languageService.current() === 'ar' ? 'lucideChevronLeft' : 'lucideChevronRight'"
             class="size-4"

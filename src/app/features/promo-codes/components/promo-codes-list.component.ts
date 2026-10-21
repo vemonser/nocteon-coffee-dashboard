@@ -1,8 +1,12 @@
 ﻿import { CommonModule } from '@angular/common';
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HasPermissionDirective } from '../../../core/auth/permission.directive';
+import { AuthService } from '../../../core/auth/auth.service';
 import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
+import { PagerComponent } from '../../../shared/components/pager/pager.component';
+import { LifecycleTabsComponent } from '../../../shared/components/lifecycle-tabs/lifecycle-tabs.component';
+import { TrashBannerComponent } from '../../../shared/components/trash-banner/trash-banner.component';
 import { HlmCardImports } from '@spartan-ng/helm/card';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmBadgeImports } from '@spartan-ng/helm/badge';
@@ -14,6 +18,7 @@ import { HlmLabelImports } from '@spartan-ng/helm/label';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucidePencil, lucidePlus, lucideSearch, lucideTrash2, lucideX } from '@ng-icons/lucide';
 import { BaseListComponent } from '../../../core/crud/base-list.component';
+import { LanguageService } from '../../../core/i18n/language.service';
 import {
   PromoCodeDiscountType,
   PromoCodeRequest,
@@ -30,6 +35,7 @@ import { Router } from '@angular/router';
 import { PromoCodeAnalyticsResponse } from '../models/promo-code.model';
 
 import { TranslocoPipe } from '@jsverse/transloco';
+import { MoneyPipe } from '../../../shared/pipes/money.pipe';
 @Component({
   selector: 'app-promo-codes-list',
   standalone: true,
@@ -39,6 +45,9 @@ import { TranslocoPipe } from '@jsverse/transloco';
     ReactiveFormsModule,
     HasPermissionDirective,
     DataTableComponent,
+    PagerComponent,
+    LifecycleTabsComponent,
+    TrashBannerComponent,
     HlmCardImports,
     HlmButtonImports,
     HlmBadgeImports,
@@ -49,6 +58,7 @@ import { TranslocoPipe } from '@jsverse/transloco';
     HlmLabelImports,
     NgIcon,
     TranslocoPipe,
+    MoneyPipe,
   ],
   providers: [provideIcons({ lucidePlus, lucidePencil, lucideTrash2, lucideX, lucideSearch })],
   templateUrl: './promo-codes-list.component.html',
@@ -56,10 +66,16 @@ import { TranslocoPipe } from '@jsverse/transloco';
 export class PromoCodesListComponent extends BaseListComponent<
   PromoCodeResponse,
   PromoCodeRequest,
-  string
+  number
 > {
   router = inject(Router);
   private promoCodeService = inject(PromoCodeService);
+  private auth = inject(AuthService);
+
+  protected override softDeleteEnabled = true;
+  protected override canManageTrash = this.auth.hasPermission('promo:delete');
+  protected readonly isTrashAllowed = computed(() => this.auth.hasPermission('promo:delete'));
+  protected readonly language = inject(LanguageService);
   private categoryService = inject(CategoryService); // for the category picker
 
   // Category options for the scope picker
@@ -79,11 +95,90 @@ export class PromoCodesListComponent extends BaseListComponent<
     });
   }
 
-  protected override getId(item: PromoCodeResponse): string {
+  protected override getId(item: PromoCodeResponse): number {
     return item.id;
   }
 
-  goToDetail(item: PromoCodeResponse): void {
+  // ─── Soft-delete hooks ───────────────────────────────────────────────────────
+
+  protected override loadTrashPage(): Observable<PageResponse<PromoCodeResponse>> {
+    return this.promoCodeService.getDeleted(this.trashParams()).pipe(map((res) => res.data));
+  }
+
+  private trashParams() {
+    return {
+      page: this.currentPage(),
+      size: this.pageSize(),
+      search: this.searchQuery || undefined,
+      sort: this.currentSort,
+      direction: this.currentDirection,
+    };
+  }
+
+  protected override callRestore(id: number) {
+    return this.promoCodeService.restore(id);
+  }
+
+  protected override restoreIdOf(item: PromoCodeResponse): number | null {
+    return typeof item.id === 'number' ? item.id : null;
+  }
+
+  protected override permanentDeleteSrv() {
+    return this.promoCodeService;
+  }
+
+  readonly rowIdOf = (row: PromoCodeResponse): number | null =>
+    typeof row?.id === 'number' ? row.id : null;
+
+  onSelectionChange(event: { id: number; checked: boolean }): void {
+    this.toggleSelection(event.id, event.checked);
+  }
+
+  rowName(item: PromoCodeResponse): string {
+    return item.code;
+  }
+
+  protected override undoItemLabel(item: PromoCodeResponse): string {
+    return item.code;
+  }
+
+  protected override deleteToastKey(): string {
+    return 'promoCodes.trash.movedToTrash';
+  }
+
+  protected override undoLabel(): string {
+    return 'common.undo';
+  }
+  protected override undoMessage(): string {
+    return 'promoCodes.trash.movedToTrash';
+  }
+  protected override restoreConflictTitle(): string {
+    return 'common.restoreConflictTitle';
+  }
+  protected override restoreConflictBody(): string {
+    return 'common.restoreConflictBody';
+  }
+  protected override restoreNotFoundBody(): string {
+    return 'common.restoreNotFound';
+  }
+  protected override restoreForbiddenBody(): string {
+    return 'common.restoreForbidden';
+  }
+  protected override restoreFailedBody(): string {
+    return 'common.restoreFailed';
+  }
+  protected override permanentDeleteUnsupportedTitle(): string {
+    return 'common.permanentDeleteUnavailable';
+  }
+  protected override permanentDeleteUnsupportedBody(): string {
+    return 'common.permanentDeleteUnsupported';
+  }
+
+  noResultsKey(): string {
+    return this.isTrash() ? 'promoCodes.trash.noResultsInTrash' : 'promoCodes.trash.noResultsInActive';
+  }
+
+  protected override goToDetail(item: PromoCodeResponse): void {
     this.router.navigate(['/dashboard/promo-codes', item.id]);
   }
   protected override loadPage(): Observable<PageResponse<PromoCodeResponse>> {
@@ -177,11 +272,11 @@ export class PromoCodesListComponent extends BaseListComponent<
     return this.promoCodeService.create(req, undefined, 'json');
   }
 
-  protected override callUpdate(id: string, req: PromoCodeRequest) {
+  protected override callUpdate(id: number, req: PromoCodeRequest) {
     return this.promoCodeService.update(id, req, undefined, 'json');
   }
 
-  protected override callDelete(id: string) {
+  protected override callDelete(id: number) {
     return this.promoCodeService.delete(id);
   }
 

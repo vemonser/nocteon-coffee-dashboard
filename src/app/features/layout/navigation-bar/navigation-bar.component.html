@@ -21,11 +21,11 @@
         <hlm-autocomplete-input
           [placeholder]="'nav.search' | transloco"
           [attr.aria-label]="'nav.search' | transloco"
-          class="h-9 w-full rounded-md border border-input bg-transparent px-9 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+          class="h-9 w-full rounded-md border border-input bg-transparent px-9 py-1 text-sm transition-colors placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
         />
         <ng-icon
           name="lucideSearch"
-          class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none"
+          class="absolute start-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none"
         />
 
         <hlm-autocomplete-content *hlmAutocompletePortal class="w-96">
@@ -44,7 +44,7 @@
             <div hlmAutocompleteList class="max-h-80 overflow-y-auto">
               @for (group of groupedResults(); track group.type) {
                 <div hlmAutocompleteGroup>
-                  <div hlmAutocompleteLabel class="text-xs font-semibold uppercase tracking-wider text-muted-foreground px-2 py-1.5">
+                  <div hlmAutocompleteLabel class="text-xs font-medium uppercase tracking-wider text-muted-foreground px-2 py-1.5">
                     {{ group.label }}
                   </div>
                   @for (result of group.items; track result.id) {
@@ -67,7 +67,7 @@
     </div>
     <app-notification />
 
-    <!-- Theme stays a single toggle in the header; language + accent live in the avatar menu. -->
+    <!-- Quick light/dark toggle. -->
     <app-theme-toggle />
 
     <app-user-menu variant="navbar" />

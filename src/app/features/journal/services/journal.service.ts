@@ -56,6 +56,26 @@ export class JournalService {
     return this.http.post<ApiResponse<JournalPostResponse>>(`${this.fullUrl}/${slug}/cover`, fd);
   }
 
+  getDeleted(params: JournalFilterParams = {}): Observable<ApiResponse<PageResponse<JournalPostResponse>>> {
+    let httpParams = new HttpParams();
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        httpParams = httpParams.set(key, String(value));
+      }
+    });
+    return this.http.get<ApiResponse<PageResponse<JournalPostResponse>>>(`${this.fullUrl}/deleted`, {
+      params: httpParams,
+    });
+  }
+
+  restore(id: number): Observable<ApiResponse<void>> {
+    return this.http.patch<ApiResponse<void>>(`${this.fullUrl}/${id}/restore`, null);
+  }
+
+  deletePermanently(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.fullUrl}/${id}/permanent`);
+  }
+
   private buildFormData(request: JournalPostRequest, image: File | null): FormData {
     const formData = new FormData();
     formData.append('data', new Blob([JSON.stringify(request)], { type: 'application/json' }));

@@ -48,11 +48,27 @@
   --sidebar-border: #e7dfd5;
   --sidebar-ring: #8a4b22;
 
-  --chart-1: #8a4b22;
-  --chart-2: #0e7490;
-  --chart-3: #4f6ba0;
-  --chart-4: #5f7a1f;
-  --chart-5: #8b4a7b;
+  /* Categorical chart series. A coffee-warm ramp first, then olive, teal,
+     slate and plum — no cyan, no periwinkle, no lime. The first five are
+     distinguishable from each other AND from the card; the sixth is the
+     rose used by the order-status chart. */
+  --chart-1: #8a4b22; /* copper  */
+  --chart-2: #b07d2b; /* ochre  */
+  --chart-3: #5f7a1f; /* olive  */
+  --chart-4: #3b7f86; /* teal   */
+  --chart-5: #55688f; /* slate  */
+  --chart-6: #8a5370; /* plum   */
+
+  /* Roast level is ORDERED, so it gets a sequential ramp (light -> dark),
+     not the categorical set. */
+  --roast-1: #d9ae82;
+  --roast-2: #b9824f;
+  --roast-3: #8a4b22;
+  --roast-4: #4f2a12;
+
+  /* The "Other" bucket: deliberately neutral, so it never reads as a
+     category of its own. */
+  --chart-other: #8a8178;
 
   --radius: 0.5rem;
 }
@@ -106,9 +122,18 @@
   --sidebar-border: #3a2f27;
   --sidebar-ring: #d9955b;
 
+  /* Same six hues, lifted for a dark card (#1e1813). */
   --chart-1: #d9955b;
-  --chart-2: #3db8d4;
-  --chart-3: #8fa8e0;
-  --chart-4: #a3c45a;
-  --chart-5: #d08bc0;
+  --chart-2: #e0b45a;
+  --chart-3: #a9bf6a;
+  --chart-4: #6fb6bb;
+  --chart-5: #93a7d1;
+  --chart-6: #c58da8;
+
+  --roast-1: #ebcba3;
+  --roast-2: #d9955b;
+  --roast-3: #b8723f;
+  --roast-4: #9a5a2f;
+
+  --chart-other: #8f857b;
 }

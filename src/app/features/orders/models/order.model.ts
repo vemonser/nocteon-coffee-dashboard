@@ -7,13 +7,28 @@ export interface OrderItemResponse {
   variantId: number;
   sku: string;
   productSlug: string;
+  productName: string | null;
+  primaryImageUrl: string | null;
   quantity: number;
   unitPrice: number;
   totalPrice: number;
 }
 
+export interface OrderAddressResponse {
+  id: number;
+  fullName: string;
+  phone: string;
+  street: string;
+  city: string;
+  state: string;
+  country: string;
+  postalCode: string;
+  isDefault: boolean;
+}
+
 export interface OrderResponse {
   id: number;
+  orderNumber: string;
   status: OrderStatus;
   totalAmount: number;
   paymentStatus: PaymentStatus;
@@ -23,6 +38,13 @@ export interface OrderResponse {
   notes: string | null;
   items: OrderItemResponse[];
   createdAt: string;
+  address?: OrderAddressResponse | null;
+  customer?: {
+    id: number;
+    name: string;
+    email: string;
+    avatar?: string | null;
+  } | null;
 }
 
 export interface OrderFilterRequest {
@@ -32,4 +54,5 @@ export interface OrderFilterRequest {
   direction?: string;
   status?: OrderStatus;
   userId?: number;
+  search?: string;
 }

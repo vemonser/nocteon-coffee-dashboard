@@ -1,0 +1,44 @@
+<!-- Stack the two language columns below 640px (sm), side by side from there. -->
+<div class="grid gap-6 sm:grid-cols-2">
+  @for (group of translations().controls; track $index) {
+    <div [formGroup]="asGroup(group)" class="space-y-4">
+      <hlm-badge variant="outline">{{ helper.getLangLabel(langOf(group)) }}</hlm-badge>
+
+      <div class="space-y-1.5">
+        <label hlmLabel [for]="nameId(group)">{{ 'common.name' | transloco }} *</label>
+        <input
+          hlmInput
+          [id]="nameId(group)"
+          formControlName="name"
+          type="text"
+          [dir]="helper.getLangDir(langOf(group))"
+          [attr.aria-invalid]="nameInvalid(group) ? 'true' : null"
+          [attr.aria-describedby]="nameInvalid(group) ? nameErrorId(group) : null"
+          class="w-full"
+        />
+        @if (nameInvalid(group)) {
+          <p [id]="nameErrorId(group)" role="alert" class="text-xs text-destructive">
+            {{ 'common.nameRequired' | transloco }}
+          </p>
+        }
+      </div>
+
+      <div class="space-y-1.5">
+        <label hlmLabel [for]="descriptionId(group)">{{ 'common.description' | transloco }}</label>
+        <!--
+          hlmTextarea, not `hlmInput` on a <textarea>: the input directive fixes
+          a single-line control height, so a textarea wearing it has to fight the
+          scale back with its own padding.
+        -->
+        <textarea
+          hlmTextarea
+          [id]="descriptionId(group)"
+          formControlName="description"
+          rows="4"
+          [dir]="helper.getLangDir(langOf(group))"
+          class="w-full resize-none"
+        ></textarea>
+      </div>
+    </div>
+  }
+</div>

@@ -3,6 +3,7 @@ import { Component, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ProductService } from '../services/product.service';
 import { ProductMediaRequest, StagedMedia } from '../models/product.models';
+import { NotifyService } from '../../../core/notify/notify.service';
 import { HlmCardImports } from '@spartan-ng/helm/card';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmInputImports } from '@spartan-ng/helm/input';
@@ -16,13 +17,14 @@ import {
   lucideImage,
   lucideVideo,
   lucideStar,
+  lucideLoader2,
 } from '@ng-icons/lucide';
 
 @Component({
   selector: 'app-product-media',
   standalone: true,
   imports: [CommonModule, HlmCardImports, HlmButtonImports, HlmInputImports, HlmBadgeImports, NgIcon, TranslocoPipe],
-  providers: [provideIcons({ lucideArrowLeft, lucidePlus, lucideTrash2, lucideImage, lucideVideo, lucideStar })],
+  providers: [provideIcons({ lucideArrowLeft, lucidePlus, lucideTrash2, lucideImage, lucideVideo, lucideStar, lucideLoader2 })],
   templateUrl: './product-media.component.html',
 })
 export class ProductMediaComponent {
@@ -37,6 +39,8 @@ export class ProductMediaComponent {
   loading = signal(true);
   uploading = signal(false);
   error = signal<string | null>(null);
+
+  private notify = inject(NotifyService);
 
   constructor() {
     const slug = this.route.snapshot.paramMap.get('slug');
@@ -56,7 +60,10 @@ export class ProductMediaComponent {
         this.existingMedia.set(product.media || []);
         this.loading.set(false);
       },
-      error: () => this.loading.set(false),
+      error: (err) => {
+        this.loading.set(false);
+        this.notify.apiError(err, 'notify.errorFallback', 'Could not load product');
+      },
     });
   }
 

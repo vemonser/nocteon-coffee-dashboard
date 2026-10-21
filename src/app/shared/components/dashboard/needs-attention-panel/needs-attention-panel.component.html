@@ -1,0 +1,30 @@
+@if (hasItems()) {
+  <!-- Something needs attention: actionable rows with counts and links. -->
+  <div class="rounded-xl border bg-card p-3">
+    <p class="mb-2 text-sm font-medium">{{ 'needsAttention.title' | transloco }}</p>
+    <ul class="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+      @for (item of items(); track item.key) {
+        <li>
+          <a
+            [routerLink]="item.link"
+            [queryParams]="item.queryParams"
+            class="flex items-center gap-2 rounded-lg border px-3 py-2 transition-colors hover:bg-accent"
+          >
+            <ng-icon [name]="item.icon" class="size-4 shrink-0 text-warning" aria-hidden="true" />
+            <span class="min-w-0 flex-1 truncate text-sm">{{ item.key | transloco }}</span>
+            <span class="shrink-0 rounded-full bg-warning-soft px-1.5 text-xs font-medium text-warning tabular-nums">
+              {{ item.count }}
+            </span>
+            <ng-icon name="lucideChevronRight" class="size-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
+          </a>
+        </li>
+      }
+    </ul>
+  </div>
+} @else {
+  <!-- All clear: ONE slim line, not a card that shouts about nothing. -->
+  <div class="flex h-12 items-center gap-2 rounded-xl border bg-card px-4 text-sm text-muted-foreground">
+    <ng-icon name="lucideCheckCircle" class="size-4 shrink-0 text-success" aria-hidden="true" />
+    <span>{{ 'needsAttention.allClear' | transloco }}</span>
+  </div>
+}

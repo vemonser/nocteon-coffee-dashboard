@@ -1,35 +1,78 @@
-<div class="w-full">
-  <table class="w-full text-sm">
-    <thead>
-      <tr class="border-b text-muted-foreground">
-        <th class="text-left py-2 font-medium">{{ 'dashboard.recentOrdersTable.orderId' | transloco }}</th>
-        <th class="text-left py-2 font-medium">{{ 'dashboard.recentOrdersTable.customer' | transloco }}</th>
-        <th class="text-left py-2 font-medium">{{ 'dashboard.recentOrdersTable.date' | transloco }}</th>
-        <th class="text-right py-2 font-medium">{{ 'dashboard.recentOrdersTable.amount' | transloco }}</th>
-        <th class="text-right py-2 font-medium">{{ 'dashboard.recentOrdersTable.status' | transloco }}</th>
-      </tr>
-    </thead>
-    <tbody>
-      @for (order of orders(); track order.id) {
-        <tr class="border-b last:border-0 hover:bg-accent/50 transition-colors">
-          <td class="py-3 font-medium">{{ order.id }}</td>
-          <td class="py-3">
-            <div class="flex items-center gap-2">
-              <hlm-avatar class="size-6 rounded-full">
-                <span class="bg-primary/10 text-primary text-xs" hlmAvatarFallback>
-                  {{ order.customer.charAt(0) }}
-                </span>
-              </hlm-avatar>
-              <span>{{ order.customer }}</span>
-            </div>
-          </td>
-          <td class="py-3 text-muted-foreground">{{ order.date }}</td>
-          <td class="py-3 text-right font-medium">${{ order.amount.toFixed(2) }}</td>
-          <td class="py-3 text-right">
-            <hlm-badge [variant]="getStatusVariant(order.status)">{{ order.status }}</hlm-badge>
-          </td>
-        </tr>
+<div class="space-y-2">
+  <!-- Loading State -->
+  @if (loading()) {
+    <div class="space-y-2">
+      @for (_ of [1,2,3,4,5]; track $index) {
+        <div class="flex items-center gap-3 p-2 animate-pulse">
+          <div class="size-8 rounded-full bg-muted"></div>
+          <div class="flex-1 space-y-1.5">
+            <div class="h-3 w-1/3 bg-muted rounded"></div>
+            <div class="h-3 w-1/4 bg-muted rounded"></div>
+          </div>
+          <div class="w-20 h-6 bg-muted rounded"></div>
+        </div>
       }
-    </tbody>
-  </table>
+    </div>
+  }
+
+  <!-- Error State: the shared widget state, with a retry that retries. -->
+  @else if (error()) {
+    <app-widget-state [error]="error()" [retry]="loadRecentOrders" />
+  }
+
+  <!-- Orders List: every row is a LINK to the order. -->
+  @else if (orders().length > 0) {
+    <ul class="space-y-1">
+      @for (order of orders(); track order.id) {
+        <li>
+          <a
+            [routerLink]="['/dashboard/orders', order.id]"
+            class="flex items-center gap-3 rounded-lg px-2 py-1.5 transition-colors hover:bg-accent"
+          >
+            <span class="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/10">
+              @if (order.customer?.avatar) {
+                <img
+                  [src]="order.customer.avatar"
+                  [alt]="order.customer.name"
+                  class="size-8 rounded-full object-cover"
+                />
+              } @else {
+                <span class="text-xs font-medium text-primary">
+                  {{ order.customer?.name?.charAt(0) || 'U' }}
+                </span>
+              }
+            </span>
+
+            <span class="min-w-0 flex-1">
+              <!-- The customer name, from the order. -->
+              <span class="block truncate text-sm font-medium">
+                {{ order.customer?.name || 'Unknown Customer' }}
+              </span>
+              <span class="block truncate text-xs text-muted-foreground">
+                {{ order.orderNumber || ('#' + order.id) }}
+              </span>
+            </span>
+
+            <app-status-badge [status]="getStatusKind(order.status)" />
+
+            <span class="hidden shrink-0 text-xs text-muted-foreground sm:block">
+              <span [title]="dateTitle(order.createdAt)">{{ relativeDate(order.createdAt) }}</span>
+            </span>
+
+            <span class="w-24 shrink-0 text-end text-sm font-medium tabular-nums">
+              {{ order.totalAmount | money }}
+            </span>
+          </a>
+        </li>
+      }
+    </ul>
+  }
+
+  <!-- Empty State -->
+  @else {
+    <div class="flex flex-col items-center justify-center py-10 text-muted-foreground">
+      <ng-icon name="lucidePackage" class="size-10 opacity-30 mb-3" />
+      <p class="font-medium">{{ 'dashboard.recentOrders.empty' | transloco }}</p>
+    </div>
+  }
 </div>

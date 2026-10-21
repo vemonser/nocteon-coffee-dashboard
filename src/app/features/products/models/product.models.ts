@@ -77,7 +77,10 @@ export interface ProductVariant {
   sku: string;
   price: number;
   compareAtPrice?: number | null;
+  costPrice?: number | null;
   stockQuantity: number;
+  reservedQuantity?: number;
+  reorderThreshold?: number;
   discountPercentage?: number;
   isActive: boolean;
   optionValues: ProductOptionValueSummary[];
@@ -88,7 +91,9 @@ export interface ProductVariantRequest {
   sku: string;
   price: number;
   compareAtPrice?: number | null;
+  costPrice?: number | null;
   stockQuantity: number;
+  reorderThreshold?: number;
   isActive: boolean;
   optionValueIds: number[];
 }

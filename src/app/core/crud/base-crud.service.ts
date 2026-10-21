@@ -136,4 +136,13 @@ export abstract class BaseCrudService<TResponse, TRequest, TId = string> {
   delete(id: TId): Observable<ApiResponse<void>> {
     return this.http.delete<ApiResponse<void>>(`${this.fullUrl}/${id}`);
   }
+
+  /**
+   * Permanent (hard) delete — backend contract, verified:
+   *   DELETE /api/dashboard/{entity}/{id}/permanent → 204 No Content (no body).
+   * Requires the row to already be trashed; 404 if not, 409 if referenced.
+   */
+  deletePermanently(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.fullUrl}/${id}/permanent`);
+  }
 }

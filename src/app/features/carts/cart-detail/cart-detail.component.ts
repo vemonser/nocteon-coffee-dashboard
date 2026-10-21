@@ -9,11 +9,12 @@ import { HlmBadgeImports } from '@spartan-ng/helm/badge';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideArrowLeft, lucidePackage, lucideUser, lucideShoppingCart, lucideDollarSign, lucideClock } from '@ng-icons/lucide';
 import { TranslocoPipe } from '@jsverse/transloco';
+import { MoneyPipe } from '../../../shared/pipes/money.pipe';
 
 @Component({
   selector: 'app-cart-detail',
   standalone: true,
-  imports: [CommonModule, HlmCardImports, HlmCardContent, HlmButtonImports, HlmBadgeImports, NgIcon, TranslocoPipe],
+  imports: [CommonModule, HlmCardImports, HlmCardContent, HlmButtonImports, HlmBadgeImports, NgIcon, TranslocoPipe, MoneyPipe],
   providers: [provideIcons({ lucideArrowLeft, lucidePackage, lucideUser, lucideShoppingCart, lucideDollarSign, lucideClock })],
   templateUrl: './cart-detail.component.html',
 })
