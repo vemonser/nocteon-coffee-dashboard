@@ -416,9 +416,13 @@ const buildResults = (measurementsValue) => ({
   tag: TAG || null,
   generatedAt: new Date().toISOString(),
   harness: {
-    command: `npm run evidence -- ${PHASE}${TAG ? ' --tag ' + TAG : ''}`,
+    command: `npm run evidence -- ${PHASE}${
+      argValue('--out') ? ' --out ' + argValue('--out') : TAG ? ' --tag ' + TAG : ''
+    }${argValue('--widths') ? ' --widths ' + argValue('--widths') : ''}`,
     baseUrl: BASE,
     url: URL_PATH,
+    /** The commit of the APP that was served, when it is not the branch HEAD. */
+    appCommit: argValue('--app-commit') ?? null,
     targets: TARGETS.map((t) => t.id),
     widths: WIDTHS,
     themes: THEMES,

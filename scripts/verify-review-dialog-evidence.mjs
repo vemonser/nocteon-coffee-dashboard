@@ -70,8 +70,18 @@ const checks = {
   },
   'AC-03': () => {
     const stars = afterTargets.map((t) => t.own?.stars).filter(Boolean);
-    const ok = stars.length > 0 && stars.every((s) => s.total === 5 && s.filled > 0);
-    return { ok, detail: `stars filled: ${stars.map((s) => `${s.filled}/${s.total}`).join(', ')}` };
+    const beforeStars = beforeTargets.map((t) => t.own?.stars).filter(Boolean);
+    const widths = stars.map((s) => s.widthPx).filter((w) => typeof w === 'number');
+    const beforeWidths = beforeStars.map((s) => s.widthPx).filter((w) => typeof w === 'number');
+    const ok =
+      stars.length > 0 &&
+      stars.every((s) => s.total === 5 && s.filled > 0) &&
+      widths.length > 0 &&
+      widths.every((w) => w >= 24);
+    return {
+      ok,
+      detail: `stars filled: ${[...new Set(stars.map((s) => `${s.filled}/${s.total}`))].join(', ')}; rendered width: ${[...new Set(widths)].join(',')}px (before: ${[...new Set(beforeWidths)].join(',')}px)`,
+    };
   },
   'AC-04': () => {
     const rows = afterTargets.map((t) => t.own?.statusRow).filter(Boolean);
@@ -103,8 +113,21 @@ const checks = {
   },
   'AC-08': () => {
     const esc = afterTargets.every((t) => t.own?.escape?.closes === true);
-    const focus = afterTargets.every((t) => t.own?.escape?.focusReturned === true);
-    return { ok: esc && focus, detail: `escape closes: ${esc}; focus returns to the trigger: ${focus}` };
+    // The focus must land on the SAME control that opened the dialog — not
+    // on "some button".
+    const focus = afterTargets.every((t) => {
+      const e = t.own?.escape;
+      if (!e?.focusBefore || !e?.focusAfter) return false;
+      return (
+        e.focusBefore.tag === e.focusAfter.tag &&
+        e.focusBefore.ariaLabel === e.focusAfter.ariaLabel &&
+        e.focusBefore.rowIndex === e.focusAfter.rowIndex
+      );
+    });
+    return {
+      ok: esc && focus,
+      detail: `escape closes: ${esc}; the focus returns to the SAME control (${afterTargets[0]?.own?.escape?.focusBefore?.ariaLabel}, row ${afterTargets[0]?.own?.escape?.focusBefore?.rowIndex}): ${focus}`,
+    };
   },
   'AC-09': () => {
     // The order is: the close X (a button), the product link (an anchor),
@@ -128,11 +151,37 @@ const checks = {
   },
   'AC-11': () => {
     const arabic = afterTargets.filter((t) => t.lang === 'ar');
-    const ok = arabic.length > 0 && arabic.every((t) => (t.own?.footer?.minGapPx ?? 0) === 12);
-    const rating = arabic.map((t) => t.own?.stars).filter(Boolean);
+    const latin = afterTargets.filter((t) => t.lang === 'en');
+    // The footer is mirrored: the START group (Delete) sits on the RIGHT in
+    // Arabic and on the LEFT in English.
+    const mirrored = arabic.every((t) => {
+      const x = t.own?.footerGroupX ?? [];
+      return x.length >= 2 && x[0] > x[1];
+    });
+    const latinOrder = latin.every((t) => {
+      const x = t.own?.footerGroupX ?? [];
+      return x.length >= 2 && x[0] < x[1];
+    });
+    // The stars fill from the START side: the first star is the rightmost
+    // one in Arabic.
+    const starsFromStart = arabic.every((t) => {
+      const x = t.own?.stars?.x ?? [];
+      return x.length < 2 || x[0] > x[x.length - 1];
+    });
+    // The numerals read "4 / 5" in BOTH directions.
+    const numerals = [...arabic, ...latin].every((t) =>
+      /^\d+ \/ 5$/.test((t.own?.ratingText ?? '').trim()),
+    );
+    const ok =
+      arabic.length > 0 &&
+      mirrored &&
+      latinOrder &&
+      starsFromStart &&
+      numerals &&
+      arabic.every((t) => (t.own?.footer?.minGapPx ?? 0) === 12);
     return {
       ok,
-      detail: `arabic cells: ${arabic.length}, footer gap 12px in all of them: ${ok}; stars filled: ${rating.map((s) => `${s.filled}/${s.total}`).join(', ')}`,
+      detail: `arabic cells: ${arabic.length}; the footer is mirrored in AR and normal in EN: ${mirrored && latinOrder}; the stars fill from the start side: ${starsFromStart}; the numerals read "N / 5" in both: ${numerals}`,
     };
   },
   'AC-12': () => {

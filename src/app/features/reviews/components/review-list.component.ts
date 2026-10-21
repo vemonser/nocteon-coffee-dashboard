@@ -1,5 +1,5 @@
 import { CommonModule, DecimalPipe } from '@angular/common';
-import { Component, computed, effect, inject, signal } from '@angular/core';
+import { Component, ElementRef, computed, effect, inject, signal, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { ColumnDef, createColumnHelper } from '@tanstack/angular-table';
@@ -138,6 +138,15 @@ export class ReviewListComponent {
   readonly deletingBusy = signal(false);
   /** The dialog's own request: the action button waits for the answer. */
   readonly dialogBusy = signal(false);
+  /**
+   * The comment's scroll area, and whether it actually scrolls.
+   *
+   * <p>The area is focusable ONLY when it scrolls: a focusable box that
+   * does not scroll is a dead stop in the middle of the tab order, and
+   * most comments are short.
+   */
+  protected readonly commentBox = viewChild<ElementRef<HTMLElement>>('commentBox');
+  protected readonly commentScrolls = signal(false);
 
   private readonly VIEW_KEY = 'nocteon-reviews-view-mode';
   readonly viewMode = signal<ViewMode>(this.readViewMode());
@@ -167,6 +176,20 @@ export class ReviewListComponent {
     effect(() => {
       this.language.language();
       this.buildColumns();
+    });
+
+    // The comment's scroll area: measured AFTER the comment is in the DOM,
+    // so the area is focusable exactly when it has something to scroll.
+    effect(() => {
+      const review = this.viewing();
+      const box = this.commentBox()?.nativeElement;
+      if (!review || !box) {
+        this.commentScrolls.set(false);
+        return;
+      }
+      requestAnimationFrame(() => {
+        this.commentScrolls.set(box.scrollHeight > box.clientHeight + 1);
+      });
     });
   }
 
@@ -613,7 +636,11 @@ export class ReviewListComponent {
         this.dialogBusy.set(false);
         if (res?.data) {
           this.items.update((list) => list.map((r) => (r.id === review.id ? res.data! : r)));
-          this.viewing.set(res.data);
+          // The dialog is only refreshed when it is STILL OPEN on this
+          // review: the admin can close it while the request is in flight,
+          // and a response that arrives afterwards must not pop the dialog
+          // back open.
+          if (this.viewing()?.id === review.id) this.viewing.set(res.data);
         }
         this.notify.success(
           approved ? 'reviews.action.approved' : 'reviews.action.approvalWithdrawn',
@@ -686,7 +713,7 @@ export class ReviewListComponent {
   protected toDisplayName(value: string | null | undefined): string {
     if (!value) return '';
     return value
-      .split(/\\s+/)
+      .split(/\s+/)
       .map((part) => (part ? part.charAt(0).toUpperCase() + part.slice(1) : part))
       .join(' ');
   }

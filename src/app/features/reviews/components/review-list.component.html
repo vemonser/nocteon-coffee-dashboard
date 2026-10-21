@@ -358,6 +358,7 @@
   [open]="viewing() !== null"
   [title]="'reviews.details' | transloco"
   [mobileSheet]="true"
+  [inert]="deleting() !== null"
   (closed)="closeView()"
 >
   @if (viewing(); as review) {
@@ -400,6 +401,7 @@
         <app-rating-stars aria-hidden="true" class="[&_svg]:size-6" [rating]="review.rating" />
         <span
           dir="ltr"
+          aria-hidden="true"
           data-testid="review-dialog-rating"
           class="text-sm font-medium tabular-nums"
           >{{ review.rating }} / 5</span
@@ -409,10 +411,11 @@
       <!-- The comment: a quote, with its line breaks kept, and a scroll area
            when it is long. A dialog that grows with its content pushes the
            actions off the screen, and the actions are why it is open. The
-           area is focusable, because a scrollable region a keyboard cannot
-           reach is a region a keyboard cannot read. -->
+           area is focusable ONLY when it actually scrolls: a focusable box
+           that does not scroll is a dead stop in the tab order. -->
       <blockquote
-        tabindex="0"
+        #commentBox
+        [attr.tabindex]="commentScrolls() ? 0 : null"
         [attr.aria-label]="'reviews.comment' | transloco"
         class="max-h-40 overflow-y-auto whitespace-pre-wrap rounded-[var(--radius-control)] border bg-muted/40 p-4 text-sm"
       >
@@ -501,19 +504,31 @@
 
 <!-- The delete confirmation. It NAMES the review: "delete this one" is a
      question only the admin can answer, and the answer is not "yes" by
-     default. -->
+     default. The review-details panel behind it is inert while this one is
+     up: two panels that both claim aria-modal contradict each other, and
+     the Approve button of the background dialog must not be reachable
+     behind a "delete?" prompt. -->
 <app-dialog-shell
   [open]="deleting() !== null"
   [title]="'reviews.deleteTitle' | transloco"
-  [subtitle]="deleteTargetLabel()"
   panelRole="alertdialog"
   testId="review-delete-confirm"
+  describedBy="review-delete-confirm-description"
   (closed)="cancelDelete()"
 >
-  <p class="text-sm text-muted-foreground">{{ 'reviews.deleteConfirmNamed' | transloco }}</p>
+  <p id="review-delete-confirm-description" class="text-sm text-muted-foreground">
+    <bdi class="block font-medium text-foreground">{{ deleteTargetLabel() }}</bdi>
+    <span class="mt-1 block">{{ 'reviews.deleteConfirmNamed' | transloco }}</span>
+  </p>
 
   <div dialog-footer-end class="flex items-center gap-3">
-    <button hlmBtn variant="ghost" type="button" (click)="cancelDelete()">
+    <button
+      hlmBtn
+      variant="ghost"
+      type="button"
+      [disabled]="deletingBusy()"
+      (click)="cancelDelete()"
+    >
       {{ 'common.cancel' | transloco }}
     </button>
     <button

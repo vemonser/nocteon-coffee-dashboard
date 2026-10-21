@@ -500,6 +500,14 @@ const MEASURE_REVIEW_DIALOG = `${CONTRAST_HELPERS}
     return p && (p.getAttribute('fill') || '').toLowerCase() === 'currentcolor';
   });
 
+  // The DIRECTION of the dialog, read from the document: the footer groups
+  // and the stars are laid out by it, so their x positions are what proves
+  // the mirroring.
+  const rtl = getComputedStyle(document.documentElement).direction === 'rtl';
+  const groupX = footerGroups.map((g) => Math.round(g.getBoundingClientRect().left));
+  const starX = starSvgs.map((s) => Math.round(s.getBoundingClientRect().left));
+  const ratingText = (panel.querySelector('[data-testid="review-dialog-rating"]')?.textContent || '').trim();
+
   // The status badge: its own text against its own tint, and against the
   // card it sits on.
   const badge = panel.querySelector('hlm-badge');
@@ -545,7 +553,12 @@ const MEASURE_REVIEW_DIALOG = `${CONTRAST_HELPERS}
       filled: filledStars.length,
       outline: starSvgs.length - filledStars.length,
       color: starSvgs.length ? getComputedStyle(starSvgs[0]).color : null,
+      widthPx: starSvgs.length ? Math.round(starSvgs[0].getBoundingClientRect().width) : null,
+      x: starX,
     },
+    direction: rtl ? 'rtl' : 'ltr',
+    footerGroupX: groupX,
+    ratingText,
     badgeContrast,
     productLink: productLink ? productLink.getAttribute('href') : null,
     orderLink: orderLink ? orderLink.getAttribute('href') : null,
@@ -576,43 +589,49 @@ async function measureReviewDialog(page) {
   // IIFE: a bare string is an EXPRESSION to Playwright, and a top-level
   // "return" inside one is a syntax error.
   const open = await page.evaluate(`(() => {\n${MEASURE_REVIEW_DIALOG}\n})()`);
-  const trigger = await page.evaluate(() => {
-    const el = document.activeElement;
-    if (!el) return null;
-    return {
-      tag: el.tagName.toLowerCase(),
-      ariaLabel: el.getAttribute('aria-label'),
-      testId: el.getAttribute('data-testid'),
-      text: (el.textContent || '').trim().slice(0, 40),
-    };
-  });
+
+  /**
+   * The identity of the focused control: its tag, its accessible name, and
+   * WHICH row or card it belongs to.
+   *
+   * <p>"Focus is on some button" is not a claim; "focus is on the SAME
+   * button that opened the dialog" is. The row index is what makes the two
+   * comparable.
+   */
+  const focusKey = () =>
+    page.evaluate(() => {
+      const el = document.activeElement;
+      if (!el) return null;
+      const card = el.closest('tr, hlm-card');
+      const siblings = card?.parentElement ? Array.from(card.parentElement.children) : [];
+      return {
+        tag: el.tagName.toLowerCase(),
+        ariaLabel: el.getAttribute('aria-label'),
+        testId: el.getAttribute('data-testid'),
+        rowIndex: card ? siblings.indexOf(card) : -1,
+      };
+    });
+
+  const trigger = await focusKey();
 
   await page.keyboard.press('Escape');
   await page.waitForTimeout(500);
-  const afterEscape = await page.evaluate(() => {
-    const panel = document.querySelector('[role="dialog"]');
-    const el = document.activeElement;
-    return {
-      dialogOpen: !!panel,
-      focus: el
-        ? {
-            tag: el.tagName.toLowerCase(),
-            ariaLabel: el.getAttribute('aria-label'),
-            testId: el.getAttribute('data-testid'),
-            isTrigger: !!(el.closest && el.closest('button, a')),
-          }
-        : null,
-    };
-  });
+  const afterEscape = await focusKey();
+  const dialogOpen = await page.evaluate(() => !!document.querySelector('[role="dialog"]'));
 
   return {
     ...open,
     escape: {
-      closes: !afterEscape.dialogOpen,
-      focusReturned: afterEscape.focus?.isTrigger === true,
-      focusAfter: afterEscape.focus,
+      closes: !dialogOpen,
+      focusReturned:
+        !!trigger &&
+        !!afterEscape &&
+        trigger.tag === afterEscape.tag &&
+        trigger.ariaLabel === afterEscape.ariaLabel &&
+        trigger.rowIndex === afterEscape.rowIndex,
+      focusBefore: trigger,
+      focusAfter: afterEscape,
     },
-    focusBefore: trigger,
   };
 }
 

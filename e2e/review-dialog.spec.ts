@@ -40,6 +40,13 @@ test.describe('the review details dialog', () => {
 
   test.beforeAll(async ({ browser }) => {
     context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+    // The language is PINNED, not inherited: the spec asserts English
+    // strings, and LanguageService falls back to navigator.language — so on
+    // an Arabic machine every assertion would fail.
+    await context.addInitScript(() => {
+      localStorage.setItem('language', 'en');
+      localStorage.setItem('nocteon-theme', 'light');
+    });
     page = await context.newPage();
     await loginAsAdmin(page);
   });
@@ -118,6 +125,80 @@ test.describe('the review details dialog', () => {
     // The number sits NEXT to the stars, on the same line.
     const [starsBox, ratingBox] = await Promise.all([stars.boundingBox(), rating.boundingBox()]);
     expect(Math.abs(starsBox!.y - ratingBox!.y)).toBeLessThan(24);
+    // The screen reader gets a TRANSLATED label, not the shared component's
+    // English one and not a raw key.
+    await expect(page.locator(`${panel} .sr-only`).first()).toHaveText(/Rating: \d+ out of 5/);
+    // The stars are the LARGE ones (24px), not the shared 16px.
+    const starWidth = await page
+      .locator(`${panel} app-rating-stars svg`)
+      .first()
+      .evaluate((el) => Math.round(el.getBoundingClientRect().width));
+    expect(starWidth).toBeGreaterThanOrEqual(24);
+  });
+
+  test('the focus stays INSIDE the dialog', async () => {
+    const closeX = page.locator(`${panel} header button`).first();
+    const last = page.locator(`${panel} footer button`).last();
+
+    // Tab from the last control wraps to the first one.
+    await last.focus();
+    await page.keyboard.press('Tab');
+    await expect(closeX).toBeFocused();
+
+    // And Shift+Tab from the first one wraps back to the last.
+    await closeX.focus();
+    await page.keyboard.press('Shift+Tab');
+    await expect(last).toBeFocused();
+  });
+
+  test('approving toasts, and the button waits for the answer', async () => {
+    // The PATCH is held, so the in-flight state is observable.
+    let release: () => void = () => {};
+    const held = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    await page.route('**/api/dashboard/reviews/*/approval*', async (route) => {
+      await held;
+      await route.continue();
+    });
+
+    const approve = page.locator(`${panel} footer button:has-text("Approve")`).first();
+    await approve.click();
+
+    // The button is disabled and says what it is doing.
+    await expect(approve).toBeDisabled();
+    await expect(approve).toHaveText(/Approving/);
+
+    release();
+    await page.unroute('**/api/dashboard/reviews/*/approval*');
+    await expect(page.getByText('Review approved').first()).toBeVisible();
+
+    // Put the review back where it was: the suite must not change the seed.
+    const withdraw = page.locator(`${panel} footer button:has-text("Withdraw approval")`).first();
+    await expect(withdraw).toBeVisible();
+    await withdraw.click();
+    await expect(page.getByText('Approval withdrawn').first()).toBeVisible();
+  });
+
+  test('closing the dialog while the request is in flight does NOT re-open it', async () => {
+    let release: () => void = () => {};
+    const held = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    await page.route('**/api/dashboard/reviews/*/approval*', async (route) => {
+      await held;
+      await route.continue();
+    });
+
+    await page.locator(`${panel} footer button:has-text("Approve")`).first().click();
+    await page.keyboard.press('Escape');
+    await expect(page.locator(panel)).toBeHidden();
+
+    release();
+    await page.unroute('**/api/dashboard/reviews/*/approval*');
+    await page.waitForTimeout(1200);
+    // The response landed — and the dialog stayed closed.
+    await expect(page.locator(panel)).toBeHidden();
   });
 
   test('Escape closes the dialog and the focus returns to the trigger', async () => {
@@ -132,7 +213,39 @@ test.describe('the review details dialog', () => {
     const confirm = page.locator('[data-testid="review-delete-confirm"]');
     await expect(confirm).toBeVisible();
     await expect(confirm.locator('h2')).toHaveText('Delete review');
-    // The subtitle is the review: the product and its reviewer.
-    await expect(confirm.locator('header p').first()).toContainText(/[()]/);
+    // The description names the review: the product and its reviewer.
+    await expect(confirm.locator('#review-delete-confirm-description')).toContainText(/[()]/);
+    // The consequence is announced with the question, not after it.
+    await expect(confirm).toHaveAttribute('aria-describedby', 'review-delete-confirm-description');
+    // The dialog behind it is inert: its buttons must not be reachable.
+    const details = page.locator(panel).first();
+    await expect(details).toHaveAttribute('inert', '');
+  });
+
+  test('in Arabic the footer is mirrored and the numerals still read "N / 5"', async () => {
+    await page.evaluate(() => localStorage.setItem('language', 'ar'));
+    await page.reload();
+    await expect(page.getByTestId('reviews-count')).toBeVisible();
+    await page
+      .locator('tbody tr')
+      .first()
+      .locator('button:has(ng-icon[name="lucideEye"])')
+      .first()
+      .click();
+    await expect(page.locator(panel)).toBeVisible();
+
+    // The numerals read the same in both directions.
+    await expect(page.getByTestId('review-dialog-rating')).toHaveText(/^\d+ \/ 5$/);
+
+    // The footer is mirrored: Delete (the start side) is on the RIGHT.
+    const deleteBox = await page.locator(`${panel} footer button:has-text("حذف")`).first().boundingBox();
+    const actionBox = await page.locator(`${panel} footer button`).last().boundingBox();
+    expect(deleteBox!.x).toBeGreaterThan(actionBox!.x);
+
+    // The stars fill from the start side: the first star is the rightmost.
+    const stars = await page.locator(`${panel} app-rating-stars svg`).evaluateAll((els) =>
+      els.map((el) => Math.round(el.getBoundingClientRect().left)),
+    );
+    expect(stars[0]).toBeGreaterThan(stars[stars.length - 1]);
   });
 });

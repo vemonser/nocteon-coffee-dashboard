@@ -30,6 +30,8 @@ import { TranslocoPipe } from '@jsverse/transloco';
           #panel
           [attr.role]="panelRole()"
           aria-modal="true"
+          [attr.aria-describedby]="describedBy() || null"
+          [attr.inert]="inert() ? '' : null"
           tabindex="-1"
           [attr.data-testid]="testId()"
           [attr.aria-labelledby]="testId() + '-title'"
@@ -92,6 +94,23 @@ export class DialogShellComponent {
    * announces when the panel opens.
    */
   readonly panelRole = input<'dialog' | 'alertdialog'>('dialog');
+
+  /**
+   * The id of the element that DESCRIBES the panel — the sentence that says
+   * what will happen. An `alertdialog` exists for exactly that sentence, so
+   * it is announced with the question and not after it.
+   */
+  readonly describedBy = input<string>('');
+
+  /**
+   * The panel is inert: it cannot be focused, and a screen reader skips it.
+   *
+   * <p>Used when a SECOND dialog is open on top of this one: two panels
+   * that both claim `aria-modal` contradict each other, and the buttons of
+   * the background dialog (an "Approve", behind a "delete?") must not be
+   * reachable while the confirmation is up.
+   */
+  readonly inert = input<boolean>(false);
 
   readonly closed = output<void>();
 
@@ -158,11 +177,19 @@ export class DialogShellComponent {
     const first = focusables[0];
     const last = focusables[focusables.length - 1];
     const active = document.activeElement as HTMLElement | null;
+    const panel = this.panel()?.nativeElement ?? null;
 
-    if (event.shiftKey && (active === first || !this.panel()?.nativeElement.contains(active))) {
+    // The PANEL itself is not one of the focusable controls: it only takes
+    // the focus when there is nothing else to focus (or when the admin
+    // clicks its padding). Tabbing from there must still stay inside the
+    // dialog, in BOTH directions — otherwise Shift+Tab walks straight out
+    // into the page behind.
+    const inside = !!active && active !== panel && panel?.contains(active);
+
+    if (event.shiftKey && (active === first || !inside)) {
       event.preventDefault();
       last.focus();
-    } else if (!event.shiftKey && active === last) {
+    } else if (!event.shiftKey && (active === last || !inside)) {
       event.preventDefault();
       first.focus();
     }
