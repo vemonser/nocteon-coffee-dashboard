@@ -34,6 +34,88 @@ async function loginAsAdmin(page: Page): Promise<void> {
 /** The dialog panel of the shared DialogShell. */
 const panel = '[data-testid="dialog-shell"]';
 
+/** Open the dialog on the first review of a tab. */
+async function openFirstReview(page: Page, status: 'approved' | 'pending'): Promise<void> {
+  await page.goto(`/dashboard/reviews?status=${status}&view=list`);
+  await expect(page.getByTestId('reviews-count')).toBeVisible();
+  await page
+    .locator('tbody tr')
+    .first()
+    .locator('button:has(ng-icon[name="lucideEye"])')
+    .first()
+    .click();
+  await expect(page.locator(panel)).toBeVisible();
+}
+
+/**
+ * The ACTION button of the dialog: the last one in the footer's end slot.
+ *
+ * <p>Not found by its text: the button's label CHANGES while its request is
+ * in flight ("Approve" → "Approving…"), and a locator that follows the text
+ * loses the button exactly when the test wants to look at it.
+ */
+function actionButton(page: Page) {
+  return page.locator(`${panel} footer > div`).last().locator('button').last();
+}
+
+/**
+ * The access token of the running app, taken from the header the auth
+ * interceptor puts on every call.
+ *
+ * <p>The suite approves a review to prove the toast, so it must be able to
+ * put the review back: the seed is the backend's, and a test that changes
+ * it changes every other test that runs after it.
+ */
+let accessToken: string | null = null;
+
+/** Put a review back to pending, through the API the app itself uses. */
+async function restorePending(page: Page, id: number): Promise<void> {
+  if (!accessToken) return;
+  await page.request.patch(`/api/dashboard/reviews/${id}/approval?approved=false`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+}
+
+/**
+ * HOLD the approval request, so the in-flight state is observable — and
+ * report the review it approved, so the test can put it back.
+ */
+async function holdApproval(page: Page) {
+  const state = { id: null as number | null };
+  let open!: () => void;
+  const gate = new Promise<void>((resolve) => {
+    open = resolve;
+  });
+  let finished!: () => void;
+  const done = new Promise<void>((resolve) => {
+    finished = resolve;
+  });
+  let released = false;
+
+  await page.route('**/api/dashboard/reviews/*/approval*', async (route) => {
+    try {
+      await gate;
+      const response = await route.fetch();
+      const body = await response.json().catch(() => null);
+      if (body?.data?.id) state.id = body.data.id;
+      await route.fulfill({ response });
+    } finally {
+      finished();
+    }
+  });
+
+  return {
+    state,
+    release: async () => {
+      if (released) return;
+      released = true;
+      open();
+      await done;
+      await page.unroute('**/api/dashboard/reviews/*/approval*');
+    },
+  };
+}
+
 test.describe('the review details dialog', () => {
   let context: BrowserContext;
   let page: Page;
@@ -42,12 +124,19 @@ test.describe('the review details dialog', () => {
     context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
     // The language is PINNED, not inherited: the spec asserts English
     // strings, and LanguageService falls back to navigator.language — so on
-    // an Arabic machine every assertion would fail.
+    // an Arabic machine every assertion would fail. The pin only fills a
+    // MISSING value, so a test that switches the language can keep it.
     await context.addInitScript(() => {
-      localStorage.setItem('language', 'en');
-      localStorage.setItem('nocteon-theme', 'light');
+      if (!localStorage.getItem('language')) {
+        localStorage.setItem('language', 'en');
+        localStorage.setItem('nocteon-theme', 'light');
+      }
     });
     page = await context.newPage();
+    page.on('request', (request) => {
+      const header = request.headers()['authorization'];
+      if (!accessToken && header?.startsWith('Bearer ')) accessToken = header.slice(7);
+    });
     await loginAsAdmin(page);
   });
 
@@ -152,53 +241,44 @@ test.describe('the review details dialog', () => {
   });
 
   test('approving toasts, and the button waits for the answer', async () => {
-    // The PATCH is held, so the in-flight state is observable.
-    let release: () => void = () => {};
-    const held = new Promise<void>((resolve) => {
-      release = resolve;
-    });
-    await page.route('**/api/dashboard/reviews/*/approval*', async (route) => {
-      await held;
-      await route.continue();
-    });
+    // A PENDING review: the approved ones offer "Withdraw approval".
+    await openFirstReview(page, 'pending');
+    const held = await holdApproval(page);
 
-    const approve = page.locator(`${panel} footer button:has-text("Approve")`).first();
-    await approve.click();
+    try {
+      await actionButton(page).click();
 
-    // The button is disabled and says what it is doing.
-    await expect(approve).toBeDisabled();
-    await expect(approve).toHaveText(/Approving/);
+      // The button is disabled and says what it is doing.
+      await expect(actionButton(page)).toBeDisabled();
+      await expect(actionButton(page)).toHaveText(/Approving/);
 
-    release();
-    await page.unroute('**/api/dashboard/reviews/*/approval*');
-    await expect(page.getByText('Review approved').first()).toBeVisible();
-
-    // Put the review back where it was: the suite must not change the seed.
-    const withdraw = page.locator(`${panel} footer button:has-text("Withdraw approval")`).first();
-    await expect(withdraw).toBeVisible();
-    await withdraw.click();
-    await expect(page.getByText('Approval withdrawn').first()).toBeVisible();
+      await held.release();
+      await expect(page.getByText('Review approved').first()).toBeVisible();
+      await expect(actionButton(page)).toHaveText(/Withdraw approval/);
+    } finally {
+      await held.release();
+      // The seed is the backend's: the review goes back to pending.
+      if (held.state.id) await restorePending(page, held.state.id);
+    }
   });
 
   test('closing the dialog while the request is in flight does NOT re-open it', async () => {
-    let release: () => void = () => {};
-    const held = new Promise<void>((resolve) => {
-      release = resolve;
-    });
-    await page.route('**/api/dashboard/reviews/*/approval*', async (route) => {
-      await held;
-      await route.continue();
-    });
+    await openFirstReview(page, 'pending');
+    const held = await holdApproval(page);
 
-    await page.locator(`${panel} footer button:has-text("Approve")`).first().click();
-    await page.keyboard.press('Escape');
-    await expect(page.locator(panel)).toBeHidden();
+    try {
+      await actionButton(page).click();
+      await page.keyboard.press('Escape');
+      await expect(page.locator(panel)).toBeHidden();
 
-    release();
-    await page.unroute('**/api/dashboard/reviews/*/approval*');
-    await page.waitForTimeout(1200);
-    // The response landed — and the dialog stayed closed.
-    await expect(page.locator(panel)).toBeHidden();
+      await held.release();
+      await page.waitForTimeout(1200);
+      // The response landed — and the dialog stayed closed.
+      await expect(page.locator(panel)).toBeHidden();
+    } finally {
+      await held.release();
+      if (held.state.id) await restorePending(page, held.state.id);
+    }
   });
 
   test('Escape closes the dialog and the focus returns to the trigger', async () => {

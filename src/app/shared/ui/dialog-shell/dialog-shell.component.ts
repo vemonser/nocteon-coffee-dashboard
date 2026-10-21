@@ -24,7 +24,6 @@ import { TranslocoPipe } from '@jsverse/transloco';
       <div
         [class]="backdropClass()"
         (click)="onBackdrop($event)"
-        (keydown)="onKeydown($event)"
       >
         <div
           #panel
@@ -139,9 +138,18 @@ export class DialogShellComponent {
       if (this.open()) {
         this.lastFocused = (document.activeElement as HTMLElement) ?? null;
         setTimeout(() => this.focusFirst());
-      } else if (this.lastFocused) {
-        this.lastFocused.focus();
-        this.lastFocused = null;
+        // The keys are handled on the DOCUMENT, not on the panel: a control
+        // that becomes disabled (the approve button while its request is in
+        // flight) drops the focus to the body, and a key pressed there
+        // never reaches the panel — so Escape would stop working exactly
+        // when the admin is waiting for the app.
+        document.addEventListener('keydown', this.onKeydown, true);
+      } else {
+        document.removeEventListener('keydown', this.onKeydown, true);
+        if (this.lastFocused) {
+          this.lastFocused.focus();
+          this.lastFocused = null;
+        }
       }
     });
   }
@@ -161,9 +169,11 @@ export class DialogShellComponent {
     (first ?? this.panel()?.nativeElement)?.focus();
   }
 
-  onKeydown(event: KeyboardEvent): void {
+  onKeydown = (event: KeyboardEvent): void => {
+    if (!this.open()) return;
     if (event.key === 'Escape') {
       event.preventDefault();
+      event.stopPropagation();
       this.closed.emit();
       return;
     }
