@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, forkJoin, map, of, switchMap } from 'rxjs';
+import { EMPTY, Observable, expand, forkJoin, map, of, switchMap, toArray } from 'rxjs';
 import { ApiResponse, PageResponse } from '../../../core/models/api-response.model';
 import { environment } from '../../../../environments/environment';
 import {
@@ -31,6 +31,30 @@ export class OrderService {
   private http = inject(HttpClient);
   private base = `${environment.apiUrl}/api/dashboard/orders`;
 
+  /** The biggest page the API accepts (`size` is validated, max 100). */
+  private static readonly MAX_PAGE_SIZE = 100;
+
+  /**
+   * EVERY order of the filtered set — page after page.
+   *
+   * The API caps a page at 100 rows, so a full read has to walk the
+   * pages. Asking for a thousand rows in one request gets a 400, and a
+   * 400 inside a `forkJoin` takes the whole list down with it.
+   */
+  getEveryOrder(params: OrderFilterRequest = {}): Observable<OrderResponse[]> {
+    const size = OrderService.MAX_PAGE_SIZE;
+    return this.getAll({ ...params, page: 0, size }).pipe(
+      // Walk the pages until one comes back short (the last one).
+      expand((res, index) => {
+        const content = res?.data?.content ?? [];
+        if (content.length < size || index > 100) return EMPTY;
+        return this.getAll({ ...params, page: index + 1, size });
+      }),
+      toArray(),
+      map((pages) => pages.flatMap((p) => p?.data?.content ?? [])),
+    );
+  }
+
   /**
    * One page of orders.
    *
@@ -38,7 +62,11 @@ export class OrderService {
    * `manualSorting`, so the ORDERING is the backend's, never the browser's.
    */
   getAll(params: OrderFilterRequest = {}): Observable<ApiResponse<PageResponse<OrderResponse>>> {
-    let p = new HttpParams().set('page', params.page ?? 0).set('size', params.size ?? 20);
+    // The API validates `size` and answers 400 for anything above 100
+    // ("must be less than or equal to 100"), so a request that asks for
+    // more than a page is a FAILED page, not a bigger one.
+    const size = Math.min(params.size ?? 20, OrderService.MAX_PAGE_SIZE);
+    let p = new HttpParams().set('page', params.page ?? 0).set('size', size);
 
     if (params.sort) p = p.set('sort', params.sort);
     if (params.direction) p = p.set('direction', params.direction);
