@@ -57,10 +57,6 @@ const URL_PATH = argValue('--url') ?? null;
 const OUT = resolve(process.cwd(), 'evidence', PHASE);
 const AUTH_STATE = resolve(process.cwd(), 'e2e/.auth/dashboard-admin.json');
 
-/**
- * The widths of the matrix. The default is the app's own ladder; a phase
- * that only needs the desktop and the phone passes --widths.
- */
 const WIDTHS = (argValue('--widths') ?? '375,768,1024,1440,1920')
   .split(',')
   .map((w) => Number(w.trim()))
@@ -79,6 +75,14 @@ const RUN_DIR = argValue('--out')
 
 /** The screens this phase captures. `--url` keeps the legacy single-screen mode. */
 const TARGETS = targetsFor(PHASE, URL_PATH);
+
+/**
+ * Where the run writes. `--out` wins; otherwise the run lands in
+ * evidence/<phase> (plus -<tag> when a tag is given).
+ */
+const RUN_DIR = argValue('--out')
+  ? resolve(process.cwd(), argValue('--out'))
+  : `${OUT}${TAG ? '-' + TAG : ''}`;
 
 function argValue(flag) {
   const i = process.argv.indexOf(flag);
@@ -306,6 +310,14 @@ for (const width of WIDTHS) {
         // runtime, so a page that only reacts on a cold load is caught.
         const bootLang = lang === 'ar' ? 'en' : 'ar';
         await seedCell(page, bootLang, theme);
+
+        // A target may bring its own HTTP fixtures (see the `populated` target).
+        // They are installed BEFORE the navigation and removed afterwards, so a
+        // mock can never leak into the next target's real data.
+        if (target.routes) {
+          for (const r of target.routes) await page.route(r.url, r.handler);
+        }
+
         await page.goto(`${BASE}${target.url}`, { waitUntil: 'domcontentloaded' });
         await settle(page, 1800);
 
@@ -347,6 +359,10 @@ for (const width of WIDTHS) {
           } catch (err) {
             own = { error: String(err?.message ?? err) };
           }
+        }
+
+        if (target.routes) {
+          for (const r of target.routes) await page.unroute(r.url, r.handler).catch(() => {});
         }
 
         targetResults.push({
@@ -464,6 +480,31 @@ if (existsSync(measurementsFile)) {
   measurements = JSON.parse(readFileSync(measurementsFile, 'utf8'));
 }
 
-writeFileSync(resultsFile, JSON.stringify(buildResults(measurements), null, 2));
+const results = {
+  phase: PHASE,
+  tag: TAG || null,
+  generatedAt: new Date().toISOString(),
+  harness: {
+    command: `npm run evidence -- ${PHASE}${TAG ? ' --tag ' + TAG : ''}`,
+    baseUrl: BASE,
+    url: URL_PATH,
+    targets: TARGETS.map((t) => t.id),
+    widths: WIDTHS,
+    themes: THEMES,
+    langs: LANGS,
+    viewportHeight: VIEWPORT_HEIGHT,
+    storageState: 'e2e/.auth/dashboard-admin.json (gitignored; one login, replayed)',
+    runtimeLanguageSwitch: true,
+    gitBranch: git('rev-parse --abbrev-ref HEAD'),
+    gitCommit: git('rev-parse --short HEAD'),
+    server: serverOn4200(),
+  },
+  cells,
+  measurements,
+  measurementError,
+};
+
+mkdirSync(RUN_DIR, { recursive: true });
+writeFileSync(`${RUN_DIR}/results.json`, JSON.stringify(results, null, 2));
 console.log(`\nresults -> ${RUN_DIR.replace(resolve(process.cwd()) + '/', '')}/results.json`);
 console.log(`cells captured: ${cells.length}`);

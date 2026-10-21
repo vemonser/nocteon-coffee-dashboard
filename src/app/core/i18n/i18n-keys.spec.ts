@@ -456,8 +456,13 @@ describe('orders glossary', () => {
       // The placeholders ({{count}}, {{status}}) are not part of the word.
       const words = v.replace(/\{\{[^}]*\}\}/g, '');
       // A Latin letter in an Arabic term means the key was never translated
-      // (or was translated with an English word left in it).
-      if (/[A-Za-z]/.test(words) && !/SKU|ORD|CSV|Instagram|Facebook|WhatsApp|URL|Email/i.test(words)) {
+      // (or was translated with an English word left in it). Keyboard key
+      // names (Ctrl/Cmd/Enter) and proper nouns are the exceptions: they are
+      // printed as they are on the keyboard, not translated.
+      if (
+        /[A-Za-z]/.test(words) &&
+        !/SKU|ORD|CSV|Instagram|Facebook|WhatsApp|URL|Email|Ctrl|Cmd|Enter/i.test(words)
+      ) {
         mixed.push(`ar:${key} = "${v}"`);
       }
     }

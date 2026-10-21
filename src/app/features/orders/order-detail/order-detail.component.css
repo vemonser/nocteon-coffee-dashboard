@@ -1,0 +1,46 @@
+/*
+ * Order detail.
+ *
+ * The page is styled with tokens and Tailwind utilities; the only rules
+ * that belong here are the ones a utility class cannot express: the print
+ * sheet, and the "do not print this" switches the invoice needs.
+ */
+
+:host {
+  display: block;
+}
+
+/* Actions, the note editor and the dialogs never reach paper. */
+@media print {
+  .print-hidden {
+    display: none !important;
+  }
+}
+
+@media print {
+  /*
+   * The invoice is printed on the LIGHT stylesheet: `OrderDetailComponent`
+   * removes `.dark` from <html> before printing, so the tokens used by the
+   * utilities are the light ones. These rules only make the sheet quiet on
+   * paper — no two-column squeeze, no split cards.
+   */
+  :host {
+    background: var(--background);
+    color: var(--foreground);
+  }
+
+  section,
+  li {
+    break-inside: avoid;
+  }
+
+  /* Two columns do not fit on A4 at a readable size: the sidebar drops
+     under the order instead of being clipped. */
+  :host .grid {
+    display: block !important;
+  }
+
+  :host .grid > * + * {
+    margin-top: 1rem;
+  }
+}

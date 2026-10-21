@@ -1,0 +1,611 @@
+{
+  "schemaVersion": 1,
+  "run": {
+    "id": "2026-10-21T11-45-00Z",
+    "task": "Order Details v3 redesign (ui/order-details-v3)",
+    "source": ".quality/runs/2026-10-21T11-45-00Z/SPEC.md"
+  },
+  "criteria": [
+    {
+      "id": "AC-01",
+      "statement": "Given the detail page is open, when it renders, then the breadcrumb reads Operations > Orders > ORD-… and Orders returns to the filtered list.",
+      "sourceRef": {
+        "path": ".quality/runs/2026-10-21T11-45-00Z/SPEC.md"
+      },
+      "kind": "ui-visual",
+      "requiresBrowser": true,
+      "requiresAutomatedTest": false,
+      "implementation": [
+        "src/app/features/orders/order-detail/order-detail.component.ts",
+        "src/app/features/orders/order-detail/order-detail.component.html",
+        "src/app/shared/components/breadcrumb/service/breadcrumb.service.ts",
+        "src/app/app.routes.ts"
+      ],
+      "status": "PASS",
+      "notes": null,
+      "naReason": null,
+      "evidence": [
+        "evidence/order-details-v3/after/results.json  (assert after: crumb carries ORD-…)",
+        "evidence/order-details-v3/after/verification/results.json  (assert return: crumb links back with status=DELIVERED)"
+      ]
+    },
+    {
+      "id": "AC-02",
+      "statement": "Given a mutable order, when the status dialog opens, then it offers only valid transitions, a note and notify, and resets between opens.",
+      "sourceRef": {
+        "path": ".quality/runs/2026-10-21T11-45-00Z/SPEC.md"
+      },
+      "kind": "ui-visual",
+      "requiresBrowser": true,
+      "requiresAutomatedTest": false,
+      "implementation": [
+        "src/app/features/orders/components/order-status-dialog/order-status-dialog.component.ts",
+        "src/app/features/orders/components/order-status-dialog/order-status-dialog.component.html"
+      ],
+      "status": "PASS",
+      "notes": null,
+      "naReason": null,
+      "evidence": [
+        "evidence/order-details-v3/extra/results.json  (assert extra: status-dialog targets, options + note + notify)",
+        "src/app/features/orders/components/order-status-dialog/order-status-dialog.component.ts (reset on open via effect)"
+      ]
+    },
+    {
+      "id": "AC-03",
+      "statement": "Given an action the store cannot perform, when the header renders, then the action is visibly disabled and exposes its reason.",
+      "sourceRef": {
+        "path": ".quality/runs/2026-10-21T11-45-00Z/SPEC.md"
+      },
+      "kind": "ui-visual",
+      "requiresBrowser": true,
+      "requiresAutomatedTest": false,
+      "implementation": [
+        "src/app/features/orders/order-detail/order-detail.component.html",
+        "src/app/features/orders/order-detail/order-detail.component.ts"
+      ],
+      "status": "PASS",
+      "notes": null,
+      "naReason": null,
+      "evidence": [
+        "evidence/order-details-v3/after/results.json (MEASURE_ORDER_DETAIL: actions[].disabledReason non-empty)",
+        "src/app/features/orders/order-detail/order-detail.component.html (disabled wrappers carry data-tooltip + reason + tabindex)"
+      ]
+    },
+    {
+      "id": "AC-04",
+      "statement": "Given the overflow menu, when it opens, then it contains the contextual cancel, refund, copy link and copy order number actions.",
+      "sourceRef": {
+        "path": ".quality/runs/2026-10-21T11-45-00Z/SPEC.md"
+      },
+      "kind": "ui-visual",
+      "requiresBrowser": true,
+      "requiresAutomatedTest": false,
+      "implementation": [
+        "src/app/features/orders/order-detail/order-detail.component.html",
+        "src/app/features/orders/order-detail/order-detail.component.ts"
+      ],
+      "status": "PASS",
+      "notes": null,
+      "naReason": null,
+      "evidence": [
+        "evidence/order-details-v3/extra/results.json  (assert extra: kebab items)"
+      ]
+    },
+    {
+      "id": "AC-05",
+      "statement": "Given the progress tracker, when a step is complete it shows a check, the current step is distinct, and Delivered is complete.",
+      "sourceRef": {
+        "path": ".quality/runs/2026-10-21T11-45-00Z/SPEC.md"
+      },
+      "kind": "ui-visual",
+      "requiresBrowser": true,
+      "requiresAutomatedTest": false,
+      "implementation": [
+        "src/app/features/orders/components/order-progress/order-progress.component.ts",
+        "src/app/features/orders/components/order-progress/order-progress.component.html"
+      ],
+      "status": "PASS",
+      "notes": null,
+      "naReason": null,
+      "evidence": [
+        "evidence/order-details-v3/after/results.json (delivered: step hasCheckIcon + state=done)",
+        "src/app/features/orders/components/order-progress/order-progress.component.ts (isDone incl. Delivered)"
+      ]
+    },
+    {
+      "id": "AC-06",
+      "statement": "Given a cancelled or refunded order, when the tracker renders, then it shows a distinct terminal state instead of linear progress.",
+      "sourceRef": {
+        "path": ".quality/runs/2026-10-21T11-45-00Z/SPEC.md"
+      },
+      "kind": "ui-visual",
+      "requiresBrowser": true,
+      "requiresAutomatedTest": false,
+      "implementation": [
+        "src/app/features/orders/components/order-progress/order-progress.component.ts",
+        "src/app/features/orders/components/order-progress/order-progress.component.html"
+      ],
+      "status": "PASS",
+      "notes": null,
+      "naReason": null,
+      "evidence": [
+        "evidence/order-details-v3/after/results.json (assert after: terminalState=refunded, cancelled branch)",
+        "src/app/features/orders/components/order-progress/order-progress.component.html (terminal strips)"
+      ]
+    },
+    {
+      "id": "AC-07",
+      "statement": "Given the activity log, when it renders, then it is newest first and every entry comes from a recorded timestamp.",
+      "sourceRef": {
+        "path": ".quality/runs/2026-10-21T11-45-00Z/SPEC.md"
+      },
+      "kind": "ui-visual",
+      "requiresBrowser": true,
+      "requiresAutomatedTest": true,
+      "implementation": [
+        "src/app/features/orders/adapters/order-activity.adapter.ts",
+        "src/app/features/orders/order-detail/order-detail.component.ts"
+      ],
+      "status": "PASS",
+      "notes": null,
+      "naReason": null,
+      "evidence": [
+        "src/app/features/orders/adapters/order-activity.adapter.spec.ts (sort + no-invent)",
+        "evidence/order-details-v3/after/results.json (activity.count >= 1, real events only)"
+      ]
+    },
+    {
+      "id": "AC-08",
+      "statement": "Given an order with items, when the items card renders, then each line shows variant, unit price, line total, product link, SKU, and a struck regular price that is never an order discount.",
+      "sourceRef": {
+        "path": ".quality/runs/2026-10-21T11-45-00Z/SPEC.md"
+      },
+      "kind": "ui-visual",
+      "requiresBrowser": true,
+      "requiresAutomatedTest": true,
+      "implementation": [
+        "src/app/features/orders/adapters/order-items.adapter.ts",
+        "src/app/features/orders/order-detail/order-detail.component.html"
+      ],
+      "status": "PASS",
+      "notes": null,
+      "naReason": null,
+      "evidence": [
+        "src/app/features/orders/adapters/order-items.adapter.spec.ts",
+        "evidence/order-details-v3/after/results.json (items: variant/sku/unitPrice/total, struck compare-at with not-an-order-discount tooltip)"
+      ]
+    },
+    {
+      "id": "AC-09",
+      "statement": "Given the totals card, then it shows Subtotal, Discount/Shipping/Tax when applicable, Total, Paid, Refunded, Balance, with no Net paid row and unknown refunds as Not recorded.",
+      "sourceRef": {
+        "path": ".quality/runs/2026-10-21T11-45-00Z/SPEC.md"
+      },
+      "kind": "ui-visual",
+      "requiresBrowser": true,
+      "requiresAutomatedTest": true,
+      "implementation": [
+        "src/app/features/orders/utils/order-settlement.ts",
+        "src/app/features/orders/order-detail/order-detail.component.html"
+      ],
+      "status": "PASS",
+      "notes": null,
+      "naReason": null,
+      "evidence": [
+        "src/app/features/orders/utils/order-settlement.spec.ts (refunded null when unknown)",
+        "evidence/order-details-v3/after/results.json (assert after: no Net paid row, Paid/Refunded/Balance present)"
+      ]
+    },
+    {
+      "id": "AC-10",
+      "statement": "Given the payment card, then missing paid facts warn inline, cash on delivery says collected at delivery, the reference can be copied and a refund recorded.",
+      "sourceRef": {
+        "path": ".quality/runs/2026-10-21T11-45-00Z/SPEC.md"
+      },
+      "kind": "ui-visual",
+      "requiresBrowser": true,
+      "requiresAutomatedTest": false,
+      "implementation": [
+        "src/app/features/orders/order-detail/order-detail.component.html",
+        "src/app/features/orders/order-detail/order-detail.component.ts"
+      ],
+      "status": "PASS",
+      "notes": null,
+      "naReason": null,
+      "evidence": [
+        "evidence/order-details-v3/after/results.json (assert after: paid-order inline warning + paidAt \"Not recorded\")",
+        "evidence/order-details-v3/extra/results.json (populated: transaction reference shown + copyable)"
+      ]
+    },
+    {
+      "id": "AC-11",
+      "statement": "Given the shipment card, then recorded fields render, an empty state and a record-shipment dialog exist, and a shipped/delivered order without a shipment warns.",
+      "sourceRef": {
+        "path": ".quality/runs/2026-10-21T11-45-00Z/SPEC.md"
+      },
+      "kind": "ui-visual",
+      "requiresBrowser": true,
+      "requiresAutomatedTest": false,
+      "implementation": [
+        "src/app/features/orders/components/order-shipment-dialog/order-shipment-dialog.component.ts",
+        "src/app/features/orders/components/order-shipment-dialog/order-shipment-dialog.component.html",
+        "src/app/features/orders/order-detail/order-detail.component.html"
+      ],
+      "status": "PASS",
+      "notes": null,
+      "naReason": null,
+      "evidence": [
+        "evidence/order-details-v3/after/results.json (shipped/delivered no-items: shipment-empty + missing warning)",
+        "evidence/order-details-v3/extra/results.json (populated: recorded carrier/tracking/shippedAt/deliveredAt)"
+      ]
+    },
+    {
+      "id": "AC-12",
+      "statement": "Given the page, then the dead Tags card and the DECISIONS changelog card are absent.",
+      "sourceRef": {
+        "path": ".quality/runs/2026-10-21T11-45-00Z/SPEC.md"
+      },
+      "kind": "ui-visual",
+      "requiresBrowser": true,
+      "requiresAutomatedTest": false,
+      "implementation": [
+        "src/app/features/orders/order-detail/order-detail.component.html"
+      ],
+      "status": "PASS",
+      "notes": null,
+      "naReason": null,
+      "evidence": [
+        "evidence/order-details-v3/after/results.json (assert after: tagsCard absent everywhere)"
+      ]
+    },
+    {
+      "id": "AC-13",
+      "statement": "Given the customer card, then it shows orders count and lifetime spend from recorded orders (basis stated) or an explicit gap.",
+      "sourceRef": {
+        "path": ".quality/runs/2026-10-21T11-45-00Z/SPEC.md"
+      },
+      "kind": "ui-visual",
+      "requiresBrowser": true,
+      "requiresAutomatedTest": true,
+      "implementation": [
+        "src/app/features/orders/utils/customer-summary.ts",
+        "src/app/features/orders/order-detail/order-detail.component.ts"
+      ],
+      "status": "PASS",
+      "notes": null,
+      "naReason": null,
+      "evidence": [
+        "src/app/features/orders/utils/customer-summary.spec.ts",
+        "evidence/order-details-v3/after/results.json (customer card: orders count + lifetime spend, basis in tooltip)"
+      ]
+    },
+    {
+      "id": "AC-14",
+      "statement": "Given an address, then a repeated city/governorate or name/phone is not shown twice.",
+      "sourceRef": {
+        "path": ".quality/runs/2026-10-21T11-45-00Z/SPEC.md"
+      },
+      "kind": "ui-visual",
+      "requiresBrowser": true,
+      "requiresAutomatedTest": false,
+      "implementation": [
+        "src/app/features/orders/order-detail/order-detail.component.ts",
+        "src/app/features/orders/order-detail/order-detail.component.html"
+      ],
+      "status": "PASS",
+      "notes": null,
+      "naReason": null,
+      "evidence": [
+        "evidence/order-details-v3/after/results.json (address: city/state dedupe, address name/phone dedupe vs customer)"
+      ]
+    },
+    {
+      "id": "AC-15",
+      "statement": "Given internal notes, then each carries author and time, Ctrl/Cmd+Enter submits, and the textarea auto-grows.",
+      "sourceRef": {
+        "path": ".quality/runs/2026-10-21T11-45-00Z/SPEC.md"
+      },
+      "kind": "ui-visual",
+      "requiresBrowser": true,
+      "requiresAutomatedTest": false,
+      "implementation": [
+        "src/app/features/orders/order-detail/order-detail.component.html",
+        "src/app/features/orders/order-detail/order-detail.component.ts"
+      ],
+      "status": "PASS",
+      "notes": null,
+      "naReason": null,
+      "evidence": [
+        "evidence/order-details-v3/after/results.json (notes: author + time per note)",
+        "src/app/features/orders/order-detail/order-detail.component.ts (onNoteKeydown: isComposing guard; autoGrow + Ctrl/Cmd+Enter)"
+      ]
+    },
+    {
+      "id": "AC-16",
+      "statement": "Given print media, then chrome and actions are hidden and the sheet uses light tokens even when the screen is dark.",
+      "sourceRef": {
+        "path": ".quality/runs/2026-10-21T11-45-00Z/SPEC.md"
+      },
+      "kind": "ui-visual",
+      "requiresBrowser": true,
+      "requiresAutomatedTest": false,
+      "implementation": [
+        "src/app/features/orders/order-detail/order-detail.component.css",
+        "src/styles/index.css",
+        "src/app/features/orders/order-detail/order-detail.component.ts"
+      ],
+      "status": "PASS",
+      "notes": null,
+      "naReason": null,
+      "evidence": [
+        "evidence/order-details-v3/extra/results.json (assert extra: print — actions/back/note hidden, html.order-print scoped, dark restored by afterprint)"
+      ]
+    },
+    {
+      "id": "AC-17",
+      "statement": "Given loading, failure or a missing order, then a skeleton, an error with retry, and a not-found state are rendered.",
+      "sourceRef": {
+        "path": ".quality/runs/2026-10-21T11-45-00Z/SPEC.md"
+      },
+      "kind": "ui-visual",
+      "requiresBrowser": true,
+      "requiresAutomatedTest": false,
+      "implementation": [
+        "src/app/features/orders/order-detail/order-detail.component.html",
+        "src/app/features/orders/order-detail/order-detail.component.ts"
+      ],
+      "status": "PASS",
+      "notes": null,
+      "naReason": null,
+      "evidence": [
+        "evidence/order-details-v3/after/states/results.json (assert states: loading skeleton + error-with-retry + 404)"
+      ]
+    },
+    {
+      "id": "AC-18",
+      "statement": "Given 1024 px, then the layout stacks into one column with no horizontal overflow, clipping or ellipsis.",
+      "sourceRef": {
+        "path": ".quality/runs/2026-10-21T11-45-00Z/SPEC.md"
+      },
+      "kind": "ui-visual",
+      "requiresBrowser": true,
+      "requiresAutomatedTest": false,
+      "implementation": [
+        "src/app/features/orders/order-detail/order-detail.component.html"
+      ],
+      "status": "PASS",
+      "notes": null,
+      "naReason": null,
+      "evidence": [
+        "evidence/order-details-v3/after/results.json (@1024: no horizontal overflow, no clipping, no ellipsis — generic invariants)"
+      ]
+    },
+    {
+      "id": "AC-19",
+      "statement": "Given RTL, then the layout mirrors (timeline, icons) and numerals render consistently in every cell.",
+      "sourceRef": {
+        "path": ".quality/runs/2026-10-21T11-45-00Z/SPEC.md"
+      },
+      "kind": "ui-visual",
+      "requiresBrowser": true,
+      "requiresAutomatedTest": false,
+      "implementation": [
+        "src/app/features/orders/order-detail/order-detail.component.html",
+        "src/app/features/orders/components/order-progress/order-progress.component.html"
+      ],
+      "status": "PASS",
+      "notes": null,
+      "naReason": null,
+      "evidence": [
+        "evidence/order-details-v3/after/results.json (ar/rtl cells: dir=rtl observed, generic invariants hold, timeline/back mirror)"
+      ]
+    },
+    {
+      "id": "AC-20",
+      "statement": "Given dark mode, then every cell stays readable in both languages.",
+      "sourceRef": {
+        "path": ".quality/runs/2026-10-21T11-45-00Z/SPEC.md"
+      },
+      "kind": "ui-visual",
+      "requiresBrowser": true,
+      "requiresAutomatedTest": false,
+      "implementation": [
+        "src/app/features/orders/order-detail/order-detail.component.html",
+        "src/app/features/orders/order-detail/order-detail.component.css"
+      ],
+      "status": "PASS",
+      "notes": null,
+      "naReason": null,
+      "evidence": [
+        "evidence/order-details-v3/after/results.json (generic invariants hold for dark cells; badges measured)"
+      ]
+    },
+    {
+      "id": "AC-21",
+      "statement": "Given both languages, then no raw i18n key reaches the screen and EN/AR key sets are complete.",
+      "sourceRef": {
+        "path": ".quality/runs/2026-10-21T11-45-00Z/SPEC.md"
+      },
+      "kind": "ui-visual",
+      "requiresBrowser": true,
+      "requiresAutomatedTest": true,
+      "implementation": [
+        "public/assets/i18n/en.json",
+        "public/assets/i18n/ar.json",
+        "src/app/core/i18n/i18n-keys.spec.ts"
+      ],
+      "status": "PASS",
+      "notes": "Two i18n-key spec failures are pre-existing on main (raw-control nav tokens; single-brace placeholders in nav.viewAll/nav.noResultsFor) and are explicitly out of scope for this phase; no new keys or parity regressions were introduced.",
+      "naReason": null,
+      "evidence": [
+        "evidence/order-details-v3/after/results.json (assert after: no raw i18n keys in any cell; EN/AR parity)",
+        "src/app/core/i18n/i18n-keys.spec.ts (new keys stepCurrent/stepDone present in both languages)"
+      ]
+    },
+    {
+      "id": "AC-22",
+      "statement": "Given the implementation, then it uses design tokens (no raw hex) and keeps Spartan UI primitives.",
+      "sourceRef": {
+        "path": ".quality/runs/2026-10-21T11-45-00Z/SPEC.md"
+      },
+      "kind": "behavior",
+      "requiresBrowser": false,
+      "requiresAutomatedTest": false,
+      "implementation": [
+        "src/app/features/orders/order-detail/order-detail.component.html",
+        "src/app/features/orders/order-detail/order-detail.component.css",
+        "src/app/features/orders/components/order-shipment-dialog/order-shipment-dialog.component.html",
+        "src/app/features/orders/components/order-progress/order-progress.component.html"
+      ],
+      "status": "PASS",
+      "notes": null,
+      "naReason": null,
+      "evidence": [
+        "src/app/features/orders/order-detail/order-detail.component.css (scoped :host rules; no raw hex)",
+        "code review: templates use Tailwind tokens + Spartan primitives only"
+      ]
+    },
+    {
+      "id": "AC-23",
+      "statement": "Given a fact the backend does not record, then the UI shows an honest empty/not-recorded state and the gap is documented in API_GAPS.md.",
+      "sourceRef": {
+        "path": ".quality/runs/2026-10-21T11-45-00Z/SPEC.md"
+      },
+      "kind": "behavior",
+      "requiresBrowser": false,
+      "requiresAutomatedTest": false,
+      "implementation": [
+        "API_GAPS.md",
+        "src/app/features/orders/order-detail/order-detail.component.ts"
+      ],
+      "status": "PASS",
+      "notes": null,
+      "naReason": null,
+      "evidence": [
+        "API_GAPS.md (order-details-v3 section appended)"
+      ]
+    },
+    {
+      "id": "AC-24",
+      "statement": "Given a shared primitive is touched, then every usage is updated and listed in DECISIONS.md; additions are add-only.",
+      "sourceRef": {
+        "path": ".quality/runs/2026-10-21T11-45-00Z/SPEC.md"
+      },
+      "kind": "behavior",
+      "requiresBrowser": false,
+      "requiresAutomatedTest": false,
+      "implementation": [
+        "src/app/shared/components/breadcrumb/service/breadcrumb.service.ts",
+        "src/app/features/orders/components/order-shipment-dialog/order-shipment-dialog.component.ts",
+        "DECISIONS.md"
+      ],
+      "status": "PASS",
+      "notes": null,
+      "naReason": null,
+      "evidence": [
+        "DECISIONS.md (order-details-v3 section: BreadcrumbService add-only appendCrumb / updateCrumbLink usage listed)",
+        "src/app/shared/components/breadcrumb/service/breadcrumb.service.ts (append-only appendCrumb, no caller API change)"
+      ]
+    },
+    {
+      "id": "AC-25",
+      "statement": "Given the evidence matrix, then the five states exist before/after at 1440 and 1024, light/dark, EN/AR, with results.json.",
+      "sourceRef": {
+        "path": ".quality/runs/2026-10-21T11-45-00Z/SPEC.md"
+      },
+      "kind": "ui-visual",
+      "requiresBrowser": true,
+      "requiresAutomatedTest": true,
+      "implementation": [
+        "scripts/evidence.mjs",
+        "scripts/evidence-targets.mjs"
+      ],
+      "status": "PASS",
+      "notes": null,
+      "naReason": null,
+      "evidence": [
+        "evidence/order-details-v3/after.assert.log (exit 0)",
+        "evidence/order-details-v3/extra.assert.log (exit 0)",
+        "evidence/order-details-v3/after/states.assert.log (exit 0)",
+        "evidence/order-details-v3/after/verification.assert.log (exit 0)"
+      ]
+    },
+    {
+      "id": "AC-26",
+      "statement": "Given the pure derivations, when their unit specs run, then they pass.",
+      "sourceRef": {
+        "path": ".quality/runs/2026-10-21T11-45-00Z/SPEC.md"
+      },
+      "kind": "behavior",
+      "requiresBrowser": false,
+      "requiresAutomatedTest": true,
+      "implementation": [
+        "src/app/features/orders/utils/order-settlement.spec.ts",
+        "src/app/features/orders/adapters/order-activity.adapter.spec.ts",
+        "src/app/features/orders/adapters/order-items.adapter.spec.ts",
+        "src/app/features/orders/utils/customer-summary.spec.ts"
+      ],
+      "status": "PASS",
+      "notes": null,
+      "naReason": null,
+      "evidence": [
+        "unit spec results: 80 passed, exit 0 (npx ng test --include orders/**/*.spec.ts)"
+      ]
+    },
+    {
+      "id": "AC-27",
+      "statement": "Given the branch, when the production build runs, then it succeeds under strict TypeScript.",
+      "sourceRef": {
+        "path": ".quality/runs/2026-10-21T11-45-00Z/SPEC.md"
+      },
+      "kind": "behavior",
+      "requiresBrowser": false,
+      "requiresAutomatedTest": true,
+      "implementation": [
+        "tsconfig.json",
+        "angular.json"
+      ],
+      "status": "PASS",
+      "notes": null,
+      "naReason": null,
+      "evidence": [
+        "npm run build — exit 0 (warnings only, all pre-existing)"
+      ]
+    },
+    {
+      "id": "AC-28",
+      "statement": "Given the diff, then it is on ui/order-details-v3, has no whitespace-only changes, and stays in scope.",
+      "sourceRef": {
+        "path": ".quality/runs/2026-10-21T11-45-00Z/SPEC.md"
+      },
+      "kind": "behavior",
+      "requiresBrowser": false,
+      "requiresAutomatedTest": false,
+      "implementation": [
+        "DECISIONS.md",
+        "scripts/evidence-targets.mjs"
+      ],
+      "status": "PASS",
+      "notes": null,
+      "naReason": null,
+      "evidence": [
+        "git diff --stat vs e9bedb65 (see final table)"
+      ]
+    }
+  ],
+  "unresolvedReviewBlockers": [],
+  "evidenceGate": {
+    "runId": "2026-10-21T11-45-00Z",
+    "validatedAt": "2026-10-21T13:43:26.891Z",
+    "status": "PASS",
+    "assertionLogs": {
+      "after": "after: 40 targets, all assertions passed",
+      "extra": "extra: 40 targets, all assertions passed",
+      "states": "states: 16 targets, all assertions passed",
+      "return": "return: 8 targets, all assertions passed"
+    },
+    "criteriaCount": 28,
+    "passing": 28,
+    "failing": 0
+  }
+}

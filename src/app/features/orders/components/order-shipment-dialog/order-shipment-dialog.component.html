@@ -1,0 +1,78 @@
+<app-dialog-shell
+  [open]="open()"
+  [title]="title()"
+  [subtitle]="subtitle()"
+  testId="shipment-dialog"
+  (closed)="closed.emit()"
+>
+  <form class="flex flex-col gap-4" (ngSubmit)="save()">
+    <div class="flex flex-col gap-1.5">
+      <label for="shipment-dialog-carrier" class="text-sm font-medium">
+        {{ 'orders.detail.carrier' | transloco }}
+      </label>
+      <input
+        id="shipment-dialog-carrier"
+        hlmInput
+        type="text"
+        dir="auto"
+        autocomplete="organization"
+        [ngModel]="carrier()"
+        (ngModelChange)="carrier.set($event); updateCanSave()"
+        name="carrier"
+        data-testid="shipment-carrier"
+      />
+    </div>
+
+    <div class="flex flex-col gap-1.5">
+      <label for="shipment-dialog-tracking" class="text-sm font-medium">
+        {{ 'orders.detail.trackingNumber' | transloco }}
+      </label>
+      <input
+        id="shipment-dialog-tracking"
+        hlmInput
+        type="text"
+        dir="ltr"
+        autocomplete="off"
+        [ngModel]="trackingNumber()"
+        (ngModelChange)="trackingNumber.set($event); updateCanSave()"
+        name="trackingNumber"
+        data-testid="shipment-tracking-number"
+      />
+    </div>
+
+    <div class="flex flex-col gap-1.5">
+      <label for="shipment-dialog-url" class="text-sm font-medium">
+        {{ 'orders.detail.trackingLink' | transloco }}
+      </label>
+      <input
+        id="shipment-dialog-url"
+        hlmInput
+        type="url"
+        dir="ltr"
+        inputmode="url"
+        placeholder="https://"
+        [ngModel]="trackingUrl()"
+        (ngModelChange)="trackingUrl.set($event)"
+        name="trackingUrl"
+        data-testid="shipment-tracking-url"
+      />
+      <p class="text-xs text-muted-foreground">{{ 'orders.detail.trackingUrlHint' | transloco }}</p>
+    </div>
+
+    <p class="text-xs text-muted-foreground">{{ 'orders.detail.shipmentFormHint' | transloco }}</p>
+
+    <div class="mt-2 flex items-center justify-end gap-2">
+      <button hlmBtn type="button" variant="outline" (click)="closed.emit()">
+        {{ 'common.cancel' | transloco }}
+      </button>
+      <button
+        hlmBtn
+        type="submit"
+        data-testid="shipment-save"
+        [disabled]="!canSave() || pending()"
+      >
+        {{ 'common.save' | transloco }}
+      </button>
+    </div>
+  </form>
+</app-dialog-shell>

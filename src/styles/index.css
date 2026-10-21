@@ -234,20 +234,24 @@ span:lang(ar),
 quill-editor .ql-container {
   min-height: 200px;
 }
-
-/* Print: always light, regardless of the active theme. */
+/*
+ * Printing an order.
+ *
+ * A printed invoice is paper, not the dashboard: the navigation chrome and
+ * the fixed sidebar are dropped, and the page is left at full width. The
+ * rules are scoped to `html.order-print`, the class the order page adds only
+ * while ITS invoice is printing, so Ctrl+P on any other screen keeps its
+ * normal layout. The order page removes `.dark` at the same time, so the
+ * light tokens are the ones that reach paper.
+ */
 @media print {
-  :root, :root.dark {
-    color-scheme: light;
+  html.order-print [data-slot='sidebar-container'],
+  html.order-print [data-slot='sidebar-gap'],
+  html.order-print app-navigation-bar {
+    display: none !important;
   }
-  .dark {
-    --background: #faf8f5;
-    --foreground: #231a14;
-    --card: #ffffff;
-    --card-foreground: #231a14;
-    --muted: #f6f2ed;
-    --muted-foreground: #6b5d52;
-    --border: #e7dfd5;
+
+  html.order-print .main-container {
+    width: 100% !important;
   }
-  body { background: #ffffff !important; color: #231a14 !important; }
 }

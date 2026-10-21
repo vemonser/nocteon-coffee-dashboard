@@ -29,7 +29,9 @@ export class BreadcrumbService {
 
   private rebuild(): void {
     this.breadcrumbs.set(this.buildBreadcrumbs());
+    this.applyCrumbLinkOverride();
     this.applyLastLabelOverride();
+    this.applyAppendedCrumb();
   }
 
   /**
@@ -107,5 +109,81 @@ export class BreadcrumbService {
       updated[updated.length - 1] = { ...updated[updated.length - 1], label };
       this.breadcrumbs.set(updated);
     }
+  }
+
+  /**
+   * Point one crumb at a different URL, without changing the trail's shape.
+   *
+   * <p>A detail page reached from a filtered list needs its parent crumb to
+   * return to THAT list (the filters live in the URL), not to the bare
+   * list. The override is scoped to the path it was set on and remembered
+   * across a language switch, exactly like the last-label override.
+   */
+  updateCrumbLink(crumbUrl: string, url: string) {
+    this.crumbLinkOverride.set({
+      path: this.currentPathUrl(),
+      crumbUrl,
+      url,
+    });
+    this.applyCrumbLinkOverride();
+  }
+
+  private crumbLinkOverride = signal<{ path: string; crumbUrl: string; url: string } | null>(null);
+
+  private applyCrumbLinkOverride(): void {
+    untracked(() => {
+      const override = this.crumbLinkOverride();
+      if (!override) return;
+      if (override.path !== this.currentPathUrl()) {
+        this.crumbLinkOverride.set(null);
+        return;
+      }
+      const current = this.breadcrumbs();
+      // A detail route's crumb carries the DETAIL url (`/orders/1`), not the
+      // list url (`/orders`), so the match accepts the list url as a prefix.
+      // The detail page is the only caller of this method today; the prefix
+      // rule is what makes "Orders" point back at the list it came from.
+      const index = current.findIndex(
+        (crumb) =>
+          crumb.url === override.crumbUrl || crumb.url?.startsWith(`${override.crumbUrl}/`),
+      );
+      if (index < 0) return;
+      const updated = [...current];
+      updated[index] = { ...updated[index], url: override.url };
+      this.breadcrumbs.set(updated);
+    });
+  }
+
+  /**
+   * Add the current page as a crumb AFTER the route's own trail.
+   *
+   * <p>A generic detail route carries the list's crumb ("Orders"); the page
+   * itself has no route data of its own. Replacing that crumb with the entity
+   * name (the `updateLastLabel` idiom) would lose the way back to the list, so
+   * the entity is APPENDED instead: `Operations > Orders > ORD-2026-000001`.
+   * The appended crumb is scoped to the URL it was set on and re-applied after
+   * a rebuild (navigation, language switch), like every other override.
+   */
+  appendCrumb(label: string) {
+    this.appendedCrumb.set({ url: this.currentPathUrl(), label });
+    this.applyAppendedCrumb();
+  }
+
+  private appendedCrumb = signal<{ url: string; label: string } | null>(null);
+
+  private applyAppendedCrumb(): void {
+    untracked(() => {
+      const override = this.appendedCrumb();
+      if (!override) return;
+      if (override.url !== this.currentPathUrl()) {
+        this.appendedCrumb.set(null);
+        return;
+      }
+      const current = this.breadcrumbs();
+      if (current.length === 0) return;
+      const last = current[current.length - 1];
+      if (last.label === override.label) return;
+      this.breadcrumbs.set([...current, { label: override.label, url: override.url }]);
+    });
   }
 }

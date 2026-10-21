@@ -3,6 +3,7 @@
   <div
     class="flex items-start gap-3 rounded-md border border-destructive/30 bg-destructive-soft px-3 py-3"
     data-testid="order-progress-cancelled"
+    data-terminal="cancelled"
     role="status"
   >
     <ng-icon name="lucideXCircle" class="mt-0.5 size-4 shrink-0 text-destructive-text" aria-hidden="true" />
@@ -11,28 +12,57 @@
         {{ 'orders.statuses.CANCELLED' | transloco }}
       </p>
       @if (cancelReason()) {
-        <p class="mt-0.5 text-xs text-destructive-text/90">{{ cancelReason() }}</p>
+        <p class="mt-0.5 text-xs text-destructive-text/90" dir="auto">{{ cancelReason() }}</p>
       }
     </div>
   </div>
 } @else {
-  <ol class="flex flex-col gap-3 sm:flex-row sm:items-start" data-testid="order-progress">
+  @if (isRefunded()) {
+    <!-- A refund is a payment terminal state, not a fulfilment step. -->
+    <div
+      class="mb-3 flex items-start gap-3 rounded-md border border-border bg-muted px-3 py-3"
+      data-testid="order-terminal-state"
+      data-terminal="refunded"
+      role="status"
+    >
+      <ng-icon name="lucideRotateCcw" class="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+      <div class="min-w-0">
+        <p class="text-sm font-medium">{{ 'orders.detail.paymentRefunded' | transloco }}</p>
+        <p class="mt-0.5 text-xs text-muted-foreground">
+          {{ 'orders.detail.paymentRefundedHint' | transloco }}
+        </p>
+      </div>
+    </div>
+  }
+
+  <ol
+    class="flex flex-col gap-3 sm:flex-row sm:items-start"
+    data-testid="order-progress"
+    [attr.aria-label]="'orders.detail.timeline' | transloco"
+  >
     @for (step of chain; track step; let last = $last) {
-      <li class="flex min-w-0 flex-1 items-center gap-2 sm:flex-col sm:items-start sm:gap-1.5">
+      <li
+        class="flex min-w-0 flex-1 items-start gap-2 sm:flex-col sm:items-start sm:gap-1.5"
+        [attr.aria-current]="isCurrent(step) ? 'step' : null"
+      >
         <div class="flex w-full items-center gap-2">
           <span
-            class="flex size-6 shrink-0 items-center justify-center rounded-full border text-xs font-medium"
+            class="flex size-6 shrink-0 items-center justify-center rounded-full border text-xs font-medium ring-primary/30"
             [class.border-success]="isDone(step)"
             [class.bg-success-soft]="isDone(step)"
             [class.text-success]="isDone(step)"
-            [class.border-primary]="isCurrent(step)"
-            [class.bg-primary]="isCurrent(step)"
-            [class.text-primary-foreground]="isCurrent(step)"
+            [class.border-primary]="isCurrent(step) && !isDone(step)"
+            [class.bg-primary]="isCurrent(step) && !isDone(step)"
+            [class.text-primary-foreground]="isCurrent(step) && !isDone(step)"
             [class.border-border]="isFuture(step)"
             [class.bg-muted]="isFuture(step)"
             [class.text-muted-foreground]="isFuture(step)"
+            [class.ring-2]="isCurrent(step)"
+            [class.ring-offset-2]="isCurrent(step)"
+            [class.ring-offset-background]="isCurrent(step)"
             [attr.data-step]="step"
             [attr.data-state]="isDone(step) ? 'done' : isCurrent(step) ? 'current' : 'future'"
+            [attr.data-current]="isCurrent(step) ? 'true' : null"
           >
             @if (isDone(step) || (isCurrent(step) && step === 'DELIVERED')) {
               <ng-icon name="lucideCheck" class="size-3.5" aria-hidden="true" />
@@ -49,15 +79,42 @@
             ></span>
           }
         </div>
-        <span
-          class="text-sm"
-          [class.font-medium]="isCurrent(step)"
-          [class.text-foreground]="!isFuture(step)"
-          [class.text-muted-foreground]="isFuture(step)"
-        >
-          {{ 'orders.statuses.' + step | transloco }}
-        </span>
+        <div class="min-w-0">
+          <span
+            class="block text-sm"
+            [class.font-medium]="isCurrent(step)"
+            [class.text-foreground]="!isFuture(step)"
+            [class.text-muted-foreground]="isFuture(step)"
+          >
+            {{ 'orders.statuses.' + step | transloco }}
+          </span>
+          @if (stepDate(step); as when) {
+            <time
+              class="mt-0.5 block text-xs text-muted-foreground"
+              data-step-date
+              [attr.datetime]="stepRecords()[step]?.at"
+            >
+              {{ when }}
+            </time>
+            @if (stepActor(step); as who) {
+              <span class="block truncate text-xs text-muted-foreground" data-step-actor [title]="who">
+                {{ 'orders.timeline.by' | transloco: { actor: who } }}
+              </span>
+            }
+          }
+          @if (isCurrent(step)) {
+            <span class="sr-only">{{ 'orders.detail.stepCurrent' | transloco }}</span>
+          } @else if (isDone(step)) {
+            <span class="sr-only">{{ 'orders.detail.stepDone' | transloco }}</span>
+          }
+        </div>
       </li>
     }
   </ol>
+
+  @if (historyMissing() && !hasAnyStepRecord()) {
+    <p class="mt-3 text-xs text-muted-foreground" data-testid="order-step-history-gap">
+      {{ 'orders.detail.stepHistoryGap' | transloco }}
+    </p>
+  }
 }
