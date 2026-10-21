@@ -57,4 +57,21 @@ describe('buildOrderItemViews', () => {
     expect(view.variantLabel).toBeNull();
     expect(view.item.sku).toBe('SKU-1-1');
   });
+
+  it('prefers the catalog variant SKU over the order line SKU', () => {
+    const variantWithSku: VariantInfo = { ...variant, sku: 'SKU-001' };
+    const [view] = buildOrderItemViews([item()], new Map([[1, variantWithSku]]));
+    expect(view.displaySku).toBe('SKU-001');
+  });
+
+  it('falls back to the order line SKU when the variant is absent', () => {
+    const [view] = buildOrderItemViews([item()], new Map());
+    expect(view.displaySku).toBe('SKU-1-1');
+  });
+
+  it('falls back to the order line SKU when the variant has no SKU', () => {
+    const variantNoSku: VariantInfo = { ...variant, sku: null };
+    const [view] = buildOrderItemViews([item()], new Map([[1, variantNoSku]]));
+    expect(view.displaySku).toBe('SKU-1-1');
+  });
 });

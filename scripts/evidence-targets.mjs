@@ -442,6 +442,16 @@ const MEASURE_ORDER_DETAIL = () => {
     sidebar: sidebar.map((c) => c.id),
   };
 
+  // v4 additions: verify the specific fixes landed in the DOM.
+  const customerOrderCount = (document.querySelector('[data-testid="order-customer-orders"]')?.textContent || '').trim().replace(/\s+/g, ' ');
+  const regularPriceLabel = (document.querySelector('[data-testid="order-item-regular-price"]')?.textContent || '').trim().replace(/\s+/g, ' ');
+  const displaySkuText = (document.querySelector('[data-testid="order-item-sku"]')?.textContent || '').trim().replace(/\s+/g, ' ');
+  // Issue 5: "Not recorded" spans must NOT carry text-warning (amber). They
+  // should use text-muted-foreground. Warning banners (bg-warning-soft) keep it.
+  const missingTextWarningCount = Array.from(
+    document.querySelectorAll('[data-missing="true"]'),
+  ).filter((el) => el.className.includes('text-warning')).length;
+
   return {
     cards,
     sidebar,
@@ -460,6 +470,10 @@ const MEASURE_ORDER_DETAIL = () => {
     tagsCard,
     shipmentText,
     customerText,
+    customerOrderCount,
+    regularPriceLabel,
+    displaySkuText,
+    missingTextWarningCount,
     addressText,
     states: {
       loading: !!document.querySelector('[data-testid="order-detail-loading"]'),
@@ -867,6 +881,92 @@ export const TARGET_SETS = {
     { id: 'cancelled', url: '/dashboard/orders/6', measure: async (page) => page.evaluate(MEASURE_ORDER_DETAIL) },
     { id: 'refunded', url: '/dashboard/orders/9', measure: async (page) => page.evaluate(MEASURE_ORDER_DETAIL) },
     { id: 'no-items', url: '/dashboard/orders/15', measure: async (page) => page.evaluate(MEASURE_ORDER_DETAIL) },
+  ],
+
+  // The order-details v4 matrix: the five real order states plus a populated
+  // fixture variant, captured at 1440 and 1024 only (the v4 work's width gate).
+  // Same five orders as v3, plus the `populated` fixture target that injects
+  // shipment, history, notes and payment reference into order 1.
+  'order-details-v4': [
+    { id: 'delivered', url: '/dashboard/orders/1', measure: async (page) => page.evaluate(MEASURE_ORDER_DETAIL) },
+    { id: 'shipped', url: '/dashboard/orders/8', measure: async (page) => page.evaluate(MEASURE_ORDER_DETAIL) },
+    { id: 'cancelled', url: '/dashboard/orders/6', measure: async (page) => page.evaluate(MEASURE_ORDER_DETAIL) },
+    { id: 'refunded', url: '/dashboard/orders/9', measure: async (page) => page.evaluate(MEASURE_ORDER_DETAIL) },
+    { id: 'no-items', url: '/dashboard/orders/15', measure: async (page) => page.evaluate(MEASURE_ORDER_DETAIL) },
+    {
+      // Inject shipment, history, notes and payment reference into order 1 so
+      // the populated branches of the adapter are exercised. Real orders only,
+      // missing fields filled. Dev-only route intercepts.
+      id: 'populated',
+      url: '/dashboard/orders/1',
+      routes: [
+        {
+          url: /\/api\/dashboard\/orders\/1$/,
+          handler: async (route) => {
+            const response = await route.fetch();
+            const json = await response.json();
+            json.data.shipment = {
+              carrier: 'Aramex',
+              trackingNumber: 'ARX-4471902',
+              trackingUrl: 'https://www.aramex.com/track/ARX-4471902',
+              shippedAt: '2026-10-20T09:20:00Z',
+              deliveredAt: '2026-10-21T09:02:00Z',
+            };
+            await route.fulfill({ response, json });
+          },
+        },
+        {
+          url: /\/api\/dashboard\/orders\/1\/history$/,
+          handler: (route) =>
+            route.fulfill({
+              json: {
+                success: true,
+                message: null,
+                data: [
+                  { id: 1, orderId: 1, fromStatus: null, toStatus: 'PENDING', note: null, changedBy: 'system', notifyCustomer: false, createdAt: '2026-10-20T05:49:48Z' },
+                  { id: 2, orderId: 1, fromStatus: 'PENDING', toStatus: 'CONFIRMED', note: 'Payment captured.', changedBy: 'admin@aurum.local', notifyCustomer: true, createdAt: '2026-10-20T06:05:00Z' },
+                  { id: 3, orderId: 1, fromStatus: 'CONFIRMED', toStatus: 'PROCESSING', note: null, changedBy: 'admin@aurum.local', notifyCustomer: false, createdAt: '2026-10-20T06:20:00Z' },
+                  { id: 4, orderId: 1, fromStatus: 'PROCESSING', toStatus: 'SHIPPED', note: 'Handed to Aramex.', changedBy: 'admin@aurum.local', notifyCustomer: true, createdAt: '2026-10-20T09:15:00Z' },
+                  { id: 5, orderId: 1, fromStatus: 'SHIPPED', toStatus: 'DELIVERED', note: null, changedBy: 'admin@aurum.local', notifyCustomer: true, createdAt: '2026-10-21T09:05:00Z' },
+                ],
+                errors: [],
+                timestamp: '2026-10-21T10:00:00Z',
+              },
+            }),
+        },
+        {
+          url: /\/api\/dashboard\/orders\/1\/notes$/,
+          handler: (route) =>
+            route.fulfill({
+              json: {
+                success: true,
+                message: null,
+                data: [
+                  { id: 2, orderId: 1, author: 'admin@aurum.local', body: 'Customer asked for a coarser grind next time.', internal: true, createdAt: '2026-10-21T09:30:00Z' },
+                  { id: 1, orderId: 1, author: 'admin@aurum.local', body: 'Double-checked the roast date before dispatch.', internal: true, createdAt: '2026-10-20T10:40:00Z' },
+                ],
+                errors: [],
+                timestamp: '2026-10-21T10:00:00Z',
+              },
+            }),
+        },
+        {
+          url: /\/api\/dashboard\/orders\/1\/payment$/,
+          handler: async (route) => {
+            const response = await route.fetch();
+            const json = await response.json();
+            json.data.transactionReference = 'TXN-8891-2026';
+            json.data.paidAt = '2026-10-20T06:02:00Z';
+            await route.fulfill({ response, json });
+          },
+        },
+      ],
+      action: async (page) => ({
+        fixture: 'populated',
+        note: 'history, notes, shipment and payment reference are injected; all other data is the real order',
+      }),
+      measure: async (page) => page.evaluate(MEASURE_ORDER_DETAIL),
+    },
   ],
 
   // The states that are not one of the five orders: the overflow menu's

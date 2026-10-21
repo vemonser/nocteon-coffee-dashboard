@@ -165,3 +165,31 @@ recorded", an inline warning, or a disabled action with the reason.
   the reason "the store sends order e-mails automatically, but it cannot send
   one on demand." A `POST /api/dashboard/orders/{id}/resend-email` (and an
   event row when it is sent) would make the action real.
+
+## Order details v4 (ui/order-details-v4)
+
+Verified against the running backend on 2026-10-22 with the seeded 17 orders.
+
+### 1. `userId` filter on the order list is silently ignored
+
+- `GET /api/dashboard/orders?userId=1&size=100` returns all 17 orders, not the
+  4 belonging to customer 1. The `userId` parameter is accepted (200, no
+  error) but has no effect server-side.
+- The page now filters client-side: `orders.filter(o => o.customer?.id === customerId)`
+  before computing the customer summary. This is correct for the 17-seed
+  dataset, but does not scale — a customer with thousands of orders would
+  still pull every page.
+- Needed: the list endpoint must honour `userId` as a server-side filter, or a
+  dedicated `GET /api/dashboard/customers/{id}/orders` endpoint must exist.
+  See also gap #4 (customer aggregate).
+
+### 2. Timeline / status history still empty
+
+- `GET /api/dashboard/orders/{id}/history` returns `200` with `[]` for every
+  seeded order. The v4 page logs only the order's `createdAt` (a real timestamp)
+  and states that step dates are not recorded — it never invents a journey.
+- The `populated` evidence fixture injects a 5-row history via a route
+  intercept to exercise the populated adapter branch; in production the
+  endpoint remains an empty contract.
+- Needed: the status-change writer (`PUT /status`) must append a history row
+  in the same transaction as the change, including the first creation row.

@@ -1516,6 +1516,7 @@
       "paymentRefunded": "Payment refunded",
       "paymentRefundedHint": "The money was returned. The fulfilment status above is the last stage the order reached.",
       "collected": "Collected",
+      "collectedAt": "Collected at",
       "collectedBasis": "From {{count}} paid order(s)",
       "collectedHelp": "Sum of totals of PAID orders only"
     },

@@ -76,14 +76,6 @@ const RUN_DIR = argValue('--out')
 /** The screens this phase captures. `--url` keeps the legacy single-screen mode. */
 const TARGETS = targetsFor(PHASE, URL_PATH);
 
-/**
- * Where the run writes. `--out` wins; otherwise the run lands in
- * evidence/<phase> (plus -<tag> when a tag is given).
- */
-const RUN_DIR = argValue('--out')
-  ? resolve(process.cwd(), argValue('--out'))
-  : `${OUT}${TAG ? '-' + TAG : ''}`;
-
 function argValue(flag) {
   const i = process.argv.indexOf(flag);
   return i > -1 ? process.argv[i + 1] : null;

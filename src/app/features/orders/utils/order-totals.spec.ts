@@ -162,6 +162,28 @@ describe('computeOrderTotals', () => {
     expect(t.expectedTotal).toBe(0.3);
     expect(t.consistent).toBe(true);
   });
+
+  it('does not subtract the catalog compare-at price from the totals', () => {
+    // The catalog's compareAtPrice (the struck-through "regular price") is
+    // NOT an order discount. computeOrderTotals must never subtract it — it
+    // derives the subtotal from the line totals only, and the total from the
+    // backend's stored totalAmount. The compareAt lives on the variant, not
+    // the order line, and is never read here.
+    const t = computeOrderTotals(
+      order({
+        items: [item({ id: 1, unitPrice: 650, totalPrice: 1300, quantity: 2 })],
+        discountAmount: 0,
+        shippingCost: 50,
+        totalAmount: 1350,
+      }),
+    );
+    expect(t.subtotal).toBe(1300);     // 1300 from one line total
+    expect(t.total).toBe(1350);        // the stored total
+    expect(t.expectedTotal).toBe(1350); // 1300 + 50, NO compare-at subtraction
+    expect(t.discount).toBe(0);        // no discount row shown
+    expect(t.delta).toBe(0);
+    expect(t.consistent).toBe(true);
+  });
 });
 
 describe('lineTotalsAgree', () => {
