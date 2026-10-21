@@ -1683,3 +1683,23 @@ Reviews and every other page are untouched.
   loading/error/not-found states. The `before/` baseline was captured with the
   same measured fields after this extension (before any UI edit), so the
   before/after comparison is like for like.
+
+<!-- ── v4 decisions (ui/order-details-v4) ──────────────────────────────── -->
+
+### Resend email: kept DISABLED by design
+
+No `POST /api/dashboard/orders/{id}/resend-email` endpoint exists (see
+API_GAPS.md #6). The "Resend email" button stays visibly disabled with the
+reason "the store sends order e-mails automatically, but it cannot send one on
+demand." on both the button's `title` and its wrapper tooltip. This is a design
+decision: a button that silently does nothing is worse than one that says it
+cannot. The tooltip wrapper carries `tabindex="0"` and `role="group"` so the
+reason is reachable by keyboard focus.
+
+### Customer summary: client-side `userId` filter
+
+The `GET /api/dashboard/orders?userId=N` endpoint accepts `userId` but silently
+returns every order (API_GAPS.md v4 #1). The page filters client-side:
+`orders.filter(o => o.customer?.id === customerId)` before summarising. This is
+correct for the 17-seed dataset but does not scale; the backend should honour
+the filter server-side.

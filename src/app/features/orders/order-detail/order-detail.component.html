@@ -286,20 +286,26 @@
                       }
                       <p class="mt-0.5 flex flex-wrap items-center gap-1 text-xs text-muted-foreground">
                         <span>{{ 'orders.detail.sku' | transloco }}</span>
-                        <bdi class="font-mono" data-testid="order-item-sku">{{ view.item.sku }}</bdi>
+                        <bdi class="font-mono" data-testid="order-item-sku">{{ view.displaySku }}</bdi>
                       </p>
                     </div>
                     <div class="shrink-0 text-end">
                       <div class="flex flex-wrap items-baseline justify-end gap-1.5 text-sm tabular-nums">
                         <span>{{ view.item.quantity }} × {{ view.item.unitPrice | money }}</span>
                         @if (view.originalUnitPrice; as regular) {
-                          <s
-                            class="text-xs text-muted-foreground"
-                            [attr.aria-label]="'orders.detail.regularPrice' | transloco"
+                          <span
+                            class="inline-flex items-baseline gap-1 text-xs text-muted-foreground"
+                            data-testid="order-item-regular-price"
                             [attr.title]="'orders.detail.regularPriceHint' | transloco"
                           >
-                            {{ regular | money }}
-                          </s>
+                            <span>{{ 'orders.detail.regularPrice' | transloco }}:</span>
+                            <s
+                              class="text-xs"
+                              [attr.aria-label]="'orders.detail.regularPrice' | transloco"
+                            >
+                              {{ regular | money }}
+                            </s>
+                          </span>
                         }
                       </div>
                       <p class="mt-0.5 text-xs font-medium tabular-nums" data-testid="order-item-total">
@@ -365,7 +371,7 @@
                   <dt class="text-sm text-muted-foreground">{{ 'orders.detail.collected' | transloco }}</dt>
                   <dd class="text-sm tabular-nums" data-testid="order-collected">
                     @if (settlement().paid === null) {
-                      <span class="text-warning">{{ notRecorded() }}</span>
+                      <span class="text-muted-foreground">{{ notRecorded() }}</span>
                     } @else {
                       {{ settlement().paid | money }}
                     }
@@ -375,7 +381,7 @@
                   <dt class="text-sm text-muted-foreground">{{ 'orders.detail.refunded' | transloco }}</dt>
                   <dd class="text-sm tabular-nums" data-testid="order-refunded">
                     @if (settlement().refunded === null) {
-                      <span class="text-warning">{{ notRecorded() }}</span>
+                      <span class="text-muted-foreground">{{ notRecorded() }}</span>
                     } @else {
                       {{ settlement().refunded | money }}
                     }
@@ -385,7 +391,7 @@
                   <dt class="text-sm font-medium">{{ 'orders.detail.balanceDue' | transloco }}</dt>
                   <dd class="text-sm font-medium tabular-nums" data-testid="order-balance-due">
                     @if (settlement().balanceDue === null) {
-                      <span class="text-warning">{{ notRecorded() }}</span>
+                      <span class="text-muted-foreground">{{ notRecorded() }}</span>
                     } @else {
                       {{ settlement().balanceDue | money }}
                     }
@@ -719,7 +725,7 @@
                 @if (payment()?.paidAt; as paidAt) {
                   <time class="text-sm" [attr.datetime]="paidAt">{{ dates.formatDateAndTime(paidAt) }}</time>
                 } @else if (o.paymentStatus === 'PAID') {
-                  <span class="text-sm text-warning" data-missing="true">{{ notRecorded() }}</span>
+                  <span class="text-sm text-muted-foreground" data-missing="true">{{ notRecorded() }}</span>
                 }
               </div>
             }
@@ -750,7 +756,7 @@
                     <ng-icon name="lucideCopy" class="size-3.5" aria-hidden="true" />
                   </button>
                 } @else {
-                  <span class="text-sm text-warning" data-testid="order-transaction-reference" data-missing="true">
+                  <span class="text-sm text-muted-foreground" data-testid="order-transaction-reference" data-missing="true">
                     {{ notRecorded() }}
                   </span>
                 }
@@ -769,7 +775,7 @@
                   {{ dates.formatDateAndTime(paidAt) }}
                 </time>
               } @else {
-                <span class="text-sm text-warning" data-testid="order-paid-at" data-missing="true">
+                <span class="text-sm text-muted-foreground" data-testid="order-paid-at" data-missing="true">
                   {{ notRecorded() }}
                 </span>
               }

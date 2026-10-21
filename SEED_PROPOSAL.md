@@ -304,10 +304,14 @@ one shipping-only order.
 ### 6. The SKU format disagrees between order lines and the catalog
 
 Order lines return `SKU-1-1` / `SKU-2-1`; the catalog and carts use
-`SKU-001`-style values. The page displays the raw API value (no normalisation),
-so the same product shows two different SKUs on two screens. The seed should
-store the catalog's SKU on the order line, or the backend should copy it at
-order creation.
+`SKU-001`-style values. The seed should store the catalog's SKU on the order
+line, or the backend should copy it at order creation.
+
+The order-details v4 page now resolves the variant's SKU from the catalog and
+prefers it over the order line's SKU (`OrderItemView.displaySku` in
+`order-items.adapter.ts`), so the same product shows a consistent SKU across
+the dashboard. When the catalog can't be resolved the line falls back to its
+own SKU — the page never shows a blank.
 
 ### 7. Address duplication in the seed
 

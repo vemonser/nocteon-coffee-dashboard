@@ -7,6 +7,7 @@
 //   node scripts/assert-order-evidence.mjs extra
 //   node scripts/assert-order-evidence.mjs states
 //   node scripts/assert-order-evidence.mjs return
+//   node scripts/assert-order-evidence.mjs v4
 //
 // Each mode reads the results.json the harness wrote for that run.
 
@@ -21,6 +22,7 @@ const FILES = {
   extra: 'evidence/order-details-v3/extra/results.json',
   states: 'evidence/order-details-v3/after/states/results.json',
   return: 'evidence/order-details-v3/after/verification/results.json',
+  v4: 'evidence/order-details-v4/after/results.json',
 };
 
 const failures = [];
@@ -187,6 +189,66 @@ function checkStates(rows) {
   }
 }
 
+function checkV4(rows) {
+  const expected = ['delivered', 'shipped', 'cancelled', 'refunded', 'no-items', 'populated'];
+  const seen = new Set(rows.map((r) => r.id));
+  for (const id of expected) if (!seen.has(id)) failures.push(`missing target ${id}`);
+
+  for (const row of rows) {
+    genericInvariants(row);
+    const own = row.own ?? {};
+
+    // Issue 5: "Not recorded" spans must not carry text-warning.
+    if ((own.missingTextWarningCount ?? 0) > 0) {
+      fail(row, `Not recorded span uses text-warning (${own.missingTextWarningCount} occurrences)`);
+    }
+
+    // Issue 1: customer summary must reflect only this customer's orders, not 17.
+    if (row.id === 'delivered' && own.customerOrderCount === '17 orders') {
+      fail(row, 'customer order count is store-wide (17) instead of customer-scoped');
+    }
+
+    // Issue 2: visible "Regular price" label on struck-through compare-at prices.
+    if (row.id === 'delivered') {
+      if (!own.regularPriceLabel) fail(row, 'regular price label not rendered for delivered order');
+      else {
+        if (row.lang === 'en' && !/regular/i.test(own.regularPriceLabel)) {
+          fail(row, `regular price label wrong in EN: "${own.regularPriceLabel}"`);
+        }
+        if (row.lang === 'ar' && !/\u0633\u0639\u0631/.test(own.regularPriceLabel)) {
+          fail(row, `regular price label stale English in AR: "${own.regularPriceLabel}"`);
+        }
+      }
+    }
+
+    // Issue 3: displaySku resolves from the variant (non-empty).
+    if (row.id === 'delivered' && !own.displaySkuText) {
+      fail(row, 'displaySku not rendered for delivered order');
+    }
+
+    // Issues 4 & 6: populated fixture exercises the full timeline.
+    if (row.id === 'populated') {
+      if ((own.activity?.count ?? 0) < 8) {
+        fail(row, `populated order shows ${own.activity?.count} events, expected >= 8`);
+      }
+      if (!/Aramex/.test(own.shipmentText ?? '')) fail(row, 'shipment card does not show the carrier');
+      if (!/ARX-4471902/.test(own.shipmentText ?? '')) fail(row, 'shipment card does not show the tracking number');
+      if (own.payment?.transactionReference !== 'TXN-8891-2026') {
+        fail(row, `transaction reference not shown: "${own.payment?.transactionReference}"`);
+      }
+      if (own.payment?.warning) fail(row, `populated payment still warns: ${own.payment.warning}`);
+    }
+
+    // No Tags card, no Net paid row in the v4 page.
+    if (row.id === 'delivered') {
+      if (own.tagsCard !== false) fail(row, 'Tags card is still rendered');
+      if (own.netPaid !== '') fail(row, `netPaid still rendered: ${JSON.stringify(own.netPaid)}`);
+    }
+
+    notes.push(`${row.cell} ${row.id}: activity=${own.activity?.count ?? 0} orderCount="${own.customerOrderCount}"`);
+  }
+}
+
 function checkReturn(rows) {
   for (const row of rows) {
     // The walk ENDS on the orders list, which is out of scope here and uses
@@ -215,7 +277,7 @@ function checkReturn(rows) {
 
 const file = FILES[MODE];
 if (!file) {
-  console.error(`usage: node scripts/assert-order-evidence.mjs <after|extra|states|return>`);
+  console.error(`usage: node scripts/assert-order-evidence.mjs <after|extra|states|return|v4>`);
   process.exit(2);
 }
 
@@ -233,7 +295,7 @@ if (rows.length === 0) {
   process.exit(2);
 }
 
-const check = { after: checkAfter, extra: checkExtra, states: checkStates, return: checkReturn }[MODE];
+const check = { after: checkAfter, extra: checkExtra, states: checkStates, return: checkReturn, v4: checkV4 }[MODE];
 check(rows);
 
 if (failures.length) {
