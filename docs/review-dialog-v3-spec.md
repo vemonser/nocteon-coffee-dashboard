@@ -81,3 +81,8 @@ one is in `FINAL_REPORT` (the round report) and in
 - **AC-16** — Given the admin wants to answer a review publicly, then the
   answer can be sent. (Optional, and SKIPPED: the backend has no endpoint
   and no column for it. Logged in API_GAPS.md.)
+
+- **AC-17** — Given a review with a 600+ character comment, when the
+  REVIEWS TABLE shows it, then the cell is two lines with an ellipsis (the
+  full text in the title), and the row stays a row instead of growing to
+  half a page.

@@ -225,6 +225,18 @@ const checks = {
     const ok = gaps.includes('No admin reply');
     return { ok, detail: `the admin reply is skipped and logged in API_GAPS.md: ${ok}` };
   },
+  'AC-17': () => {
+    // The comment column of the TABLE is clamped: two lines and an ellipsis,
+    // the full text in the title. A row of 571px is not a table.
+    const rows = afterTargets.map((t) => t.own?.tableRow).filter(Boolean);
+    const ok =
+      rows.length > 0 &&
+      rows.every((r) => r.heightPx <= 120 && r.clamped === true && r.lineClamp === '2');
+    return {
+      ok,
+      detail: `the long-comment row is ${[...new Set(rows.map((r) => r.heightPx))].join(',')}px tall, the cell is clamped to ${[...new Set(rows.map((r) => r.lineClamp))].join(',')} lines: ${ok}`,
+    };
+  },
 };
 
 const only = process.argv.includes('--criterion')

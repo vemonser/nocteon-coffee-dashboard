@@ -566,6 +566,23 @@ const MEASURE_REVIEW_DIALOG = `${CONTRAST_HELPERS}
   );
   const commentBlock = panel.querySelector('blockquote');
 
+  // The TABLE behind the dialog: the row of a long comment, and the clamp
+  // on its cell. A comment that is not clamped grows the row to half a
+  // page, and the table stops being scannable.
+  const longRow = Array.from(document.querySelectorAll('tbody tr')).find(
+    (r) => (r.querySelector('td[data-column="comment"]')?.textContent || '').trim().length >= 600,
+  );
+  const longRowCell = longRow?.querySelector('td[data-column="comment"] span') ?? null;
+  const tableRow = longRow
+    ? {
+        heightPx: Math.round(longRow.getBoundingClientRect().height),
+        cellHeightPx: longRowCell ? longRowCell.clientHeight : null,
+        cellScrollHeightPx: longRowCell ? longRowCell.scrollHeight : null,
+        clamped: longRowCell ? longRowCell.scrollHeight > longRowCell.clientHeight : null,
+        lineClamp: longRowCell ? getComputedStyle(longRowCell).webkitLineClamp : null,
+      }
+    : null;
+
   return {
     present: true,
     title: heading ? (heading.textContent || '').trim() : null,
@@ -606,6 +623,7 @@ const MEASURE_REVIEW_DIALOG = `${CONTRAST_HELPERS}
       const m = text.match(/(Status|الحالة)\\s*[:\\u061F]?\\s*([A-Za-z\\u0600-\\u06FF]+)/);
       return m ? m[0].trim() : null;
     })(),
+    tableRow,
   };
 `;
 
