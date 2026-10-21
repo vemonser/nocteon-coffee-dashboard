@@ -21,7 +21,7 @@
     "button": 0
   },
   "src/app/features/contact-messages/components/contact-messages-list.component.html": {
-    "input": 0,
+    "input": 1,
     "select": 0,
     "button": 1
   },
@@ -59,6 +59,11 @@
     "input": 0,
     "select": 0,
     "button": 3
+  },
+  "src/app/features/orders/order-detail/order-detail.component.html": {
+    "input": 0,
+    "select": 0,
+    "button": 2
   },
   "src/app/features/origins/components/origins-list.component.html": {
     "input": 0,
@@ -125,10 +130,10 @@
     "select": 0,
     "button": 0
   },
-  "src/app/features/reviews/components/review.component.html": {
+  "src/app/features/reviews/components/review-list.component.html": {
     "input": 0,
     "select": 0,
-    "button": 11
+    "button": 2
   },
   "src/app/features/roast-level/components/roast-level-list.component.html": {
     "input": 1,
@@ -181,6 +186,11 @@
     "button": 2
   },
   "src/app/shared/components/trash-banner/trash-banner.component.html": {
+    "input": 0,
+    "select": 0,
+    "button": 1
+  },
+  "src/app/shared/ui/actions-cell/actions-cell.component.html": {
     "input": 0,
     "select": 0,
     "button": 1

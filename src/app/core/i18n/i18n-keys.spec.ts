@@ -68,18 +68,51 @@ for (const [path, text] of Object.entries(tsSources)) {
  */
 const PLURAL_BASES = [
   'dashboard.countDays',
+  'dashboard.countSessions',
   'dashboard.countSold',
   'dashboard.countOrders',
   'dashboard.countCustomers',
+  // The orders list and the order detail page count orders, items and
+  // results. Arabic counts a noun by the number in front of it, so the
+  // family has all six categories there and two in English.
+  'orders.countItems',
+  'orders.countOrders',
+  'orders.countResults',
 ];
 const EN_SUFFIXES = ['one', 'other'];
 const AR_SUFFIXES = ['zero', 'one', 'two', 'few', 'many', 'other'];
 
-/** A key belongs to a plural family if it is `<base>_<category>`. */
-function isPluralKey(key: string): boolean {
-  return PLURAL_BASES.some(
-    (base) => key.startsWith(`${base}_`) && /_(zero|one|two|few|many|other)$/.test(key),
-  );
+/**
+ * A key belongs to a plural family if it is `<base>_<category>` AND its
+ * siblings carry the OTHER categories.
+ *
+ * The sibling test is what makes this general: English has one/other and
+ * Arabic has all six, so a plural family is legitimately ASYMMETRIC, and
+ * the symmetry check must not treat it as a missing key. Looking for the
+ * sibling (rather than a hardcoded list of bases) means a family added later
+ * is exempt too, instead of failing the symmetry check for a reason that has
+ * nothing to do with the translation.
+ */
+const PLURAL_CATEGORIES = ['zero', 'one', 'two', 'few', 'many', 'other'];
+
+function isPluralKey(key: string, dict: Dict): boolean {
+  const parts = key.split('.');
+  const segment = parts[parts.length - 1];
+  // "<base>_<category>" — the base may itself contain underscores
+  // ("countItems_zero" -> base "countItems", category "zero").
+  const underscore = segment.lastIndexOf('_');
+  if (underscore <= 0) return false;
+  const base = segment.slice(0, underscore);
+  const category = segment.slice(underscore + 1);
+  if (!PLURAL_CATEGORIES.includes(category)) return false;
+  const parent = parts.slice(0, -1).reduce<any>((o, p) => o?.[p], dict);
+  if (!parent || typeof parent !== 'object') return false;
+  // The family has at least one sibling in a different category. A family may
+  // be FLAT (`dashboard.countDays_one`) or NESTED (`dashboard.days.one`).
+  const siblingIn = (c: string): boolean =>
+    typeof parent[`${base}_${c}`] === 'string' ||
+    (typeof parent[base] === 'object' && typeof parent[base][c] === 'string');
+  return PLURAL_CATEGORIES.some((c) => c !== category && siblingIn(c));
 }
 
 const DYNAMIC_BASES: string[] = PLURAL_BASES;
@@ -89,15 +122,29 @@ describe('i18n keys', () => {
     // A plural family is legitimately asymmetric: English has one/other,
     // Arabic has all six Intl.PluralRules categories. Every OTHER key must
     // exist in both locales.
-    const onlyEn = [...enKeys].filter((k) => !arKeys.has(k) && !isPluralKey(k));
-    const onlyAr = [...arKeys].filter((k) => !enKeys.has(k) && !isPluralKey(k));
+    const onlyEn = [...enKeys].filter(
+      (k) => !arKeys.has(k) && !isPluralKey(k, en) && !isPluralKey(k, ar),
+    );
+    const onlyAr = [...arKeys].filter(
+      (k) => !enKeys.has(k) && !isPluralKey(k, en) && !isPluralKey(k, ar),
+    );
     expect({ onlyEn, onlyAr }).toEqual({ onlyEn: [], onlyAr: [] });
   });
 
   it('every plural family is complete for its language', () => {
-    // EN must have one/other; AR must have all six.
+    // EN must have one/other; AR must have all six. EVERY family is checked
+    // — the families are discovered from the locale files, so a family added
+    // later is covered without touching this test.
     const missing: string[] = [];
-    for (const base of PLURAL_BASES) {
+    const families = new Set<string>();
+    for (const key of [...enKeys, ...arKeys]) {
+      const parts = key.split('.');
+      const last = parts[parts.length - 1];
+      if (!PLURAL_CATEGORIES.includes(last)) continue;
+      if (!isPluralKey(key, en) && !isPluralKey(key, ar)) continue;
+      families.add(parts.slice(0, -1).join('.'));
+    }
+    for (const base of families) {
       for (const s of EN_SUFFIXES) if (!enKeys.has(`${base}_${s}`)) missing.push(`en:${base}_${s}`);
       for (const s of AR_SUFFIXES) if (!arKeys.has(`${base}_${s}`)) missing.push(`ar:${base}_${s}`);
     }
@@ -331,6 +378,93 @@ const DASHBOARD_GLOSSARY = [
   },
 ] as const;
 
+/**
+ * The orders glossary — one word per concept, in BOTH locales.
+ *
+ * The same concept used to have two words: the orders list read
+ * `orders.statuses.*` and the status BADGE read `common.statuses.*`, so a
+ * cancelled order said "ملغاة" in the list and "ملغي" on the badge of the
+ * same row. The payment method had the same split
+ * (`orders.paymentMethods.*` vs `dashboard.paymentMethods.*`).
+ *
+ * The test below fails as soon as one concept maps to two terms again.
+ */
+const ORDERS_GLOSSARY: Array<{
+  concept: string;
+  values: string[];
+  ordersKey: (value: string) => string;
+  otherKey: (value: string) => string;
+}> = [
+  {
+    concept: 'Order status',
+    values: ['PENDING', 'CONFIRMED', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED'],
+    ordersKey: (v) => `orders.statuses.${v}`,
+    otherKey: (v) => `common.statuses.${v.toLowerCase()}`,
+  },
+  {
+    concept: 'Payment status',
+    values: ['PENDING', 'PAID', 'FAILED', 'REFUNDED'],
+    ordersKey: (v) => `orders.paymentStatuses.${v}`,
+    otherKey: (v) => `common.statuses.${v.toLowerCase()}`,
+  },
+  {
+    concept: 'Payment method',
+    values: ['ONLINE', 'CASH_ON_DELIVERY'],
+    ordersKey: (v) => `orders.paymentMethods.${v}`,
+    otherKey: (v) => `dashboard.paymentMethods.${v}`,
+  },
+];
+
+describe('orders glossary', () => {
+  it('a concept maps to ONE term — the list and the badge agree', () => {
+    const drift: string[] = [];
+    for (const entry of ORDERS_GLOSSARY) {
+      for (const value of entry.values) {
+        for (const tag of ['en', 'ar'] as const) {
+          const a = catValue(entry.ordersKey(value), tag);
+          const b = catValue(entry.otherKey(value), tag);
+          if (a !== b) {
+            drift.push(
+              `${tag}: ${entry.concept} "${value}" -> "${a}" (${entry.ordersKey(value)}) ` +
+                `vs "${b}" (${entry.otherKey(value)})`,
+            );
+          }
+        }
+      }
+    }
+    expect(drift, `one concept, one term:\n${drift.join('\n')}`).toEqual([]);
+  });
+
+  it('every orders term is present in both locales', () => {
+    const missing: string[] = [];
+    for (const entry of ORDERS_GLOSSARY) {
+      for (const value of entry.values) {
+        for (const tag of ['en', 'ar'] as const) {
+          const v = catValue(entry.ordersKey(value), tag);
+          if (!v) missing.push(`${tag}:${entry.ordersKey(value)}`);
+        }
+      }
+    }
+    expect(missing).toEqual([]);
+  });
+
+  it('no Arabic orders term mixes scripts', () => {
+    const mixed: string[] = [];
+    for (const key of [...enKeys, ...arKeys].filter((k) => k.startsWith('orders.'))) {
+      const v = catValue(key, 'ar');
+      if (!v) continue;
+      // The placeholders ({{count}}, {{status}}) are not part of the word.
+      const words = v.replace(/\{\{[^}]*\}\}/g, '');
+      // A Latin letter in an Arabic term means the key was never translated
+      // (or was translated with an English word left in it).
+      if (/[A-Za-z]/.test(words) && !/SKU|ORD|CSV|Instagram|Facebook|WhatsApp|URL|Email/i.test(words)) {
+        mixed.push(`ar:${key} = "${v}"`);
+      }
+    }
+    expect(mixed).toEqual([]);
+  });
+});
+
 describe('dashboard glossary (docs/glossary.md)', () => {
   it('every pinned concept uses its approved word in both locales', () => {
     const drift: string[] = [];
@@ -356,7 +490,10 @@ describe('dashboard glossary (docs/glossary.md)', () => {
         ? entry.keys[0].split('.').slice(0, -1).join('.')
         : '';
       const ownKeys = [...enKeys, ...arKeys].filter(
-        (k) => k.startsWith(`${namespace}.`) && !isPluralKey(k),
+        (k) =>
+          k.startsWith(`${namespace}.`) &&
+          !isPluralKey(k, en) &&
+          !isPluralKey(k, ar),
       );
       for (const key of ownKeys) {
         const enV = catValue(key, 'en');
@@ -421,5 +558,83 @@ describe('dashboard glossary (docs/glossary.md)', () => {
       for (const s of AR_SUFFIXES) if (!arKeys.has(`${base}_${s}`)) missing.push(`ar:${base}_${s}`);
     }
     expect(missing).toEqual([]);
+  });
+});
+
+/**
+ * The reviews and messages vocabulary.
+ *
+ * One concept, one term, in both languages, in every surface. The AR
+ * review status is "قيد المراجعة" and NOT the order status "قيد الانتظار":
+ * two different concepts, two different words, and the same word for two
+ * concepts is the drift this test exists to catch.
+ */
+const REVIEWS_MESSAGES_GLOSSARY = [
+  {
+    concept: 'Review approved',
+    keys: ['reviews.status.approved'],
+    en: 'Approved',
+    ar: 'معتمد',
+    forbiddenAr: [/موافق عليه/],
+    forbiddenEn: [/\bapproved by\b/i],
+  },
+  {
+    concept: 'Review pending',
+    keys: ['reviews.status.pending'],
+    en: 'Pending',
+    ar: 'قيد المراجعة',
+    forbiddenAr: [/غير معتمدة/, /مُفعّل/, /معطّل/],
+    forbiddenEn: [/unapproved/i],
+  },
+  {
+    concept: 'Message unread',
+    keys: ['contactMessages.unread'],
+    en: 'Unread',
+    ar: 'غير مقروءة',
+    forbiddenAr: [/^رد$/],
+    forbiddenEn: [/^not read$/i],
+  },
+  {
+    concept: 'Message replied',
+    keys: ['contactMessages.replied'],
+    en: 'Replied',
+    ar: 'تم الرد عليها',
+    forbiddenAr: [/^رد$/],
+    forbiddenEn: [/^replied to$/i],
+  },
+] as const;
+
+describe('reviews and messages glossary', () => {
+  it('a concept maps to ONE term — the approved word, in both locales', () => {
+    const drift: string[] = [];
+    for (const entry of REVIEWS_MESSAGES_GLOSSARY) {
+      for (const key of entry.keys) {
+        const en = catValue(key, 'en');
+        const ar = catValue(key, 'ar');
+        if (en !== entry.en) drift.push(`en:${key} → "${en}" (expected "${entry.en}")`);
+        if (ar !== entry.ar) drift.push(`ar:${key} → "${ar}" (expected "${entry.ar}")`);
+      }
+    }
+    expect(drift).toEqual([]);
+  });
+
+  it('a concept never drifts to a second word', () => {
+    const drift: string[] = [];
+    for (const entry of REVIEWS_MESSAGES_GLOSSARY) {
+      for (const pattern of entry.forbiddenAr) {
+        if (pattern.test(entry.ar)) drift.push(`ar:${entry.concept} → "${entry.ar}"`);
+      }
+      for (const pattern of entry.forbiddenEn) {
+        if (pattern.test(entry.en)) drift.push(`en:${entry.concept} → "${entry.en}"`);
+      }
+    }
+    expect(drift).toEqual([]);
+  });
+
+  it('the review status is not the order status', () => {
+    // "قيد الانتظار" is the ORDER status; the review's is "قيد المراجعة".
+    expect(catValue('common.statuses.pending', 'ar')).not.toBe(
+      catValue('reviews.status.pending', 'ar'),
+    );
   });
 });

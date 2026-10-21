@@ -64,15 +64,36 @@ describe('palette', () => {
   });
 
   it('an order status uses a SEMANTIC colour, never a categorical one', () => {
-    expect(STATUS_COLORS.DELIVERED).toBe('var(--success)');
-    expect(STATUS_COLORS.PROCESSING).toBe('var(--info)');
-    expect(STATUS_COLORS.SHIPPED).toBe('var(--chart-5)');
-    expect(STATUS_COLORS.PENDING).toBe('var(--warning)');
-    expect(STATUS_COLORS.CANCELLED).toBe('var(--destructive-text)');
-    expect(STATUS_COLORS.REFUNDED).toBe('var(--muted-foreground)');
+    expect(STATUS_COLORS.DELIVERED).toBe('var(--status-delivered)');
+    expect(STATUS_COLORS.PROCESSING).toBe('var(--status-processing)');
+    expect(STATUS_COLORS.SHIPPED).toBe('var(--status-shipped)');
+    expect(STATUS_COLORS.PENDING).toBe('var(--status-pending)');
+    expect(STATUS_COLORS.CANCELLED).toBe('var(--status-cancelled)');
+    expect(STATUS_COLORS.REFUNDED).toBe('var(--status-refunded)');
+    expect(STATUS_COLORS.CONFIRMED).toBe('var(--status-confirmed)');
     for (const color of Object.values(STATUS_COLORS)) {
       expect(CATEGORICAL.slice(0, 4)).not.toContain(color);
+      // A status swatch is never one of the chart tokens: that is how a
+      // shipped slice ended up being the same colour as a possible origin
+      // slice.
+      expect(color).not.toMatch(/var\(--chart-/);
+      expect(color).not.toMatch(/var\(--roast-/);
     }
+  });
+
+  it('every MEANING has its own swatch — two slices of one ring must differ', () => {
+    // FAILED shares the CANCELLED swatch on purpose: they are the same
+    // meaning ("it did not happen"). Every OTHER meaning has its own.
+    const meanings = [
+      STATUS_COLORS.DELIVERED,
+      STATUS_COLORS.CONFIRMED,
+      STATUS_COLORS.PROCESSING,
+      STATUS_COLORS.SHIPPED,
+      STATUS_COLORS.PENDING,
+      STATUS_COLORS.CANCELLED,
+      STATUS_COLORS.REFUNDED,
+    ];
+    expect(new Set(meanings).size, 'two meanings share a swatch').toBe(meanings.length);
   });
 
   it('an unknown status falls back to the neutral token', () => {

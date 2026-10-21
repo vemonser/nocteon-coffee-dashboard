@@ -1,71 +1,310 @@
-<div class="flex flex-col gap-6 p-6">
-  <!-- Header -->
-  <div class="flex items-center justify-between gap-4">
+<div class="mx-auto flex w-full max-w-7xl flex-col gap-6 p-6">
+  <!-- ── Header ─────────────────────────────────────────────────────────── -->
+  <header class="flex flex-wrap items-start justify-between gap-4">
     <div>
       <h1 class="text-2xl font-medium tracking-tight">{{ 'orders.title' | transloco }}</h1>
-      <p class="text-muted-foreground">{{ totalItems() }} {{ 'common.total' | transloco }}</p>
+      <p class="text-sm text-muted-foreground" data-testid="orders-total-count">
+        {{ pageTotal() | plural: 'orders.countOrders' }}
+        <!--
+          What the count covers. The dashboard counts the PAID orders and
+          the page counts EVERY order, so the page says which set it is
+          showing — the same definition, the same words (see
+          core/dashboard/order-scope.ts).
+        -->
+        <span
+          class="ms-1 inline-flex cursor-help align-middle"
+          [title]="scopeNote()"
+          [attr.aria-label]="scopeNote()"
+          data-testid="orders-scope-note"
+        >
+          <ng-icon name="lucideInfo" class="size-3.5" />
+        </span>
+      </p>
+      <!--
+        The count is announced when a filter changes, so the result of a
+        filter is heard and not only drawn.
+      -->
+      <p class="sr-only" role="status" aria-live="polite" data-testid="orders-live-count">
+        {{ pageTotal() | plural: 'orders.countOrders' }}
+      </p>
     </div>
-    <div class="relative w-full max-w-64 sm:w-64">
-      <ng-icon name="lucideSearch" class="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-      <input hlmInput type="search" [dir]="language.current() === 'ar' ? 'rtl' : 'ltr'" [(ngModel)]="searchQuery" (input)="onSearch()" [placeholder]="'orders.searchPlaceholder' | transloco" [attr.aria-label]="'orders.searchPlaceholder' | transloco" class="w-full ps-9" />
-    </div>
-  </div>
 
-  <!-- Status filter chips -->
-  <div class="flex flex-wrap gap-2">
-    @for (s of ['ALL','PENDING','CONFIRMED','PROCESSING','SHIPPED','DELIVERED','CANCELLED']; track s) {
-      <button hlmBtn [variant]="statusFilter() === s ? 'default' : 'outline'" size="sm" class="min-h-11" (click)="setStatusFilter(s)">
-        @if (s === 'ALL') { {{ 'orders.statusFilter.all' | transloco }} }
-        @else { {{ 'orders.statuses.' + s | transloco }} }
+    <div class="flex items-center gap-2">
+      @if (selectedCount() > 0) {
+        <span class="text-sm text-muted-foreground" data-testid="orders-selected-count">
+          {{ 'orders.bulk.selected' | transloco: { count: selectedCount() } }}
+        </span>
+      }
+      <span
+        hlmTooltip
+        position="top"
+        [brnTooltip]="'orders.export.hint' | transloco: { count: filteredTotal() }"
+        class="inline-flex"
+      >
+        <button
+          hlmBtn
+          variant="outline"
+          size="sm"
+          data-testid="orders-export"
+          (click)="exportCsv()"
+          [disabled]="filteredTotal() === 0"
+        >
+          <ng-icon name="lucideDownload" class="size-4" aria-hidden="true" />
+          {{ 'orders.export.button' | transloco }}
+        </button>
+      </span>
+    </div>
+  </header>
+
+  <!-- ── Toolbar: the status tabs and the filters ───────────────────────── -->
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <div
+      role="tablist"
+      class="flex flex-wrap items-center gap-2"
+      [attr.aria-label]="'orders.statusFilter.all' | transloco"
+    >
+      <button
+        role="tab"
+        hlmBtn
+        size="sm"
+        data-testid="orders-status-tab"
+        [attr.aria-selected]="status() === 'ALL'"
+        [variant]="status() === 'ALL' ? 'default' : 'outline'"
+        (click)="setStatus('ALL')"
+      >
+        {{ 'orders.statusFilter.all' | transloco }}
+        <span class="ms-1 tabular-nums opacity-80">{{ allTotal() }}</span>
       </button>
-    }
+      @for (option of statuses; track option) {
+        <button
+          role="tab"
+          hlmBtn
+          size="sm"
+          data-testid="orders-status-tab"
+          [attr.aria-selected]="status() === option"
+          [variant]="status() === option ? 'default' : 'outline'"
+          (click)="setStatus(option)"
+        >
+          {{ names.orderStatus(option) }}
+          <span class="ms-1 tabular-nums opacity-80">{{ counts()[option] ?? 0 }}</span>
+        </button>
+      }
+    </div>
+
+    <div class="flex flex-wrap items-center gap-3">
+      <div class="flex items-center gap-1.5">
+        <span class="text-xs text-muted-foreground" id="orders-filter-payment-status-label">
+          {{ 'orders.filters.paymentStatusShort' | transloco }}
+        </span>
+        <hlm-native-select
+          selectClass="w-32"
+          size="sm"
+          aria-labelledby="orders-filter-payment-status-label"
+          [ngModel]="paymentStatus()"
+          (ngModelChange)="setPaymentStatus($event)"
+          data-testid="orders-filter-payment-status"
+        >
+          <option hlmNativeSelectOption value="ALL">{{ 'orders.filters.any' | transloco }}</option>
+          @for (option of paymentStatuses; track option) {
+            <option hlmNativeSelectOption [value]="option">
+              {{ 'orders.paymentStatuses.' + option | transloco }}
+            </option>
+          }
+        </hlm-native-select>
+      </div>
+
+      <div class="flex items-center gap-1.5">
+        <span class="text-xs text-muted-foreground" id="orders-filter-payment-method-label">
+          {{ 'orders.filters.paymentMethodShort' | transloco }}
+        </span>
+        <hlm-native-select
+          selectClass="w-36"
+          size="sm"
+          aria-labelledby="orders-filter-payment-method-label"
+          [ngModel]="paymentMethod()"
+          (ngModelChange)="setPaymentMethod($event)"
+          data-testid="orders-filter-payment-method"
+        >
+          <option hlmNativeSelectOption value="ALL">{{ 'orders.filters.any' | transloco }}</option>
+          @for (option of paymentMethods; track option) {
+            <option hlmNativeSelectOption [value]="option">
+              {{ 'orders.paymentMethods.' + option | transloco }}
+            </option>
+          }
+        </hlm-native-select>
+      </div>
+
+      <div class="flex items-center gap-1.5">
+        <span class="text-xs text-muted-foreground" id="orders-filter-date-range-label">
+          {{ 'orders.filters.dateRangeShort' | transloco }}
+        </span>
+        <hlm-native-select
+          selectClass="w-36"
+          size="sm"
+          aria-labelledby="orders-filter-date-range-label"
+          [ngModel]="range()"
+          (ngModelChange)="setRange($event)"
+          data-testid="orders-filter-date-range"
+        >
+          <option hlmNativeSelectOption value="all">{{ 'orders.dateRange.all' | transloco }}</option>
+          <option hlmNativeSelectOption value="today">{{ 'orders.dateRange.today' | transloco }}</option>
+          <option hlmNativeSelectOption value="7d">{{ 'orders.dateRange.7d' | transloco }}</option>
+          <option hlmNativeSelectOption value="30d">{{ 'orders.dateRange.30d' | transloco }}</option>
+          <option hlmNativeSelectOption value="custom">
+            {{ 'orders.dateRange.custom' | transloco }}
+          </option>
+        </hlm-native-select>
+      </div>
+
+      @if (range() === 'custom') {
+        <label class="sr-only" for="orders-filter-from">{{ 'orders.dateRange.custom' | transloco }}</label>
+        <input
+          id="orders-filter-from"
+          hlmInput
+          type="date"
+          class="w-36"
+          [ngModel]="dateFrom() ?? ''"
+          (ngModelChange)="setCustomFrom($event)"
+        />
+        <label class="sr-only" for="orders-filter-to">{{ 'orders.dateRange.custom' | transloco }}</label>
+        <input
+          id="orders-filter-to"
+          hlmInput
+          type="date"
+          class="w-36"
+          [ngModel]="dateTo() ?? ''"
+          (ngModelChange)="setCustomTo($event)"
+        />
+      }
+
+      <div class="relative w-full sm:w-56">
+        <ng-icon
+          name="lucideSearch"
+          class="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+          aria-hidden="true"
+        />
+        <input
+          hlmInput
+          type="search"
+          class="w-full ps-9"
+          data-testid="orders-search"
+          [ngModel]="searchField()"
+          (ngModelChange)="onSearch($event)"
+          [placeholder]="'orders.searchPlaceholder' | transloco"
+          [attr.aria-label]="'orders.searchPlaceholder' | transloco"
+        />
+      </div>
+
+      @if (hasActiveFilters()) {
+        <button
+          hlmBtn
+          variant="ghost"
+          size="sm"
+          data-testid="orders-clear-filters"
+          (click)="clearFilters()"
+        >
+          <ng-icon name="lucideX" class="size-4" aria-hidden="true" />
+          {{ 'orders.filters.clear' | transloco }}
+        </button>
+      }
+    </div>
   </div>
 
-  <!-- Stats cards -->
-  <div class="grid gap-4 sm:grid-cols-4">
-    <div class="rounded-md border bg-card p-4">
-      <p class="text-sm text-muted-foreground">{{ 'orders.stats.total' | transloco }}</p>
-      <p class="text-2xl font-bold mt-1 tabular-nums">{{ totalOrders() }}</p>
+  <!-- ── KPI strip: 4 compact cards (~72px). Follow the active filters. ── -->
+  <div class="grid grid-cols-2 gap-3 md:grid-cols-4">
+    <div class="flex h-[72px] flex-col justify-center rounded-[var(--radius-card)] border bg-card px-4 py-2" data-testid="orders-stat-card">
+      <p class="text-xs text-muted-foreground" data-testid="stat-label">{{ 'orders.stats.revenue' | transloco }}</p>
+      <p class="mt-0.5 text-lg font-bold tabular-nums" data-testid="stat-value">{{ kpiRevenue() | money }}</p>
     </div>
-    <div class="rounded-md border bg-card p-4">
-      <p class="text-sm text-muted-foreground">{{ 'orders.stats.pending' | transloco }}</p>
-      <p class="text-2xl font-bold mt-1 tabular-nums">{{ statusCount('PENDING') + statusCount('CONFIRMED') + statusCount('PROCESSING') }}</p>
+    <div class="flex h-[72px] flex-col justify-center rounded-[var(--radius-card)] border bg-card px-4 py-2" data-testid="orders-stat-card">
+      <p class="text-xs text-muted-foreground" data-testid="stat-label">{{ 'orders.stats.open' | transloco }}</p>
+      <p class="mt-0.5 text-lg font-bold tabular-nums" data-testid="stat-value">{{ openCount() }}</p>
     </div>
-    <div class="rounded-md border bg-card p-4">
-      <p class="text-sm text-muted-foreground">{{ 'orders.stats.completed' | transloco }}</p>
-      <p class="text-2xl font-bold mt-1 tabular-nums">{{ statusCount('DELIVERED') + statusCount('SHIPPED') }}</p>
+    <div class="flex h-[72px] flex-col justify-center rounded-[var(--radius-card)] border bg-card px-4 py-2" data-testid="orders-stat-card">
+      <p class="text-xs text-muted-foreground" data-testid="stat-label">{{ 'orders.stats.avgOrderValue' | transloco }}</p>
+      <p class="mt-0.5 text-lg font-bold tabular-nums" data-testid="stat-value">{{ avgOrderValue() | money }}</p>
     </div>
-    <div class="rounded-md border bg-card p-4">
-      <p class="text-sm text-muted-foreground">{{ 'orders.stats.cancelled' | transloco }}</p>
-      <p class="text-2xl font-bold mt-1 tabular-nums">{{ statusCount('CANCELLED') }}</p>
+    <div class="flex h-[72px] flex-col justify-center rounded-[var(--radius-card)] border bg-card px-4 py-2" data-testid="orders-stat-card">
+      <p class="text-xs text-muted-foreground" data-testid="stat-label">{{ 'orders.stats.cancelRate' | transloco }}</p>
+      <p class="mt-0.5 text-lg font-bold tabular-nums" data-testid="stat-value">{{ cancelRate() | number:'1.0-1' }}%</p>
     </div>
   </div>
 
-  <!-- Table -->
-  <div class="rounded-md border bg-card">
-    <app-data-table
-      [data]="items()"
-      [columns]="columns"
-      [loading]="loading()"
-      [emptyMessage]="'orders.empty' | transloco"
-      [initialSort]="{ column: currentSort, direction: currentDirection }"
-      [showEdit]="false"
-      [showDelete]="false"
-      [showView]="true"
-      (sortChange)="onSortChange($event)"
-      (rowClick)="openView($event)"
-    />
-  </div>
+  <!-- ── The bulk bar ───────────────────────────────────────────────────── -->
+  @if (selectedCount() > 0) {
+    <div
+      class="flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-card)] border bg-card px-4 py-3"
+      data-testid="orders-bulk-bar"
+      role="region"
+      [attr.aria-label]="'orders.bulk.selected' | transloco: { count: selectedCount() }"
+    >
+      <p class="text-sm">
+        {{ 'orders.bulk.selected' | transloco: { count: selectedCount() } }}
+      </p>
+      <div class="flex items-center gap-2">
+        <button hlmBtn variant="outline" size="sm" (click)="bulkChangeStatus()">
+          {{ 'orders.bulk.changeStatus' | transloco }}
+        </button>
+        <button hlmBtn variant="outline" size="sm" (click)="exportCsv()">
+          {{ 'orders.bulk.export' | transloco }}
+        </button>
+        <button hlmBtn variant="ghost" size="sm" (click)="clearSelection()">
+          {{ 'orders.bulk.clear' | transloco }}
+        </button>
+      </div>
+    </div>
+  }
 
-  <!-- Pagination -->
-  @if (pageData() && !loading() && items().length > 0) {
+  <!-- ── The table ──────────────────────────────────────────────────────── -->
+  @if (error()) {
+    <div
+      class="rounded-[var(--radius-card)] border bg-card p-6 text-center"
+      role="alert"
+      data-testid="orders-error"
+    >
+      <p class="font-medium text-destructive">{{ 'orders.errorState.title' | transloco }}</p>
+      <p class="mt-1 text-sm text-muted-foreground">{{ 'orders.errorState.hint' | transloco }}</p>
+      <button hlmBtn variant="outline" class="mt-4" (click)="retry()">
+        {{ 'common.retry' | transloco }}
+      </button>
+    </div>
+  } @else {
+    <div class="rounded-[var(--radius-card)] border bg-card">
+      <app-data-table
+        [data]="visibleRows()"
+        [columns]="columns"
+        [loading]="loading()"
+        [emptyMessage]="emptyMessage()"
+        [initialSort]="{ column: sortColumnId, direction: direction() }"
+        [showEdit]="false"
+        [showDelete]="false"
+        [showView]="true"
+        [selectable]="true"
+        [selectedIds]="selectedIds()"
+        [rowId]="rowId"
+        [cellHref]="cellHref"
+        [clickableRows]="true"
+        [stickyStartColumn]="'orderNumber'"
+        [menuActions]="menuActions"
+        [minWidth]="'1105px'"
+        (sortChange)="onSortChange($event)"
+        (rowClick)="openView($event)"
+        (selectionChange)="onSelectionChange($event)"
+        (toggleAllChange)="onToggleAll($event)"
+        (menuAction)="onMenuAction($event)"
+      />
+    </div>
+  }
+
+  <!-- ── Pagination ─────────────────────────────────────────────────────── -->
+  @if (!error() && pageTotal() > 0) {
     <app-pager
-      [page]="pageData()!.page"
-      [size]="pageData()!.size"
-      [totalElements]="pageData()!.totalElements"
-      [totalPages]="pageData()!.totalPages"
-      [first]="pageData()!.first"
-      [last]="pageData()!.last"
+      [page]="page()"
+      [size]="size()"
+      [totalElements]="pageTotal()"
+      [totalPages]="totalPages()"
+      [first]="first()"
+      [last]="last()"
       [showPageSize]="true"
       [sizeOptions]="pageSizeOptions"
       (pageChange)="goToPage($event)"

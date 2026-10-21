@@ -7,15 +7,18 @@ import { HlmCardImports, HlmCardContent } from '@spartan-ng/helm/card';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmBadgeImports } from '@spartan-ng/helm/badge';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucideArrowLeft, lucidePackage, lucideUser, lucideShoppingCart, lucideDollarSign, lucideClock } from '@ng-icons/lucide';
+import { lucideArrowLeft, lucidePackage, lucideUser, lucideShoppingCart, lucideDollarSign, lucideClock, lucideMail } from '@ng-icons/lucide';
+import { UserAvatarComponent } from '../../../shared/ui/user-avatar/user-avatar.component';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { MoneyPipe } from '../../../shared/pipes/money.pipe';
+import { LocalizedDateComponent } from '../../../shared/ui/localized-date/localized-date.component';
 
 @Component({
   selector: 'app-cart-detail',
   standalone: true,
-  imports: [CommonModule, HlmCardImports, HlmCardContent, HlmButtonImports, HlmBadgeImports, NgIcon, TranslocoPipe, MoneyPipe],
-  providers: [provideIcons({ lucideArrowLeft, lucidePackage, lucideUser, lucideShoppingCart, lucideDollarSign, lucideClock })],
+  imports: [
+    LocalizedDateComponent,CommonModule, HlmCardImports, HlmCardContent, HlmButtonImports, HlmBadgeImports, NgIcon, TranslocoPipe, MoneyPipe, UserAvatarComponent],
+  providers: [provideIcons({ lucideArrowLeft, lucidePackage, lucideUser, lucideShoppingCart, lucideDollarSign, lucideClock, lucideMail })],
   templateUrl: './cart-detail.component.html',
 })
 export class CartDetailComponent {

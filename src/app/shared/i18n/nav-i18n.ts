@@ -31,6 +31,7 @@ export type NavKey =
   | 'carts'
   | 'productOptions'
   | 'broadcasts'
+  | 'newsletter'
   | 'contactMessages'
   | 'coffeeData';
 
@@ -65,6 +66,7 @@ export const navI18n: Record<Language, Record<NavKey, string>> = {
     carts: 'Carts',
     productOptions: 'Product Options',
     broadcasts: 'Broadcasts',
+    newsletter: 'Newsletter',
     contactMessages: 'Contact Messages',
     coffeeData: 'Coffee data',
   },
@@ -98,6 +100,7 @@ export const navI18n: Record<Language, Record<NavKey, string>> = {
     carts: 'السلة',
     productOptions: 'خيارات المنتجات',
     broadcasts: 'الرسائل الجماعية',
+    newsletter: 'النشرة البريدية',
     contactMessages: 'رسائل التواصل',
     coffeeData: 'بيانات القهوة',
   },

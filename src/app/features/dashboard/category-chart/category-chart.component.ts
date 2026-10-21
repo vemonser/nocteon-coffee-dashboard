@@ -17,10 +17,11 @@ import {
   ApexNonAxisChartSeries,
 } from 'ng-apexcharts';
 import { ThemeService } from '../../../core/theme/theme.service';
-import { formatCurrency } from '../../../shared/utils/locale-format';
+import { formatCompactCurrency, formatCurrency } from '../../../shared/utils/locale-format';
 import { getCssVarColor } from '../../../shared/utils/utils';
 import { LanguageService } from '../../../core/i18n/language.service';
 import { MoneyPipe } from '../../../shared/pipes/money.pipe';
+import { TranslocoService } from '@jsverse/transloco';
 
 // Union type to support both bar and donut
 export type CategoryChartOptions = {
@@ -52,6 +53,7 @@ export class CategoryChartComponent implements OnChanges {
 
   private themeService = inject(ThemeService);
   private language = inject(LanguageService);
+  private transloco = inject(TranslocoService);
 
   fmtMoneySingle(value: unknown): string {
     return formatCurrency(value, this.language.current(), this.currency);
@@ -68,12 +70,12 @@ export class CategoryChartComponent implements OnChanges {
   );
 
   // Compact currency formatter for axis labels
-  readonly axisFormatter = (val: number): string => {
-    const abs = Math.abs(val);
-    if (abs >= 1_000_000) return (val / 1_000_000).toFixed(1) + 'M';
-    if (abs >= 1_000) return (val / 1_000).toFixed(1) + 'K';
-    return val.toFixed(0);
-  };
+  /**
+   * The axis label: the COMPACT amount with the currency, in the same
+   * style as every other axis on the page.
+   */
+  readonly axisFormatter = (val: number): string =>
+    formatCompactCurrency(val, this.language.current(), this.currency);
 
   // Tooltip formatter with category name and currency
   readonly tooltipFormatter = (opts: { w: { globals: { labels: string[]; series: number[][]; seriesIndex: number; dataPointIndex: number } } }): string => {
@@ -144,7 +146,7 @@ export class CategoryChartComponent implements OnChanges {
               show: true,
               total: {
                 show: true,
-                label: this.language.current() === 'ar' ? 'الإجمالي' : 'Total',
+                label: this.transloco.translate('dashboard.revenueTotal'),
                   fontSize: '12px',
                 color: 'var(--foreground)',
                 formatter: (w: any) => {
@@ -245,7 +247,7 @@ export class CategoryChartComponent implements OnChanges {
                 show: true,
                 total: {
                   show: true,
-                  label: this.language.current() === 'ar' ? 'الإجمالي' : 'Total',
+                  label: this.transloco.translate('dashboard.revenueTotal'),
                   fontSize: '12px',
                   color: 'var(--foreground)',
                   formatter: (w: any) => {

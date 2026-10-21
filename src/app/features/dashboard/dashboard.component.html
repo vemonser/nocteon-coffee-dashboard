@@ -35,7 +35,7 @@
     <!-- The overview failed: say so, and offer a retry. The toolbar and
          the attention strip keep working. -->
     <hlm-card>
-      <div hlmCardContent class="shrink-0">
+      <div hlmCardContent class="grow shrink-0">
         <app-widget-state
           [error]="error"
           [retry]="retryOverview"
@@ -63,6 +63,7 @@
         [delta]="delta().revenue"
         [sparkline]="revenueSparkline()"
         [comparisonLabel]="'dashboard.metrics.totalRevenue' | transloco"
+        [scopeNote]="orderScopeHelp()"
         link="/dashboard/orders"
       />
       <app-kpi-card
@@ -70,13 +71,18 @@
         [value]="fmtCount(stats.totalOrders)"
         [delta]="delta().orders"
         [comparisonLabel]="'dashboard.orders' | transloco"
+        [scopeNote]="orderScopeHelp()"
         link="/dashboard/orders"
       />
+      <!-- "New" is the MEANING on this card: the customers are new. On the
+           other three it is only the symptom of an empty previous period,
+           so they show an em dash and the reason. -->
       <app-kpi-card
         [label]="'dashboard.newCustomers' | transloco"
         [value]="fmtCount(stats.newCustomers)"
         [delta]="delta().customers"
         [comparisonLabel]="'dashboard.newCustomers' | transloco"
+        [newMeansNew]="true"
         link="/dashboard/users"
       />
       <app-kpi-card
@@ -84,76 +90,71 @@
         [value]="(stats.averageOrderValue | money)"
         [delta]="delta().aov"
         [comparisonLabel]="'dashboard.averageOrderValue' | transloco"
+        [scopeNote]="orderScopeHelp()"
         link="/dashboard/orders"
       />
     </div>
 
-    <!-- The secondary strip: the rest, compact. Online users is a LIVE
-         indicator, not a period KPI, so it says so. -->
+    <!-- The secondary strip: the rest, compact. The labels are the SAME
+         size and weight as the four cards above, so the strip reads as
+         part of the same set. Online users is a LIVE indicator, not a
+         period KPI, so it says so. -->
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
       <hlm-card size="sm" class="h-full">
-        <div hlmCardContent class="flex items-center justify-between gap-3">
-          <div class="min-w-0">
-            <p class="truncate text-xs text-muted-foreground">{{ 'dashboard.repeatPurchaseRate' | transloco }}</p>
-            @if (repeatPurchaseRate(); as r) {
-              <p class="text-xl font-medium tabular-nums">{{ r.repeatRate | number:'1.0-1' }}%</p>
-              <p class="text-xs text-muted-foreground">
-                {{ r.repeatCustomers }} {{ 'dashboard.of' | transloco }} {{ r.totalCustomers | plural: 'dashboard.countCustomers' }}
-              </p>
-            }
-          </div>
+        <div hlmCardContent class="flex h-full flex-col justify-center gap-1 px-4 py-4">
+          <p class="truncate text-xs text-muted-foreground">{{ 'dashboard.repeatPurchaseRate' | transloco }}</p>
+          @if (repeatPurchaseRate(); as r) {
+            <p class="text-xl font-medium tabular-nums">{{ r.repeatRate | number:'1.0-1' }}%</p>
+            <p class="text-xs text-muted-foreground">
+              {{ r.repeatCustomers }} {{ 'dashboard.of' | transloco }} {{ r.totalCustomers | plural: 'dashboard.countCustomers' }}
+            </p>
+          }
         </div>
       </hlm-card>
 
       <hlm-card size="sm" class="h-full">
-        <div hlmCardContent class="flex items-center justify-between gap-3">
-          <div class="min-w-0">
-            <p class="flex items-center gap-1 truncate text-xs text-muted-foreground">
-              {{ 'dashboard.refundRate' | transloco }}
-              <span
-                class="cursor-help"
-                [title]="'dashboard.refundRateHelp' | transloco"
-                [attr.aria-label]="'dashboard.refundRateHelp' | transloco"
-              >
-                <ng-icon name="lucideInfo" class="size-3 text-muted-foreground" />
-              </span>
+        <div hlmCardContent class="flex h-full flex-col justify-center gap-1 px-4 py-4">
+          <p class="flex items-center gap-1 truncate text-xs text-muted-foreground">
+            {{ 'dashboard.refundRate' | transloco }}
+            <span
+              class="cursor-help"
+              [title]="'dashboard.refundRateHelp' | transloco"
+              [attr.aria-label]="'dashboard.refundRateHelp' | transloco"
+            >
+              <ng-icon name="lucideInfo" class="size-3 text-muted-foreground" />
+            </span>
+          </p>
+          @if (refundRate(); as r) {
+            <p class="text-xl font-medium tabular-nums">{{ r.refundRate | number:'1.0-1' }}%</p>
+            <p class="text-xs text-muted-foreground">
+              {{ r.totalRefunded }} {{ 'dashboard.of' | transloco }} {{ r.totalPaid | plural: 'dashboard.countOrders' }}
             </p>
-            @if (refundRate(); as r) {
-              <p class="text-xl font-medium tabular-nums">{{ r.refundRate | number:'1.0-1' }}%</p>
-              <p class="text-xs text-muted-foreground">
-                {{ r.totalRefunded }} {{ 'dashboard.of' | transloco }} {{ r.totalPaid | plural: 'dashboard.countOrders' }}
-              </p>
-            }
-          </div>
+          }
         </div>
       </hlm-card>
 
       <hlm-card size="sm" class="h-full">
-        <div hlmCardContent class="flex items-center justify-between gap-3">
-          <div class="min-w-0">
-            <p class="truncate text-xs text-muted-foreground">{{ 'dashboard.coffeeSold' | transloco }}</p>
-            <p class="text-xl font-medium tabular-nums">
-              {{ stats.coffeeSold | number:'1.2-2' }} {{ 'dashboard.kg' | transloco }}
-            </p>
-            <p class="text-xs text-muted-foreground">{{ 'dashboard.coffeeSoldHint' | transloco }}</p>
-          </div>
+        <div hlmCardContent class="flex h-full flex-col justify-center gap-1 px-4 py-4">
+          <p class="truncate text-xs text-muted-foreground">{{ 'dashboard.coffeeSold' | transloco }}</p>
+          <p class="text-xl font-medium tabular-nums">
+            {{ stats.coffeeSold | number:'1.2-2' }} {{ 'dashboard.kg' | transloco }}
+          </p>
+          <p class="text-xs text-muted-foreground">{{ 'dashboard.coffeeSoldHint' | transloco }}</p>
         </div>
       </hlm-card>
 
       <!-- Online users: a LIVE indicator, not a period KPI. -->
       <hlm-card size="sm" class="h-full">
-        <div hlmCardContent class="flex items-center justify-between gap-3">
-          <div class="min-w-0">
-            <p class="truncate text-xs text-muted-foreground">{{ 'dashboard.onlineUsers' | transloco }}</p>
-            <p class="flex items-center gap-1.5 text-xl font-medium tabular-nums">
-              <span class="relative flex size-2">
-                <span class="absolute inline-flex size-full animate-ping rounded-full bg-success opacity-60"></span>
-                <span class="relative inline-flex size-2 rounded-full bg-success"></span>
-              </span>
-              {{ fmtCount(onlineUsersCount()) }}
-            </p>
-            <p class="text-xs text-muted-foreground">{{ 'dashboard.onlineUsersCaption' | transloco }}</p>
-          </div>
+        <div hlmCardContent class="flex h-full flex-col justify-center gap-1 px-4 py-4">
+          <p class="truncate text-xs text-muted-foreground">{{ 'dashboard.onlineUsers' | transloco }}</p>
+          <p class="flex items-center gap-1.5 text-xl font-medium tabular-nums">
+            <span class="relative flex size-2">
+              <span class="absolute inline-flex size-full animate-ping rounded-full bg-success opacity-60 motion-reduce:hidden"></span>
+              <span class="relative inline-flex size-2 rounded-full bg-success"></span>
+            </span>
+            {{ fmtCount(onlineUsersCount()) }}
+          </p>
+          <p class="text-xs text-muted-foreground">{{ 'dashboard.onlineUsersCaption' | transloco }}</p>
         </div>
       </hlm-card>
     </div>
@@ -168,7 +169,7 @@
     <hlm-card-header>
       <app-widget-header [title]="'dashboard.revenueOverview' | transloco" />
     </hlm-card-header>
-    <div hlmCardContent class="shrink-0">
+    <div hlmCardContent class="grow shrink-0">
       @if (statsService.revenueChartData().length > 0 && statsService.revenueChartData().some(d => d.revenue > 0)) {
         <app-revenue-chart
           [data]="statsService.revenueChartData()"
@@ -189,17 +190,8 @@
        were three separate donut cards asking the same question; they are
        one card with three tabs now. -->
   <div class="grid gap-4 lg:grid-cols-2">
-    <hlm-card>
-      <div hlmCardContent class="shrink-0">
-        <app-revenue-breakdown-card />
-      </div>
-    </hlm-card>
-
-    <hlm-card>
-      <div hlmCardContent class="shrink-0">
-        <app-orders-breakdown-card />
-      </div>
-    </hlm-card>
+    <app-revenue-breakdown-card />
+    <app-orders-breakdown-card />
   </div>
 
   <!-- Top products | Recent orders -->
@@ -213,7 +205,7 @@
           actionLink="/dashboard/products"
         />
       </hlm-card-header>
-      <div hlmCardContent class="shrink-0">
+      <div hlmCardContent class="grow shrink-0">
         @if (statsService.overviewError(); as error) {
           <app-widget-state [error]="error" [retry]="retryOverview" />
         } @else if (statsService.topProducts().length > 0) {
@@ -237,7 +229,7 @@
           actionLink="/dashboard/orders"
         />
       </hlm-card-header>
-      <div hlmCardContent class="shrink-0">
+      <div hlmCardContent class="grow shrink-0">
         <app-recent-orders />
       </div>
     </hlm-card>
@@ -254,14 +246,20 @@
           actionLink="/dashboard/products"
         />
       </hlm-card-header>
-      <div hlmCardContent class="shrink-0">
-        <app-low-stock-products [products]="lowStockProducts()" />
+      <div hlmCardContent class="grow shrink-0">
+        <app-low-stock-products class="block h-full" [products]="lowStockProducts()" />
       </div>
     </hlm-card>
 
     <hlm-card>
-      <div hlmCardContent class="shrink-0">
-        <app-device-list />
+      <hlm-card-header>
+        <app-widget-header
+          [title]="'dashboard.deviceBreakdown' | transloco"
+          [infoTitle]="'dashboard.devicesNote' | transloco"
+        />
+      </hlm-card-header>
+      <div hlmCardContent class="grow shrink-0">
+        <app-device-list class="block h-full" />
       </div>
     </hlm-card>
   </div>

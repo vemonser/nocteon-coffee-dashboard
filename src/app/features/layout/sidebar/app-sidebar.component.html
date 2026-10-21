@@ -5,8 +5,14 @@
       <ul hlmSidebarMenu>
         <li hlmSidebarMenuItem>
           <a hlmSidebarMenuButton size="lg" routerLink="/dashboard">
+            <!--
+              size-8, not size-10: the menu button is h-12 with p-2, so its
+              content box is 32px. A 40px logo was 4px too tall and the
+              button's `overflow-hidden` cut the top and the bottom of the
+              mark off.
+            -->
             <div
-              class="text-sidebar-primary-foreground flex aspect-square size-10 items-center justify-center rounded-[var(--radius-control)]"
+              class="text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-[var(--radius-control)]"
             >
               <!-- Decorative: the same link already names the brand in text. -->
               <img src="/logo.svg" alt="" />

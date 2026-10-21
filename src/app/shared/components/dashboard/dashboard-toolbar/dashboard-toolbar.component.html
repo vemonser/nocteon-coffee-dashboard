@@ -1,26 +1,15 @@
 <div
   class="sticky top-0 z-20 -mx-2 flex flex-wrap items-center gap-x-4 gap-y-2 border-b bg-background/95 px-2 py-1.5 backdrop-blur"
 >
-  <!-- The range: a segmented control with a real radiogroup role. -->
-  <div
-    role="radiogroup"
-    [attr.aria-label]="'dashboard.rangeLabel' | transloco"
-    class="flex flex-wrap items-center gap-1 rounded-lg border bg-card p-1"
-  >
-    @for (option of options; track option.days) {
-      <button
-        hlmBtn
-        type="button"
-        role="radio"
-        [attr.aria-checked]="selectedDays() === option.days"
-        [variant]="selectedDays() === option.days ? 'secondary' : 'ghost'"
-        size="sm"
-        (click)="select(option.days, option.key)"
-      >
-        {{ option.key | transloco }}
-      </button>
-    }
-  </div>
+  <!-- The range: the SAME tab group the cards use (a radiogroup here,
+       because the range is one option out of a set, not a view). -->
+  <app-tabs
+    role="radio"
+    [label]="'dashboard.rangeLabel' | transloco"
+    [items]="tabItems()"
+    [active]="activeTabId()"
+    (activeChange)="selectDays($event)"
+  />
 
   <!-- The range in effect, and the range it is compared against. -->
   <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">

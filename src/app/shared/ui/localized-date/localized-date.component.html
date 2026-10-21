@@ -1,8 +1,30 @@
 @if (parts(); as p) {
-  <span class="inline-flex gap-1 tabular-nums">
-    <span>{{ p.day }}</span>
-    <span>{{ p.month }}</span>
-    <span>{{ p.year }}</span>
+  <!--
+    dir="ltr": the parts are laid out in DOM order (day, month, year), so
+    the flex row has to run left to right. In an RTL paragraph a `row` flex
+    runs RIGHT to LEFT, which reversed the date to "2026 أكتوبر 20".
+  -->
+  <span
+    class="inline-flex gap-1 tabular-nums"
+    dir="ltr"
+    [class.flex-col]="stackTime()"
+    [class.items-start]="stackTime()"
+  >
+    <!--
+      The date parts stay in a ROW: they are ONE date, and a column flex
+      would break "20 Oct 2026" into three lines. Only the TIME moves to its
+      own line when the caller asks for it.
+    -->
+    <span class="inline-flex gap-1">
+      <span>{{ p.day }}</span>
+      <span>{{ p.month }}</span>
+      <span>{{ p.year }}</span>
+    </span>
+    @if (showTime()) {
+      <span class="text-muted-foreground" [class.ms-1]="!stackTime()">{{
+        time()
+      }}</span>
+    }
   </span>
 } @else {
   {{ fallback() }}

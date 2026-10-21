@@ -1,48 +1,55 @@
 import { inject, Injectable } from '@angular/core';
-
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+
 import { ApiResponse, PageResponse } from '../../../core/models/api-response.model';
 import { environment } from '../../../../environments/environment';
-import { ReviewRequest, ReviewResponse } from '../models/review.model';
-import { HttpClient, HttpParams } from '@angular/common/http';
-import { BaseCrudService, BaseListParams } from '../../../core/crud/base-crud.service';
+import { ReviewListParams, ReviewResponse, ReviewStats } from '../models/review.model';
 
 @Injectable({ providedIn: 'root' })
-export class ReviewService extends BaseCrudService<ReviewResponse, ReviewRequest> {
-  protected override basePath = '/api/dashboard/reviews';
+export class ReviewService {
+  private http = inject(HttpClient);
+  private basePath = '/api/dashboard/reviews';
 
-  getAll(params: {
-    page?: number;
-    sort?: string;
-    direction?: string;
-    productSlug?: string;
-    isApproved?: boolean;
-    isVerified?: boolean;
-    minRating?: number;
-  }): Observable<ApiResponse<PageResponse<ReviewResponse>>> {
-    let httpParams = new HttpParams();
-    Object.entries(params).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) {
-        httpParams = httpParams.set(key, String(value));
-      }
-    });
-    return this.http.get<ApiResponse<PageResponse<ReviewResponse>>>(this.fullUrl, {
+  getAll(params: ReviewListParams = {}): Observable<ApiResponse<PageResponse<ReviewResponse>>> {
+    let httpParams = new HttpParams()
+      .set('page', params.page ?? 0)
+      .set('size', params.size ?? 20)
+      .set('sort', params.sort ?? 'createdAt')
+      .set('direction', params.direction ?? 'desc');
+    if (params.productSlug) httpParams = httpParams.set('productSlug', params.productSlug);
+    if (params.search) httpParams = httpParams.set('search', params.search);
+    if (params.isApproved !== undefined) httpParams = httpParams.set('isApproved', params.isApproved);
+    if (params.isVerified !== undefined) httpParams = httpParams.set('isVerified', params.isVerified);
+    if (params.minRating !== undefined) httpParams = httpParams.set('minRating', params.minRating);
+    if (params.createdFrom) httpParams = httpParams.set('createdFrom', params.createdFrom);
+    if (params.createdTo) httpParams = httpParams.set('createdTo', params.createdTo);
+
+    return this.http.get<ApiResponse<PageResponse<ReviewResponse>>>(`${environment.apiUrl}${this.basePath}`, {
       params: httpParams,
     });
   }
 
-  setApproval(id: string, approved: boolean): Observable<ApiResponse<ReviewResponse>> {
-    return this.http.patch<ApiResponse<ReviewResponse>>(`${this.fullUrl}/${id}/approval`, null, {
-      params: { approved: String(approved) },
+  getStats(): Observable<ApiResponse<ReviewStats>> {
+    return this.http.get<ApiResponse<ReviewStats>>(`${environment.apiUrl}${this.basePath}/stats`);
+  }
+
+  setApproval(ids: number[], approved: boolean): Observable<ApiResponse<{ updated: number }>> {
+    return this.http.patch<ApiResponse<{ updated: number }>>(`${environment.apiUrl}${this.basePath}/approval`, {
+      ids,
+      approved,
     });
   }
 
-  getById(id: string): Observable<ApiResponse<ReviewResponse>> {
-    return this.http.get<ApiResponse<ReviewResponse>>(
-      `${environment.apiUrl}/api/dashboard/reviews/${id}`,
+  setSingleApproval(id: number, approved: boolean): Observable<ApiResponse<ReviewResponse>> {
+    return this.http.patch<ApiResponse<ReviewResponse>>(
+      `${environment.apiUrl}${this.basePath}/${id}/approval`,
+      null,
+      { params: new HttpParams().set('approved', approved) },
     );
   }
-  remove(id: string): Observable<ApiResponse<void>> {
-    return this.http.delete<ApiResponse<void>>(`${this.fullUrl}/${id}`);
+
+  remove(id: number): Observable<void> {
+    return this.http.delete<void>(`${environment.apiUrl}${this.basePath}/${id}`);
   }
 }

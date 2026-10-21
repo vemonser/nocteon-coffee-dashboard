@@ -38,6 +38,7 @@ export const icons: Record<NavKey, string> = {
   carts: 'lucideShoppingCart',
   productOptions: 'lucideSlidersHorizontal',
   broadcasts: 'lucideMegaphone',
+  newsletter: 'lucideMailPlus',
   contactMessages: 'lucideMail',
   coffeeData: 'lucideDatabase',
 };

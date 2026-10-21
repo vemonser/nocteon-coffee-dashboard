@@ -1,184 +1,740 @@
-<div class="p-6 max-w-4xl mx-auto">
+<div class="mx-auto flex w-full max-w-7xl flex-col gap-6 p-6">
   @if (loading()) {
-    <div class="text-center py-20 text-muted-foreground">{{ 'orders.loading' | transloco }}</div>
+    <div class="flex flex-col gap-4" data-testid="order-detail-loading">
+      <div class="h-9 w-64 animate-pulse rounded bg-foreground/10"></div>
+      <div class="h-64 animate-pulse rounded-[var(--radius-card)] bg-foreground/10"></div>
+    </div>
   } @else if (error()) {
-    <div class="text-center py-20 space-y-4">
-      <p class="text-destructive">{{ error() }}</p>
-      <div class="flex items-center justify-center gap-2">
+    <div
+      class="rounded-[var(--radius-card)] border bg-card p-8 text-center"
+      role="alert"
+      data-testid="order-detail-error"
+    >
+      <p class="font-medium text-destructive">{{ 'orders.errorState.title' | transloco }}</p>
+      <p class="mt-1 text-sm text-muted-foreground">{{ error() }}</p>
+      <div class="mt-4 flex items-center justify-center gap-2">
         <button hlmBtn variant="outline" (click)="retry()">{{ 'common.retry' | transloco }}</button>
         <button hlmBtn variant="ghost" (click)="goBack()">{{ 'orders.detail.back' | transloco }}</button>
       </div>
     </div>
-  } @else if (order()) {
-    <div class="flex items-center justify-between mb-6">
-      <button hlmBtn variant="ghost" size="icon" class="min-h-11 min-w-11" (click)="goBack()" [attr.aria-label]="'orders.detail.back' | transloco">
-        <ng-icon name="lucideArrowLeft" class="size-4 rtl:rotate-180" />
-      </button>
-      <h1 class="text-2xl font-medium tracking-tight">{{ 'orders.detail.title' | transloco }} #{{ order()!.id }}</h1>
-    </div>
+  } @else if (order(); as o) {
+    <!-- ── Header ───────────────────────────────────────────────────────── -->
+    <header class="flex flex-col gap-4">
+      <div class="flex flex-wrap items-start justify-between gap-4">
+        <div class="flex min-w-0 items-start gap-3">
+          <button
+            hlmBtn
+            variant="ghost"
+            size="icon"
+            class="mt-0.5 min-h-11 min-w-11 shrink-0"
+            (click)="goBack()"
+            [attr.aria-label]="'orders.detail.back' | transloco"
+            data-testid="order-back"
+          >
+            <ng-icon name="lucideArrowLeft" class="size-4 rtl:rotate-180" aria-hidden="true" />
+          </button>
 
-    <!-- Status & Actions -->
-    <div class="flex items-center justify-between gap-4 mb-6">
-      <div class="flex items-center gap-3">
-        <span class="px-3 py-1 rounded-full text-sm font-medium" [class]="statusBadgeClass(order()!.status)">
-          {{ 'orders.statuses.' + order()!.status | transloco }}
-        </span>
+          <div class="min-w-0">
+            <div class="flex flex-wrap items-center gap-2">
+              <h1 class="text-2xl font-medium tracking-tight" data-testid="order-number">
+                <bdi>{{ orderNumber() }}</bdi>
+              </h1>
+              <app-status-badge [status]="statusKind(o.status)" data-testid="order-status-badge" />
+              <app-status-badge [status]="paymentKind(o.paymentStatus)" data-testid="order-payment-badge" />
+            </div>
+            <p class="mt-1 text-sm text-muted-foreground">
+              <span>{{ 'orders.detail.createdAt' | transloco }}:</span>
+              <time [attr.datetime]="o.createdAt" [attr.title]="createdAtTitle()">
+                {{ dates.formatDateAndTime(o.createdAt) }}
+              </time>
+            </p>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+          <button
+            hlmBtn
+            variant="default"
+            data-testid="order-update-status"
+            [disabled]="!canChangeStatus() || updating()"
+            (click)="openStatusDialog()"
+          >
+            <ng-icon name="lucideRefreshCw" class="size-4" aria-hidden="true" />
+            {{ 'orders.detail.updateStatus' | transloco }}
+          </button>
+
+          <button hlmBtn variant="outline" data-testid="order-print-invoice" (click)="printInvoice()">
+            <ng-icon name="lucidePrinter" class="size-4" aria-hidden="true" />
+            {{ 'orders.detail.printInvoice' | transloco }}
+          </button>
+
+          <!--
+            The store sends order e-mails automatically, but it has no endpoint
+            to send one on demand, so the action is disabled and says why. A
+            button that silently does nothing is worse.
+          -->
+          <span
+            hlmTooltip
+            position="top"
+            [brnTooltip]="'orders.detail.resendEmailGap' | transloco"
+            class="inline-flex"
+          >
+            <button
+              hlmBtn
+              variant="outline"
+              disabled
+              data-testid="order-resend-email"
+              [attr.aria-label]="'orders.detail.resendEmail' | transloco"
+            >
+              <ng-icon name="lucideMail" class="size-4" aria-hidden="true" />
+              {{ 'orders.detail.resendEmail' | transloco }}
+            </button>
+          </span>
+
+          <button
+            hlmBtn
+            variant="outline"
+            size="icon"
+            class="min-h-10 min-w-10"
+            [hlmDropdownMenuTrigger]="moreMenu"
+            [attr.aria-label]="'orders.detail.moreActions' | transloco"
+            data-testid="order-more-actions"
+          >
+            <ng-icon name="lucideMoreVertical" class="size-4" aria-hidden="true" />
+          </button>
+
+          <ng-template #moreMenu>
+            <hlm-dropdown-menu class="min-w-52 rounded-md">
+              <button
+                hlmDropdownMenuItem
+                class="flex items-center gap-2"
+                data-testid="order-cancel"
+                [disabled]="!canCancel()"
+                (click)="openCancelDialog()"
+              >
+                <ng-icon name="lucideCircleSlash" class="size-4" aria-hidden="true" />
+                <span>{{ 'orders.actions.cancel' | transloco }}</span>
+              </button>
+              <button
+                hlmDropdownMenuItem
+                class="flex items-center gap-2"
+                data-testid="order-refund"
+                (click)="openRefundDialog()"
+              >
+                <ng-icon name="lucideRotateCcw" class="size-4" aria-hidden="true" />
+                <span>{{ 'orders.actions.refund' | transloco }}</span>
+              </button>
+            </hlm-dropdown-menu>
+          </ng-template>
+        </div>
       </div>
-      <div class="flex items-center gap-2">
-        <!--
-          hlm-select is a COMPONENT, not an attribute for a native <select>.
-          Built on <select>, the trigger and the content below were invalid
-          children of a native select, so the browser dropped them and the
-          status dropdown rendered as an unstyled native control.
-        -->
-        <hlm-select
-          [value]="order()!.status"
-          (valueChange)="updateStatus($event)"
-          [disabled]="updating()"
-          class="w-48"
+    </header>
+
+    <!-- ── Body: the order, and the facts about it ─────────────────────── -->
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
+      <!-- ═══ Main column ═══ -->
+      <div class="flex min-w-0 flex-col gap-6">
+        <!-- Items -->
+        <section
+          class="flex flex-col rounded-[var(--radius-card)] border bg-card"
+          data-testid="detail-card"
+          data-card="items"
         >
-          <hlm-select-trigger class="w-48">
-            <hlm-select-value placeholder="{{ 'orders.changeStatus' | transloco }}" />
-          </hlm-select-trigger>
-          <hlm-select-content *hlmSelectPortal>
-            <hlm-select-group>
-              @for (status of statusOptions; track status) {
-                <hlm-select-item [value]="status">{{ 'orders.statuses.' + status | transloco }}</hlm-select-item>
-              }
-            </hlm-select-group>
-          </hlm-select-content>
-        </hlm-select>
-      </div>
-    </div>
-
-    <!-- Order Info Grid -->
-    <div class="grid gap-6 lg:grid-cols-2 mb-8">
-      <!-- Order Summary -->
-      <hlm-card class="lg:col-span-2">
-        <hlm-card-header>
-          <h2 hlmCardTitle>{{ 'orders.detail.summary' | transloco }}</h2>
-        </hlm-card-header>
-        <div hlmCardContent class="space-y-3">
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <p class="text-sm text-muted-foreground">{{ 'orders.detail.id' | transloco }}</p>
-              <p class="font-medium">#{{ order()!.id }}</p>
-            </div>
-            <div>
-              <p class="text-sm text-muted-foreground">{{ 'orders.detail.paymentStatus' | transloco }}</p>
-              <p class="font-medium">{{ 'orders.paymentStatuses.' + order()!.paymentStatus | transloco }}</p>
-            </div>
-            <div>
-              <p class="text-sm text-muted-foreground">{{ 'orders.detail.paymentMethod' | transloco }}</p>
-              <p class="font-medium">{{ order()!.paymentMethod }}</p>
-            </div>
-            <div>
-              <p class="text-sm text-muted-foreground">{{ 'orders.detail.createdAt' | transloco }}</p>
-              <p class="font-medium">{{ order()!.createdAt | date:'medium' }}</p>
-            </div>
-            <div>
-              <p class="text-sm text-muted-foreground">{{ 'orders.detail.shippingCost' | transloco }}</p>
-              <p class="font-medium">{{ order()!.shippingCost | money }}</p>
-            </div>
-            <div>
-              <p class="text-sm text-muted-foreground">{{ 'orders.detail.discountAmount' | transloco }}</p>
-              <p class="font-medium">{{ order()!.discountAmount | money }}</p>
-            </div>
-          </div>
-        </div>
-      </hlm-card>
-
-      <!-- Customer -->
-      @if (order()!.customer) {
-        <hlm-card>
-          <hlm-card-header>
-            <h2 hlmCardTitle>{{ 'orders.detail.customer' | transloco }}</h2>
-          </hlm-card-header>
-          <div hlmCardContent class="space-y-2">
-            <p class="font-medium">{{ order()!.customer!.name }}</p>
-            <p class="text-sm text-muted-foreground">{{ order()!.customer!.email }}</p>
-          </div>
-        </hlm-card>
-      }
-
-      <!-- Shipping Address -->
-      @if (order()!.address) {
-        <hlm-card>
-          <hlm-card-header>
-            <h2 hlmCardTitle>{{ 'orders.detail.shippingAddress' | transloco }}</h2>
-          </hlm-card-header>
-          <div hlmCardContent class="space-y-1 text-sm">
-            <p class="font-medium">{{ order()!.address!.fullName }}</p>
-            <p>{{ order()!.address!.street }}</p>
-            <p>{{ order()!.address!.city }}{{ order()!.address!.state ? ', ' + order()!.address!.state : '' }}</p>
-            <p>{{ order()!.address!.country }}{{ order()!.address!.postalCode ? ' ' + order()!.address!.postalCode : '' }}</p>
-            <p class="text-muted-foreground">{{ order()!.address!.phone }}</p>
-          </div>
-        </hlm-card>
-      }
-
-      <!-- Total -->
-      <hlm-card>
-        <hlm-card-header>
-          <h2 hlmCardTitle>{{ 'orders.detail.total' | transloco }}</h2>
-        </hlm-card-header>
-        <div hlmCardContent>
-          <div class="text-2xl font-medium">{{ order()!.totalAmount | money }}</div>
-        </div>
-      </hlm-card>
-    </div>
-
-    <!-- Order Items -->
-    <hlm-card>
-      <hlm-card-header>
-        <h2 hlmCardTitle>{{ 'orders.detail.items' | transloco }}</h2>
-      </hlm-card-header>
-      <div hlmCardContent>
-        <div class="rounded-md border overflow-x-auto">
-          <table class="w-full min-w-full">
-            <thead>
-              <tr class="border-b text-left text-sm text-muted-foreground">
-                <th class="px-4 py-3">{{ 'orders.detail.product' | transloco }}</th>
-                <th class="px-4 py-3">{{ 'orders.detail.quantity' | transloco }}</th>
-                <th class="px-4 py-3 text-right">{{ 'orders.detail.price' | transloco }}</th>
-                <th class="px-4 py-3 text-right">{{ 'orders.detail.total' | transloco }}</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y">
-              @for (item of order()!.items; track item.id) {
-                <tr>
-                  <td class="px-4 py-3">
-                    <div class="flex items-center gap-3">
-                      @if (item.primaryImageUrl) {
-                        <img [src]="item.primaryImageUrl" [alt]="item.productName" width="40" height="40" class="h-10 w-10 rounded-md object-cover" />
-                      }
-                      <div>
-                        <div class="font-medium">{{ item.productName ?? item.productSlug }}</div>
-                        <div class="text-sm text-muted-foreground">SKU: {{ item.sku }}</div>
-                      </div>
+          <header class="flex items-center justify-between gap-3 px-4 pt-4">
+            <h2 class="text-base font-medium leading-snug" data-testid="detail-card-title">
+              {{ 'orders.detail.items' | transloco }}
+            </h2>
+            <span class="text-xs text-muted-foreground">
+              {{ o.items.length | plural: 'orders.countItems' }}
+            </span>
+          </header>
+          <div class="px-4 pb-4 pt-3" data-testid="detail-card-body">
+            @if (o.items.length === 0) {
+              <p class="py-6 text-center text-sm text-muted-foreground" data-testid="order-no-items">
+                {{ 'orders.detail.noItems' | transloco }}
+              </p>
+            } @else {
+              <ul class="flex flex-col divide-y divide-border">
+                @for (item of o.items; track item.id) {
+                  <li class="flex items-center gap-3 py-3">
+                    @if (item.primaryImageUrl) {
+                      <img
+                        [src]="item.primaryImageUrl"
+                        [alt]="item.productName ?? ''"
+                        width="48"
+                        height="48"
+                        class="size-12 shrink-0 rounded-md object-cover"
+                      />
+                    } @else {
+                      <span
+                        class="flex size-12 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground"
+                        aria-hidden="true"
+                      >
+                        <ng-icon name="lucidePackage" class="size-5" />
+                      </span>
+                    }
+                    <div class="min-w-0 flex-1">
+                      <a
+                        [routerLink]="['/dashboard/products', item.productSlug]"
+                        class="block truncate text-sm font-medium hover:underline"
+                        [attr.title]="item.productName ?? item.productSlug"
+                        data-testid="order-item-name"
+                      >
+                        <bdi>{{ item.productName ?? item.productSlug }}</bdi>
+                      </a>
+                      <p class="truncate text-xs text-muted-foreground">
+                        <bdi>{{ item.sku }}</bdi>
+                      </p>
                     </div>
-                  </td>
-                  <td class="px-4 py-3 tabular-nums">{{ item.quantity }}</td>
-                  <td class="px-4 py-3 text-right tabular-nums">{{ item.unitPrice | money }}</td>
-                  <td class="px-4 py-3 text-right font-medium tabular-nums">{{ item.totalPrice | money }}</td>
-                </tr>
-              } @empty {
-                <tr>
-                  <td colspan="4" class="px-4 py-6 text-center text-muted-foreground">{{ 'orders.detail.noItems' | transloco }}</td>
-                </tr>
+                    <div class="shrink-0 text-end">
+                      <p class="text-sm tabular-nums">
+                        {{ item.quantity }} × {{ item.unitPrice | money }}
+                      </p>
+                      <p class="text-xs font-medium tabular-nums">{{ item.totalPrice | money }}</p>
+                    </div>
+                  </li>
+                }
+              </ul>
+            }
+          </div>
+        </section>
+
+        <!-- Totals -->
+        <section
+          class="flex flex-col rounded-[var(--radius-card)] border bg-card"
+          data-testid="detail-card"
+          data-card="totals"
+        >
+          <header class="px-4 pt-4">
+            <h2 class="text-base font-medium leading-snug" data-testid="detail-card-title">
+              {{ 'orders.detail.totals' | transloco }}
+            </h2>
+          </header>
+          <div class="px-4 pb-4 pt-3" data-testid="detail-card-body">
+            <dl class="flex flex-col gap-2">
+              <div class="flex items-center justify-between gap-4">
+                <dt class="text-sm text-muted-foreground">{{ 'orders.detail.subtotal' | transloco }}</dt>
+                <dd class="text-sm tabular-nums">{{ totals().subtotal | money }}</dd>
+              </div>
+              <div class="flex items-center justify-between gap-4">
+                <dt class="text-sm text-muted-foreground">{{ 'orders.detail.shipping' | transloco }}</dt>
+                <dd class="text-sm tabular-nums">{{ totals().shipping | money }}</dd>
+              </div>
+              @if (totals().discount > 0) {
+                <div class="flex items-center justify-between gap-4">
+                  <dt class="text-sm text-muted-foreground">{{ 'orders.detail.discount' | transloco }}</dt>
+                  <dd class="text-sm tabular-nums">−{{ totals().discount | money }}</dd>
+                </div>
               }
-            </tbody>
-            <tfoot>
-              <tr class="border-t font-medium">
-                <td colspan="3" class="px-4 py-3 text-right">{{ 'orders.detail.totalAmount' | transloco }}</td>
-                <td class="px-4 py-3 text-right">{{ order()!.totalAmount | money }}</td>
-              </tr>
-            </tfoot>
-          </table>
-        </div>
+              <div class="flex items-center justify-between gap-4 border-t border-border pt-2">
+                <dt class="font-medium">{{ 'orders.detail.total' | transloco }}</dt>
+                <dd class="text-lg font-medium tabular-nums" data-testid="order-total">
+                  {{ totals().total | money }}
+                </dd>
+              </div>
+              <div class="flex items-center justify-between gap-4">
+                <dt class="text-sm text-muted-foreground">{{ 'orders.detail.netPaid' | transloco }}</dt>
+                <dd class="text-sm tabular-nums" data-testid="order-net-paid">
+                  @if (payment(); as details) {
+                    @if (details.netPaid === null) {
+                      <span class="text-muted-foreground">
+                        {{ 'orders.detail.netPaidUnknown' | transloco }}
+                      </span>
+                    } @else {
+                      {{ details.netPaid | money }}
+                    }
+                  } @else {
+                    <span class="text-muted-foreground">
+                      {{ 'orders.detail.netPaidUnknown' | transloco }}
+                    </span>
+                  }
+                </dd>
+              </div>
+            </dl>
+
+            @if (!totalsMatch()) {
+              <p
+                class="mt-3 rounded-md border border-warning/40 bg-warning-soft px-3 py-2 text-sm text-warning"
+                role="alert"
+                data-testid="order-totals-mismatch"
+              >
+                {{ 'orders.detail.totalsMismatch' | transloco }}
+              </p>
+            }
+          </div>
+        </section>
+
+        <!-- The timeline: the progress, then what happened -->
+        <section
+          class="flex flex-col rounded-[var(--radius-card)] border bg-card"
+          data-testid="detail-card"
+          data-card="timeline"
+        >
+          <header class="flex items-center gap-2 px-4 pt-4">
+            <ng-icon name="lucideHistory" class="size-4 text-muted-foreground" aria-hidden="true" />
+            <h2 class="text-base font-medium leading-snug" data-testid="detail-card-title">
+              {{ 'orders.detail.timeline' | transloco }}
+            </h2>
+          </header>
+          <div class="px-4 pb-4 pt-3" data-testid="detail-card-body">
+            <app-order-progress [status]="o.status" [cancelReason]="o.cancellationReason ?? null" />
+
+            @if (activityErrors().length > 0) {
+              <p
+                class="mt-4 rounded-md border border-warning/40 bg-warning-soft px-3 py-2 text-sm text-warning"
+                role="alert"
+                data-testid="order-activity-error"
+              >
+                {{ 'orders.detail.activityUnavailable' | transloco }}
+              </p>
+            }
+
+            @if (events().length > 0) {
+              <ol class="mt-4 flex flex-col" data-testid="order-activity">
+                @for (event of events(); track event.id) {
+                  <li class="flex items-start gap-3 border-t border-border py-2.5 first:border-t-0">
+                    <span
+                      class="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground"
+                      aria-hidden="true"
+                    >
+                      <ng-icon [name]="event.icon" class="size-3.5" />
+                    </span>
+                    <div class="min-w-0 flex-1">
+                      <p class="text-sm font-medium">{{ event.title }}</p>
+                      @if (event.detail) {
+                        <p class="mt-0.5 text-sm text-muted-foreground" dir="auto">
+                          <bdi>{{ event.detail }}</bdi>
+                        </p>
+                      }
+                      @if (event.actor) {
+                        <p class="mt-0.5 text-xs text-muted-foreground">
+                          {{ 'orders.timeline.by' | transloco: { actor: event.actor } }}
+                          @if (event.notify) {
+                            · {{ 'orders.timeline.notify' | transloco }}
+                          }
+                        </p>
+                      }
+                    </div>
+                    <time
+                      class="shrink-0 text-xs text-muted-foreground"
+                      [attr.datetime]="event.at"
+                      [attr.title]="dates.formatDateAndTime(event.at)"
+                    >
+                      {{ dates.formatDateAndTime(event.at) }}
+                    </time>
+                  </li>
+                }
+              </ol>
+            } @else {
+              <p class="mt-4 text-xs text-muted-foreground" data-testid="order-no-activity">
+                {{ 'orders.detail.noActivity' | transloco }}
+              </p>
+            }
+          </div>
+        </section>
+
+        <!-- Internal notes -->
+        <section
+          class="flex flex-col rounded-[var(--radius-card)] border bg-card"
+          data-testid="detail-card"
+          data-card="notes"
+        >
+          <header class="flex items-center gap-2 px-4 pt-4">
+            <ng-icon name="lucideStickyNote" class="size-4 text-muted-foreground" aria-hidden="true" />
+            <h2 class="text-base font-medium leading-snug" data-testid="detail-card-title">
+              {{ 'orders.detail.internalNotes' | transloco }}
+            </h2>
+          </header>
+          <div class="px-4 pb-4 pt-3" data-testid="detail-card-body">
+            @if (notes().length > 0) {
+              <ul class="flex flex-col divide-y divide-border" data-testid="order-notes">
+                @for (note of notes(); track note.id) {
+                  <li class="py-2.5">
+                    <p class="text-sm" dir="auto">
+                      <bdi>{{ note.body }}</bdi>
+                    </p>
+                    <p class="mt-0.5 text-xs text-muted-foreground">
+                      {{ note.author }} ·
+                      <time [attr.datetime]="note.createdAt">
+                        {{ dates.formatDateAndTime(note.createdAt) }}
+                      </time>
+                    </p>
+                  </li>
+                }
+              </ul>
+            } @else {
+              <p class="text-sm text-muted-foreground" data-testid="order-no-notes">
+                {{ 'orders.detail.noNotes' | transloco }}
+              </p>
+            }
+
+            <div class="mt-3 flex items-end gap-2">
+              <label for="order-note-body" class="sr-only">
+                {{ 'orders.detail.addNote' | transloco }}
+              </label>
+              <input
+                id="order-note-body"
+                hlmInput
+                type="text"
+                dir="auto"
+                class="min-w-0 flex-1"
+                data-testid="order-note-input"
+                [ngModel]="noteDraft()"
+                (ngModelChange)="noteDraft.set($event)"
+                (keydown.enter)="addNote()"
+                [placeholder]="'orders.detail.notePlaceholder' | transloco"
+              />
+              <button
+                hlmBtn
+                variant="outline"
+                data-testid="order-add-note"
+                [disabled]="!noteDraft().trim() || savingNote()"
+                (click)="addNote()"
+              >
+                {{ 'orders.detail.addNote' | transloco }}
+              </button>
+            </div>
+          </div>
+        </section>
       </div>
-    </hlm-card>
-  } @else {
-    <div class="text-center py-20 text-destructive">{{ 'orders.detail.notFound' | transloco }}</div>
+
+      <!-- ═══ Sidebar ═══ -->
+      <aside class="flex min-w-0 flex-col gap-6" data-testid="order-detail-sidebar">
+        <!-- Customer -->
+        <section
+          class="flex flex-col rounded-[var(--radius-card)] border bg-card"
+          data-testid="detail-sidebar-section"
+          data-card="customer"
+        >
+          <header class="px-4 pt-4">
+            <h2 class="text-base font-medium leading-snug" data-testid="detail-card-title">
+              {{ 'orders.detail.customer' | transloco }}
+            </h2>
+          </header>
+          <div class="flex flex-col gap-2 px-4 pb-4 pt-3" data-testid="detail-card-body">
+            @if (o.customer; as customer) {
+              <p class="truncate font-medium" dir="auto">
+                <bdi>{{ customer.name }}</bdi>
+              </p>
+              <a
+                [href]="'mailto:' + customer.email"
+                class="truncate text-sm text-muted-foreground hover:underline"
+                dir="ltr"
+                data-testid="order-customer-email"
+              >
+                {{ customer.email }}
+              </a>
+              @if (o.address?.phone) {
+                <div class="flex flex-wrap items-center gap-3 text-sm">
+                  <a
+                    [href]="telHref()"
+                    class="inline-flex items-center gap-1.5 hover:underline"
+                    dir="ltr"
+                    data-testid="order-customer-phone"
+                  >
+                    <ng-icon name="lucidePhone" class="size-3.5" aria-hidden="true" />
+                    {{ o.address?.phone }}
+                  </a>
+                  @if (whatsappHref(); as wa) {
+                    <a
+                      [href]="wa"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="inline-flex items-center gap-1.5 text-muted-foreground hover:underline"
+                      data-testid="order-customer-whatsapp"
+                    >
+                      <ng-icon name="lucideMessageCircle" class="size-3.5" aria-hidden="true" />
+                      {{ 'orders.detail.whatsapp' | transloco }}
+                    </a>
+                  }
+                </div>
+              }
+              <a
+                [routerLink]="['/dashboard/users', customer.id]"
+                class="inline-flex items-center gap-1.5 text-sm hover:underline"
+                data-testid="order-customer-link"
+              >
+                {{ 'orders.detail.viewCustomer' | transloco }}
+                <ng-icon name="lucideExternalLink" class="size-3.5" aria-hidden="true" />
+              </a>
+            } @else {
+              <p class="text-sm text-muted-foreground">—</p>
+            }
+          </div>
+        </section>
+
+        <!-- Shipping address -->
+        <section
+          class="flex flex-col rounded-[var(--radius-card)] border bg-card"
+          data-testid="detail-sidebar-section"
+          data-card="address"
+        >
+          <header class="flex items-center justify-between gap-2 px-4 pt-4">
+            <h2 class="text-base font-medium leading-snug" data-testid="detail-card-title">
+              {{ 'orders.detail.shippingAddress' | transloco }}
+            </h2>
+            @if (o.address) {
+              <button
+                hlmBtn
+                variant="ghost"
+                size="sm"
+                data-testid="order-copy-address"
+                (click)="copyAddress()"
+              >
+                <ng-icon name="lucideCopy" class="size-3.5" aria-hidden="true" />
+                {{ 'orders.detail.copyAddress' | transloco }}
+              </button>
+            }
+          </header>
+          <div class="px-4 pb-4 pt-3" data-testid="detail-card-body">
+            @if (o.address; as address) {
+              <address class="flex flex-col gap-0.5 text-sm not-italic" dir="auto">
+                <bdi class="font-medium">{{ address.fullName }}</bdi>
+                <bdi>{{ address.street }}</bdi>
+                <bdi>{{ cityLine() }}</bdi>
+                <bdi>{{ countryLine() }}</bdi>
+                <bdi class="text-muted-foreground" dir="ltr">{{ address.phone }}</bdi>
+              </address>
+            } @else {
+              <p class="text-sm text-muted-foreground">—</p>
+            }
+          </div>
+        </section>
+
+        <!-- Payment -->
+        <section
+          class="flex flex-col rounded-[var(--radius-card)] border bg-card"
+          data-testid="detail-sidebar-section"
+          data-card="payment"
+        >
+          <header class="px-4 pt-4">
+            <h2 class="text-base font-medium leading-snug" data-testid="detail-card-title">
+              {{ 'orders.detail.payment' | transloco }}
+            </h2>
+          </header>
+          <div class="flex flex-col gap-2 px-4 pb-4 pt-3" data-testid="detail-card-body">
+            <div class="flex items-center justify-between gap-3">
+              <span class="text-sm text-muted-foreground">{{ 'orders.paymentMethod' | transloco }}</span>
+              <span class="text-sm">{{ names.paymentMethod(o.paymentMethod) }}</span>
+            </div>
+            <div class="flex items-center justify-between gap-3">
+              <span class="text-sm text-muted-foreground">{{ 'orders.paymentStatus' | transloco }}</span>
+              <app-status-badge [status]="paymentKind(o.paymentStatus)" />
+            </div>
+            @if (payment(); as details) {
+              <div class="flex items-center justify-between gap-3">
+                <span class="text-sm text-muted-foreground">
+                  {{ 'orders.detail.transactionRef' | transloco }}
+                </span>
+                <span class="truncate text-sm" dir="ltr">
+                  {{ details.transactionReference ?? '—' }}
+                </span>
+              </div>
+              <div class="flex items-center justify-between gap-3">
+                <span class="text-sm text-muted-foreground">{{ 'orders.detail.paidAt' | transloco }}</span>
+                <span class="text-sm">
+                  {{ details.paidAt ? dates.formatDateAndTime(details.paidAt) : '—' }}
+                </span>
+              </div>
+              @if (details.refunds.length > 0) {
+                <div class="mt-1 border-t border-border pt-2">
+                  <p class="text-xs font-medium text-muted-foreground">
+                    {{ 'orders.detail.refunds' | transloco }}
+                  </p>
+                  @for (refund of details.refunds; track refund.id) {
+                    <div class="mt-1 flex items-center justify-between gap-3 text-sm">
+                      <span class="truncate text-muted-foreground" dir="auto">
+                        <bdi>{{ refund.reason ?? '—' }}</bdi>
+                      </span>
+                      <span class="tabular-nums">{{ refund.amount | money }}</span>
+                    </div>
+                  }
+                </div>
+              }
+            }
+          </div>
+        </section>
+
+        <!-- Shipment -->
+        <section
+          class="flex flex-col rounded-[var(--radius-card)] border bg-card"
+          data-testid="detail-sidebar-section"
+          data-card="shipment"
+        >
+          <header class="flex items-center gap-2 px-4 pt-4">
+            <ng-icon name="lucideTruck" class="size-4 text-muted-foreground" aria-hidden="true" />
+            <h2 class="text-base font-medium leading-snug" data-testid="detail-card-title">
+              {{ 'orders.detail.shipment' | transloco }}
+            </h2>
+          </header>
+          <div class="px-4 pb-4 pt-3" data-testid="detail-card-body">
+            @if (shipment(); as shipmentDetails) {
+              @if (shipmentDetails.carrier || shipmentDetails.trackingNumber) {
+                <div class="flex flex-col gap-1.5 text-sm">
+                  @if (shipmentDetails.carrier) {
+                    <div class="flex items-center justify-between gap-3">
+                      <span class="text-muted-foreground">
+                        {{ 'orders.detail.carrier' | transloco }}
+                      </span>
+                      <span class="truncate">{{ shipmentDetails.carrier }}</span>
+                    </div>
+                  }
+                  @if (shipmentDetails.trackingNumber) {
+                    <div class="flex items-center justify-between gap-3">
+                      <span class="text-muted-foreground">
+                        {{ 'orders.detail.trackingNumber' | transloco }}
+                      </span>
+                      <span class="truncate" dir="ltr">{{ shipmentDetails.trackingNumber }}</span>
+                    </div>
+                  }
+                  @if (shipmentDetails.trackingUrl) {
+                    <a
+                      [href]="shipmentDetails.trackingUrl"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="inline-flex items-center gap-1.5 text-sm hover:underline"
+                      data-testid="order-tracking-link"
+                    >
+                      {{ 'orders.detail.trackingLink' | transloco }}
+                      <ng-icon name="lucideExternalLink" class="size-3.5" aria-hidden="true" />
+                    </a>
+                  }
+                  @if (shipmentDetails.shippedAt) {
+                    <div class="flex items-center justify-between gap-3">
+                      <span class="text-muted-foreground">
+                        {{ 'orders.detail.shippedAt' | transloco }}
+                      </span>
+                      <span class="text-sm">
+                        {{ dates.formatDateAndTime(shipmentDetails.shippedAt) }}
+                      </span>
+                    </div>
+                  }
+                  @if (shipmentDetails.deliveredAt) {
+                    <div class="flex items-center justify-between gap-3">
+                      <span class="text-muted-foreground">
+                        {{ 'orders.detail.deliveredAt' | transloco }}
+                      </span>
+                      <span class="text-sm">
+                        {{ dates.formatDateAndTime(shipmentDetails.deliveredAt) }}
+                      </span>
+                    </div>
+                  }
+                </div>
+              } @else {
+                <p class="text-sm text-muted-foreground" data-testid="order-no-shipment">
+                  {{ 'orders.detail.shipmentGap' | transloco }}
+                </p>
+              }
+
+              @if (shipmentEditing()) {
+                <div class="mt-3 flex flex-col gap-2">
+                  <label for="shipment-carrier" class="text-xs text-muted-foreground">
+                    {{ 'orders.detail.carrier' | transloco }}
+                  </label>
+                  <input
+                    id="shipment-carrier"
+                    hlmInput
+                    type="text"
+                    dir="auto"
+                    [ngModel]="shipmentDraft().carrier"
+                    (ngModelChange)="shipmentDraft.set({ ...shipmentDraft(), carrier: $event })"
+                  />
+                  <label for="shipment-tracking" class="text-xs text-muted-foreground">
+                    {{ 'orders.detail.trackingNumber' | transloco }}
+                  </label>
+                  <input
+                    id="shipment-tracking"
+                    hlmInput
+                    type="text"
+                    dir="ltr"
+                    [ngModel]="shipmentDraft().trackingNumber"
+                    (ngModelChange)="shipmentDraft.set({ ...shipmentDraft(), trackingNumber: $event })"
+                  />
+                  <label for="shipment-url" class="text-xs text-muted-foreground">
+                    {{ 'orders.detail.trackingLink' | transloco }}
+                  </label>
+                  <input
+                    id="shipment-url"
+                    hlmInput
+                    type="url"
+                    dir="ltr"
+                    [ngModel]="shipmentDraft().trackingUrl"
+                    (ngModelChange)="shipmentDraft.set({ ...shipmentDraft(), trackingUrl: $event })"
+                  />
+                  <div class="mt-1 flex items-center gap-2">
+                    <button hlmBtn size="sm" [disabled]="savingShipment()" (click)="saveShipment()">
+                      {{ 'common.save' | transloco }}
+                    </button>
+                    <button hlmBtn variant="ghost" size="sm" (click)="shipmentEditing.set(false)">
+                      {{ 'common.cancel' | transloco }}
+                    </button>
+                  </div>
+                </div>
+              } @else {
+                <button
+                  hlmBtn
+                  variant="outline"
+                  size="sm"
+                  class="mt-3"
+                  data-testid="order-edit-shipment"
+                  (click)="shipmentEditing.set(true)"
+                >
+                  {{ 'orders.detail.editShipment' | transloco }}
+                </button>
+              }
+            } @else {
+              <p class="text-sm text-muted-foreground">{{ 'orders.detail.shipmentGap' | transloco }}</p>
+            }
+          </div>
+        </section>
+
+        <!-- Tags -->
+        <section
+          class="flex flex-col rounded-[var(--radius-card)] border bg-card"
+          data-testid="detail-sidebar-section"
+          data-card="tags"
+        >
+          <header class="flex items-center gap-2 px-4 pt-4">
+            <ng-icon name="lucideTag" class="size-4 text-muted-foreground" aria-hidden="true" />
+            <h2 class="text-base font-medium leading-snug" data-testid="detail-card-title">
+              {{ 'orders.detail.tags' | transloco }}
+            </h2>
+          </header>
+          <div class="px-4 pb-4 pt-3" data-testid="detail-card-body">
+            <p class="text-sm text-muted-foreground" data-testid="order-no-tags">
+              {{ 'orders.detail.tagsGap' | transloco }}
+            </p>
+          </div>
+        </section>
+      </aside>
+    </div>
+
+    <!-- ── The dialogs ──────────────────────────────────────────────────── -->
+    <app-order-status-dialog
+      [open]="statusDialogOpen()"
+      [orderNumber]="plainOrderNumber()"
+      [currentStatus]="o.status"
+      [pending]="updating()"
+      (confirmed)="applyStatus($event)"
+      (closed)="closeStatusDialog()"
+    />
+
+    <app-order-cancel-dialog
+      [open]="cancelDialogOpen()"
+      [orderNumber]="plainOrderNumber()"
+      [pending]="updating()"
+      (confirmed)="applyCancel($event)"
+      (closed)="closeCancelDialog()"
+    />
+
+    <app-order-refund-dialog
+      [open]="refundDialogOpen()"
+      [orderNumber]="plainOrderNumber()"
+      [orderTotal]="totals().total"
+      [alreadyRefunded]="alreadyRefunded()"
+      [pending]="updating()"
+      (confirmed)="refund($event)"
+      (closed)="closeRefundDialog()"
+    />
   }
 </div>

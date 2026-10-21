@@ -21,9 +21,17 @@ export interface CartResponse {
   userId: number;
   userEmail: string;
   userFullName: string;
+  /** Optional avatar URL for the cart owner (backend may or may not send it). */
+  userAvatarUrl?: string | null;
+  avatarUrl?: string | null;
+  avatar?: string | null;
   items: CartItemResponse[];
   total: number;
   itemCount: number;
   createdAt: string;
   updatedAt: string;
+  // --- proposed by Phase 1 / API_GAPS.md (backend may not send these yet) ---
+  status?: 'ACTIVE' | 'ABANDONED' | 'CONVERTED';
+  lastActivityAt?: string;
+  convertedOrderId?: number | null;
 }

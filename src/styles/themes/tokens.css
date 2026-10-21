@@ -18,6 +18,7 @@
  * compact token; if it needs more, the scale itself is wrong — change it here.
  */
 :root {
+  --overlay: rgba(0, 0, 0, 0.32);
   --control-height: 2.5rem;
   --control-height-compact: 2rem;
   --control-font-size: 0.875rem;
@@ -63,6 +64,7 @@
     --color-destructive-foreground: var(--destructive-foreground);
     --color-destructive-text: var(--destructive-text);
     --color-destructive-soft: var(--destructive-soft);
+    --color-overlay: var(--overlay);
     --color-chart-1: var(--chart-1);
     --color-chart-2: var(--chart-2);
     --color-chart-3: var(--chart-3);
@@ -74,4 +76,11 @@
     --color-roast-2: var(--roast-2);
     --color-roast-3: var(--roast-3);
     --color-roast-4: var(--roast-4);
+    --color-status-delivered: var(--status-delivered);
+    --color-status-processing: var(--status-processing);
+    --color-status-shipped: var(--status-shipped);
+    --color-status-pending: var(--status-pending);
+    --color-status-cancelled: var(--status-cancelled);
+    --color-status-refunded: var(--status-refunded);
+    --color-status-confirmed: var(--status-confirmed);
 }

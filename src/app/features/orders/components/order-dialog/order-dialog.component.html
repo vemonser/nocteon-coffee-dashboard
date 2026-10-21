@@ -1,0 +1,43 @@
+@if (open()) {
+  <div
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
+    (click)="onBackdrop($event)"
+    (keydown)="onKeydown($event)"
+  >
+    <div
+      #panel
+      role="dialog"
+      aria-modal="true"
+      tabindex="-1"
+      [attr.data-testid]="testId()"
+      [attr.aria-labelledby]="testId() + '-title'"
+      [attr.aria-describedby]="description() ? testId() + '-description' : null"
+      class="w-full max-w-lg rounded-[var(--radius-card)] border bg-card p-6 shadow-2xl outline-none"
+    >
+      <h2 [id]="testId() + '-title'" class="text-lg font-medium">{{ title() }}</h2>
+      @if (description()) {
+        <p [id]="testId() + '-description'" class="mt-1 text-sm text-muted-foreground">
+          {{ description() }}
+        </p>
+      }
+
+      <ng-content></ng-content>
+
+      <div class="mt-6 flex justify-end gap-3">
+        <button hlmBtn variant="outline" type="button" (click)="closed.emit()">
+          {{ cancelLabel() }}
+        </button>
+        <button
+          hlmBtn
+          [variant]="danger() ? 'destructive' : 'default'"
+          type="button"
+          [disabled]="confirmDisabled() || pending()"
+          [attr.data-testid]="testId() + '-confirm'"
+          (click)="confirmed.emit()"
+        >
+          {{ confirmLabel() }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

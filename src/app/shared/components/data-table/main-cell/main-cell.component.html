@@ -48,8 +48,10 @@
       (one clickable control per row — the name). The slug is a handle for
       reading, not a second way into the detail page.
     -->
-    <span class="block truncate text-xs text-muted-foreground" data-testid="slug-text">
-      <bdi>{{ data().slug }}</bdi>
-    </span>
+    @if (showSlug()) {
+      <span class="block truncate text-xs text-muted-foreground" data-testid="slug-text">
+        <bdi>{{ data().slug }}</bdi>
+      </span>
+    }
   </div>
 </div>

@@ -210,7 +210,13 @@
       "failed": "Failed",
       "refunded": "Refunded",
       "enabled": "Enabled",
-      "disabled": "Disabled"
+      "disabled": "Disabled",
+      "confirmed": "Confirmed",
+      "unknown": "Unknown",
+      "approved": "Approved",
+      "active": "Enabled",
+      "abandoned": "Abandoned",
+      "converted": "Converted"
     },
     "toggleSidebar": "Toggle sidebar",
     "total": "total",
@@ -247,7 +253,8 @@
     "coffeeVariety": "Coffee Variety",
     "tastingNote": "Tasting Note",
     "days": "days",
-    "errorTitle": "Could not load"
+    "errorTitle": "Could not load",
+    "processing": "Processing…"
   },
   "products": {
     "title": "Products",
@@ -1126,7 +1133,67 @@
     "adjustSearch": "Adjust your search or filters",
     "deleteTitle": "Delete Review",
     "deleteConfirm": "Are you sure you want to delete this review?",
-    "unapproved": "Unapproved"
+    "unapproved": "Unapproved",
+    "countReviews_one": "{{count}} review",
+    "countReviews_other": "{{count}} reviews",
+    "countApproved_one": "{{count}} approved",
+    "countApproved_other": "{{count}} approved",
+    "countPending_one": "{{count}} pending",
+    "countPending_other": "{{count}} pending",
+    "tabs": {
+      "label": "Review status",
+      "pending": "Pending",
+      "approved": "Approved",
+      "all": "All"
+    },
+    "status": {
+      "approved": "Approved",
+      "pending": "Pending"
+    },
+    "withdrawApproval": "Withdraw approval",
+    "emptyState": {
+      "noReviews": "No reviews yet",
+      "noResults": "No reviews match these filters"
+    },
+    "bulk": {
+      "selected": "{{count}} selected",
+      "approve": "Approve selected",
+      "clear": "Clear selection",
+      "approved": "Reviews approved"
+    },
+    "columns": {
+      "product": "Product",
+      "reviewer": "Reviewer",
+      "rating": "Rating",
+      "comment": "Comment",
+      "verifiedPurchase": "Verified purchase"
+    },
+    "filters": {
+      "status": "Status",
+      "statusAll": "Status: All",
+      "product": "Product",
+      "dateRange": "Date range",
+      "rating": "Minimum rating",
+      "verification": "Verification",
+      "clear": "Clear filters",
+      "ratingAll": "Rating: all",
+      "ratingAtLeast": "Rating: {{n}}+"
+    },
+    "stats": {
+      "averageRating": "Average rating",
+      "distribution": "Star distribution",
+      "pending": "Pending",
+      "total": "Total",
+      "reviews": "reviews",
+      "verifiedShare": "Verified share"
+    },
+    "dateRange": {
+      "all": "All time",
+      "today": "Today",
+      "7d": "Last 7 days",
+      "30d": "Last 30 days",
+      "custom": "Custom range"
+    }
   },
   "users": {
     "title": "Users",
@@ -1213,25 +1280,21 @@
   "orders": {
     "title": "Orders",
     "total": "total",
-    "searchPlaceholder": "Search orders...",
-    "search": "Search orders...",
+    "searchPlaceholder": "Search orders…",
     "orderDetail": "Order",
     "status": "Status",
-    "paymentStatus": "Payment Status",
-    "paymentStatuses": {
-      "PENDING": "Pending",
-      "PAID": "Paid",
-      "FAILED": "Failed",
-      "REFUNDED": "Refunded"
-    },
+    "paymentStatus": "Payment status",
+    "paymentMethod": "Payment method",
     "totalAmount": "Total",
     "shipping": "Shipping",
     "discount": "Discount",
-    "paymentMethod": "Payment Method",
-    "createdAt": "Created at",
     "notes": "Notes",
-    "items": "Order Items",
+    "items": "Items",
     "quantity": "Quantity",
+    "createdAt": "Created at",
+    "changeStatus": "Change status",
+    "loading": "Loading orders…",
+    "empty": "No orders found",
     "statuses": {
       "PENDING": "Pending",
       "CONFIRMED": "Confirmed",
@@ -1240,44 +1303,211 @@
       "DELIVERED": "Delivered",
       "CANCELLED": "Cancelled"
     },
-    "statusFilter": {
-      "all": "All Status",
-      "pending": "Pending",
-      "confirmed": "Confirmed",
-      "processing": "Processing",
-      "shipped": "Shipped",
-      "delivered": "Delivered",
-      "cancelled": "Cancelled"
+    "paymentStatuses": {
+      "PENDING": "Pending",
+      "PAID": "Paid",
+      "FAILED": "Failed",
+      "REFUNDED": "Refunded"
     },
-    "empty": "No orders found",
-    "changeStatus": "Change status",
-    "loading": "Loading orders…",
-    "detail": {
-      "title": "Order details",
-      "createdAt": "Created at",
-      "discountAmount": "Discount",
-      "id": "Order ID",
-      "items": "Items",
-      "notFound": "Order not found",
-      "paymentMethod": "Payment method",
-      "paymentStatus": "Payment status",
-      "price": "Price",
-      "product": "Product",
-      "quantity": "Quantity",
-      "shippingCost": "Shipping",
-      "summary": "Order summary",
-      "total": "Total",
-      "totalAmount": "Total amount",
+    "paymentMethods": {
+      "ONLINE": "Online",
+      "CASH_ON_DELIVERY": "Cash on delivery"
+    },
+    "statusFilter": {
+      "all": "All orders"
+    },
+    "columns": {
+      "orderNumber": "Order #",
       "customer": "Customer",
-      "shippingAddress": "Shipping Address",
-      "back": "Back to orders",
-      "noItems": "No items"
+      "items": "Items",
+      "status": "Order status",
+      "paymentStatus": "Payment status",
+      "paymentMethod": "Method",
+      "total": "Total",
+      "createdAt": "Created at",
+      "actions": "Actions"
     },
     "stats": {
-      "total": "Total orders",
-      "pending": "Pending",
-      "completed": "Completed",
-      "cancelled": "Cancelled"
+      "revenue": "Revenue",
+      "open": "Open orders",
+      "avgOrderValue": "Avg order value",
+      "cancelRate": "Cancel rate"
+    },
+    "filters": {
+      "paymentStatus": "Payment status",
+      "paymentMethod": "Payment method",
+      "dateRange": "Date range",
+      "any": "Any",
+      "clear": "Clear filters",
+      "active": "Filters",
+      "paymentStatusShort": "Payment",
+      "paymentMethodShort": "Method",
+      "dateRangeShort": "Date"
+    },
+    "dateRange": {
+      "all": "All time",
+      "today": "Today",
+      "7d": "Last 7 days",
+      "30d": "Last 30 days",
+      "custom": "Custom range"
+    },
+    "emptyState": {
+      "noOrders": "No orders yet",
+      "noOrdersHint": "Orders placed in the store will appear here.",
+      "noResults": "No orders match these filters",
+      "noResultsHint": "Try a wider date range, or clear the filters.",
+      "noItems": "No items"
+    },
+    "errorState": {
+      "title": "The orders could not be loaded",
+      "hint": "The request failed. Retry to try again."
+    },
+    "bulk": {
+      "selected": "{{count}} selected",
+      "changeStatus": "Change status",
+      "export": "Export CSV",
+      "clear": "Clear selection"
+    },
+    "export": {
+      "button": "Export CSV",
+      "hint": "Exports the {{count}} orders matching the current filters, with the columns shown in the table.",
+      "done": "Orders exported"
+    },
+    "actions": {
+      "view": "View",
+      "changeStatus": "Change status",
+      "printInvoice": "Print invoice",
+      "cancel": "Cancel order",
+      "refund": "Refund",
+      "resendEmail": "Resend email",
+      "copy": "Copy"
+    },
+    "countItems_one": "{{count}} item",
+    "countItems_other": "{{count}} items",
+    "countOrders_one": "{{count}} order",
+    "countOrders_other": "{{count}} orders",
+    "countResults_one": "{{count}} result",
+    "countResults_other": "{{count}} results",
+    "detail": {
+      "back": "Back to orders",
+      "title": "Order",
+      "orderNumber": "Order number",
+      "createdAt": "Created at",
+      "items": "Items",
+      "product": "Product",
+      "sku": "SKU",
+      "variant": "Variant",
+      "quantity": "Quantity",
+      "unitPrice": "Unit price",
+      "lineTotal": "Line total",
+      "noItems": "No items on this order",
+      "totals": "Totals",
+      "subtotal": "Subtotal",
+      "shipping": "Shipping",
+      "discount": "Discount",
+      "tax": "Tax",
+      "total": "Total",
+      "netPaid": "Net paid",
+      "netPaidUnknown": "Not known — the refund amount is not recorded",
+      "totalsMismatch": "The total the store recorded does not match the items on this order. The recorded total is the one shown.",
+      "customer": "Customer",
+      "shippingAddress": "Shipping address",
+      "payment": "Payment",
+      "shipment": "Shipment",
+      "tags": "Tags",
+      "internalNotes": "Internal notes",
+      "noNotes": "No internal notes yet",
+      "addNote": "Add a note",
+      "notePlaceholder": "Write a note for the team…",
+      "timeline": "Timeline",
+      "noTimeline": "No activity yet",
+      "phone": "Phone",
+      "email": "Email",
+      "whatsapp": "WhatsApp",
+      "viewCustomer": "View customer",
+      "copyAddress": "Copy address",
+      "addressCopied": "Address copied",
+      "transactionRef": "Transaction reference",
+      "paidAt": "Paid at",
+      "refunds": "Refunds",
+      "noRefunds": "No refunds",
+      "carrier": "Carrier",
+      "trackingNumber": "Tracking number",
+      "trackingLink": "Track the shipment",
+      "shippedAt": "Shipped at",
+      "deliveredAt": "Delivered at",
+      "noShipment": "No shipment recorded",
+      "noTags": "No tags",
+      "updateStatus": "Update status",
+      "printInvoice": "Print invoice",
+      "resendEmail": "Resend email",
+      "moreActions": "More actions",
+      "notAvailable": "Not available yet",
+      "paymentGap": "The store does not record a transaction reference, a paid-at time, or refunds yet.",
+      "shipmentGap": "The store does not record a carrier, a tracking number, or delivery times yet.",
+      "tagsGap": "The store does not have tags for orders yet.",
+      "notesGap": "The store has no place to keep an internal note yet.",
+      "historyGap": "The store does not record the order's history yet.",
+      "variantGap": "The store does not record the chosen variant on an order line yet.",
+      "activityUnavailable": "The order's history could not be loaded. The page still shows what it has.",
+      "noActivity": "No recorded events yet.",
+      "noteAdded": "Note added",
+      "shipmentSaved": "Shipment saved",
+      "resendEmailGap": "The store sends order e-mails automatically, but it cannot send one on demand.",
+      "editShipment": "Record the shipment",
+      "refundRecorded": "Refund sent to the payment gateway"
+    },
+    "dialogs": {
+      "status": {
+        "title": "Update status",
+        "description": "Move {{order}} from {{from}} to {{to}}.",
+        "note": "Note (optional)",
+        "notePlaceholder": "Why is the status changing?",
+        "notify": "Notify the customer by email",
+        "confirm": "Update status",
+        "noTransitions": "This order has reached a final status and cannot be changed."
+      },
+      "cancel": {
+        "title": "Cancel this order",
+        "description": "Cancelling {{order}} stops the fulfilment and releases the reserved stock.",
+        "reason": "Reason (required)",
+        "reasonPlaceholder": "Why is the order being cancelled?",
+        "reasonRequired": "A reason is required to cancel an order.",
+        "consequence": "A cancelled order cannot be reopened. The customer is notified only if you ask for it.",
+        "confirm": "Cancel order"
+      },
+      "refund": {
+        "title": "Refund this order",
+        "unavailable": "Refunds are not available",
+        "unavailableHint": "The store has no payment-gateway refund endpoint, so a refund cannot be issued from the dashboard.",
+        "reason": "Reason",
+        "amount": "Amount",
+        "confirm": "Refund",
+        "reasonPlaceholder": "Why is the money going back?",
+        "full": "Full refund",
+        "partial": "Partial refund",
+        "remaining": "Remaining to refund: {{amount}}",
+        "tooMuch": "The amount is more than what is left to refund.",
+        "gatewayNote": "The money goes back through the payment gateway, to the same card the customer paid with."
+      }
+    },
+    "timeline": {
+      "placed": "Order placed",
+      "statusChanged": "Status changed to {{status}}",
+      "payment": "Payment received",
+      "refund": "Refunded",
+      "note": "Note added",
+      "email": "Email sent to the customer",
+      "shipment": "Shipped",
+      "delivered": "Delivered",
+      "cancelled": "Order cancelled",
+      "reason": "Reason",
+      "by": "by {{actor}}",
+      "notify": "the customer is to be told"
+    },
+    "orderScope": {
+      "all": "All orders",
+      "allHelp": "Every order the store has, whatever its status and whatever its payment status — cancelled, pending and refunded orders are included."
     }
   },
   "notifications": {
@@ -1361,7 +1591,15 @@
     "recentOrders": {
       "title": "Recent orders",
       "viewAll": "View all",
-      "empty": "No orders yet."
+      "empty": "No orders yet.",
+      "justNow": "just now",
+      "unknownCustomer": "Unknown customer",
+      "minutesAgo_one": "{{count}} min ago",
+      "minutesAgo_other": "{{count}} mins ago",
+      "hoursAgo_one": "{{count}} hour ago",
+      "hoursAgo_other": "{{count}} hours ago",
+      "daysAgo_one": "{{count}} day ago",
+      "daysAgo_other": "{{count}} days ago"
     },
     "onlineUsersCount": "{{count}} user online",
     "periods": {
@@ -1438,7 +1676,8 @@
     "vs": "vs",
     "delta": {
       "noChange": "No change",
-      "new": "New"
+      "new": "New",
+      "noBaseline": "No data in the previous period"
     },
     "selectedPeriod": "Selected period",
     "refundRateHelp": "Refunded orders as a share of paid orders in the selected period.",
@@ -1468,7 +1707,6 @@
     },
     "ordersByStatus": "Paid orders by status",
     "ordersByPaymentMethod": "Orders by payment method",
-    "deviceUnit": "sessions",
     "deviceTypes": {
       "OTHER": "Other",
       "IOS": "iOS",
@@ -1494,7 +1732,20 @@
     "last365Days": "Last 365 days",
     "rangeLabel": "Date range",
     "exportTooltip": "Exports the dashboard overview and the top products as a CSV",
-    "coffeeSoldHint": "by weight, coffee only"
+    "coffeeSoldHint": "by weight, coffee only",
+    "orderScope": {
+      "paid": "Paid orders",
+      "paidHelp": "Paid orders in the selected period. An order is counted when its payment status is Paid, so pending, failed and refunded orders are not counted."
+    },
+    "countSessions_one": "{{count}} session",
+    "countSessions_other": "{{count}} sessions",
+    "donutRevenue": "Revenue",
+    "donutOrders": "Orders",
+    "breakdownNote": "This chart adds up the line items (price × quantity). It does not include shipping or discounts, so it does not add up to the Total revenue card.",
+    "devicesNote": "The store records one row per observed device session. The count is not a count of people.",
+    "recentOrdersNote": "The four most recent orders, whatever their date.",
+    "daysShort": "days",
+    "deviceUnit": "sessions"
   },
   "imageCell": {
     "noImage": "No img"
@@ -1556,15 +1807,77 @@
     "content": "Message",
     "contentRequired": "Message is required",
     "contentPlaceholder": "Write your broadcast message...",
-    "send": "Send"
+    "send": "Send",
+    "totalCount": "{{count}} broadcasts",
+    "audience": "This message goes to every customer of the store. The number of recipients is counted when the broadcast is created.",
+    "sentTitle": "{{sent}} of {{total}} recipients have received this broadcast.",
+    "status": {
+      "queued": "Queued",
+      "inProgress": "Sending",
+      "completed": "Sent"
+    },
+    "delete": "Delete the broadcast",
+    "deleteTitle": "Delete this broadcast",
+    "deleteConfirm": "The broadcast and its recipient list are removed. Delete",
+    "deleted": "The broadcast was deleted",
+    "export": {
+      "button": "Export broadcasts",
+      "done": "The broadcasts were exported",
+      "empty": "There are no broadcasts to export",
+      "failed": "The broadcasts could not be exported"
+    },
+    "totalCount_one": "1 broadcast",
+    "totalCount_other": "{{count}} broadcasts"
   },
   "contactMessages": {
-    "title": "Contact Messages",
+    "title": "Contact messages",
     "search": "Search messages...",
     "empty": "No contact messages yet.",
     "reply": "Reply",
     "replyContent": "Reply",
-    "sendReply": "Send reply"
+    "sendReply": "Send reply",
+    "countMessages_one": "{{count}} message",
+    "countMessages_other": "{{count}} messages",
+    "countUnread_one": "{{count}} unread",
+    "countUnread_other": "{{count}} unread",
+    "unread": "Unread",
+    "read": "Read",
+    "replied": "Replied",
+    "yourReply": "Your reply",
+    "copyEmail": "Copy email",
+    "emailSent": "Email sent",
+    "emailNotSent": "Email not sent",
+    "emailQueued": "Queued for retry",
+    "sendAgain": "Send again",
+    "replyPlaceholder": "Reply to {{email}}",
+    "replyNotice": "The reply is emailed to {{email}} and saved here.",
+    "replySent": "Reply sent",
+    "replySavedNotSent": "Reply saved, but the email could not be sent",
+    "tabs": {
+      "label": "Message state",
+      "all": "All",
+      "unread": "Unread",
+      "replied": "Replied"
+    },
+    "dateRange": {
+      "all": "All time",
+      "today": "Today",
+      "7d": "Last 7 days",
+      "30d": "Last 30 days",
+      "custom": "Custom range"
+    },
+    "filters": {
+      "status": "Status",
+      "dateRange": "Date range",
+      "clear": "Clear filters"
+    },
+    "sending": "Sending...",
+    "markRead": "Mark as read",
+    "markUnread": "Mark as unread",
+    "markUnreadNotSupported": "Mark as unread is not available",
+    "bulkSelected": "{{count}} selected",
+    "bulkMarkRead": "Mark as read",
+    "bulkDelete": "Delete selected"
   },
   "unauthorized": {
     "title": "Access Denied",
@@ -1593,5 +1906,28 @@
     "viewDetails": "View details",
     "pendingReviews": "Reviews awaiting moderation",
     "unreadMessages": "Unread messages"
+  },
+  "newsletter": {
+    "title": "Newsletter",
+    "totalCount": "{{count}} addresses in the audience",
+    "search": "Search addresses...",
+    "empty": "There are no addresses in the audience yet.",
+    "audience": "The audience of a newsletter is the store's customers — the same list a broadcast goes to. The API does not carry a per-address newsletter flag, so an address that unsubscribed is still listed.",
+    "columns": {
+      "email": "Email",
+      "name": "Name",
+      "role": "Role",
+      "joined": "Joined",
+      "lastActive": "Last active"
+    },
+    "export": {
+      "button": "Export emails",
+      "hint": "Exports every address of the audience as a CSV, not only the rows on this page.",
+      "done": "The addresses were exported",
+      "empty": "There are no addresses to export",
+      "failed": "The addresses could not be exported"
+    },
+    "totalCount_one": "1 address in the audience",
+    "totalCount_other": "{{count}} addresses in the audience"
   }
 }

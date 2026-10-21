@@ -291,14 +291,14 @@ export const routes: Routes = [
           {
             path: '',
             loadComponent: () =>
-              import('./features/reviews/components/review.component').then(
+              import('./features/reviews/components/review-list.component').then(
                 (m) => m.ReviewListComponent,
               ),
           },
           {
             path: ':id',
             loadComponent: () =>
-              import('./features/reviews/components/review.component').then(
+              import('./features/reviews/components/review-list.component').then(
                 (m) => m.ReviewListComponent,
               ),
           },
@@ -320,6 +320,15 @@ export const routes: Routes = [
         ],
       },
 
+      {
+        path: 'newsletter',
+        data: { breadcrumb: 'newsletter' },
+        canActivate: [permissionGuard('user:read')],
+        loadComponent: () =>
+          import('./features/newsletter/components/newsletter-list.component').then(
+            (m) => m.NewsletterListComponent,
+          ),
+      },
       {
         path: 'broadcasts',
         data: { breadcrumb: 'broadcasts' },

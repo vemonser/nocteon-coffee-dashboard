@@ -42,12 +42,14 @@ import { PromoCodeRequest, PromoCodeResponse } from '../../models/promo-code.mod
 import { CategoryResponse } from '../../../categories/models/category.model';
 
 import { TranslocoPipe } from '@jsverse/transloco';
+import { LocalizedDateComponent } from '../../../../shared/ui/localized-date/localized-date.component';
 type EditMode = 'view' | 'edit';
 
 @Component({
   selector: 'app-promo-code-detail',
   standalone: true,
   imports: [
+    LocalizedDateComponent,
     CommonModule,
     FormsModule,
     ReactiveFormsModule,

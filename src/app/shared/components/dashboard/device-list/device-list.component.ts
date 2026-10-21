@@ -1,9 +1,9 @@
 import { Component, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
+import { TranslocoPipe } from '@jsverse/transloco';
 import { DashboardStatsService } from '../../../../features/dashboard/services/dashboard-stats.service';
 import { LocalizedNameService } from '../../../../core/i18n/localized-name.service';
-import { WidgetHeaderComponent } from '../../widget-header/widget-header.component';
+import { PluralPipe } from '../../../pipes/plural.pipe';
 
 /**
  * The device breakdown, as a compact bar list.
@@ -13,22 +13,32 @@ import { WidgetHeaderComponent } from '../../widget-header/widget-header.compone
  * as "everything is small". The number is next to every bar, so the colour
  * is never the only signal.
  *
- * The unit is stated: the backend counts ROWS in the device table, which
- * the API does not label. The card says "sessions" and the evidence notes
- * that the underlying row semantics are a backend question (see
- * `evidence/phase1/measurements.json` -> `missingBackendContracts`).
+ * THE UNIT (Round 2, tickets 1.7 and 2.1)
+ * ---------------------------------------
+ * The backend counts ROWS in the device table, which the API does not
+ * label. The rows are CUMULATIVE and they grow while the store is open —
+ * the dashboard's own browsing adds a row every time a page is loaded —
+ * so the count is a count of observed DEVICE SESSIONS, not of people, and
+ * not of devices either. The card says "sessions", in the reader's
+ * language, in the right plural form ("1 session", "6 sessions"), and the
+ * unit follows the number in both languages.
+ *
+ * The data is NOT filtered in the frontend: the dashboard's own traffic is
+ * in the number, and hiding it here would be a lie about the store's
+ * traffic. What is missing is the CONTRACT (see ORDERS_CONTRACT.md): the
+ * endpoint should say what a row is and should exclude the staff's own
+ * sessions.
  */
 @Component({
   selector: 'app-device-list',
   standalone: true,
-  imports: [CommonModule, TranslocoPipe, WidgetHeaderComponent],
+  imports: [CommonModule, TranslocoPipe, PluralPipe],
   templateUrl: './device-list.component.html',
   styleUrl: './device-list.component.css',
 })
 export class DeviceListComponent {
   private readonly stats = inject(DashboardStatsService);
   private readonly names = inject(LocalizedNameService);
-  private readonly transloco = inject(TranslocoService);
 
   /** The devices, largest first. */
   readonly devices = computed(() =>
@@ -53,7 +63,4 @@ export class DeviceListComponent {
   label(deviceType: string): string {
     return this.names.deviceType(deviceType);
   }
-
-  /** The unit of the count. */
-  readonly unit = computed(() => this.transloco.translate('dashboard.deviceUnit'));
 }

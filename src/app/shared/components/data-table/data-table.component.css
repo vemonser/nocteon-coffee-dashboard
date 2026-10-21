@@ -35,6 +35,14 @@ tbody tr {
   font-variant-numeric: tabular-nums;
 }
 
+/* A column that opts into end alignment (`meta: { align: 'end' }`).
+   The header AND the cell switch together, so the sort label still sits
+   over its values — the mismatch this replaces had the header ~350px away
+   from the numbers it labels. */
+:where(td, th)[data-align-end] {
+  text-align: end;
+}
+
 /* Low/critical value indicator */
 .value-low {
   color: var(--warning);
@@ -47,3 +55,19 @@ tbody tr {
 
 /* Checkbox visuals live in src/styles/index.css (.table-check) — shared by
    the DataTable and the Columns menu so the two never drift apart. */
+
+/* The pinned first column.
+   It stays at the inline start (the right in Arabic) while the table
+   scrolls sideways, so the reader never loses which row the numbers
+   belong to. The card colour is the background, so the rows that scroll
+   under it do not show through. */
+.sticky-start {
+  position: sticky;
+  z-index: 1;
+  background-color: var(--card);
+}
+
+/* The pinned column sits above the pinned checkbox. */
+thead .sticky-start {
+  z-index: 2;
+}

@@ -1,32 +1,27 @@
-<app-widget-header [title]="'dashboard.ordersBy' | transloco" />
-
-<div role="tablist" [attr.aria-label]="'dashboard.ordersBy' | transloco" class="mt-1 flex items-center gap-1 border-b">
-  @for (t of tabs; track t.id) {
-    <button
-      hlmBtn
+<hlm-card class="h-full">
+  <!-- The header is the SAME header every other card uses, so the title and
+       the range scope sit in the same place on the page. -->
+  <hlm-card-header>
+    <app-widget-header [title]="title()" [infoTitle]="scopeNote()" />
+  </hlm-card-header>
+  <div hlmCardContent class="grow shrink-0">
+    <app-tabs
       role="tab"
-      type="button"
-      variant="ghost"
-      size="sm"
-      class="border-b-2 rounded-none px-2 py-0.5 text-sm transition-colors"
-      [class.border-primary]="tab() === t.id"
-      [class.text-foreground]="tab() === t.id"
-      [class.border-transparent]="tab() !== t.id"
-      [class.text-muted-foreground]="tab() !== t.id"
-      [attr.aria-selected]="tab() === t.id"
-      (click)="tab.set(t.id)"
-    >
-      {{ t.labelKey | transloco }}
-    </button>
-  }
-</div>
+      [label]="title()"
+      [items]="tabItems()"
+      [active]="tab()"
+      (activeChange)="tab.set($any($event))"
+    />
 
-<div class="mt-3">
-  <app-chart-card
-    [slices]="slices()"
-    [formatValue]="formatValue"
-    [centerLabel]="centerLabel()"
-    [ariaLabel]="ariaLabel()"
-    [sliceLinks]="sliceLinks()"
-  />
-</div>
+    <div class="mt-4">
+      <app-chart-card
+        [slices]="slices()"
+        [formatValue]="formatValue"
+        [formatCompactValue]="formatCompactValue"
+        [centerLabel]="centerLabel()"
+        [ariaLabel]="ariaLabel()"
+        [sliceLinks]="sliceLinks()"
+      />
+    </div>
+  </div>
+</hlm-card>

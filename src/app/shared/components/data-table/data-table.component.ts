@@ -8,7 +8,7 @@ import {
   getSortedRowModel,
 } from '@tanstack/angular-table';
 
-import { ActionsCellComponent } from '../../ui/actions-cell/actions-cell.component';
+import { ActionsCellComponent, type RowMenuAction } from '../../ui/actions-cell/actions-cell.component';
 import { StatusCellComponent } from '../../ui/status-cell/status-cell.component';
 import { DeletedBadgeComponent } from '../../ui/deleted-badge/deleted-badge.component';
 import { TranslocoPipe } from '@jsverse/transloco';
@@ -16,10 +16,18 @@ import { MoneyPipe } from '../../pipes/money.pipe';
 import { LocalizedDateComponent } from '../../ui/localized-date/localized-date.component';
 import { ImageCellComponent } from '../../ui/image-cell/image-cell.component';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucideStar } from '@ng-icons/lucide';
+import { lucideStar, lucideCreditCard, lucideBanknote, lucideBadgeCheck } from '@ng-icons/lucide';
+import { heroStarSolid } from '@ng-icons/heroicons/solid';
+import { heroStar } from '@ng-icons/heroicons/outline';
 import { ColorCellComponent } from '../color-cell/color-cell.component';
 import { MainCellComponent } from './main-cell/main-cell.component';
+import { UserAvatarComponent } from '../../ui/user-avatar/user-avatar.component';
+import { StatusBadgeComponent } from '../../ui/status-badge/status-badge.component';
+import { RatingStarsComponent } from '../../ui/rating-stars/rating-stars.component';
+import { VerifiedBadgeComponent } from '../../ui/verified-badge/verified-badge.component';
+import { LocalizedNameService } from '../../../core/i18n/localized-name.service';
 import { LanguageService } from '../../../core/i18n/language.service';
+import { formatRelativeTime } from '../../../core/i18n/relative-time';
 
 export interface TableSortEvent {
   column: string;
@@ -28,8 +36,8 @@ export interface TableSortEvent {
 
 @Component({
   selector: 'app-data-table',
-  imports: [ImageCellComponent, ActionsCellComponent, StatusCellComponent, DeletedBadgeComponent, LocalizedDateComponent, ColorCellComponent, MainCellComponent, NgIcon, TranslocoPipe, RouterModule, MoneyPipe],
-  providers: [provideIcons({ lucideStar })],
+  imports: [UserAvatarComponent, ImageCellComponent, ActionsCellComponent, StatusCellComponent, DeletedBadgeComponent, LocalizedDateComponent, ColorCellComponent, MainCellComponent, StatusBadgeComponent, RatingStarsComponent, VerifiedBadgeComponent, NgIcon, TranslocoPipe, RouterModule, MoneyPipe],
+  providers: [provideIcons({ lucideStar, lucideCreditCard, lucideBanknote, lucideBadgeCheck, heroStarSolid, heroStar })],
   templateUrl: './data-table.component.html',
   styleUrl: './data-table.component.css',
 })
@@ -39,13 +47,17 @@ export class DataTableComponent {
    * translates the shared vocabulary through Transloco (reactive on language
    * change); anything unmapped passes through untouched.
    */
-  private static readonly HEADER_KEYS: Record<string, string> = {
+  static readonly HEADER_KEYS: Record<string, string> = {
     ID: 'common.id',
     Image: 'common.image',
     Slug: 'common.slug',
     Status: 'common.status',
     'Created At': 'common.createdAt',
     'created at': 'common.createdAt',
+    // The orders list writes the header in sentence case ("Created at"), and
+    // the map is keyed by the RAW header string — without this entry the
+    // header stayed English in Arabic.
+    'Created at': 'common.createdAt',
     Created: 'common.createdAt',
     'Updated At': 'common.updatedAt',
     'Deleted At': 'common.deletedAt',
@@ -101,6 +113,17 @@ export class DataTableComponent {
     // Trash tail column header (already mapped above).
     'الاسم بالعربية': 'common.nameArabic',
     'الاسم بالإنجليزية': 'common.nameEnglish',
+    // The orders list has its own vocabulary: the order number, the order
+    // status and the method are order concepts, not generic ones, and they
+    // must read the same in the list, the detail page and the export.
+    'Order #': 'orders.columns.orderNumber',
+    'Order status': 'orders.columns.status',
+    'Payment status': 'orders.columns.paymentStatus',
+    // The reviews console (a moderation table, not an order table).
+    Product: 'reviews.columns.product',
+    Reviewer: 'reviews.columns.reviewer',
+    Rating: 'reviews.columns.rating',
+    Comment: 'reviews.columns.comment',
   };
 
   headerKey(raw: unknown): string {
@@ -185,6 +208,33 @@ export class DataTableComponent {
   hasView = output<boolean>();
   initialSort = input<TableSortEvent | null>(null);
 
+  /**
+   * The row's overflow menu (see `RowMenuAction`).
+   *
+   * A list with more than two row actions shows one and hides the rest in a
+   * kebab menu, so the actions column stays narrow.
+   */
+  menuActions = input<RowMenuAction[]>([]);
+
+  /**
+   * The row's PRIMARY action — a LABELLED button, not an icon.
+   *
+   * <p>An unlabelled icon makes the reader guess what it does, and a review
+   * approved by mistake reaches a customer.
+   */
+  primaryAction = input<{ id: string; label: string } | null>(null);
+  primaryActionFor = input<((row: any) => { id: string; label: string } | null) | null>(null);
+
+  /**
+   * Hides the slug under the name in the main cell.
+   *
+   * The slug is a technical handle. A table whose main column IS the
+   * identifier — the reviews console shows the PRODUCT — does not want it.
+   */
+  hideSlug = input(false);
+  /** The chosen menu entry, with the row it belongs to. */
+  menuAction = output<{ id: string; item: any }>();
+
   // NEW: Generic action permissions & labels
   editPermission = input<string>('category:update');
   deletePermission = input<string>('category:delete');
@@ -222,6 +272,8 @@ export class DataTableComponent {
   navigableColumn = input<string>('');
 
   private readonly language = inject(LanguageService);
+  /** The shared localized-name helper — the method label is translated at render time. */
+  protected readonly names = inject(LocalizedNameService);
 
   /**
    * The entity-identity name column of the CURRENT UI language (`name_en` /
@@ -241,6 +293,60 @@ export class DataTableComponent {
    * plain span that does nothing would be worse than no control at all.
    */
   navigableHref = input<(row: any) => any[] | null>(() => null);
+
+  /**
+   * A router command for ONE cell of a row, by column id.
+   *
+   * The generic way for a list to make a cell a real link: the table knows
+   * nothing about orders, products or carts — the page says which column is
+   * a link and where it points. A cell with a command renders a real anchor
+   * (middle-click and open-in-new-tab work).
+   */
+  cellHref = input<(columnId: string, row: any) => any[] | null>(() => null);
+
+  /**
+   * The whole row is clickable.
+   *
+   * The click is ignored when it lands on something interactive inside the
+   * row (a link, a button, a checkbox), so the row's own link and its row
+   * actions keep working.
+   */
+  clickableRows = input<boolean>(false);
+
+  /**
+   * The column that STICKS to the inline start when the table scrolls
+   * sideways.
+   *
+   * A table that is wider than the screen has to scroll, and a reader who
+   * has scrolled to the price must still be able to see WHICH order the
+   * price belongs to. The column is pinned to the inline start (the right in
+   * Arabic), so it stays where the eye expects it.
+   */
+  stickyStartColumn = input<string>('');
+
+  /** True when this column is the pinned one. */
+  isStickyStart(columnId: string): boolean {
+    return this.stickyStartColumn() !== '' && columnId === this.stickyStartColumn();
+  }
+
+  /**
+   * The offset of the pinned column, in px.
+   *
+   * The select checkbox sits BEFORE the pinned column, so it is pinned too
+   * and the pinned column starts after it.
+   */
+  readonly stickyStartOffset = 40;
+
+  /**
+   * A click on a clickable row. Interactive elements inside the row are
+   * left alone.
+   */
+  onRowClick(event: MouseEvent, row: any): void {
+    if (!this.clickableRows()) return;
+    const target = event.target as HTMLElement | null;
+    if (target?.closest('a, button, input, select, textarea, label, [role="button"]')) return;
+    this.rowClick.emit(row);
+  }
 
   /**
    * Detail-page command for a row. Returns null when the table is not
@@ -305,31 +411,7 @@ export class DataTableComponent {
    * For very recent times (< 1 minute), returns "Just now" / "الآن" instead of "now".
    */
   relativeTime(value: unknown): string {
-    if (!value) return '';
-    const then = new Date(value as string).getTime();
-    if (Number.isNaN(then)) return '';
-    const locale = document.documentElement.lang || 'en';
-    const diff = then - Date.now();
-    const absDiff = Math.abs(diff);
-
-    // Less than 1 minute -> "Just now" / "الآن"
-    if (absDiff < 60_000) {
-      return locale.startsWith('ar') ? 'الآن' : 'Just now';
-    }
-
-    const units: Array<[Intl.RelativeTimeFormatUnit, number]> = [
-      ['year', 365 * 24 * 3600e3],
-      ['month', 30 * 24 * 3600e3],
-      ['week', 7 * 24 * 3600e3],
-      ['day', 24 * 3600e3],
-      ['hour', 3600e3],
-      ['minute', 60e3],
-    ];
-    const rtf = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' });
-    for (const [unit, ms] of units) {
-      if (absDiff >= ms) return rtf.format(Math.round(diff / ms), unit);
-    }
-    return locale.startsWith('ar') ? 'الآن' : 'Just now';
+    return formatRelativeTime(value, this.language.language());
   }
 
   sorting = signal<SortingState>([]);
@@ -367,7 +449,7 @@ export class DataTableComponent {
    *
    * Widths are validated by `e2e/verify-tables.spec.ts`.
    */
-  readonly columnWidths: Record<string, string> = {
+  static readonly COLUMN_WIDTHS: Record<string, string> = {
     id: '48px',
     image: '56px',
     primaryImageUrl: '56px',
@@ -384,6 +466,10 @@ export class DataTableComponent {
     // lists build a `name_${lang}` column; `name_en` stays unsized so it keeps
     // absorbing the leftover, `name_ar` gets a share of the row instead.
     name_ar: '28%',
+    // The carts list scans the CUSTOMER, not the email. It had no width of
+    // its own, so it shared the leftover with the other unsized columns and
+    // ended up NARROWER than the actions column it is supposed to dominate.
+    userFullName: '28%',
     // 120px, not 104px: "Created at" + its sort arrow needs ~82px inside
     // px-4 padding (32px), so at 104px the header rendered as "Created... ↓".
     // Everything that shares these three ids gets the same fix.
@@ -410,10 +496,22 @@ export class DataTableComponent {
     itemCount: '80px',
     paymentStatus: '120px',
     paymentMethod: '130px',
+    // The orders list needs a WIDER method column: "Cash on delivery" /
+    // "الدفع عند الاستلام" must never be truncated, so the column is budgeted
+    // for the longest label in both languages.
+    orderNumber: '130px',
+    customer: '150px',
+    createdAtTime: '150px',
     scopeType: '110px',
     discountType: '110px',
     discountValue: '100px',
     priceRange: '130px',
+    // The reviews console. `main_en`/`main_ar` (the product cell) stays
+    // UNSIZED — it is the table's one flex column and takes the remainder,
+    // so the comment and the dates stay compact.
+    reviewer: '125px',
+    rating: '85px',
+    statusReview: '95px',
   };
 
   /** Resolves the width for a column id: explicit meta wins over the defaults. */
@@ -430,8 +528,11 @@ export class DataTableComponent {
       // scroll on every trash view.
       return '264px';
     }
-    return this.columnWidths[columnId] ?? null;
+    return DataTableComponent.COLUMN_WIDTHS[columnId] ?? null;
   }
+
+  /** The five stars of a rating cell. */
+  protected readonly ratingStars = [0, 1, 2, 3, 4];
 
   /** Columns whose values are numbers — end-aligned with tabular figures. */
   private static readonly NUMERIC_COLUMNS = new Set([
@@ -448,6 +549,22 @@ export class DataTableComponent {
 
   isNumericColumn(columnId: string): boolean {
     return DataTableComponent.NUMERIC_COLUMNS.has(columnId);
+  }
+
+  /**
+   * Is this column end-aligned?
+   *
+   * The default is START alignment for every column, because the header must
+   * sit exactly over its values (see the note in the stylesheet). A column
+   * opts into end alignment with `meta: { align: 'end' }` — the orders list
+   * does that for its Total column, where the numbers read better against a
+   * shared edge.
+   *
+   * The header AND the cell are switched by the same flag; a mismatch is
+   * what the earlier price column had.
+   */
+  isEndAligned(columnDef?: ColumnDef<any, any>): boolean {
+    return (columnDef?.meta as { align?: string } | undefined)?.align === 'end';
   }
 
   /**

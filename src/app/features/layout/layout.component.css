@@ -2,3 +2,14 @@
   width: calc(100% - var(--sidebar-width));
   overflow-x: hidden;
 }
+
+/*
+ * The focus moves to the page heading after a navigation, so a screen-reader
+ * user lands where they expect. The heading is not a control, so it must not
+ * PAINT a focus ring — the outline would read as a broken box around the
+ * title.
+ */
+main h1:focus,
+main h1:focus-visible {
+  outline: none;
+}

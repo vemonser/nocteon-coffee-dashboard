@@ -1,7 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
-import { RouterModule, RouterOutlet } from '@angular/router';
+import { Component, ElementRef, inject, viewChild } from '@angular/core';
+import { NavigationEnd, Router, RouterModule, RouterOutlet } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { filter } from 'rxjs';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideSettings } from '@ng-icons/lucide';
 import { ChangeDetectionStrategy, ViewEncapsulation } from '@angular/core';
@@ -43,6 +44,31 @@ import { TranslocoPipe } from '@jsverse/transloco';
 export class LayoutComponent {
   protected readonly auth = inject(AuthService);
   private readonly notify = inject(NotifyService);
+  private readonly router = inject(Router);
+
+  /** The page area — the heading lives inside it. */
+  private readonly main = viewChild<ElementRef<HTMLElement>>('main');
+
+  constructor() {
+    /**
+     * The focus moves to the page heading after every navigation.
+     *
+     * A nav item keeps DOM focus after an SPA navigation, so its
+     * `focus-visible:ring-2` stayed painted on the item the admin had just
+     * left. Moving the focus to the heading fixes the ring and gives a
+     * screen-reader user the place they expect to land.
+     */
+    this.router.events
+      .pipe(filter((event) => event instanceof NavigationEnd))
+      .subscribe(() => setTimeout(() => this.focusPageHeading()));
+  }
+
+  private focusPageHeading(): void {
+    const heading = this.main()?.nativeElement?.querySelector('h1');
+    if (!heading) return;
+    heading.setAttribute('tabindex', '-1');
+    heading.focus();
+  }
 
   getInitial(): string {
     const name = this.auth.getFullName();

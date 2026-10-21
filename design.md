@@ -92,6 +92,19 @@ Same variable names as the shadcn/spartan convention, so existing components kee
      category of its own. */
   --chart-other: #8a8178;
 
+  /* ─── The order-status swatches ────────────────────────────────────────
+     A status is not a category: it has a MEANING, so it gets its own
+     swatches and never a categorical one. The light values are the
+     semantic tokens the page already used; SHIPPED is new, because it
+     used to be --chart-5 — a CATEGORICAL token, so a shipped slice and a
+     possible origin slice were the same colour. */
+  --status-delivered: #137333;
+  --status-processing: #0e7490;
+  --status-shipped: #482a6f;
+  --status-pending: #7a5700;
+  --status-cancelled: #b83232;
+  --status-refunded: #6b5d52;
+
   --radius: 0.5rem;
 }
 
@@ -158,6 +171,23 @@ Same variable names as the shadcn/spartan convention, so existing components kee
   --roast-4: #9a5a2f;
 
   --chart-other: #8f857b;
+
+  /* ─── The order-status swatches (dark) ─────────────────────────────────
+     These are NOT the light-on-dark text colours. The old dark palette
+     used --success (#4ade80, a neon green) and --info (#22d3ee, a bright
+     cyan) as chart swatches: they sat outside the warm family the rest of
+     the palette lives in, and the cyan collided with the categorical teal
+     that the origin donut draws right next to them.
+
+     The values are MUTED and every one of them is at least 15 OKLab dE
+     away from every categorical swatch (measured:
+     evidence/dashboard-r2/color-math.json). */
+  --status-delivered: #497c53;
+  --status-processing: #287992;
+  --status-shipped: #6865a9;
+  --status-pending: #8a6a20;
+  --status-cancelled: #a8493f;
+  --status-refunded: #6f6a62;
 }
 ```
 
@@ -185,24 +215,47 @@ Sorted by value, descending. Each row carries the name, a bar, the value and
 the percentage — the colour is never the only signal. A single-series chart
 uses `--chart-1`: a rainbow for one number is noise.
 
+### Legend
+
+The legend is **always below the chart**, never beside it, and it lists the
+**colour, the name, the value and the percentage** for every slice. A legend
+that carries only a colour is a legend that relies on colour alone.
+
+It is **one column**, not two, and its columns are **fixed width**: the
+values line up, so the column can be read as a column of numbers. The
+order inside a row follows the reading direction — the colour dot is at
+the inline start, so in Arabic it is on the right and the row still reads
+"dot, name, value, percent". The rows are in the same order as the ring.
+
 ### Donut
 
 - The **hole is the card colour** — the slices are stroked arcs, not filled
   wedges, so the card genuinely shows through the middle. (A filled wedge
   paints over the hole, which is why the hole used to be darker than the
   card.)
-- The **centre** uses `--foreground`, is the **compact** form of the number
-  when it is long, and never leaves the ring.
-- Every donut on the page has the **same diameter** (220 px).
-- A direct label goes inside a slice only when the slice is big enough to
-  hold it (>= 12 % of the ring): two overlapping percentages are worse than
-  none.
+- The **centre** uses `--foreground` and is the **compact currency** form
+  of the number when the long one does not fit. It never leaves the ring:
+  the width is measured, not guessed.
+- The centre **says what the number is** ("Revenue", "Orders"), never the
+  name of the tab it is showing.
+- Every donut on the page has the **same diameter** (180 px).
 
-### Legend
+### The status swatches
 
-The legend is **always below the chart**, never beside it, and it lists the
-**colour, the name, the value and the percentage** for every slice. A legend
-that carries only a colour is a legend that relies on colour alone.
+A status is not a category. It has a meaning, so it never uses the
+categorical palette — and it does not use the TEXT tokens either: those
+are the light-on-dark colours, and a neon green on a card is a light
+source, not a swatch.
+
+The two palettes are read against each other (the origin donut sits next
+to the status donut), so the rule is a measured one: **every status
+swatch is at least 14 OKLab dE away from every categorical swatch, and
+at least 9.6 away from every other status swatch** — the first is the
+proved ceiling for seven semantic swatches against six categorical ones,
+and the second is the value the pre-round palette reached. The
+measurement and the palette are in
+`evidence/dashboard-r2/color-math.json`, and the search that produced the
+dark values is `scripts/color-confirmed.mjs`.
 
 ### Colour by meaning
 
@@ -212,15 +265,17 @@ that carries only a colour is a legend that relies on colour alone.
 | An **ordered** dimension (roast level) | the sequential `--roast-*` ramp, following the ROAST and not the revenue |
 | One series | `--chart-1` |
 | The "Other" bucket | `--chart-other` (neutral) |
-| Delivered / confirmed | `--success` |
-| Processing | `--info` |
-| Shipped | `--chart-5` (slate) |
-| Pending | `--warning` |
-| Cancelled / failed | `--destructive-text` |
-| Refunded | `--muted-foreground` |
+| Delivered | `--status-delivered` |
+| Processing | `--status-processing` |
+| Shipped | `--status-shipped` |
+| Pending | `--status-pending` |
+| Cancelled / failed | `--status-cancelled` |
+| Refunded | `--status-refunded` |
+| Confirmed | `--status-confirmed` |
 
 A status is not a category: it has a meaning, so it never uses the
-categorical palette.
+categorical palette. The status swatches are their own tokens (see §2b),
+and they are the ONLY colours a status slice may use.
 
 ### Contrast
 
@@ -235,7 +290,62 @@ light card (2.03:1), the lightest step of the ramp; it always carries a
 A slice is never transparent and never white. The hole is the card colour,
 and a segment's colour always comes from a token.
 
-## 3. Where each token is allowed
+## 2c. The numbers
+
+Three rules, and they are the reason a number can be trusted.
+
+### Money is formatted in exactly one place
+
+`shared/utils/locale-format.ts -> formatCurrency`, used through the `| money`
+pipe. The display is defined ONCE, for both languages:
+
+| Language | Form | Example |
+| --- | --- | --- |
+| English | the **ISO code first**, then the amount | `EGP 1,176.25` |
+| Arabic | the **amount first**, then the Arabic symbol | `1,176.25 ج.م` |
+
+- The English form is the **code**, not the CLDR narrow symbol ("E£"): a
+  symbol in a Latin shape made the reader see two different currencies
+  depending on the page.
+- The Arabic form is **not** wrapped in a left-to-right isolate: the
+  isolate forced the amount to the LEFT of the symbol, so an Arabic
+  reader read the unit first.
+- The Arabic symbol carries **no trailing full stop** ("ج.م", not "ج.م.").
+  An amount is not a sentence.
+- The digits are Latin in both languages (`ar-EG-u-nu-latn`), and so are
+  the separators.
+- The **compact** form (`formatCompactCurrency`) is used on the chart axes
+  and in the donut centres, and it follows the SAME order: `EGP 1.2K` /
+  `1.2K ج.م`.
+
+The store currency comes from `GET /api/settings` (`data.currency`), read by
+`StoreSettingsService`. There is one source of truth.
+
+### The order number is the backend's
+
+`features/orders/utils/order-number.ts -> formatOrderNumber`. The UI never
+re-formats it and never invents one: a number it made up would not match
+the order in the warehouse. The format is `ORD-YYYY-NNNNNN`, and a legacy
+order without one falls back to `#<id>`. The number is wrapped in a
+left-to-right isolate, because it is a Latin token inside a right-to-left
+paragraph.
+
+Every surface uses the helper: the dashboard's recent orders, the orders
+list, the order detail page, the tooltips and the CSV export.
+
+### A count says what it counts
+
+The dashboard counts the **PAID** orders; the Orders list counts **every**
+order. Both numbers are right, and they cannot be reconciled unless the
+page says which set it is showing. The rule lives in ONE place —
+`core/dashboard/order-scope.ts` — and every surface reads it: the KPI
+cards, the status donut, the refund rate's help text and the Orders page.
+
+The refund rate uses the same denominator (the paid orders). "Refunded"
+is a **payment status**, not an order status, so a cancelled order can be
+refunded as well — the two sets are not nested, and the rate says so.
+
+
 
 | Token | Allowed | Never |
 | --- | --- | --- |
@@ -313,6 +423,56 @@ Charts on the card surface, measured (Phase 3, `evidence/phase3/measurements.jso
 | `--warning` | 6.58 | 10.52 |
 | `--destructive-text` | 5.93 | 7.35 |
 | `--muted-foreground` | 6.34 | 6.41 |
+
+The order-status swatches (Round 2, `evidence/dashboard-r2/color-math.json`):
+
+| Swatch | Light | Dark |
+| --- | --- | --- |
+| `--status-delivered` | 5.95 | 3.04 |
+| `--status-processing` | 5.36 | 4.28 |
+| `--status-shipped` | 11.44 | 3.13 |
+| `--status-pending` | 6.58 | 3.93 |
+| `--status-cancelled` | 5.93 | 3.01 |
+| `--status-refunded` | 6.34 | 3.94 |
+| `--status-confirmed` | 10.91 | 5.02 |
+
+Every one passes the 3:1 graphics threshold.
+
+**The distance between the two palettes.** The categorical ramp is a
+deliberate ramp, so its neighbours are 7–15 OKLab dE apart and that is
+accepted; 15 is therefore the bar for "too close". There are TWO kinds of
+pair, and both are measured (`evidence/dashboard-r2/color-math.json`):
+
+- the **cross** set: a status swatch against a categorical one. The two
+  donuts are read against each other, so these have to be told apart.
+- the **within** set: two status swatches. They are the slices of ONE
+  ring, so these have to be told apart more than anything else.
+
+| | cross, before | cross, after | within, before | within, after |
+| --- | --- | --- | --- | --- |
+| Dark | 0 dE | **14.4** | 0 dE | **11.0** |
+| Light | 0 dE | **5.1** | 0 dE | **7.7** |
+
+The "before" zeros are the same colour printed twice:
+`--status-shipped` WAS `--chart-5`, and `--status-confirmed` WAS
+`--status-delivered`. Every MEANING has its own swatch now (FAILED still
+shares CANCELLED — they are the same meaning).
+
+**Why the bar is 15 and the dark set reaches 14.4.** Seven semantic
+swatches and six categorical ones do not fit on one colour wheel with room
+to spare: the maximin search (`scripts/color-confirmed.mjs`) proves the
+ceiling is 14.6 for the cross set with the within set held at 9.6. The two
+remaining dark collisions are `--status-pending` against the copper (14.6)
+and `--status-confirmed` against the teal (14.4).
+
+**Why the light mode is worse.** On a white card every swatch has to be
+dark enough for 3:1, and the light categorical ramp already spans
+lightness 0.42–0.58, so there is no lightness left to separate the two
+sets with. The light status swatches keep the values the light mode
+already had — the brief said the light mode is acceptable — so 15 of the
+42 cross pairs are under the bar. The mitigations are the ones the legend
+already provides: the two donuts are separate cards with their own titles,
+and every slice carries its name, its value and its percentage.
 
 Every one passes the 3:1 graphics threshold except `--roast-1` on the light
 card (2.03:1) — the lightest step of the ramp, which always carries a 2 px
@@ -402,7 +562,32 @@ the business doing?" in one screen and one scroll.
    value. Eight equal cards would say that nothing matters. The value is
    tabular figures at 30 px; the delta is a chip (arrow + percent + word,
    never colour alone); a sparkline is drawn only when the API has the real
-   daily series.
+   daily series **and** the series shows a trend.
+
+   **The anatomy.** The three rows have FIXED heights, so the label, the
+   value and the delta sit on the same baseline in all four cards:
+
+   | Row | Height | What |
+   | --- | --- | --- |
+   | 1 | 24 px | the label (+ the sparkline, when there is one) |
+   | 2 | the value's own line box | the value |
+   | 3 | 20 px | the delta chip |
+
+   The card is `justify-between`-free for a reason: a card with a taller
+   first row pushed its VALUE down, and the four cards' values no longer
+   lined up.
+
+   **The delta with no baseline.** When the previous period is 0 and the
+   current one is not, there is no percentage to show: the store simply
+   had no data to compare against. The card shows an em dash and the
+   reason ("No data in the previous period") as its tooltip. The "New"
+   badge is kept ONLY on the new-customers card, where newness IS the
+   news.
+
+   **The sparkline.** A sparkline needs at least three points, and at
+   least two of them above the series' minimum — otherwise the line is
+   flat with a single spike, which reads as a rendering artefact (the
+   "stray line in the corner") rather than as data.
 4. **A compact strip** — repeat rate, refund rate, coffee sold, online
    users. Online users is a LIVE indicator (a pulsing dot), not a period
    KPI.
@@ -421,21 +606,42 @@ the business doing?" in one screen and one scroll.
 - The header is the same everywhere: title (sentence case) + range scope
   ("Last 30 days" or "All time") + an optional action. The scope never
   wraps: the title truncates, the scope is `shrink-0`.
+- The card title **follows the active tab**: "Revenue by origin", "Orders
+  by status". A title that reads "Revenue by" is an unfinished sentence.
+- There is **ONE tab component** (`shared/components/ui/tabs`), used by
+  the range in the toolbar and by the tabs inside the cards. It is a pill:
+  a rounded group whose selected item is a filled `--secondary` surface.
+  The brand colour is not used for a selected secondary control, and the
+  selection is never signalled by colour alone. The group plays one of two
+  roles and only the role differs: a `tablist` for switching between
+  views of the same data, a `radiogroup` for choosing one option out of a
+  set.
 - Three states, owned by one component: a **skeleton** with the shape of the
   content, an **error** with a retry, and an **empty** state. A widget is
-  never blank and never silently missing.
+  never blank and never silently missing. An empty state FILLS the card it
+  is in: a one-line notice at the top of a tall card leaves the card
+  mostly empty, and the two cards of a row share one height.
 - Money is formatted in exactly one place (`| money`), fed by the store
   currency setting. A range is a property of the data, so it is stated, not
   implied.
 - A count is rendered by its plural category, in the language of the
   reader. Arabic counts a noun by the number in front of it — 30 takes the
-  singular ("يومًا") and 8 takes the plural ("مبيعات").
+  singular ("يومًا") and 8 takes the plural ("مبيعات"). The unit follows
+  the number in both languages.
 - A KPI card and a list widget are REAL LINKS to the list behind them,
   pre-filtered. A card is not a div with a click handler.
 - The range lives in the URL (`?days=N`): it survives a refresh, a shared
   link and the browser's back button.
+- A card that is translated at runtime must read the language SIGNAL
+  before it translates: `transloco.translate()` inside a `computed` is not
+  reactive on its own, so the computed caches the language it was built in.
+  The e2e suite switches the language at runtime for exactly this reason.
 
-**Target**: 1700 px at 1440. It was 2390 px before this work.
+**Target**: 1989 px at 1440 after Round 2 (it was 1756 px). The growth is
+the price of four things: the legend is one column instead of two, the
+breakdown cards carry the same card header as every other card, the
+bottom row's cards fill their own area instead of leaving dead space, and
+the KPI cards have a normalised padding with fixed rows.
 
 ## 11. Accessibility and states
 
@@ -468,9 +674,160 @@ the business doing?" in one screen and one scroll.
 - [ ] Check every table in light, dark, LTR, and RTL.
 - [ ] Re-run the contrast table if any token changes.
 - [ ] No raw i18n keys on screen in either language.
+- [ ] No untranslated Latin word on the Arabic screen that is not an
+      allowlisted proper noun (the e2e suite checks it).
+- [ ] A computed that translates reads the language signal first.
+- [ ] Every money value goes through `| money`; every order number through
+      `formatOrderNumber`; every count through the plural helper.
 - [ ] Tab, search, filter, and page survive a refresh (URL state).
 - [ ] Arabic fields and columns are `dir="rtl"` and aligned consistently.
 - [ ] Detail page: save bar, delete-impact message, and a Trash-state banner exist.
 - [ ] Every form control has a `for`/`id` label link and an `aria-describedby` error link.
 - [ ] Repeated field sets are one component, not two copies.
 - [ ] Loading, empty, and error states exist for every list.
+
+## 13. The order pages
+
+The orders list and the order detail page are the two pages where the
+numbers are the product. The rules below are what the pages are built on.
+
+### 13.1 One status system
+
+The status model lives in ONE place
+(`features/orders/models/order-status.model.ts`): the enums, the allowed
+transitions and the badge kind of every status. The list, the detail page,
+the status dialog, the progress tracker and the export all read from it, so
+a status can never mean two things in two places.
+
+| Order status | Badge | Chart slice |
+|---|---|---|
+| `PENDING` | warning | `--warning` |
+| `CONFIRMED` | info, the **pale** tint | `--chart-4` |
+| `PROCESSING` | info, the **full** tint | `--info` |
+| `SHIPPED` | `--chart-5` on a tint of itself | `--chart-5` |
+| `DELIVERED` | success | `--success` |
+| `CANCELLED` | destructive-text | `--destructive-text` |
+
+| Payment status | Badge |
+|---|---|
+| `PAID` | success |
+| `PENDING` | warning |
+| `FAILED` | destructive-text |
+| `REFUNDED` | muted |
+
+Two rules that came out of the work:
+
+- **Confirmed and Processing share the info hue on purpose** — they are
+  adjacent stages of the same funnel — so they are told apart by the
+  STRENGTH of the tint, not by a second hue. Both carry their text.
+- **A chart needs six distinguishable slices and a badge does not.** The
+  chart gives Confirmed `--chart-4` (the nearest distinguishable neighbour
+  of the same hue family) because `--info` already belongs to Processing.
+  The badge keeps the ticket's mapping exactly.
+
+**One word per concept.** A status used to have two words: the list read
+`orders.statuses.*` and the badge read `common.statuses.*`, so a cancelled
+order said one thing in the list and another on the badge of the same row.
+The vocabulary is pinned by a unit test (`i18n-keys.spec.ts`, "orders
+glossary").
+
+**"Refunded" is a payment flag, not a status.** A refunded order keeps the
+fulfilment status it reached, and the net paid is *unknown* (not zero)
+until the backend records the refund amount.
+
+### 13.2 The progress tracker
+
+`Placed → Confirmed → Processing → Shipped → Delivered`, drawn from the
+order's CURRENT status alone:
+
+- the steps before it are done (a tick on a success fill);
+- the current step is the one the order is at (the brand fill);
+- the steps after it are **muted** — a future step is never drawn as if it
+  had happened;
+- a **cancelled** order leaves the chain: the chain is replaced by the
+  destructive branch, with the reason when the store recorded one.
+
+It needs no history endpoint, so it works today; the activity history
+below it is what the backend contract adds.
+
+### 13.3 The order list
+
+- The columns are `select · Order # · Customer · Items · Order status ·
+  Payment status · Method · Total · Created at · Actions`, and the raw id
+  column is not one of them — the order number is the identifier a customer
+  quotes.
+- The order number is a **real anchor** to the order's page, and the whole
+  row is clickable (the click is ignored on anything interactive inside the
+  row).
+- The **Total** is the one end-aligned column: it opts in with
+  `meta: { align: 'end' }`, and the header switches with the cell so the
+  sort label still sits over its values.
+- The **Method** column is budgeted for the longest label in both
+  languages ("Cash on delivery" / "الدفع عند الاستلام") and is never
+  truncated.
+- The **Created at** cell shows the date and the time, the time on its own
+  line so the column stays narrow, with the relative time in the tooltip
+  and the absolute value in the `datetime` attribute.
+- **The cards count the whole set, never the page.** Each card says what
+  it counts: "All orders" (every order in the store), "Matching filters"
+  (the orders the active filters select), and the status cards within the
+  matching set.
+- **The state lives in the URL**: the status tab, the filters, the search,
+  the sort, the page and the page size. A shared link, a refresh and the
+  back button all work.
+- The **sort is the backend's** — the table uses `manualSorting` and the
+  page maps the display column to the `Order` entity's own property before
+  it asks.
+
+### 13.4 The order detail page
+
+Two columns over the full page width: the order on the left, the facts
+about it on the right.
+
+- **The header** carries the back arrow, the order number, both badges and
+  the created date and time. The actions are at the opposite end: *Update
+  status* (the one primary), *Print invoice*, *Resend email* and the
+  overflow menu with *Cancel* and *Refund*.
+- **The main column**: Items, Totals, the Timeline card and Internal notes.
+- **The sidebar**: Customer, Shipping address, Payment, Shipment and Tags.
+- **The totals card** shows Subtotal, Shipping, Discount, Total and Net
+  paid, and it says so when the recorded total does not match the items —
+  a store whose recorded total disagrees with its own items has a data
+  problem, and hiding it would hide the problem.
+- **No card is taller than 1.5× its content**, the cards in a row share
+  their height, and nothing is clipped at any width.
+
+### 13.5 The status dialog
+
+- It offers **only** the transitions the backend's state machine allows: a
+  delivered or a cancelled order offers nothing, a stage is never skipped
+  and a status never moves backwards.
+- Cancelling has its own dialog, with a **required reason** and the
+  consequence stated.
+- A control the backend cannot honour is **disabled with the reason on
+  it** (the e-mail resend, the refund). A button that silently does nothing
+  is worse than a button that says it cannot.
+
+### 13.6 A pinned first column
+
+A table that is wider than the screen scrolls, and a reader who has
+scrolled to the price must still see which order the price belongs to. The
+first data column (and the select checkbox before it) is **pinned to the
+inline start** — the right in Arabic — so it stays where the eye expects
+it.
+
+## Command palette (global search)
+
+- Surface: `--card` token (warm) for the modal; never the cool autocomplete popover tint.
+- Highlight: `--search-highlight` = `color-mix(in srgb, var(--primary) 18%, transparent)` for `<mark>` matched text.
+- Active row: `--accent` background + `--primary` start-edge accent (`border-s-2 border-primary`).
+- Width 640-720px, max-height 70vh, results scroll inside; full-screen sheet on mobile.
+- Minimum row height 44px; sticky footer with localized hints.
+
+## Contact & reviews patterns (ui/contact-reviews-v2)
+
+- DialogShell: shared dialog with title (sentence case), optional subtitle, close X, scrollable body, sticky footer (destructive ghost start, secondary, primary end, mirrored in RTL), Esc close, focus trap, overlay from `--overlay` token.
+- RatingStars: single star colour token (warning); optional "n/5" text with min 8px gap.
+- VerifiedBadge: icon + visible tooltip "Verified purchase" + aria-label.
+- SortHeader: sortable column header button with arrow.
+- Overlay token: `--overlay` (light 0.32, dark 0.6), `--color-overlay`.

@@ -25,11 +25,13 @@ import { map, Observable } from 'rxjs';
 import { PageResponse } from '../../../core/models/api-response.model';
 import { Router, RouterLink } from '@angular/router';
 import { TranslocoPipe } from '@jsverse/transloco';
+import { LocalizedDateComponent } from '../../../shared/ui/localized-date/localized-date.component';
 
 @Component({
   selector: 'app-journal-list',
   standalone: true,
   imports: [
+    LocalizedDateComponent,
     CommonModule,
     FormsModule,
     ReactiveFormsModule,

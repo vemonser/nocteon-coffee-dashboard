@@ -1,12 +1,13 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
+import { TranslocoService } from '@jsverse/transloco';
 import { DashboardStatsService } from '../../../../features/dashboard/services/dashboard-stats.service';
-import { formatCurrency } from '../../../utils/locale-format';
+import { formatCompactCurrency, formatCurrency } from '../../../utils/locale-format';
 import { LanguageService } from '../../../../core/i18n/language.service';
 import { WidgetHeaderComponent } from '../../widget-header/widget-header.component';
 import { ChartCardComponent } from '../../chart/chart-card.component';
-import { HlmButtonImports } from '@spartan-ng/helm/button';
+import { HlmCardImports } from '@spartan-ng/helm/card';
+import { TabsComponent } from '../../ui/tabs/tabs.component';
 import { ChartSlice, OTHER, SEQUENTIAL, sliceColors } from '../../chart/chart-rules';
 
 type BreakdownTab = 'origin' | 'roast' | 'category';
@@ -24,19 +25,25 @@ type BreakdownTab = 'origin' | 'roast' | 'category';
  *    carry it.
  *  - **Category** — unordered, categorical palette.
  *
- * A tab whose data has only ONE value is hidden: a single-slice donut is
- * not a chart, and the rule in `chart-rules.ts` says so — the card shows a
- * stat instead.
+ * THE TITLE FOLLOWS THE TAB (Round 2, ticket 2.3): "Revenue by origin",
+ * "Revenue by roast level", "Revenue by category". "Revenue by" on its own
+ * reads as an unfinished sentence, and the tab was the only thing that said
+ * which breakdown was on screen.
+ *
+ * ALL THREE TABS ARE ALWAYS SHOWN. A tab whose data has one value is not
+ * hidden any more: it renders the STAT (the number) and the single bar,
+ * because "Revenue by category" is a question the reader may well want
+ * answered even when the store sells one category.
  */
 @Component({
   selector: 'app-revenue-breakdown-card',
   standalone: true,
   imports: [
     CommonModule,
-    TranslocoPipe,
     WidgetHeaderComponent,
     ChartCardComponent,
-    HlmButtonImports,
+    HlmCardImports,
+    TabsComponent,
   ],
   templateUrl: './revenue-breakdown-card.component.html',
 })
@@ -48,11 +55,32 @@ export class RevenueBreakdownCardComponent {
   /** The active tab. */
   readonly tab = signal<BreakdownTab>('origin');
 
-  readonly tabs: Array<{ id: BreakdownTab; labelKey: string }> = [
-    { id: 'origin', labelKey: 'dashboard.tabs.origin' },
-    { id: 'roast', labelKey: 'dashboard.tabs.roastLevel' },
-    { id: 'category', labelKey: 'dashboard.tabs.category' },
+  readonly tabs: Array<{ id: BreakdownTab; labelKey: string; titleKey: string }> = [
+    {
+      id: 'origin',
+      labelKey: 'dashboard.tabs.origin',
+      titleKey: 'dashboard.revenueByOrigin',
+    },
+    {
+      id: 'roast',
+      labelKey: 'dashboard.tabs.roastLevel',
+      titleKey: 'dashboard.revenueByRoastLevel',
+    },
+    {
+      id: 'category',
+      labelKey: 'dashboard.tabs.category',
+      titleKey: 'dashboard.revenueByCategory',
+    },
   ];
+
+  /** The tab items, translated. */
+  readonly tabItems = computed(() => {
+    this.language.language();
+    return this.tabs.map((tab) => ({
+      id: tab.id,
+      label: this.transloco.translate(tab.labelKey),
+    }));
+  });
 
   /** The origin breakdown. */
   readonly originData = computed(() =>
@@ -126,32 +154,49 @@ export class RevenueBreakdownCardComponent {
     }));
   });
 
-  /** A tab is hidden when it has only one value — it would be a stat. */
-  tabHasData(id: BreakdownTab): boolean {
-    return this.dataFor(id).length > 1;
-  }
-
-  /** The visible tabs. */
-  readonly visibleTabs = computed(() => this.tabs.filter((t) => this.tabHasData(t.id)));
-
-  /** The label of the centre of the donut. */
+  /**
+   * The label of the centre of the donut.
+   *
+   * It says WHAT THE NUMBER IS ("Revenue"), not which tab is open
+   * ("Origin"): the centre of a revenue donut is the revenue, and the
+   * title above the card already says which breakdown it is broken down
+   * by.
+   */
   readonly centerLabel = computed(() => {
-    const id = this.tab();
-    return this.transloco.translate(
-      this.tabs.find((t) => t.id === id)?.labelKey ?? 'dashboard.tabs.origin',
-    );
+    this.language.language();
+    return this.transloco.translate('dashboard.donutRevenue');
   });
 
   /** Money, in the store currency. */
   readonly formatValue = (value: number): string =>
     formatCurrency(value, this.language.language(), this.stats.storeCurrency());
 
+  /** The compact money, for the centre of the donut. */
+  readonly formatCompactValue = (value: number): string =>
+    formatCompactCurrency(value, this.language.language(), this.stats.storeCurrency());
+
   /** The accessible summary of the whole card. */
   readonly ariaLabel = computed(() => {
     const total = this.slices().reduce((sum, s) => sum + (s.value || 0), 0);
-    return `${this.centerLabel()}: ${this.formatValue(total)}`;
+    return `${this.title()}: ${this.formatValue(total)}`;
   });
 
-  /** The title of the card. */
-  readonly title = computed(() => this.transloco.translate('dashboard.revenueBy'));
+  /** The title of the card — it follows the active tab. */
+  readonly title = computed(() => {
+    this.language.language();
+    const tab = this.tabs.find((t) => t.id === this.tab());
+    return this.transloco.translate(tab?.titleKey ?? 'dashboard.revenueByOrigin');
+  });
+
+  /**
+   * What this chart measures.
+   *
+   * The breakdown sums the LINE ITEMS; the Total revenue card sums the
+   * order totals. The two do not add up to each other, and the reader has
+   * to be told which one they are looking at.
+   */
+  readonly measureNote = computed(() => {
+    this.language.language();
+    return this.transloco.translate('dashboard.breakdownNote');
+  });
 }

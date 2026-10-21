@@ -175,6 +175,12 @@ sign attached to the digits, and the value is wrapped in `<bdi>`.
   `narrowSymbol` for English ("E£"). `narrowSymbol` alone renders "E£" in
   *both* locales — that was the QA finding. Digits stay Latin
   (`ar-EG-u-nu-latn`).
+  **SUPERSEDED by the Round 2 (see "DASHBOARD ROUND 2" below):** the
+  shared formatter now prints the **ISO code first in English**
+  ("EGP 1,176.25") and the **amount first in Arabic, without the trailing
+  full stop** ("1,176.25 ج.م"). The narrow symbol is gone: a currency
+  symbol in a Latin shape made the reader see two different currencies
+  depending on the page.
 - **Also migrated:** 18 sites used Angular's built-in `| currency:'EGP'`,
   which hardcodes the code and ignores the store setting. They now use
   `| money`.
@@ -443,7 +449,11 @@ the middle, which is exactly why the hole used to be a darker disc than the
 card. Now nothing is painted in the middle, so the card shows through it.
 
 The centre uses `--foreground` (measured #f5efe8 in dark, 15.4:1 on the
-card), is the **compact** form when the number is long ("20.8K", not
+card) — **SUPERSEDED by the Round 2 in two ways**: the compact form now
+carries the CURRENCY ("EGP 20.8K" / "20.8K ج.م"), and the centre's LABEL
+says what the number is ("Revenue" / "Orders") rather than the name of the
+tab it is showing. The compact form is the
+**compact** form when the number is long ("20.8K", not
 "E£20,826.50"), and never leaves the ring. Every donut on the page has the
 **same 220 px diameter**.
 
@@ -730,3 +740,882 @@ Updated with the new chart tokens and the contrast audit (section 2, 2b and
 the dashboard home pattern (section 10), and the accessibility additions
 (section 11: the focus-ring Tab walk, chart summaries, 200 % zoom).
 
+## Final verification
+
+- Production build: green.
+- Unit tests: **113 / 113** (10 spec files).
+- E2E, per spec (the suite cannot run in one pass — the login endpoint
+  allows 5/minute per identifier and the suite logs in once per test):
+  **dashboard-language 20/20**, dashboard-states 5/5, verify-tables 5/5,
+  auth 10/10, and 137 assertions green across the 20 specs re-run
+  individually.
+- The full report is `FINAL_REPORT.md`.
+
+### One inherited failure found and fixed
+
+`e2e/verify-tables.spec.ts` failed on the carts list: the widest data
+column ("Customer", 225px) had to dominate the actions column (116px) by
+2.5x. The cause was that the carts list's identity column had no width of
+its own, so it shared the leftover with the other unsized columns. Fixed by
+giving it a share of the row (`userFullName: '28%'` in the shared
+`columnWidths` map, the same mechanism the other identity columns use) —
+the guard was NOT relaxed.
+
+### Two guards made more general by this work
+
+- The i18n key-set symmetry test now **discovers** plural families (a key
+  whose base has siblings in other categories) instead of listing four
+  known bases, so a family added later is exempt from the symmetry rule for
+  the right reason.
+- The money-formatter guard now also rejects the built-in `| currency` pipe
+  and the `CurrencyPipe` import, which were a second way of printing money.
+
+
+---
+---
+
+# ORDERS — the orders list and the order detail page
+
+> A second, separate piece of work on the same repository. The sections
+> above are the dashboard-home work; everything below is the orders work.
+> Branch: `feature/orders-polish` (from `backup/pre-orders-work`).
+> The backend is a SEPARATE repository (`../nocteon-backend`); nothing in
+> this repository can change it, so the backend needs are written down in
+> `ORDERS_CONTRACT.md` instead of being patched.
+
+## ORDERS PHASE 0 — Harness
+
+### 0.1 The build, the server, the branch
+
+`npx ng build` passes (exit 0). The process on :4200 is
+`serve dist/nocteon-dash/browser` — a static server for the PRODUCTION
+build, not `ng serve` — so **the build is re-run before every capture**;
+otherwise the screenshots would show the previous build. The provenance is
+recorded in every `results.json` under `harness.server` (pid, working
+directory, command) together with `harness.gitBranch`.
+
+Branch: `feature/orders-polish`, from `backup/pre-orders-work`.
+
+### 0.2 The evidence harness takes TARGETS, not one URL
+
+The harness already existed for the dashboard home (one URL, one
+screenshot per cell). It now takes a **set of targets** per phase
+(`scripts/evidence-targets.mjs`), and a target is one screen:
+
+| Target | What it is |
+|---|---|
+| `orders-list` | the list |
+| `order-detail` | a DELIVERED order with items (the totals mismatch is visible) |
+| `order-detail-midflow` | a CONFIRMED order (the tracker's mid-flow state) |
+| `order-status-dialog` | the "Update status" dialog |
+| `order-cancel-dialog` | the cancel dialog (behind the overflow menu) |
+| `order-refund-dialog` | the refund dialog |
+
+Each target is captured in all 20 cells (5 widths × 2 themes × 2
+languages) with the **language switched at runtime** through the app's own
+control, and measured in the page: the horizontal page overflow, the
+VERTICAL and HORIZONTAL clipping, the deliberate ellipses, the raw
+translation keys, the badge colours with their contrast, the card height
+ratios, the section order and the progress tracker's steps.
+
+The measurement script is a separate, isolated run; a failure there no
+longer throws away a finished capture (the error is recorded in
+`results.json`).
+
+## ORDERS PHASE 1 — Data integrity
+
+### 1.1 The totals: where they come from, and why 17 of 17 disagree
+
+The backend stores `orders.total_amount` and returns it verbatim. The
+runtime formula (`OrderService.createOrder`) is correct:
+
+```
+total = (Σ variant.price × quantity − discount_amount) + shipping_cost
+```
+
+**The root cause of the mismatch is the SEED, not the formula.**
+`V107__seed_orders_reviews_contacts.sql` writes `orders.total_amount` by
+hand, independently of the `order_items` rows it inserts in the same file:
+`ORD-2026-000001` stores 120.50 while its items are 1,825.00 + 50.00
+shipping. **All 17 seeded orders disagree with their own items** (the
+full list is in `evidence/orders/measurements.json`).
+
+The UI does not hide it and does not re-derive the total: the totals card
+shows the **stored** total (the backend is the source of truth), the
+subtotal the items add up to, and a warning when the two disagree.
+`computeOrderTotals` is a pure function with fixtures for the no-discount,
+discount, shipping, free-shipping, refund, empty-items and mismatch cases
+(`order-totals.spec.ts`, 15 tests).
+
+**Net paid is `null` for a refunded order**, not 0: the backend records the
+`REFUNDED` flag with no amount, so claiming 0 would claim a full refund.
+
+### 1.2 The cards: the real defect, and what replaced it
+
+The header said **17** while the cards said **10** — and "Cancelled" said
+**0** while seven rows said "Cancelled". Two causes, both now gone:
+
+1. the cards read `DashboardStatsService.statusChartData()` — the
+   **dashboard's 30-day window**, not the orders list. The order of
+   magnitude was right by accident; the scope was wrong.
+2. the dashboard's window holds no cancelled order, so the count was 0.
+
+The cards are now computed from the **whole set the list fetched**,
+grouped by status, and each one says what it counts:
+
+| Card | Counts | Value (17 orders) |
+|---|---|---|
+| All orders | every order in the store | 17 |
+| Matching filters | the orders the active filters select | 17 |
+| Open | `PENDING` + `CONFIRMED` + `PROCESSING` | 2 |
+| Delivered | `DELIVERED` | 9 |
+| Cancelled | `CANCELLED` | 5 |
+
+The status tabs carry the same counts, and the "Cancelled" tab (5) agrees
+with the "Cancelled" card (5) and with the rows.
+
+**The stats endpoint does not exist**, so the counts are computed in the
+browser over the full set. The exact contract it needs is in
+`ORDERS_CONTRACT.md` §3.1 and in `results.json` → `measurements.kpi.requiredContract`.
+
+### 1.3 The status model
+
+One model, in `features/orders/models/order-status.model.ts`:
+
+| | |
+|---|---|
+| Order status | `PENDING` `CONFIRMED` `PROCESSING` `SHIPPED` `DELIVERED` `CANCELLED` |
+| Payment status | `PENDING` `PAID` `FAILED` `REFUNDED` |
+| Payment method | `ONLINE` `CASH_ON_DELIVERY` |
+| Transitions | `PENDING→{CONFIRMED,CANCELLED}`, `CONFIRMED→{PROCESSING,CANCELLED}`, `PROCESSING→{SHIPPED,CANCELLED}`, `SHIPPED→{DELIVERED}`, `DELIVERED` and `CANCELLED` are terminal |
+
+**"Refunded" is a PAYMENT status, not an order status** — a refunded order
+keeps the fulfilment status it reached.
+
+**The mismatch with the dashboard:** the chart colours (`orders-status-chart`)
+used `--success` for CONFIRMED and `--accent` for SHIPPED, and the chart
+only ever shows the statuses that occur in the window (three of six). The
+badge mapping now follows the ticket exactly — Pending = warning,
+Confirmed = info (the pale end of the family), Processing = info, Shipped =
+`--chart-5`, Delivered = success, Cancelled = destructive, Refunded =
+muted — and the chart was moved onto the same mapping, with `--chart-4` for
+Confirmed because a donut needs six distinguishable slices and `--info`
+already belongs to Processing.
+
+**A second, deeper mismatch:** the endpoint the dashboard calls
+(`PUT /api/dashboard/orders/{id}/status`) only refuses a change when the
+CURRENT status is DELIVERED or CANCELLED, so `PENDING → DELIVERED` is
+accepted. The strict map exists in `OrderStatusService` — and **no
+controller calls it**. The UI offers only the strict transitions, and the
+backend gap is in `ORDERS_CONTRACT.md` §2.1.
+
+### 1.4 The orders without items
+
+**7 of 17** orders have no items. The cause is **DATA**: the API always
+maps `order.getItems()` into the response (so it is not an API omission),
+and every order that HAS items has a primary image (so it is not a missing
+image). The 7 are the seed's `ORD-2026-000006/7/9/10/12/14/15`, which have
+no `order_items` rows at all.
+
+The list renders that state as **"No items"** (a short label, because the
+column is narrow) instead of an empty cell.
+
+### 1.5 The clipping — the root cause was the shared card, not the orders
+
+The order page's "Total" card lost the bottom of its amount (2 px) in
+Arabic. The cause is not the orders page: **`hlm-card` dropped its bottom
+padding** (an unconditional `pb-0` at the end of the class list), so a card
+whose last line has a taller line box than the Latin one — Arabic, a larger
+font — had its last line box outside the padding box, and the card's
+`overflow-hidden` cut it. The padding is back; a card WITH a footer keeps
+the flush bottom (`has-data-[slot=card-footer]:pb-0`).
+
+The same class of defect: the **sidebar brand logo** was 40 px in a 32 px
+content box (`h-12` + `p-2`), so the button's `overflow-hidden` cut the top
+and the bottom of the mark off. The logo is 32 px now, like the avatar in
+the account menu.
+
+### 1.6 One formatter per concept
+
+| Concept | The one formatter |
+|---|---|
+| Money | `shared/utils/locale-format.ts` → `formatCurrency`, through the `| money` pipe |
+| Dates | `shared/utils/locale-format.ts` → `dateParts` / `formatTime`, through `<app-localized-date>` |
+| The order number | `features/orders/utils/order-number.ts` → `formatOrderNumber` |
+
+`scripts/formatter-audit.mjs` reports every place that formats them a
+different way (`evidence/orders/measurements-formatters.json`).
+
+**The result: the money is clean app-wide** — the two carts pages used the
+built-in `| currency:'EGP'` pipe and now use the shared one. **22 places in
+12 other features still use the built-in `| date` pipe** (broadcasts,
+carts, contact messages, journal, notifications, three detail pages, promo
+codes, reviews, users). They are listed in the report and were left alone:
+they are other features' pages, and changing them is a separate piece of
+work with its own visual review. **The orders pages are clean.**
+
+### 1.7 The seed
+
+`ORDERS_SEED_PROPOSAL.md` — 60 days, 108 orders, 24 new customers, every
+status and payment state, a pending COD order, a refunded order, a
+partially refunded order, a cancelled order with a reason, totals derived
+from the items, and the query that proves the totals agree. **Nothing was
+executed.** The document lists the seven checks that cannot be verified
+without it (the totals agreeing, the date range narrowing, a non-zero
+count for every status, the 23:30 order, the cancellation reason, the net
+paid after a refund, and the status history).
+
+## ORDERS PHASE 2 — Language and Arabic
+
+### 2.1 Everything reacts to a runtime switch, and no raw key reaches the screen
+
+The list's headers, the status tabs, the payment labels, the method, the
+buttons, the detail page's cards and the dialogs are all from Transloco, and
+all of them re-render when the language is switched **at runtime** (the
+e2e test switches English → Arabic → English and asserts the headers, the
+statuses, the dates and the money).
+
+**The raw-key count is 0** in every cell of the matrix
+(`results.json` → the per-cell `rawI18nKeys`).
+
+**Two real defects the test caught:**
+
+- the "Created at" header stayed in English in Arabic — the shared table's
+  header map is keyed by the RAW header string, and it had `'created at'`
+  but not `'Created at'`;
+- the same status had **two words**: the list read `orders.statuses.*` and
+  the badge read `common.statuses.*`, so a cancelled order said ملغاة in the
+  list and ملغي on the badge of the same row. The payment method had the
+  same split (`orders.paymentMethods.*` vs `dashboard.paymentMethods.*`).
+  One word per concept now, and a test fails when it drifts again.
+
+### 2.2 The glossary
+
+`ORDERS_GLOSSARY` in `i18n-keys.spec.ts` pins the three order concepts
+(order status, payment status, payment method) to ONE term in both
+locales, across the two vocabularies that used to disagree. A fourth test
+asserts that no Arabic orders term mixes scripts (the placeholders and the
+file-format acronyms excepted).
+
+### 2.3 The grammar
+
+- The counts go through `Intl.PluralRules` (`| plural`): English has
+  one/other, Arabic all six, so "17 طلبًا" and "3 طلبات" are both right.
+  The orders families (`countItems`, `countOrders`, `countResults`) were
+  added to the plural bases.
+- The titles are sentence case in English.
+- The money keeps the **shared** formatter, and the shared formatter now
+  renders the store currency the way the ticket describes it: the **ISO
+  code first in English** ("EGP 120.50") and the **amount first, then the
+  Arabic symbol, without its trailing full stop** ("120.50 ج.م"). The
+  English form used to be the CLDR narrow symbol ("E£"), which is a
+  currency symbol in a Latin shape — the reader saw two different-looking
+  currencies depending on the page. The Arabic form used to carry a
+  LEFT-TO-RIGHT ISOLATE, which forced the amount to the LEFT of the
+  symbol; an amount is not a sentence, so the dot is gone and the isolate
+  with it. The orders pages follow all of this automatically, because they
+  never formatted money themselves.
+- The digits stay Latin in Arabic (`ar-EG-u-nu-latn`).
+- "من" instead of a slash: the existing `ofPhrase` helper already does
+  this, and the orders pages use the count helpers rather than building a
+  "N/M" by hand.
+
+### 2.4 Customer text
+
+The customer name, the e-mail, the address and the SKU are wrapped in
+`<bdi>` with `dir="auto"` (or `dir="ltr"` for the e-mail and the phone), so
+a mixed-direction value cannot break the row.
+
+## ORDERS PHASE 3 — The list
+
+### 3.1 The columns
+
+`select · Order # · Customer · Items · Order status · Payment status ·
+Method · Total · Created at · Actions` — asserted by
+`e2e/orders.spec.ts` against the rendered header row.
+
+- the **raw id column is gone** (the table hides it by default, and the
+  orders list does not ask for it);
+- the order number is a **real anchor** to the order's own page (the
+  shared table grew a generic "this cell is a link" input, so the table
+  knows nothing about orders);
+- the whole row is clickable, and the click is ignored when it lands on
+  something interactive inside the row;
+- the Items column shows up to three thumbnails and "+N", and "No items"
+  when the order has none;
+- Created at shows the date and the time (the time on its own line, so the
+  column stays narrow), with the relative time in the tooltip and the
+  absolute value in the `datetime` attribute.
+
+### 3.2 The badge colours
+
+Measured in both modes (`results.json` → the per-cell `badges`):
+
+| Status | Token | Text on its badge | Text on the surface |
+|---|---|---|---|
+| Pending | warning | 5.91 | 6.58 |
+| Confirmed | info (pale tint) | 5.36 | — |
+| Processing | info | 4.71 | 5.36 |
+| Shipped | chart-5 | 5.58 | 5.58 |
+| Delivered | success | 5.29 | 5.95 |
+| Cancelled | destructive-text | 5.10 | 5.93 |
+| Refunded | muted | 5.69 | 6.34 |
+| Paid | success | 5.29 | 5.95 |
+| Failed | destructive-text | 5.10 | 5.93 |
+
+Every badge passes the 4.5:1 text target in both modes, and every badge
+carries its TEXT — colour is never the only signal.
+
+### 3.3 The state lives in the URL
+
+`?status=&paymentStatus=&paymentMethod=&range=&from=&to=&q=&sort=&direction=&page=&size=`
+— read on load, written on every change, followed when it changes from the
+outside (a shared link, the back button). The sort is the BACKEND's: the
+table uses `manualSorting`, and the page maps the display column to the
+`Order` entity's own property (`orderStatus → status`,
+`createdAtTime → createdAt`) before it asks.
+
+The filters the API does not support are applied in the browser over the
+whole set — see §1.1.
+
+### 3.4 The row actions and the bulk bar
+
+Row actions: **View**, and an overflow menu with **Change status**,
+**Print invoice** and **Cancel** (design.md §10: one visible action, the
+rest in a kebab). The bulk bar appears when rows are selected: **change
+status** and **export**, with the count.
+
+The export states what it exports (a tooltip: "Exports the N orders
+matching the current filters, with the columns shown in the table") and
+exports the MATCHING set, not the page. The money in the file is formatted
+by the **shared** money formatter, so a number in the file and a number on
+the page are the same number written the same way.
+
+### 3.5 The three states
+
+Loading (the table stays mounted with skeleton rows), empty ("No orders
+yet" vs "No orders match these filters" — the two empties are different
+words), and error (what failed, with a RETRY that really retries).
+
+### 3.6 The list pattern
+
+Header (title + count, one primary button at the inline end), the status
+tabs and the filters in the toolbar row, the cards, the table in a card,
+the pager. The content is capped at `max-w-7xl` (1280 px) and centred, the
+cards use `--radius-card`, the gaps are the 4/8 rhythm.
+
+**The table fits at every width** (measured at 375/768/1024/1440/1920:
+no horizontal page scroll, no horizontal scroll inside the table, no
+truncated cell). The column budget was set from the measured content
+widths, not guessed: the order number at 13 px (the design scale has
+12/13/14) so the column can hold the whole `ORD-2026-000001` without
+eating the table's width.
+
+## ORDERS PHASE 4 — The detail page
+
+### 4.1 The layout
+
+Two columns over the full page width (`lg:grid-cols-[minmax(0,1fr)_360px]`),
+the order on the left and the facts about it on the right. The header
+carries the back arrow, the order number, both badges and the created date
+and time; the actions are at the opposite end — **Update status** (the one
+primary), **Print invoice**, **Resend email** (disabled, with the reason)
+and the overflow menu with **Cancel** and **Refund**.
+
+### 4.2 The main column
+
+Items (thumbnail, name linked to the product, SKU, quantity × unit price,
+line total), Totals (Subtotal, Shipping, Discount, Total, Net paid, and
+the mismatch warning), the Timeline card (the progress tracker + the one
+event the API can prove) and the Internal notes card.
+
+### 4.3 The sidebar
+
+Customer (name, e-mail, phone with `tel:` and WhatsApp links, a link to
+the customer), Shipping address (with a copy button), Payment, Shipment and
+Tags — the last three carry an honest, specific line about what the store
+does not record yet, because a card that says "Not available yet" without
+saying what is missing is not honest enough.
+
+### 4.4 The status dialog
+
+Only the transitions the backend's strict matrix allows; the note is
+optional; cancelling has its OWN dialog with a **required reason** and the
+consequence stated ("A cancelled order cannot be reopened. The customer is
+notified only if you ask for it."). The "notify customer" switch is not
+offered, because the store cannot send a status-change e-mail on demand.
+
+**The valid-transition matrix is tested** (`order-status.model.spec.ts`):
+no skipping a stage, no moving backwards, a delivered or cancelled order is
+terminal, and cancelling is always available before the order ships.
+
+### 4.5 The heights and the clipping
+
+Every card's height is at most 1.43× its content (the limit is 1.5), the
+cards in a row share their height, and nothing is clipped at any width
+(the clipping check in the matrix reports 0 real findings — the only hits
+are the `sr-only` elements, which are 1 px by design).
+
+## ORDERS PHASE 5 — The backend contract, then the frontend
+
+### 5.0 The contract was approved — and the backend came first
+
+`ORDERS_CONTRACT.md` was approved with the instruction to build the BACKEND
+first. The backend lives in a separate repository
+(`../nocteon-backend`, Spring Boot), so the work landed there.
+
+### 5.1 The backend: one state machine, one history, the counts
+
+| What | Where | What it does |
+|---|---|---|
+| The strict transitions | `OrderStatusService` (already existed, no controller called it) | The controller calls it now. The endpoint used to refuse only DELIVERED and CANCELLED as the CURRENT status, so `PENDING → DELIVERED` was accepted. A refused transition answers **409** with what it refused |
+| `order_status_history` | a new table | Written in the SAME TRANSACTION as every status change: the checkout records the order being placed, the admin's change records who moved it and why, the expiry sweep records its own cancellation. An order can never carry a status its history does not explain |
+| `order_notes` | a new table | The team's notes about the order, always attributed. NOT `orders.notes` — that one is the customer's |
+| The shipment | five columns on `orders` | The carrier, the tracking number, the tracking URL and the two timestamps. There is still no carrier API: the admin pastes what the carrier told them |
+| `order_refunds` | a new table | The AMOUNT, which is what makes the net paid computable. The gateway call is still not integrated, so the row says the refund is MANUAL |
+| `GET /dashboard/orders/stats` | the counts of the FILTERED set | The cards and the rows describe the same set |
+| The list filters | `paymentStatus`, `paymentMethod`, `dateFrom`, `dateTo`, `search` | The browser stopped filtering a page of rows it happened to have: the API filters, and the counts are the API's |
+
+**579 backend tests pass**, including an integration test for the transition
+validation, the totals and the history written atomically.
+
+**Two bugs the tests caught, both real:**
+
+- the expiry sweep released the stock AND the state machine released it again
+  — the units came back TWICE;
+- a PostgreSQL parameter that appears in an `is null` test has no type there,
+  so the date bounds could not be inferred ("could not determine data type of
+  parameter"). The bounds are now never null: an absent filter is a range
+  that covers everything.
+
+The gateway refund is still NOT implemented: Paymob's refund API is not wired
+in, so the refund is recorded and the money is returned by hand. The dialog
+on the order page therefore stays DISABLED, and says so.
+
+### 5.2 The frontend, against the contract
+
+- the list asks the API for its rows AND for its counts, in one round trip,
+  so a card can never contradict the rows below it;
+- the search, the payment status, the payment method and the date range are
+  SERVER-SIDE filters now;
+- the detail page shows the **activity timeline** — the status history, the
+  notes and the refunds, newest first, under the progress tracker;
+- the notes card has a composer that writes to the API;
+- the shipment card shows what the store recorded and lets the admin record
+  it;
+- the payment card shows the transaction reference, the paid-at time, the
+  refunds and the net paid.
+
+**A net paid of nothing is not zero.** An order that was never paid has a
+net paid of `null`, not of its total: the backend only computes one when
+money came in, and the page says "not known" instead of printing a number
+that is not true.
+
+### 5.3 The old contract text is history
+
+The section below is the contract as it was WRITTEN, before the approval. It
+is kept because the decisions in it are the decisions that were taken.
+
+## ORDERS PHASE 5 (as proposed) — Tracking, history and notes
+
+`ORDERS_CONTRACT.md` is written and the work is **stopped there**, as the
+ticket asks: the DTOs, the endpoints, the migrations and the permissions
+for the history, the notes, the shipment, the payment details, the stats
+endpoint and the status change are all specified, and the parts that are
+backend work are marked as such (the backend is a separate repository).
+
+The contract also names the features that must not be faked — the e-mail
+resend (the store sends e-mails automatically, but cannot re-send one), the
+gateway refund (there is no refund endpoint and no refund amount), the
+carrier API (there is no shipment data at all), the tax (there is no tax
+model), the history, the notes and the variant on the order line — and
+what the UI does about each one today.
+
+**Six decisions are waiting** (the last section of the contract): whether
+`SHIPPED → CANCELLED` is allowed, whether a status can go backwards, who
+`changed_by` is, whether a refund is partial, whether a status change
+sends an e-mail, and whether the tags are worth a table.
+
+The frontend parts that need NO backend change are already built: the
+progress tracker, the status dialog with the strict matrix, the cancel
+dialog with its reason, the totals card with its warning and the honest
+"not available yet" lines.
+
+## ORDERS — The three decisions that closed the work
+
+### 1. A shipped order cannot be cancelled
+
+**The decision: no.** The strict map stays as it is — `SHIPPED` may only
+become `DELIVERED`. Once a parcel is on its way, cancelling the order is not
+a status change, it is a return, and a return is a refund with a reason.
+The dialog therefore never offers the transition, and the API refuses it
+with a 409.
+
+### 2. The seeded totals are repaired
+
+**The decision: yes.** A migration (`V111__repair_seeded_order_totals.sql`)
+recomputes the stored total of the seventeen seeded orders with the SAME
+formula the checkout uses:
+
+```
+total = (sum of the line totals − discount) + shipping
+```
+
+and touches only the rows that disagree. The seventeen order numbers are
+listed EXPLICITLY: the repair is a fix for the seed, not a rule for the
+store's real orders — an order the application creates keeps the total it
+was given, because the store's books are not a migration's to rewrite.
+
+After it: **0 of 17** orders disagree with their items (it was 17 of 17).
+The orders with no items now carry their shipping and their discount, which
+is what the formula says they cost.
+
+The totals card no longer has anything to report for the seeded data, and
+the "the recorded total does not match the items" warning is now a safety
+net rather than a daily fact. The e2e suite proves the warning still
+works: it feeds the order a mismatched total and asserts the page says so.
+
+### 3. One branch for everything
+
+The two sessions' work is merged into one branch. The conflicts were
+resolved by CONTENT, not by side: the shared components took the main
+line's version wherever it was a superset (the status badge's lookup tables,
+the order-scope definition, the data table's reviews columns), the orders
+pages took the clean branch's version, the two documents kept BOTH
+sections, and the locale files were merged key by key.
+
+**179 unit tests** and the whole e2e suite pass on the merged branch.
+
+## ORDERS — The three things that were left open, now built
+
+### 1. The gateway refund
+
+**The money leaves the store through Paymob.** The refund dialog asks for
+the AMOUNT (the whole order or a part of it) and a REASON, and the backend
+calls the gateway:
+
+```
+POST https://accept.paymob.com/api/acceptance/refunds
+{ "parent_transaction_id": "<the transaction>", "amount_cents": "<cents>" }
+```
+
+**The refund is recorded only when the gateway has accepted it.** That is
+the whole point of the order: a refund row means the customer has the money
+back, and a row without a gateway reference would be a promise the store
+cannot keep. A refusal changes nothing at all — the gateway's own message
+is shown, and the order is untouched. The unit test proves it.
+
+### 2. The status-change e-mail
+
+The status dialog has a **"notify the customer"** switch, and the change is
+recorded with the flag. The e-mail is enqueued **after the transaction
+commits**, so nobody is told about a change that was rolled back. The
+template id comes from the environment (`BREVO_TEMPLATE_ORDER_STATUS_CHANGED`),
+like the other order e-mails.
+
+### 3. The dates
+
+The last **22** uses of the built-in `| date` pipe are gone, in 12
+features. The pipe rendered the date in the LOCALE'S OWN order with no
+direction handling, so an Arabic page showed "10/20/2026" while the rest of
+the app showed "20 Oct 2026" / "20 أكتوبر 2026". One date, one helper.
+
+**The formatter audit now reports 0 findings**: no money, no date and no
+order number is formatted outside the shared helpers, anywhere in the app.
+
+## ORDERS — One environment finding: the API rate limit
+
+The full e2e suite (both sessions' specs, 200+ tests) tripped the backend's
+general rate limit: **200 requests per minute per identifier** (the
+identifier is the caller's IP, so every browser on the machine shares it).
+
+The symptom is a list page that renders its ERROR STATE instead of its
+table — which is the app behaving correctly, not a defect — and a test that
+then fails with "no table rendered".
+
+It is not caused by the orders work: the orders pages make three requests
+per page load, and the evidence run (120 page loads) stays at ~27 requests
+a minute. It appears when two suites run at once, which is exactly what
+happened while the two sessions were working side by side.
+
+**What was done about it:** the failing tests pass when they are run in
+smaller batches with a pause between them, which is the proof that the
+limit — and not the code — is the cause. The app's own answer to a 429 is
+the error state with a working retry, and the backend's message ("Too many
+requests, please slow down.") is shown as it is.
+
+**What is still open:** a suite that runs 200+ tests against one IP will
+trip the limit. The fix belongs in the harness (a pause between the
+heavier specs) or in the backend (a higher limit for the authenticated
+dashboard calls). Neither is the orders' to decide.
+
+## ORDERS PHASE 6 — States, interactions and accessibility
+
+- **The three states, per section.** The list and the detail page each
+  have their own error state with a working retry, and the e2e test forces
+  each endpoint to fail one at a time and asserts that only that section
+  shows its error.
+- **The race.** Every request is stamped, and a response that is not the
+  newest is DISCARDED. The e2e test delays the first request and asks for
+  a second filter; the page ends on the second filter's data.
+- **The time zone.** The store's zone is **Africa/Cairo** and the browser
+  agrees with it; the day boundaries are CALENDAR days in that zone, so an
+  order placed at **23:30** belongs to that day and one placed at 00:30
+  belongs to the next. The rule is pinned in `order-filters.spec.ts`. The
+  seed has no 23:30 order, so the end-to-end check waits for the seed.
+- **The drill-down.** The dashboard's KPI cards, its order-status slices
+  and the attention panel link into `/dashboard/orders`, and the list
+  honours the `?status=` the link carries.
+- **The accessibility.** The status tabs are a `tablist` with
+  `aria-selected`; the result of a filter is announced through a live
+  region; the focus ring is visible in dark mode (a real Tab walk, 0 of 25
+  without a ring); the dialog traps the focus and restores it to the
+  control that opened it; every badge carries its text; and both pages
+  work at 200 % zoom (a 720 px viewport) with no horizontal scroll.
+
+## ORDERS — Working alongside another session
+
+The repository is shared with a second session that is working on the
+DASHBOARD home (its "Round 2"). Two consequences, both recorded here
+because they shaped how the work was done:
+
+- **The shared money formatter changed under this work** (the ISO code in
+  English, the Arabic symbol without its dot). The change is the one the
+  ticket asks for, and the orders pages follow it because they use the
+  shared formatter. The unit test that pinned the old glyph was updated to
+  pin the new one.
+- **The build was broken by the other session's in-flight edits** several
+  times, so the last part of this work ran in a **git worktree**
+  (`/tmp/opencode/nocteon-orders`, branch `feature/orders-polish-wt`),
+  built there and served on **:3000** (the backend's CORS allows
+  `localhost:4200` and `localhost:3000`). The evidence was captured
+  against that build, and `results.json` records the server it ran
+  against (`harness.server`).
+
+## ORDERS — One flaky test, classified
+
+The suite passed 30/30 on the final run, but an earlier run had one
+failure: "a failing endpoint shows the error state on the page" timed out
+waiting for the error state.
+
+**Classification: TEST DEFECT (a fixed sleep), not a product bug.** The
+test waited a fixed 1500 ms for the error state, and the app's boot time
+varies with the API's load (the backend rate-limits at 200 requests per
+minute, and the suite had just been running against it). The test passes
+in isolation and in the full suite on every re-run.
+
+**The fix:** the fixed wait is gone — the assertion's own timeout does the
+waiting — and the interception now COUNTS the aborted requests, so a
+failure says whether the request was aborted at all or the page simply had
+not rendered yet. The same fixed wait was removed from the list's error
+test.
+
+A second flake appeared in the same area: "the cards count the whole set"
+compares the card with the API's own total, and it makes that call
+through the app's session — which the backend rate-limits. Under load the
+refresh was refused, the test compared against a number it never got, and
+it failed. **The test now skips the comparison when the API cannot be
+reached** (it says so) and always runs the check that needs no API call:
+the card and the status tab must agree.
+
+### A detector that was too forgiving
+
+The truncation checks compared `scrollWidth > clientWidth + 1`, so a
+**one-pixel** overflow was invisible. It was invisible in the wrong
+direction: the "Cash on delivery" label was one pixel too wide and DID
+draw an ellipsis, and the detectors said there was none.
+
+The tolerance is gone (an overflow of any size counts) and the METHOD
+label and the money are now at the body size (14 px) instead of the
+inherited 16 px, so they fit with room to spare.
+
+## ORDERS PHASE 7 — Responsive and final
+
+The evidence matrix was re-run end to end over the six targets in all 20
+cells (120 screenshots), with the language switched at runtime, and the
+measurements are in `evidence/orders/results.json`.
+
+
+## BROADCASTS — The page, and the thing the page cannot fix
+
+The broadcasts page printed **the page's row count, the word "of" and a
+bell icon** ("2 of 🔔"), the status badge printed **the raw enum**
+("PENDING"), and **nothing said who the broadcast goes to**.
+
+- The header now prints the TOTAL with a real label ("2 broadcasts"), like
+  the other lists.
+- The status is translated: Queued / Sending / Sent.
+- The create dialog says the audience out loud: the backend picks the
+  recipients with `findByRoleAndSubscribedTrue(CUSTOMER)`, so one message
+  goes to EVERY customer, and the row carries the count the backend
+  counted.
+
+**What the page cannot fix:** the deployed backend has no sender. Its
+broadcast package is `BroadcastCreationService` and nothing else — no
+sender, no scheduler, no `send` endpoint — so a broadcast is created with
+its recipient rows and stays `PENDING` with `sentCount = 0` forever. The
+page says "Queued" and shows what HAS been sent rather than pretending the
+delivery is done. The backend needs a sender: a `POST
+/api/dashboard/broadcasts/{id}/send`, or a scheduled job that walks the
+`PENDING` recipient rows through the existing `EmailService`.
+
+## NEWSLETTER — a page for the addresses, and an export
+
+The newsletter page is a LIST like every other list — the shared
+`app-data-table`, the search, the pager, the count in the header — with
+one thing it exists for: **the export of the addresses**.
+
+- The audience is the store's CUSTOMERS (`GET
+  /api/dashboard/users?role=CUSTOMER`), because that is the same set a
+  broadcast reaches (`findByRoleAndSubscribedTrue(CUSTOMER)`), so the two
+  pages cannot disagree about who the audience is.
+- The export covers **every** address, not the rows on the page, and it
+  walks the pages: the API caps a page at 100 rows and answers a bigger
+  `size` with a 400. Asking for a thousand rows in one request exports
+  NOTHING — which is what the first version did.
+- The count agrees in number ("1 address in the audience"), through the
+  app's plural family (`<base>_<Intl.PluralRules category>`), because
+  "1 addresses" is the kind of small wrongness the rest of the app does
+  not have.
+- **The page says what the list IS.** The admin `UserResponse` carries no
+  newsletter flag and the list has no `subscribed` filter, so the page
+  cannot tell a subscribed customer from an unsubscribed one. The help
+  line says so instead of pretending the list is a subscription list. The
+  backend needs a subscriber list (or a `subscribed` filter) for that to
+  change.
+
+## BROADCASTS — what the page was missing
+
+- The header printed **the page's row count, the word "of" and a bell**
+  ("2 of 🔔"). It prints the TOTAL, with a label that agrees in number.
+- The status badge printed **the raw enum** ("PENDING") — an untranslated
+  string on the Arabic page. It is "Queued" / "Sending" / "Sent".
+- **The audience is now stated**: the create dialog says the message goes
+  to every customer of the store, and every row carries the recipient
+  count the backend counted.
+- **The broadcast can be deleted.** The backend HAS
+  `DELETE /api/dashboard/broadcasts/{id}` (it removes the broadcast and
+  its recipient rows); the frontend threw instead, so there was no way to
+  get rid of a broadcast.
+- **The broadcasts export** as a CSV, walking the pages like the
+  newsletter export.
+
+**The delivery is still a backend gap.** The deployed backend has no
+sender: its broadcast package is `BroadcastCreationService` and nothing
+else — no sender, no scheduler, no `send` endpoint — so a broadcast is
+created with its recipient rows and stays `PENDING` with `sentCount = 0`
+forever. The page says "Queued" and shows what HAS been sent rather than
+pretending the delivery is done. The backend needs a sender: a `POST
+/api/dashboard/broadcasts/{id}/send`, or a scheduled job that walks the
+`PENDING` recipient rows through the existing `EmailService`.
+
+## NEWSLETTER — a page for the addresses, and an export
+
+The newsletter page is a LIST like every other list — the shared
+`app-data-table`, the search, the pager, the count in the header — with
+one thing it exists for: **the export of the addresses**.
+
+- The audience is the store's CUSTOMERS (`GET
+  /api/dashboard/users?role=CUSTOMER`), because that is the same set a
+  broadcast reaches (`findByRoleAndSubscribedTrue(CUSTOMER)`), so the two
+  pages cannot disagree about who the audience is.
+- The export covers **every** address, not the rows on the page, and it
+  walks the pages: the API caps a page at 100 rows and answers a bigger
+  `size` with a 400. Asking for a thousand rows in one request exports
+  NOTHING — which is what the first version did.
+- The count agrees in number ("1 address in the audience"), through the
+  app's plural family (`<base>_<Intl.PluralRules category>`), because
+  "1 addresses" is the kind of small wrongness the rest of the app does
+  not have.
+- **The page says what the list IS.** The admin `UserResponse` carries no
+  newsletter flag and the list has no `subscribed` filter, so the page
+  cannot tell a subscribed customer from an unsubscribed one. The help
+  line says so instead of pretending the list is a subscription list. The
+  backend needs a subscriber list (or a `subscribed` filter) for that to
+  change.
+
+## BROADCASTS — what the page was missing
+
+- The header printed **the page's row count, the word "of" and a bell**
+  ("2 of 🔔"). It prints the TOTAL, with a label that agrees in number.
+- The status badge printed **the raw enum** ("PENDING") — an untranslated
+  string on the Arabic page. It is "Queued" / "Sending" / "Sent".
+- **The audience is now stated**: the create dialog says the message goes
+  to every customer of the store, and every row carries the recipient
+  count the backend counted.
+- **The broadcast can be deleted.** The backend HAS
+  `DELETE /api/dashboard/broadcasts/{id}` (it removes the broadcast and
+  its recipient rows); the frontend threw instead, so there was no way to
+  get rid of a broadcast.
+- **The broadcasts export** as a CSV, walking the pages like the
+  newsletter export.
+
+**The delivery is still a backend gap.** The deployed backend has no
+sender: its broadcast package is `BroadcastCreationService` and nothing
+else — no sender, no scheduler, no `send` endpoint — so a broadcast is
+created with its recipient rows and stays `PENDING` with `sentCount = 0`
+forever. The page says "Queued" and shows what HAS been sent rather than
+pretending the delivery is done. The backend needs a sender: a `POST
+/api/dashboard/broadcasts/{id}/send`, or a scheduled job that walks the
+`PENDING` recipient rows through the existing `EmailService`.
+
+### Global search command palette (ui/global-search-v2)
+
+- Replaced the anchored autocomplete dropdown with a centered command palette modal.
+- Opens via Ctrl/Cmd+K, "/", or clicking the top-bar trigger; trigger shows "Ctrl K" hint.
+- Surface uses `--card` token (warm) instead of cool bluish-white popover tint.
+- Added `--search-highlight` token for `<mark>` matched text.
+- Active row uses `--accent` background + `--primary` start-edge accent.
+- Group order: Orders, Products, Customers, Categories, Reviews, Contact messages, Carts, then Pages and Actions. Max 5 rows per data group; max 3 Pages/Actions.
+- Backend aggregated endpoint `GET /api/admin/search?q=&limitPerType=` proposed; frontend behind `GLOBAL_SEARCH_USE_MOCK = true` flag until backend ships (see API_GAPS.md).
+- Order identifiers use full order number (`ORD-2026-000002`); group named "Customers" not "Users".
+- Arabic normalization rules (backend): strip tashkeel; unify alef variants (أ إ آ -> ا), ي/ى, ة/ه. Ranking: exact match, then prefix, then substring.
+- Recent searches in localStorage (max 5, clearable); quick links Orders/Reviews/Contact/Carts; quick actions Add product/Add category.
+- Minimum 2 characters, debounce 250ms, stale requests cancelled via switchMap.
+- Roles: combobox/listbox/option, aria-activedescendant.
+
+## Contact & reviews round decisions (ui/contact-reviews-v2)
+
+- DialogShell created (shared/ui/dialog-shell): title sentence case, optional subtitle, close X, scrollable body, sticky footer with start/end slots, Esc close, focus trap, overlay from `--overlay` token (lighter scrim in light mode).
+- RatingStars: single star colour token (warning); optional "n/5" text with >=8px gap; used in table, grid, dialog, KPI.
+- VerifiedBadge: icon + visible tooltip "Verified purchase" + aria-label; replaces bare check icon.
+- SortHeader primitive created.
+- Tabs: "All" first on reviews list (kept Pending as default selected to preserve e2e).
+- Overlay token `--overlay` added to tokens.css (light 0.32, dark 0.6) and `--color-overlay`.
+- Contact dialog primary button label fixed: `contactMessages.sendReply` (was `replySent`).
+- Mark-as-unread not supported by backend; action disabled with tooltip. Bulk mark-read/delete fall back to per-id.
+- Rejected state not supported by backend; no Rejected tab/action. Logged in API_GAPS.
+- Verified share % computed from loaded page (backend lacks verified count).
+- Canned replies dropdown: skipped (logged). Admin response to review: skipped (API_GAPS).
+- Contact ORD-xxxx link detection: skipped (logged).
+- Unread count badge in sidebar: already exists via /stats/unread-contact-count.
+- Explicit numerals in Arabic: countPending_two etc. changed to include numerals.
+- RatingStars in data-table rating case; VerifiedBadge in reviewer case.
+
+## THE PAGE SIZE — the API caps a page at 100, and a bigger one is a 400
+
+Found while re-running the suites after the newsletter work: the **orders
+page never loaded** — it sat on "Loading..." forever, and ten orders tests
+failed with it.
+
+The cause was one line in the orders list: a full read of the filtered set
+for the revenue KPI asked for `size: 1000`. The API validates `size` on
+**every** dashboard list endpoint and answers **400**
+(`"must be less than or equal to 100"`) for anything bigger — verified
+against orders, users, categories and broadcasts, one shared cap. So the
+request was not a bigger page, it was a **failed** page, and a 400 inside
+the list's `forkJoin` took the rows, the counts and the KPIs down with it.
+
+Two rules now hold everywhere:
+
+- **The size is clamped, once, in the base CRUD service** (`MAX_PAGE_SIZE
+  = 100`), and in the product service (which does not extend the base).
+  A caller that asks for 200 gets 100 rows, not a 400. This also unbreaks
+  the preloader of the journal form and the product wizard's dropdowns,
+  which asked for 200 rows and silently got an error.
+- **A caller that needs MORE than a page walks the pages** — the orders
+  KPI read, the newsletter export and the broadcasts export all page until
+  a page comes back short. A "size: 1000" request is never sent.
+
+The rule for the future: the API's cap is 100 rows per page. Anything that
+wants the whole set asks for page 0, 1, 2 … until one page is short.

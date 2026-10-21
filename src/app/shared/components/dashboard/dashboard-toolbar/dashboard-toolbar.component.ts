@@ -12,6 +12,7 @@ import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { DashboardStatsService } from '../../../../features/dashboard/services/dashboard-stats.service';
 import { LanguageService } from '../../../../core/i18n/language.service';
 import { LocalizedDateComponent } from '../../../ui/localized-date/localized-date.component';
+import { TabsComponent } from '../../ui/tabs/tabs.component';
 import { TranslocoService } from '@jsverse/transloco';
 
 /**
@@ -35,6 +36,7 @@ import { TranslocoService } from '@jsverse/transloco';
     NgIcon,
     HlmButtonImports,
     LocalizedDateComponent,
+    TabsComponent,
   ],
   providers: [provideIcons({ lucideCalendar, lucideDownload, lucideRepeat })],
   templateUrl: './dashboard-toolbar.component.html',
@@ -57,8 +59,34 @@ export class DashboardToolbarComponent {
   /** The selected range, in days. */
   readonly selectedDays = computed(() => this.stats.days());
 
+  /** The range options, as tab items. */
+  readonly tabItems = computed(() => {
+    this.language.language();
+    return this.options.map((option) => ({
+      id: String(option.days),
+      label: this.transloco.translate(option.key),
+    }));
+  });
+
+  /** The active tab's id — the range in days, as a string. */
+  readonly activeTabId = computed(() => String(this.stats.days()));
+
   /** The live announcement of the current selection. */
   readonly announcement = signal('');
+
+  /**
+   * Select a range.
+   *
+   * The tab group hands over the id of the chosen tab, which is the number
+   * of days as a string.
+   */
+  selectDays(id: string): void {
+    const days = Number(id);
+    if (!Number.isFinite(days)) return;
+    const option = this.options.find((o) => o.days === days);
+    if (!option) return;
+    this.select(days, option.key);
+  }
 
   select(days: number, key: string): void {
     this.stats.setDays(days);
@@ -82,13 +110,22 @@ export class DashboardToolbarComponent {
   /** The comparison window. */
   readonly previous = computed(() => this.stats.window('previous'));
 
-  /** The last day of a window (its end is exclusive). */
+  /**
+   * The last day of a window (its end is exclusive).
+   *
+   * CALENDAR arithmetic, not `getTime() - 24h`: a DST transition makes a
+   * day 23 or 25 hours long, and the store's zone (Africa/Cairo) has DST.
+   * `core/dashboard/period.ts` has the same rule.
+   */
   lastDayOf(window: { start: Date; end: Date }): Date {
-    return new Date(window.end.getTime() - 24 * 60 * 60 * 1000);
+    const copy = new Date(window.end.getTime());
+    copy.setDate(copy.getDate() - 1);
+    return copy;
   }
 
   /** What the export contains, and for which range. */
   readonly exportTooltip = computed(() => {
+    this.language.language();
     const from = this.transloco.translate('dashboard.exportTooltip');
     const range = this.transloco.translate(
       this.options.find((o) => o.days === this.selectedDays())?.key ??

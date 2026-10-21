@@ -5,9 +5,24 @@
       [queryParams]="linkParams()"
       class="block h-full rounded-[var(--radius-card)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
     >
-      <div hlmCardContent class="flex h-full flex-col justify-between gap-2">
-        <div class="flex items-start justify-between gap-2">
-          <p class="text-xs text-muted-foreground">{{ label() }}</p>
+      <!-- The three rows have FIXED heights, so the value sits on the same
+           baseline in all four cards of the row. The first row is 24 px
+           whether or not a sparkline is drawn. -->
+      <div hlmCardContent class="flex h-full flex-col gap-2 px-4 py-4">
+        <div class="flex h-6 items-start justify-between gap-2">
+          <p class="flex items-center gap-1 text-xs text-muted-foreground">
+            <span class="truncate" [title]="label()">{{ label() }}</span>
+            @if (scopeNote(); as note) {
+              <span
+                class="shrink-0 cursor-help"
+                data-testid="kpi-scope-note"
+                [title]="note"
+                [attr.aria-label]="note"
+              >
+                <ng-icon name="lucideInfo" class="size-3.5 text-muted-foreground" />
+              </span>
+            }
+          </p>
           @if (spark(); as s) {
             <!-- A sparkline from the REAL daily series, when the API has one. -->
             <svg
@@ -33,7 +48,7 @@
         <p class="text-3xl font-medium tabular-nums tracking-tight"><bdi>{{ value() }}</bdi></p>
 
         @if (deltaText(); as text) {
-          <div class="flex items-center gap-1.5">
+          <div class="flex h-5 items-center gap-1.5" data-testid="kpi-delta">
             <span
               class="inline-flex items-center gap-1 rounded-full bg-muted px-1.5 py-0.5 text-xs font-medium"
               [class]="deltaTone()"
@@ -47,16 +62,41 @@
               <bdi>{{ text }}</bdi>
             </span>
           </div>
+        } @else if (isNoBaseline()) {
+          <!-- No previous period to compare against: an em dash and the
+               reason, never a "New" badge on every card. -->
+          <div class="flex h-5 items-center gap-1.5" data-testid="kpi-delta">
+            <span
+              class="inline-flex items-center rounded-full bg-muted px-1.5 py-0.5 text-xs font-medium text-muted-foreground"
+              [title]="noBaselineTitle()"
+              [attr.aria-label]="comparisonLabel() + ': ' + noBaselineTitle()"
+            >
+              <span aria-hidden="true">—</span>
+            </span>
+          </div>
         } @else {
-          <div class="h-[20px]"></div>
+          <div class="h-5"></div>
         }
       </div>
     </a>
   } @else {
-    <div hlmCardContent class="flex h-full flex-col justify-between gap-2">
-      <p class="text-xs text-muted-foreground">{{ label() }}</p>
+    <div hlmCardContent class="flex h-full flex-col gap-2 px-4 py-4">
+      <div class="flex h-6 items-start justify-between gap-2">
+        <p class="flex items-center gap-1 text-xs text-muted-foreground">
+          <span class="truncate" [title]="label()">{{ label() }}</span>
+          @if (scopeNote(); as note) {
+            <span
+              class="shrink-0 cursor-help"
+              [title]="note"
+              [attr.aria-label]="note"
+            >
+              <ng-icon name="lucideInfo" class="size-3.5 text-muted-foreground" />
+            </span>
+          }
+        </p>
+      </div>
       <p class="text-3xl font-medium tabular-nums tracking-tight"><bdi>{{ value() }}</bdi></p>
-      <div class="h-[20px]"></div>
+      <div class="h-5"></div>
     </div>
   }
 </hlm-card>

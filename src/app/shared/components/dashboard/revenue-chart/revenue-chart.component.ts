@@ -13,9 +13,12 @@ import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { ThemeService } from '../../../../core/theme/theme.service';
 import { LanguageService } from '../../../../core/i18n/language.service';
 import { LocalizedDateService } from '../../../../core/i18n/localized-date.service';
-import { formatCurrency } from '../../../utils/locale-format';
-import { formatCompactNumber } from '../../../utils/locale-format';
+import { formatCurrency, formatCompactCurrency } from '../../../utils/locale-format';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
+
+/** The font size of the axis labels, in pixels. */
+const AXIS_FONT_PX = 11;
+import { LocalizedDateComponent } from '../../../ui/localized-date/localized-date.component';
 
 /**
  * The revenue chart — the hero of the dashboard.
@@ -40,7 +43,7 @@ import { HlmButtonImports } from '@spartan-ng/helm/button';
 @Component({
   selector: 'app-revenue-chart',
   standalone: true,
-  imports: [CommonModule, TranslocoPipe, HlmButtonImports],
+  imports: [CommonModule, TranslocoPipe, HlmButtonImports, LocalizedDateComponent],
   templateUrl: './revenue-chart.component.html',
   styleUrl: './revenue-chart.component.css',
 })
@@ -69,13 +72,46 @@ export class RevenueChartComponent {
   /** The chart height. */
   readonly height = 270;
 
-  /** The padding around the plot area. */
-  readonly pad = { top: 16, right: 12, bottom: 28, left: 48 };
+  /**
+   * The padding around the plot area.
+   *
+   * The LEFT padding is the WIDEST Y-AXIS LABEL plus a gap. It used to be
+   * a fixed 48 px, which was enough for the old "E£1.2K" and not enough
+   * for the new "EGP 1.2K": the label was drawn past the left edge of the
+   * SVG and the first two characters were cut off.
+   */
+  readonly pad = computed(() => {
+    const widest = this.yTicks().reduce(
+      (max, tick) => Math.max(max, this.measureText(this.axisLabel(tick), AXIS_FONT_PX)),
+      0,
+    );
+    return {
+      top: 16,
+      right: 12,
+      bottom: 28,
+      left: Math.max(40, Math.ceil(widest) + 12),
+    };
+  });
+
+  /** A canvas context, used only to measure text. */
+  private measureContext: CanvasRenderingContext2D | null = null;
+
+  /** The measured width of a string, in pixels, in the chart's font. */
+  private measureText(text: string, fontSizePx: number): number {
+    if (!this.measureContext) {
+      this.measureContext = document.createElement('canvas').getContext('2d');
+    }
+    const ctx = this.measureContext;
+    if (!ctx) return text.length * fontSizePx * 0.6;
+    const family = getComputedStyle(this.host.nativeElement).fontFamily;
+    ctx.font = `400 ${fontSizePx}px ${family}`;
+    return ctx.measureText(text).width;
+  }
 
   /** The plot area. */
   readonly plot = computed(() => ({
-    w: Math.max(40, this.width() - this.pad.left - this.pad.right),
-    h: this.height - this.pad.top - this.pad.bottom,
+    w: Math.max(40, this.width() - this.pad().left - this.pad().right),
+    h: this.height - this.pad().top - this.pad().bottom,
   }));
 
   /** The maximum value on the y-axis, so the top bar is never clipped. */
@@ -147,8 +183,8 @@ export class RevenueChartComponent {
       return {
         date: d.date,
         value,
-        x: this.pad.left + slot * i + (slot - barWidth) / 2,
-        y: this.pad.top + h - barHeight,
+        x: this.pad().left + slot * i + (slot - barWidth) / 2,
+        y: this.pad().top + h - barHeight,
         width: barWidth,
         height: barHeight,
         previous: this.previousPeriodData()[i]?.revenue ?? null,
@@ -170,8 +206,8 @@ export class RevenueChartComponent {
       const value = d.revenue || 0;
       const barHeight = max > 0 ? (value / max) * h : 0;
       return {
-        x: this.pad.left + slot * i + (slot - barWidth) / 2,
-        y: this.pad.top + h - barHeight,
+        x: this.pad().left + slot * i + (slot - barWidth) / 2,
+        y: this.pad().top + h - barHeight,
         width: barWidth,
         height: barHeight,
       };
@@ -190,7 +226,7 @@ export class RevenueChartComponent {
       total,
       average,
       best,
-      bestDate: this.dates.format(this.data()[bestIndex].date),
+      bestDate: this.data()[bestIndex].date,
     };
   });
 
@@ -198,18 +234,17 @@ export class RevenueChartComponent {
   readonly formatMoney = (value: number): string =>
     formatCurrency(value, this.language.language(), this.currency());
 
-  /** The compact axis label, with the currency symbol. */
-  readonly axisLabel = (value: number): string => {
-    const compact = formatCompactNumber(value);
-    const symbol = this.currencySymbol();
-    return symbol ? `${symbol}${compact}` : compact;
-  };
-
-  /** The currency's symbol, in the current language. */
-  private currencySymbol(): string {
-    const formatted = this.formatMoney(1);
-    return formatted.replace(/[\d\s.,٫٬0-9]/g, '').trim();
-  }
+  /**
+   * The y-axis label: the COMPACT amount with the currency, in the same
+   * style as every other amount on the page.
+   *
+   * The old version built the label by stripping the digits out of a
+   * formatted amount, which produced "جم1.2K" in Arabic — the symbol glued
+   * to the number, in the wrong order, and with the dot of "ج.م." already
+   * stripped. The compact formatter is the one rule for both languages.
+   */
+  readonly axisLabel = (value: number): string =>
+    formatCompactCurrency(value, this.language.language(), this.currency());
 
   /** The accessible summary of the whole chart. */
   readonly ariaLabel = computed(() => {
@@ -218,7 +253,7 @@ export class RevenueChartComponent {
     return `${this.transloco.translate('dashboard.revenueOverview')}: ${this.formatMoney(s.total)}`;
   });
 
-  /** The text of the summary line, for the template. */
+  /** The text of the summary line, for the accessible name. */
   readonly summaryLabel = computed(() => {
     const s = this.summary();
     if (!s) return '';
@@ -226,14 +261,14 @@ export class RevenueChartComponent {
     return [
       `${t('dashboard.revenueTotal')}: ${this.formatMoney(s.total)}`,
       `${t('dashboard.revenueAverage')}: ${this.formatMoney(s.average)}`,
-      `${t('dashboard.revenueBest')}: ${this.formatMoney(s.best)} (${s.bestDate})`,
+      `${t('dashboard.revenueBest')}: ${this.formatMoney(s.best)}`,
     ].join('  ·  ');
   });
 
   /** The grid lines' positions. */
   readonly gridLines = computed(() =>
     this.yTicks().map((v) => ({
-      y: this.pad.top + this.plot().h - (v / this.axisMax()) * this.plot().h,
+      y: this.pad().top + this.plot().h - (v / this.axisMax()) * this.plot().h,
       label: this.axisLabel(v),
     })),
   );

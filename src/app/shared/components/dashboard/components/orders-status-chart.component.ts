@@ -27,13 +27,21 @@ export class OrdersStatusChartComponent implements OnChanges {
   chart: ApexChart = { type: 'donut', height: 300 };
   legend: ApexLegend = { labels: { colors: getCssVarColor('--foreground') } };
 
+  /**
+   * The status swatches, from the theme.
+   *
+   * The same tokens the new chart card uses: the statuses are SEMANTIC, so
+   * they never take a categorical colour, and the two dashboards must not
+   * paint the same status in two different colours.
+   */
   private statusColorVars: Record<string, string> = {
-    PENDING: '--color-warning',
-    CONFIRMED: '--color-success',
-    PROCESSING: '--color-info',
-    SHIPPED: '--color-accent',
-    DELIVERED: '--color-success',
-    CANCELLED: '--color-destructive',
+    PENDING: '--status-pending',
+    CONFIRMED: '--status-confirmed',
+    PROCESSING: '--status-processing',
+    SHIPPED: '--status-shipped',
+    DELIVERED: '--status-delivered',
+    CANCELLED: '--status-cancelled',
+    REFUNDED: '--status-refunded',
   };
 
   constructor() {

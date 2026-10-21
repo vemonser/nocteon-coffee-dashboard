@@ -33,6 +33,7 @@ import { BreadcrumbService } from '../../../../shared/components/breadcrumb/serv
 import { TranslationFormHelper } from '../../../../shared/utils/translation.utils';
 
 import { TranslocoPipe } from '@jsverse/transloco';
+import { LocalizedDateComponent } from '../../../../shared/ui/localized-date/localized-date.component';
 
 type EditMode = 'view' | 'edit';
 
@@ -40,6 +41,7 @@ type EditMode = 'view' | 'edit';
   selector: 'app-processing-method-detail',
   standalone: true,
   imports: [
+    LocalizedDateComponent,
     CommonModule,
     FormsModule,
     ReactiveFormsModule,

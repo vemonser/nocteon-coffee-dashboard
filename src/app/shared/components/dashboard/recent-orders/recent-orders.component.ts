@@ -1,8 +1,8 @@
-﻿import { Component, inject, signal, computed, effect, OnInit } from '@angular/core';
+﻿import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HlmAvatarImports } from '@spartan-ng/helm/avatar';
 import { HlmBadgeImports } from '@spartan-ng/helm/badge';
-import { TranslocoPipe } from '@jsverse/transloco';
+import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { Router, RouterLink } from '@angular/router';
 import { OrderService } from '../../../../features/orders/services/order.service';
 import { OrderResponse, OrderStatus } from '../../../../features/orders/models/order.model';
@@ -12,6 +12,8 @@ import { LanguageService } from '../../../../core/i18n/language.service';
 import { StatusBadgeComponent } from '../../../ui/status-badge/status-badge.component';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucidePackage } from '@ng-icons/lucide';
+import { isolatedOrderNumber } from '../../../../features/orders/utils/order-number';
+import { pluralKey } from '../../../../core/i18n/plural';
 
 /**
  * The recent orders.
@@ -21,8 +23,16 @@ import { lucidePackage } from '@ng-icons/lucide';
  * ("2 hours ago") and absolute when it is not, because "3 months ago" is
  * more useful than a date. The customer name comes from the order.
  *
- * The "View all" link lives in the CARD HEADER, once — the copy that used to
- * sit at the bottom of the list was the same link twice.
+ * THE ORDER NUMBER (Round 2, ticket 1.4): the number is the backend's own
+ * (`ORD-2026-000001`), shown through the SHARED helper, so the dashboard,
+ * the list, the detail page and the export all print the same thing. The
+ * old code printed `order.orderNumber || '#' + order.id` inline, which is
+ * a second formatter.
+ *
+ * THE RELATIVE TIME (Round 2, ticket 2.1): the wording comes from the
+ * locale file, in the right plural form, in both languages. It used to be
+ * hardcoded in the component, so it was one more place where a language
+ * could be wrong.
  */
 @Component({
   selector: 'app-recent-orders',
@@ -45,6 +55,7 @@ import { lucidePackage } from '@ng-icons/lucide';
 export class RecentOrdersComponent implements OnInit {
   private orderService = inject(OrderService);
   private language = inject(LanguageService);
+  private readonly transloco = inject(TranslocoService);
 
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
@@ -79,6 +90,17 @@ export class RecentOrdersComponent implements OnInit {
       });
   }
 
+  /**
+   * The order number, through the SHARED helper.
+   *
+   * The number is a Latin token inside a right-to-left paragraph, so it is
+   * wrapped in an isolate: without it the bidi algorithm can reorder the
+   * segments of `ORD-2026-000001`.
+   */
+  orderNumber(order: OrderResponse): string {
+    return isolatedOrderNumber(order.orderNumber, order.id);
+  }
+
   /** A RELATIVE date for the recent ones, an absolute one for the rest. */
   relativeDate(value: unknown): string {
     if (!value) return '';
@@ -86,27 +108,34 @@ export class RecentOrdersComponent implements OnInit {
     if (Number.isNaN(d.getTime())) return '';
     const diffMs = Date.now() - d.getTime();
     const minutes = Math.round(diffMs / 60000);
-    const isAr = this.language.current() === 'ar';
 
     if (minutes < 1) {
-      return isAr ? 'الآن' : 'just now';
+      return this.transloco.translate('dashboard.recentOrders.justNow');
     }
     if (minutes < 60) {
-      const n = isAr ? `${minutes} دقيقة` : `${minutes} min`;
-      return isAr ? `منذ ${n}` : `${n} ago`;
+      return this.relative(minutes, 'dashboard.recentOrders.minutesAgo');
     }
     const hours = Math.round(minutes / 60);
     if (hours < 24) {
-      const n = isAr ? `${hours} ساعة` : `${hours} hour${hours === 1 ? '' : 's'}`;
-      return isAr ? `منذ ${n}` : `${n} ago`;
+      return this.relative(hours, 'dashboard.recentOrders.hoursAgo');
     }
     const days = Math.round(hours / 24);
     if (days < 7) {
-      const n = isAr ? `${days} يوم` : `${days} day${days === 1 ? '' : 's'}`;
-      return isAr ? `منذ ${n}` : `${n} ago`;
+      return this.relative(days, 'dashboard.recentOrders.daysAgo');
     }
     // Older than a week: the absolute date is more useful.
     return this.absoluteDate(d);
+  }
+
+  /**
+   * A relative time in the reader's language, in the right plural form.
+   *
+   * The CATEGORY comes from `Intl.PluralRules` and the WORDING comes from
+   * the locale file, so Arabic counts the noun the way Arabic counts it.
+   */
+  private relative(count: number, base: string): string {
+    const key = pluralKey(base, count, this.language.current());
+    return this.transloco.translate(key, { count });
   }
 
   /** The absolute date, with the time. */
@@ -129,6 +158,15 @@ export class RecentOrdersComponent implements OnInit {
   dateTitle(value: unknown): string {
     return this.absoluteDate(value);
   }
+
+  /** The fallback for an order with no customer. */
+  readonly unknownCustomer = computed(() => {
+    // The language is read FIRST: `transloco.translate()` is not reactive on
+    // its own, so a computed that only calls it keeps the language it was
+    // built in.
+    this.language.language();
+    return this.transloco.translate('dashboard.recentOrders.unknownCustomer');
+  });
 
   /** Map API status to StatusBadgeComponent StatusKind. */
   getStatusKind(status: string): import('../../../ui/status-badge/status-badge.component').StatusKind {

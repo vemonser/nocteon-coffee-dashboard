@@ -1,0 +1,65 @@
+<app-order-dialog
+  [open]="open()"
+  [title]="title()"
+  [description]="description()"
+  [confirmLabel]="confirmLabel()"
+  [cancelLabel]="cancelLabel()"
+  [confirmDisabled]="!canConfirm()"
+  [pending]="pending()"
+  testId="status-dialog"
+  (confirmed)="confirm()"
+  (closed)="closed.emit()"
+>
+  @if (hasOptions()) {
+    <fieldset class="mt-4">
+      <legend class="sr-only">{{ title() }}</legend>
+      <div class="flex flex-wrap gap-2">
+        @for (option of options(); track option) {
+          <button
+            type="button"
+            hlmBtn
+            size="sm"
+            data-testid="status-option"
+            [attr.data-status]="option"
+            [variant]="selected() === option ? 'default' : 'outline'"
+            (click)="pick(option)"
+          >
+            {{ statusName(option) }}
+          </button>
+        }
+      </div>
+    </fieldset>
+
+    <div class="mt-4 space-y-1.5">
+      <label for="order-status-note" class="text-sm font-medium">{{ noteLabel() }}</label>
+      <input
+        id="order-status-note"
+        hlmInput
+        type="text"
+        dir="auto"
+        data-testid="status-note"
+        [ngModel]="note()"
+        (ngModelChange)="note.set($event)"
+        [placeholder]="notePlaceholder()"
+      />
+    </div>
+
+    <!--
+      The customer is told AFTER the change is saved, and only when the
+      admin ticks it. The e-mail is enqueued once the transaction has
+      committed, so nobody is told about a change that was rolled back.
+    -->
+    <div class="mt-4 flex items-start gap-3">
+      <hlm-switch
+        id="order-status-notify"
+        data-testid="status-notify"
+        [checked]="notifyCustomer()"
+        (checkedChange)="notifyCustomer.set($event)"
+      />
+      <label for="order-status-notify" class="flex flex-col gap-0.5">
+        <span class="text-sm font-medium">{{ notifyLabel() }}</span>
+        <span class="text-xs text-muted-foreground">{{ notifyHint() }}</span>
+      </label>
+    </div>
+  }
+</app-order-dialog>

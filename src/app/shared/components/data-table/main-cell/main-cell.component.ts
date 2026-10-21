@@ -41,4 +41,13 @@ export class MainCellComponent {
    * stays plain text: the name is the row's single control.
    */
   readonly navigableHref = input<any[] | null>(null);
+
+  /**
+   * Whether the slug line is rendered under the name.
+   *
+   * The reviews console shows the PRODUCT, and the slug is a technical
+   * handle there — it is what the old column showed, and it is what the
+   * report called out as unreadable.
+   */
+  readonly showSlug = input(true);
 }

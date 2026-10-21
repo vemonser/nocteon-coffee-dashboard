@@ -10,16 +10,10 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { NgApexchartsModule, ChartComponent } from 'ng-apexcharts';
-import { TranslocoPipe } from '@jsverse/transloco';
 import { ThemeService } from '../../../core/theme/theme.service';
 import { getCssVarColor } from '../../utils/utils';
-import {
-  ChartSlice,
-  chartKindFor,
-  sliceColors,
-  withPercents,
-} from './chart-rules';
+import { formatCompactNumber } from '../../utils/locale-format';
+import { ChartSlice, chartKindFor, withPercents } from './chart-rules';
 
 /**
  * THE chart card.
@@ -28,12 +22,16 @@ import {
  * centre label, so two charts on the page can never disagree:
  *
  *  - **Type** (rules in `chart-rules.ts`): a donut only for 3–5 slices and
- *    at least 160 px; otherwise sorted horizontal bars; one slice is a stat.
- *  - **Legend**: ALWAYS below the chart, never beside it, and it lists the
- *    colour, the name, the value and the percentage. A legend that only
- *    carries a colour is a legend that relies on colour alone.
- *  - **Centre** (donut only): the foreground token, compact currency when
- *    the number is long, and never allowed to leave the ring.
+ *    at least 160 px; otherwise sorted horizontal bars; one slice is a stat
+ *    with a bar.
+ *  - **Legend**: ALWAYS below the chart, never beside it, in ONE column,
+ *    and it lists the colour, the name, the value and the percentage in
+ *    FIXED columns. A legend that only carries a colour is a legend that
+ *    relies on colour alone; a legend whose columns do not line up cannot
+ *    be read as a column of numbers.
+ *  - **Centre** (donut only): the foreground token, the compact form of
+ *    the number when the long one does not fit, and never allowed to leave
+ *    the ring.
  *  - **Hole**: the card colour, so the ring is a hole and not a darker
  *    disc.
  *
@@ -44,15 +42,22 @@ import {
 @Component({
   selector: 'app-chart-card',
   standalone: true,
-  imports: [CommonModule, RouterLink, TranslocoPipe],
+  imports: [CommonModule, RouterLink],
   templateUrl: './chart-card.component.html',
   styleUrl: './chart-card.component.css',
 })
 export class ChartCardComponent {
   /** The slices to draw. */
   readonly slices = input.required<ChartSlice[]>();
-  /** The value formatter for the legend and the centre. */
+  /** The value formatter for the legend. */
   readonly formatValue = input<(value: number) => string>((v) => String(v));
+  /**
+   * The COMPACT value formatter, for the centre of a donut.
+   *
+   * It is a separate input because the centre has to fit inside the ring:
+   * "20,826.50 ج.م" does not, "20.8K ج.م" does.
+   */
+  readonly formatCompactValue = input<(value: number) => string>((v) => String(v));
   /** The label of the whole (for the centre). */
   readonly centerLabel = input<string>('Total');
   /** Show the value and the percentage inside each slice. */
@@ -84,34 +89,83 @@ export class ChartCardComponent {
   /** How this data is drawn. */
   readonly kind = computed(() => chartKindFor(this.prepared().length, this.width()));
 
-  /** The centre value: the full number, or a compact one when it is long. */
+  /**
+   * The centre value.
+   *
+   * The LONG form when it fits inside the ring, the compact form when it
+   * does not, and the bare number when even that does not. The centre
+   * NEVER leaves the ring: a number that overflows the hole overlaps the
+   * slices and stops being readable.
+   */
   readonly centerValue = computed(() => {
     const total = this.total();
     if (!total) return '—';
     const full = this.formatValue()(total);
-    // A long number does not fit in the middle of a ring; the compact form
-    // is used instead, and the full number stays in the legend.
-    return full.length > 12 ? this.compact(total) : full;
+    if (this.fitsInRing(full)) return full;
+    // The compact form keeps the UNIT: a centre that says "20.8K" without
+    // a currency is a number with no meaning on a money chart.
+    const compact = this.formatCompactValue()(total);
+    if (this.fitsInRing(compact)) return compact;
+    return this.bareNumber(total);
   });
 
-  /** The compact centre value. */
-  private compact(value: number): string {
-    const abs = Math.abs(value);
-    if (abs >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`;
-    if (abs >= 1_000) return `${(value / 1_000).toFixed(1)}K`;
-    return String(Math.round(value));
+  /**
+   * The last resort: the number alone.
+   *
+   * It is reached only when even the compact form does not fit, which in
+   * practice never happens — and when it does, a number without a unit is
+   * still better than a number painted over the ring.
+   */
+  private bareNumber(value: number): string {
+    return formatCompactNumber(value);
+  }
+
+  /**
+   * The width of the ring's hole, in pixels — the space the centre text
+   * has to fit into.
+   */
+  readonly holeWidth = computed(() => this.innerRadius() * 2);
+
+  /**
+   * Does the text fit inside the hole?
+   *
+   * The width is measured with the SAME font the text is rendered with
+   * (a canvas measurement), because a character count is a guess and a
+   * guess is how a number ends up on top of the ring.
+   */
+  private fitsInRing(text: string): boolean {
+    if (!text) return true;
+    const available = this.holeWidth() - 10; // a 5 px margin on each side
+    if (available <= 0) return false;
+    return this.measureText(text, CENTER_VALUE_FONT_PX) <= available;
+  }
+
+  /** A canvas context, used only to measure text. */
+  private measureContext: CanvasRenderingContext2D | null = null;
+
+  /** The measured width of a string, in pixels, in the card's font. */
+  private measureText(text: string, fontSizePx: number): number {
+    if (!this.measureContext) {
+      const canvas = document.createElement('canvas');
+      this.measureContext = canvas.getContext('2d');
+    }
+    const ctx = this.measureContext;
+    if (!ctx) return text.length * fontSizePx * 0.6;
+    const family = getComputedStyle(this.host.nativeElement).fontFamily;
+    ctx.font = `500 ${fontSizePx}px ${family}`;
+    return ctx.measureText(text).width;
   }
 
   /** The hole's radius as a fraction of the ring's outer radius. */
   readonly holeRatio = 0.62;
 
   /**
-   * The SVG size: the ring is a fixed size, so every donut on the page has
-   * the SAME diameter. 190 px, not the card's width: a donut that grows with
-   * its card makes two cards' donuts different sizes, and a big ring in a
-   * half-width card pushes the legend down the page.
+   * The SVG size: the ring is a FIXED size, so every donut on the page has
+   * the SAME diameter. A donut that grows with its card makes two cards'
+   * donuts different sizes, and a big ring in a half-width card pushes the
+   * legend down the page.
    */
-  readonly size = computed(() => Math.max(140, Math.min(this.width(), 170)));
+  readonly size = computed(() => DONUT_DIAMETER_PX);
 
   /** The centre of the ring, in pixels. */
   readonly center = computed(() => this.size() / 2);
@@ -222,16 +276,18 @@ export class ChartCardComponent {
     return Math.max(1, Math.round(((slice.value || 0) / max) * 1000) / 10);
   }
 
-  /** The card background, so the hole is a hole and not a darker disc. */
-  readonly holeFill = computed(() =>
-    getCssVarColor(this.theme.isDark() ? '--card' : '--card'),
-  );
-
-  /** The ring's stroke colour. */
-  readonly ringStroke = computed(() => getCssVarColor('--border'));
-
-  /** The centre text colour. */
-  readonly centerColor = computed(() => getCssVarColor('--foreground'));
+  /**
+   * The centre text colour.
+   *
+   * The foreground token, read AGAIN whenever the theme changes. The
+   * previous version read the CSS variable once, at construction, so a
+   * page that booted in light mode kept the LIGHT foreground on the dark
+   * card — the donut centre was nearly invisible in dark mode.
+   */
+  readonly centerColor = computed(() => {
+    this.theme.themeVersion();
+    return getCssVarColor('--foreground');
+  });
 
   constructor() {
     // Measure the card so the donut knows whether it is big enough to be a
@@ -241,10 +297,23 @@ export class ChartCardComponent {
     const observer = new ResizeObserver(measure);
     observer.observe(this.host.nativeElement);
 
-    // The theme changes the card colour, so the hole has to be re-read.
+    // The theme changes the card colour, so the hole and the centre text
+    // have to be re-read.
     effect(() => {
       this.theme.themeVersion();
       this.theme.isDark();
     });
   }
 }
+
+/**
+ * The diameter of EVERY donut on the page, in pixels.
+ *
+ * It is a constant, not a measurement: a donut that grows with its card
+ * makes two cards' donuts different sizes.
+ */
+export const DONUT_DIAMETER_PX = 180;
+
+/** The font size of the centre value, in pixels (the `text-lg` utility). */
+const CENTER_VALUE_FX = 18;
+const CENTER_VALUE_FONT_PX = CENTER_VALUE_FX;

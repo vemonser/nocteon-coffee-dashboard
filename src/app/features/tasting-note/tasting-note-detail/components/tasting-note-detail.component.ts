@@ -32,12 +32,14 @@ import {
 import { BreadcrumbService } from '../../../../shared/components/breadcrumb/service/breadcrumb.service';
 
 import { TranslocoPipe } from '@jsverse/transloco';
+import { LocalizedDateComponent } from '../../../../shared/ui/localized-date/localized-date.component';
 type EditMode = 'view' | 'edit';
 
 @Component({
   selector: 'app-tasting-note-detail',
   standalone: true,
   imports: [
+    LocalizedDateComponent,
     CommonModule,
     FormsModule,
     ReactiveFormsModule,

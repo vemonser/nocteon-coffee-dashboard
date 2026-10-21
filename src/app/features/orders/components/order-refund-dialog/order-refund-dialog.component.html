@@ -1,0 +1,62 @@
+<app-order-dialog
+  [open]="open()"
+  [title]="title()"
+  [description]="gatewayNote()"
+  [confirmLabel]="confirmLabel()"
+  [cancelLabel]="cancelLabel()"
+  [confirmDisabled]="!canConfirm()"
+  [pending]="pending()"
+  [danger]="true"
+  testId="refund-dialog"
+  (confirmed)="confirm()"
+  (closed)="closed.emit()"
+>
+  <div class="mt-4 space-y-3">
+    <div class="flex items-center justify-between gap-3">
+      <span class="text-sm text-muted-foreground">{{ remainingLine() }}</span>
+      <button
+        hlmBtn
+        variant="outline"
+        size="sm"
+        type="button"
+        data-testid="refund-full"
+        (click)="useFullAmount()"
+      >
+        {{ fullRefund() }}
+      </button>
+    </div>
+
+    <div class="space-y-1.5">
+      <label for="order-refund-amount" class="text-sm font-medium">{{ amountLabel() }}</label>
+      <input
+        id="order-refund-amount"
+        hlmInput
+        type="number"
+        inputmode="decimal"
+        step="0.01"
+        min="0.01"
+        dir="ltr"
+        data-testid="refund-amount"
+        [ngModel]="amount()"
+        (ngModelChange)="amount.set($event)"
+      />
+      @if (amountNumber() > remaining()) {
+        <p class="text-xs text-destructive" data-testid="refund-too-much">{{ tooMuch() }}</p>
+      }
+    </div>
+
+    <div class="space-y-1.5">
+      <label for="order-refund-reason" class="text-sm font-medium">{{ reasonLabel() }}</label>
+      <input
+        id="order-refund-reason"
+        hlmInput
+        type="text"
+        dir="auto"
+        data-testid="refund-reason"
+        [placeholder]="reasonPlaceholder()"
+        [ngModel]="reason()"
+        (ngModelChange)="reason.set($event)"
+      />
+    </div>
+  </div>
+</app-order-dialog>

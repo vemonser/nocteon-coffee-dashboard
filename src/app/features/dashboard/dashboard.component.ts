@@ -1,7 +1,7 @@
 ﻿import { Component, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, ActivatedRoute, RouterLink } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
   lucideCalendar,
@@ -34,23 +34,21 @@ import { HlmBadgeImports } from '@spartan-ng/helm/badge';
 import { DashboardStatsService } from './services/dashboard-stats.service';
 import { StoreSettingsService } from '../../core/settings/store-settings.service';
 import { LanguageService } from '../../core/i18n/language.service';
-import { formatCurrency } from '../../shared/utils/locale-format';
-import { TranslocoService } from '@jsverse/transloco';
 import { computeDelta, type DeltaResult } from '../../core/dashboard/delta';
 import { periodPair } from '../../core/dashboard/period';
-import { formatSignedPercent } from '../../shared/utils/locale-format';
+import { formatCount, formatSignedPercent } from '../../shared/utils/locale-format';
+import {
+  DASHBOARD_ORDER_SCOPE,
+  orderScopeDefinition,
+} from '../../core/dashboard/order-scope';
 import { RevenueChartComponent } from '../../shared/components/dashboard/revenue-chart/revenue-chart.component';
-import { CategoryChartComponent } from './category-chart/category-chart.component';
-import { OrdersStatusChartComponent } from '../../shared/components/dashboard/components/orders-status-chart.component';
 import { TopProductsComponent } from '../../shared/components/dashboard/top-products/top-products.component';
 import { RecentOrdersComponent } from '../../shared/components/dashboard/recent-orders/recent-orders.component';
 import { NeedsAttentionPanelComponent } from '../../shared/components/dashboard/needs-attention-panel/needs-attention-panel.component';
-import { RevenueBreakdownChartComponent } from '../../shared/components/dashboard/revenue-breakdown-chart/revenue-breakdown-chart.component';
 import { LowStockProductsComponent } from '../../shared/components/dashboard/low-stock-products/low-stock-products.component';
-import { TranslocoPipe } from '@jsverse/transloco';
+import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { MoneyPipe } from '../../shared/pipes/money.pipe';
 import { PluralPipe } from '../../shared/pipes/plural.pipe';
-import { LocalizedDateComponent } from '../../shared/ui/localized-date/localized-date.component';
 import { WidgetHeaderComponent } from '../../shared/components/widget-header/widget-header.component';
 import { RevenueBreakdownCardComponent } from '../../shared/components/dashboard/revenue-breakdown-card/revenue-breakdown-card.component';
 import { OrdersBreakdownCardComponent } from '../../shared/components/dashboard/orders-breakdown-card/orders-breakdown-card.component';
@@ -68,19 +66,14 @@ import { WidgetStateComponent } from '../../shared/components/widget-state/widge
     HlmButtonImports,
     HlmCardImports,
     HlmBadgeImports,
-    RouterLink,
     RevenueChartComponent,
-    CategoryChartComponent,
     TopProductsComponent,
     RecentOrdersComponent,
     NeedsAttentionPanelComponent,
-    RevenueBreakdownChartComponent,
     LowStockProductsComponent,
-    OrdersStatusChartComponent,
     TranslocoPipe,
     MoneyPipe,
     PluralPipe,
-    LocalizedDateComponent,
     WidgetHeaderComponent,
     RevenueBreakdownCardComponent,
     OrdersBreakdownCardComponent,
@@ -125,12 +118,6 @@ export class DashboardComponent {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
 
-  readonly filterOptions = [
-    { label: 'Last 7 Days', value: 7 },
-    { label: 'Last 30 Days', value: 30 },
-    { label: 'Last 90 Days', value: 90 },
-    { label: 'Last Year', value: 365 },
-  ];
 
   /**
    * The selected window and the window before it.
@@ -145,35 +132,28 @@ export class DashboardComponent {
   readonly currentRange = computed(() => this.periods().current);
   readonly previousRange = computed(() => this.periods().previous);
 
-  /** Format a date as "16 Sep" in current locale. */
-  fmtRangeDate(d: Date): string {
-    const locale = this.language.current() === 'ar' ? 'ar-EG-u-nu-latn' : 'en-US';
-    return new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short' }).format(d);
-  }
 
-  /** Last day of a window (its end is exclusive). */
-  lastDayOf(window: { end: Date }): Date {
-    return new Date(window.end.getTime() - 24 * 60 * 60 * 1000);
-  }
+  /**
+   * What the order-derived counts cover.
+   *
+   * One shared definition (core/dashboard/order-scope.ts), so the dashboard
+   * and the Orders page say the same thing about the same number.
+   */
+  protected readonly orderScopeHelp = computed(() => {
+    this.language.language();
+    return this.transloco.translate(
+      orderScopeDefinition(DASHBOARD_ORDER_SCOPE).helpKey,
+    );
+  });
+
 
   readonly selectedDays = computed(() => this.statsService.days());
-
-  readonly revenueByOriginData = computed(() =>
-    (this.statsService.revenueByOrigin() ?? []).map((d) => ({ label: d.originName, revenue: d.revenue })),
-  );
-
-  readonly revenueByRoastLevelData = computed(() =>
-    (this.statsService.revenueByRoastLevel() ?? []).map((d) => ({ label: d.roastLevelName, revenue: d.revenue })),
-  );
 
   readonly repeatPurchaseRate = computed(() => this.statsService.repeatPurchaseRate());
   readonly refundRate = computed(() => this.statsService.refundRate());
   readonly deviceBreakdown = computed(() => [...(this.statsService.deviceBreakdown() ?? [])].sort((a, b) => (b.count || 0) - (a.count || 0)));
   readonly lowStockProducts = computed(() => this.statsService.lowStockProducts() ?? []);
   readonly onlineUsersCount = computed(() => this.statsService.onlineUsers());
-  readonly totalPaymentOrders = computed(() =>
-    this.statsService.ordersByPaymentMethod().reduce((sum, m) => sum + m.count, 0),
-  );
 
   ngOnInit(): void {
     // The range lives in the URL, so it survives a refresh, a shared link
@@ -219,68 +199,8 @@ export class DashboardComponent {
     });
   }
 
-  /** Title-case label for a device type (e.g. "ios" -> "Ios" is not ideal but matches data). */
-  deviceLabel(deviceType: string): string {
-    const t = (deviceType || '').toLowerCase();
-    const map: Record<string, string> = { ios: 'iOS', mac: 'macOS', macos: 'macOS', android: 'Android', windows: 'Windows', linux: 'Linux', other: 'Other' };
-    return map[t] ?? (t.charAt(0).toUpperCase() + t.slice(1));
-  }
 
-  /** Icon for a device type. */
-  deviceIcon(deviceType: string): string {
-    const t = (deviceType || '').toLowerCase();
-    if (t.includes('mobile') || t.includes('phone')) return 'lucideSmartphone';
-    if (t.includes('tablet')) return 'lucideTablet';
-    return 'lucideMonitor';
-  }
 
-  /** Percentage of total device count for a single device type. */
-  devicePercent(d: { count: number }): number {
-    const total = this.deviceBreakdown().reduce((s, x) => s + (x.count || 0), 0);
-    if (!total) return 0;
-    return (d.count / total) * 100;
-  }
-
-  /** Store currency via Intl narrowSymbol — identical in EN and AR ("$0", never "$ 0"). */
-  fmtMoney(value: unknown): string {
-    const currency = this.statsService.storeCurrency();
-    return formatCurrency(value, this.language.language(), currency);
-  }
-
-  /** Human-readable payment method label. */
-  paymentMethodLabel(method: string): string {
-    if (this.language.current() === 'ar') {
-      return method === 'ONLINE' ? 'دفع إلكتروني' : method === 'CASH_ON_DELIVERY' ? 'الدفع عند الاستلام' : method;
-    }
-    return method === 'ONLINE' ? 'Online' : method === 'CASH_ON_DELIVERY' ? 'Cash on delivery' : method;
-  }
-
-  /** Export current overview as CSV. */
-  exportCsv(): void {
-    const overview = this.statsService.overview();
-    if (!overview) return;
-    const rows: string[] = [];
-    rows.push('Metric,Value');
-    rows.push(`Total Revenue,${overview.totalRevenue}`);
-    rows.push(`Total Orders,${overview.totalOrders}`);
-    rows.push(`Average Order Value,${overview.averageOrderValue}`);
-    rows.push(`Coffee Sold (kg),${overview.coffeeSoldKg}`);
-    rows.push(`New Customers,${overview.userGrowth.currentPeriodCount}`);
-    rows.push(`Repeat Purchase Rate,${overview.repeatPurchaseRate.repeatRate}`);
-    rows.push(`Refund Rate,${overview.refundRate.refundRate}`);
-    rows.push('');
-    rows.push('Top Products,Units Sold,Price');
-    for (const p of overview.topSellingProducts) {
-      rows.push(`"${p.name}",${p.quantitySold},${p.price}`);
-    }
-    const blob = new Blob([rows.join('\\n')], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `nocteon-analytics-${this.statsService.days()}d.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-  }
 
   /** Delta result for a KPI card. */
   /**
@@ -297,11 +217,9 @@ export class DashboardComponent {
   /** Retry the overview after a failure. */
   protected readonly retryOverview = () => this.statsService.retry();
 
+  /** Counts are whole numbers, from the SHARED count formatter. */
   protected fmtCount = (value: number | undefined | null): string =>
-    new Intl.NumberFormat(
-      this.language.current() === 'ar' ? 'ar-EG-u-nu-latn' : 'en-US',
-      { maximumFractionDigits: 0 },
-    ).format(value ?? 0);
+    formatCount(value ?? 0, this.language.language());
 
   protected readonly delta = computed(() => {
     const stats = this.statsService.statsCards();

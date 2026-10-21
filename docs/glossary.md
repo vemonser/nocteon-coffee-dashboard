@@ -150,3 +150,17 @@ test exempts exactly those families.
 **The slash is gone.** "4 / 5 customers" became "4 of 5 customers" / "4 من 5
 عملاء": a slash between two numbers in an RTL paragraph is read right-to-left
 and the two numbers swap, so the separator is a word.
+
+| 10 | Review moderation state — settled | Approved | معتمد | `reviews.approved` was "موافق عليه" — the wrong agreement, and the wrong word for a review |
+| 11 | Review moderation state — awaiting a decision | Pending | قيد المراجعة | `reviews.unapproved` was "غير معتمدة" — a different concept from the order status "قيد الانتظار" |
+| 12 | Review — the purchase behind it is confirmed | Verified purchase | شراء موثق | `reviews.verifiedPurchase` was "شراء موثق" — the word order was wrong |
+| 13 | Message state — not yet opened | Unread | غير مقروءة | — |
+| 14 | Message state — opened, no answer yet | Read | مقروءة | — |
+| 15 | Message state — answered | Replied | تم الرد عليها | `contactMessages.reply` was "رد" — a noun for the ACTION, not the state |
+| 16 | Action — approve a review | Approve | اعتماد | `reviews.approve` (kept, now pinned) |
+| 17 | Action — take the approval back | Withdraw approval | سحب الاعتماد | `reviews.unapprove` was "إلغاء الاعتماد" — "cancel" reads as a rejection |
+| 18 | Page title — the reviews list | Reviews | التقييمات | kept |
+| 19 | Page title — the messages list | Contact messages | رسائل التواصل | `contactMessages.title` (kept, now pinned) — the English was Title Case |
+| 20 | Count line — the counted reviews | reviews | تقييمات | the count line had no noun at all |
+| 21 | Count line — the counted messages | messages | رسائل | — |
+| 22 | The stored answer on a message | Your reply | ردّك | — |

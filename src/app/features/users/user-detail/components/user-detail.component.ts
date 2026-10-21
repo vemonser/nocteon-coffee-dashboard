@@ -40,6 +40,7 @@ import { UserRequest, UserResponse } from '../../model/user.model';
 import { HasPermissionDirective } from '../../../../core/auth/permission.directive';
 
 import { TranslocoPipe } from '@jsverse/transloco';
+import { LocalizedDateComponent } from '../../../../shared/ui/localized-date/localized-date.component';
 type EditMode = 'view' | 'edit';
 type RoleOption = 'CUSTOMER' | 'ADMIN' | 'MODERATOR';
 
@@ -47,6 +48,7 @@ type RoleOption = 'CUSTOMER' | 'ADMIN' | 'MODERATOR';
   selector: 'app-user-detail',
   standalone: true,
   imports: [
+    LocalizedDateComponent,
     CommonModule,
     HasPermissionDirective,
     FormsModule,

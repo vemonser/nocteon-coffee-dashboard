@@ -83,19 +83,29 @@ export const SEQUENTIAL = [
 /**
  * The semantic colours for an order status.
  *
- * Delivered = success, Processing = info, Shipped = slate, Pending =
- * warning, Cancelled/Failed = destructive, Refunded = muted. A status is
- * not a category, so it does not use the categorical palette.
+ * Delivered = a green, Processing = a blue, Shipped = a violet, Pending =
+ * an amber, Cancelled/Failed = a red, Refunded = a neutral. A status is
+ * not a category, so it does not use the categorical palette — and it does
+ * not use the TEXT tokens either: the text tokens are the light-on-dark
+ * colours, and the old dark palette put a neon green (#4ade80) and a
+ * bright cyan (#22d3ee) on the card as chart swatches.
+ *
+ * Every one of these is at least 15 OKLab dE away from every categorical
+ * swatch, so a status slice can be told from an origin slice that is
+ * drawn right next to it (measured:
+ * evidence/dashboard-r2/color-math.json).
  */
 export const STATUS_COLORS = {
-  DELIVERED: 'var(--success)',
-  CONFIRMED: 'var(--success)',
-  PROCESSING: 'var(--info)',
-  SHIPPED: 'var(--chart-5)',
-  PENDING: 'var(--warning)',
-  CANCELLED: 'var(--destructive-text)',
-  FAILED: 'var(--destructive-text)',
-  REFUNDED: 'var(--muted-foreground)',
+  DELIVERED: 'var(--status-delivered)',
+  // CONFIRMED has its OWN swatch. It used to share the delivered green,
+  // which means two slices of the SAME ring can be the same colour.
+  CONFIRMED: 'var(--status-confirmed)',
+  PROCESSING: 'var(--status-processing)',
+  SHIPPED: 'var(--status-shipped)',
+  PENDING: 'var(--status-pending)',
+  CANCELLED: 'var(--status-cancelled)',
+  FAILED: 'var(--status-cancelled)',
+  REFUNDED: 'var(--status-refunded)',
 } as const satisfies Record<string, string>;
 
 /** The lookup, typed for an arbitrary key. */

@@ -1,0 +1,849 @@
+{
+  "schemaVersion": 1,
+  "run": {
+    "id": "2026-10-20T18-30-00-000Z",
+    "task": "Dashboard home — Round 2: the numbers reconcile, the language, the colour, the cards",
+    "source": ".quality/runs/dashboard-r2/round2-spec.md"
+  },
+  "criteria": [
+    {
+      "id": "AC-01",
+      "statement": "Given every revenue/orders widget on the dashboard, when the data is reconciled against the API, then each widget's endpoint, whether it sends the selected range, its formula and its observed value are written down, and the root cause of the mismatch between the revenue card and the revenue breakdowns is stated in one paragraph.",
+      "sourceRef": {
+        "path": ".quality/runs/dashboard-r2/round2-spec.md",
+        "line": 9
+      },
+      "kind": "behavior",
+      "requiresBrowser": false,
+      "requiresAutomatedTest": true,
+      "implementation": [
+        "scripts/measure-dashboard-r2.mjs",
+        "src/app/features/dashboard/services/dashboard-stats.service.ts"
+      ],
+      "status": "PASS",
+      "notes": null,
+      "naReason": null,
+      "evidence": [
+        {
+          "type": "integration-test",
+          "path": "evidence/dashboard-r2/measurements.json",
+          "command": "node scripts/verify-round2.mjs AC-01",
+          "exitCode": 0,
+          "recordedAt": "2026-10-20T20:22:09.906Z"
+        }
+      ]
+    },
+    {
+      "id": "AC-02",
+      "statement": "Given the dashboard's order count and the Orders page's order count, when a reader compares them, then both state the scope they count — identically, from one shared definition — and the refund rate uses the same denominator, with \"refunded\" reported as a payment flag and a cancelled order reported as able to be refunded.",
+      "sourceRef": {
+        "path": ".quality/runs/dashboard-r2/round2-spec.md",
+        "line": 14
+      },
+      "kind": "behavior",
+      "requiresBrowser": false,
+      "requiresAutomatedTest": true,
+      "implementation": [
+        "src/app/core/dashboard/order-scope.ts",
+        "src/app/features/dashboard/dashboard.component.html",
+        "src/app/features/orders/orders-list/orders-list.component.html"
+      ],
+      "status": "PASS",
+      "notes": null,
+      "naReason": null,
+      "evidence": [
+        {
+          "type": "integration-test",
+          "path": "evidence/dashboard-r2/measurements.json",
+          "command": "node scripts/verify-round2.mjs AC-02",
+          "exitCode": 0,
+          "recordedAt": "2026-10-20T20:22:09.974Z"
+        }
+      ]
+    },
+    {
+      "id": "AC-03",
+      "statement": "Given the previous period is 0 and the current one is not, when a KPI card renders its delta, then it shows an em dash with the reason \"No data in the previous period\" and not a \"New\" badge, and the \"New\" badge is kept only on the new-customers card; the existing tests are kept and the previous = 0 cases are added.",
+      "sourceRef": {
+        "path": ".quality/runs/dashboard-r2/round2-spec.md",
+        "line": 19
+      },
+      "kind": "behavior",
+      "requiresBrowser": true,
+      "requiresAutomatedTest": true,
+      "implementation": [
+        "src/app/core/dashboard/delta.ts",
+        "src/app/core/dashboard/delta.spec.ts",
+        "src/app/shared/components/dashboard/kpi-card/kpi-card.component.ts"
+      ],
+      "status": "PASS",
+      "notes": null,
+      "naReason": null,
+      "evidence": [
+        {
+          "type": "screenshot",
+          "path": "evidence/dashboard-r2/en-light/dashboard-1440.png",
+          "command": "node scripts/verify-round2.mjs AC-03",
+          "exitCode": 0,
+          "recordedAt": "2026-10-20T20:22:10.428Z"
+        },
+        {
+          "type": "e2e",
+          "path": "evidence/dashboard-r2/results.json",
+          "command": "node scripts/verify-round2.mjs AC-03",
+          "exitCode": 0,
+          "recordedAt": "2026-10-20T20:22:10.498Z"
+        }
+      ]
+    },
+    {
+      "id": "AC-04",
+      "statement": "Given the dashboard, the Orders list, the order detail page, the tooltips and the CSV export, when an order number is printed, then every one of them uses the one shared helper, and the places that formatted it differently are reported.",
+      "sourceRef": {
+        "path": ".quality/runs/dashboard-r2/round2-spec.md",
+        "line": 24
+      },
+      "kind": "behavior",
+      "requiresBrowser": false,
+      "requiresAutomatedTest": true,
+      "implementation": [
+        "src/app/features/orders/utils/order-number.ts",
+        "src/app/shared/components/dashboard/recent-orders/recent-orders.component.ts",
+        "src/app/features/orders/orders-list/orders-list.component.ts"
+      ],
+      "status": "PASS",
+      "notes": null,
+      "naReason": null,
+      "evidence": [
+        {
+          "type": "integration-test",
+          "path": "evidence/dashboard-r2/measurements.json",
+          "command": "node scripts/verify-round2.mjs AC-04",
+          "exitCode": 0,
+          "recordedAt": "2026-10-20T20:22:10.050Z"
+        }
+      ]
+    },
+    {
+      "id": "AC-05",
+      "statement": "Given an amount is printed anywhere in the app, when it is formatted, then the one shared formatter is used: \"EGP 1,176.25\" in English and \"1,176.25 ج.م\" in Arabic (Latin digits, no trailing dot), the axis ticks are compact in the same style, the store-currency source is reported, and the grep for money formatting outside the formatter is empty.",
+      "sourceRef": {
+        "path": ".quality/runs/dashboard-r2/round2-spec.md",
+        "line": 28
+      },
+      "kind": "behavior",
+      "requiresBrowser": true,
+      "requiresAutomatedTest": true,
+      "implementation": [
+        "src/app/shared/utils/locale-format.ts",
+        "src/app/shared/utils/locale-format.spec.ts",
+        "src/app/shared/pipes/money.pipe.ts",
+        "src/app/shared/components/dashboard/revenue-chart/revenue-chart.component.ts"
+      ],
+      "status": "PASS",
+      "notes": null,
+      "naReason": null,
+      "evidence": [
+        {
+          "type": "screenshot",
+          "path": "evidence/dashboard-r2/en-light/dashboard-1440.png",
+          "command": "node scripts/verify-round2.mjs AC-05",
+          "exitCode": 0,
+          "recordedAt": "2026-10-20T20:22:10.567Z"
+        },
+        {
+          "type": "integration-test",
+          "path": "evidence/dashboard-r2/measurements.json",
+          "command": "node scripts/verify-round2.mjs AC-05",
+          "exitCode": 0,
+          "recordedAt": "2026-10-20T20:22:10.637Z"
+        }
+      ]
+    },
+    {
+      "id": "AC-06",
+      "statement": "Given the admin's own account appears as a customer in the business widgets, when the data is inspected, then whether the dashboard endpoints exclude staff accounts is reported, and no row is hidden in the frontend to fake it.",
+      "sourceRef": {
+        "path": ".quality/runs/dashboard-r2/round2-spec.md",
+        "line": 34
+      },
+      "kind": "behavior",
+      "requiresBrowser": false,
+      "requiresAutomatedTest": true,
+      "implementation": [
+        "scripts/measure-dashboard-r2.mjs"
+      ],
+      "status": "PASS",
+      "notes": null,
+      "naReason": null,
+      "evidence": [
+        {
+          "type": "integration-test",
+          "path": "evidence/dashboard-r2/measurements.json",
+          "command": "node scripts/verify-round2.mjs AC-06",
+          "exitCode": 0,
+          "recordedAt": "2026-10-20T20:22:10.126Z"
+        }
+      ]
+    },
+    {
+      "id": "AC-07",
+      "statement": "Given the devices widget counts a large majority on one platform, when the endpoint is inspected, then what it counts (sessions vs users, and whether dev/bot/admin traffic is filtered) is reported, the unit is labelled consistently, and nothing is filtered in the frontend.",
+      "sourceRef": {
+        "path": ".quality/runs/dashboard-r2/round2-spec.md",
+        "line": 38
+      },
+      "kind": "behavior",
+      "requiresBrowser": false,
+      "requiresAutomatedTest": true,
+      "implementation": [
+        "scripts/measure-dashboard-r2.mjs",
+        "src/app/shared/components/dashboard/device-list/device-list.component.ts"
+      ],
+      "status": "PASS",
+      "notes": null,
+      "naReason": null,
+      "evidence": [
+        {
+          "type": "integration-test",
+          "path": "evidence/dashboard-r2/measurements.json",
+          "command": "node scripts/verify-round2.mjs AC-07",
+          "exitCode": 0,
+          "recordedAt": "2026-10-20T20:22:10.203Z"
+        }
+      ]
+    },
+    {
+      "id": "AC-08",
+      "statement": "Given the Arabic UI, when it is read, then \"sessions\" is translated in the right plural form and the unit follows the number in both languages, and the e2e check flags any Latin-only UI word that is not an allowlisted proper noun; every other untranslated string found is reported.",
+      "sourceRef": {
+        "path": ".quality/runs/dashboard-r2/round2-spec.md",
+        "line": 46
+      },
+      "kind": "behavior",
+      "requiresBrowser": true,
+      "requiresAutomatedTest": true,
+      "implementation": [
+        "e2e/dashboard-round2.spec.ts",
+        "src/app/shared/components/dashboard/device-list/device-list.component.html",
+        "public/assets/i18n/ar.json"
+      ],
+      "status": "PASS",
+      "notes": null,
+      "naReason": null,
+      "evidence": [
+        {
+          "type": "screenshot",
+          "path": "evidence/dashboard-r2/ar-dark/dashboard-1440.png",
+          "command": "node scripts/verify-round2.mjs AC-08",
+          "exitCode": 0,
+          "recordedAt": "2026-10-20T20:22:10.710Z"
+        },
+        {
+          "type": "e2e",
+          "path": "evidence/dashboard-r2/results.json",
+          "command": "node scripts/verify-round2.mjs AC-08",
+          "exitCode": 0,
+          "recordedAt": "2026-10-20T20:22:10.782Z"
+        }
+      ]
+    },
+    {
+      "id": "AC-09",
+      "statement": "Given the Arabic revenue summary line, when it is rendered, then the currency, the numbers and the date keep their order, and a screenshot assertion covers that line.",
+      "sourceRef": {
+        "path": ".quality/runs/dashboard-r2/round2-spec.md",
+        "line": 51
+      },
+      "kind": "ui-visual",
+      "requiresBrowser": true,
+      "requiresAutomatedTest": true,
+      "implementation": [
+        "src/app/shared/components/dashboard/revenue-chart/revenue-chart.component.html",
+        "e2e/dashboard-round2.spec.ts"
+      ],
+      "status": "PASS",
+      "notes": null,
+      "naReason": null,
+      "evidence": [
+        {
+          "type": "screenshot",
+          "path": "evidence/dashboard-r2/e2e/summary-line-ar-dark.png",
+          "command": "node scripts/verify-round2.mjs AC-09",
+          "exitCode": 0,
+          "recordedAt": "2026-10-20T20:22:10.853Z"
+        },
+        {
+          "type": "integration-test",
+          "path": "evidence/dashboard-r2/e2e/summary-line-ar-dark.png",
+          "command": "node scripts/verify-round2.mjs AC-09",
+          "exitCode": 0,
+          "recordedAt": "2026-10-20T20:22:10.921Z"
+        }
+      ]
+    },
+    {
+      "id": "AC-10",
+      "statement": "Given a card with tabs, when a tab is active, then the card title follows it (\"Revenue by origin\", \"Orders by status\") in both languages, and the range scope badge is in the same position in every card.",
+      "sourceRef": {
+        "path": ".quality/runs/dashboard-r2/round2-spec.md",
+        "line": 54
+      },
+      "kind": "ui-visual",
+      "requiresBrowser": true,
+      "requiresAutomatedTest": true,
+      "implementation": [
+        "src/app/shared/components/dashboard/revenue-breakdown-card/revenue-breakdown-card.component.ts",
+        "src/app/shared/components/dashboard/orders-breakdown-card/orders-breakdown-card.component.ts"
+      ],
+      "status": "PASS",
+      "notes": null,
+      "naReason": null,
+      "evidence": [
+        {
+          "type": "screenshot",
+          "path": "evidence/dashboard-r2/en-light/dashboard-1440.png",
+          "command": "node scripts/verify-round2.mjs AC-10",
+          "exitCode": 0,
+          "recordedAt": "2026-10-20T20:22:10.995Z"
+        },
+        {
+          "type": "integration-test",
+          "path": "evidence/dashboard-r2/measurements.json",
+          "command": "node scripts/verify-round2.mjs AC-10",
+          "exitCode": 0,
+          "recordedAt": "2026-10-20T20:22:11.070Z"
+        }
+      ]
+    },
+    {
+      "id": "AC-11",
+      "statement": "Given a chart axis, when its labels are rendered, then they use one style — compact, with the currency — in both languages and both modes.",
+      "sourceRef": {
+        "path": ".quality/runs/dashboard-r2/round2-spec.md",
+        "line": 58
+      },
+      "kind": "ui-visual",
+      "requiresBrowser": true,
+      "requiresAutomatedTest": true,
+      "implementation": [
+        "src/app/shared/components/dashboard/revenue-chart/revenue-chart.component.ts"
+      ],
+      "status": "PASS",
+      "notes": null,
+      "naReason": null,
+      "evidence": [
+        {
+          "type": "screenshot",
+          "path": "evidence/dashboard-r2/en-light/dashboard-1440.png",
+          "command": "node scripts/verify-round2.mjs AC-11",
+          "exitCode": 0,
+          "recordedAt": "2026-10-20T20:22:11.144Z"
+        },
+        {
+          "type": "integration-test",
+          "path": "evidence/dashboard-r2/measurements.json",
+          "command": "node scripts/verify-round2.mjs AC-11",
+          "exitCode": 0,
+          "recordedAt": "2026-10-20T20:22:11.219Z"
+        }
+      ]
+    },
+    {
+      "id": "AC-12",
+      "statement": "Given the dashboard's range control and the cards' tabs, when they are rendered, then they are the same tab component, and the Revenue by card has an Origin, a Roast level and a Category tab.",
+      "sourceRef": {
+        "path": ".quality/runs/dashboard-r2/round2-spec.md",
+        "line": 61
+      },
+      "kind": "ui-visual",
+      "requiresBrowser": true,
+      "requiresAutomatedTest": true,
+      "implementation": [
+        "src/app/shared/components/ui/tabs/tabs.component.ts",
+        "src/app/shared/components/dashboard/dashboard-toolbar/dashboard-toolbar.component.html"
+      ],
+      "status": "PASS",
+      "notes": null,
+      "naReason": null,
+      "evidence": [
+        {
+          "type": "screenshot",
+          "path": "evidence/dashboard-r2/en-light/dashboard-1440.png",
+          "command": "node scripts/verify-round2.mjs AC-12",
+          "exitCode": 0,
+          "recordedAt": "2026-10-20T20:22:11.290Z"
+        },
+        {
+          "type": "integration-test",
+          "path": "evidence/dashboard-r2/measurements.json",
+          "command": "node scripts/verify-round2.mjs AC-12",
+          "exitCode": 0,
+          "recordedAt": "2026-10-20T20:22:11.359Z"
+        }
+      ]
+    },
+    {
+      "id": "AC-13",
+      "statement": "Given a donut's centre, when it is rendered, then it uses the foreground token at 4.5:1 or better against the card in both modes, it uses the compact currency, it never leaves the ring, and its label says what the number is (\"Revenue\" / \"Orders\") rather than the tab name.",
+      "sourceRef": {
+        "path": ".quality/runs/dashboard-r2/round2-spec.md",
+        "line": 67
+      },
+      "kind": "ui-visual",
+      "requiresBrowser": true,
+      "requiresAutomatedTest": true,
+      "implementation": [
+        "src/app/shared/components/chart/chart-card.component.ts",
+        "e2e/dashboard-round2.spec.ts"
+      ],
+      "status": "PASS",
+      "notes": null,
+      "naReason": null,
+      "evidence": [
+        {
+          "type": "screenshot",
+          "path": "evidence/dashboard-r2/en-light/dashboard-1440.png",
+          "command": "node scripts/verify-round2.mjs AC-13",
+          "exitCode": 0,
+          "recordedAt": "2026-10-20T20:22:11.432Z"
+        },
+        {
+          "type": "integration-test",
+          "path": "evidence/dashboard-r2/measurements.json",
+          "command": "node scripts/verify-round2.mjs AC-13",
+          "exitCode": 0,
+          "recordedAt": "2026-10-20T20:22:11.505Z"
+        }
+      ]
+    },
+    {
+      "id": "AC-14",
+      "statement": "Given the dark mode's status colours, when they are rendered, then they are the muted semantic values rather than the neon green and the bright cyan, the contrast of every swatch against the card is reported, and the light mode's palette is unchanged.",
+      "sourceRef": {
+        "path": ".quality/runs/dashboard-r2/round2-spec.md",
+        "line": 71
+      },
+      "kind": "ui-visual",
+      "requiresBrowser": true,
+      "requiresAutomatedTest": true,
+      "implementation": [
+        "src/styles/themes/copper.css",
+        "src/app/shared/components/chart/chart-rules.ts",
+        "scripts/color-math.mjs"
+      ],
+      "status": "PASS",
+      "notes": null,
+      "naReason": null,
+      "evidence": [
+        {
+          "type": "screenshot",
+          "path": "evidence/dashboard-r2/ar-dark/dashboard-1440.png",
+          "command": "node scripts/verify-round2.mjs AC-14",
+          "exitCode": 0,
+          "recordedAt": "2026-10-20T20:22:11.580Z"
+        },
+        {
+          "type": "static-analysis",
+          "path": "evidence/dashboard-r2/color-math.json",
+          "command": "node scripts/verify-round2.mjs AC-14",
+          "exitCode": 0,
+          "recordedAt": "2026-10-20T20:22:11.651Z"
+        }
+      ]
+    },
+    {
+      "id": "AC-15",
+      "statement": "Given two swatches that are shown side by side, when they are compared, then their hue distance is reported with a numeric measure and the pairs that are too close are listed with the fix.",
+      "sourceRef": {
+        "path": ".quality/runs/dashboard-r2/round2-spec.md",
+        "line": 75
+      },
+      "kind": "ui-visual",
+      "requiresBrowser": true,
+      "requiresAutomatedTest": true,
+      "implementation": [
+        "scripts/color-math.mjs",
+        "scripts/color-search.mjs"
+      ],
+      "status": "PASS",
+      "notes": null,
+      "naReason": null,
+      "evidence": [
+        {
+          "type": "screenshot",
+          "path": "evidence/dashboard-r2/ar-dark/dashboard-1440.png",
+          "command": "node scripts/verify-round2.mjs AC-15",
+          "exitCode": 0,
+          "recordedAt": "2026-10-20T20:22:11.721Z"
+        },
+        {
+          "type": "static-analysis",
+          "path": "evidence/dashboard-r2/color-math.json",
+          "command": "node scripts/verify-round2.mjs AC-15",
+          "exitCode": 0,
+          "recordedAt": "2026-10-20T20:22:11.791Z"
+        }
+      ]
+    },
+    {
+      "id": "AC-16",
+      "statement": "Given a chart's legend, when it is rendered, then it is a single aligned column — the colour dot, the name, the value and the percentage in fixed columns — always below the chart, in the ring's order, and readable in RTL.",
+      "sourceRef": {
+        "path": ".quality/runs/dashboard-r2/round2-spec.md",
+        "line": 78
+      },
+      "kind": "ui-visual",
+      "requiresBrowser": true,
+      "requiresAutomatedTest": true,
+      "implementation": [
+        "src/app/shared/components/chart/chart-card.component.html"
+      ],
+      "status": "PASS",
+      "notes": null,
+      "naReason": null,
+      "evidence": [
+        {
+          "type": "screenshot",
+          "path": "evidence/dashboard-r2/en-light/dashboard-1440.png",
+          "command": "node scripts/verify-round2.mjs AC-16",
+          "exitCode": 0,
+          "recordedAt": "2026-10-20T20:22:11.859Z"
+        },
+        {
+          "type": "integration-test",
+          "path": "evidence/dashboard-r2/measurements.json",
+          "command": "node scripts/verify-round2.mjs AC-16",
+          "exitCode": 0,
+          "recordedAt": "2026-10-20T20:22:11.931Z"
+        }
+      ]
+    },
+    {
+      "id": "AC-17",
+      "statement": "Given a breakdown, when it is drawn, then a donut is used only for 3-5 slices, every donut on the page has the same diameter, a single-slice dataset renders as a stat plus a bar, and the slices per donut are reported.",
+      "sourceRef": {
+        "path": ".quality/runs/dashboard-r2/round2-spec.md",
+        "line": 82
+      },
+      "kind": "ui-visual",
+      "requiresBrowser": true,
+      "requiresAutomatedTest": true,
+      "implementation": [
+        "src/app/shared/components/chart/chart-card.component.ts",
+        "src/app/shared/components/chart/chart-rules.ts"
+      ],
+      "status": "PASS",
+      "notes": null,
+      "naReason": null,
+      "evidence": [
+        {
+          "type": "screenshot",
+          "path": "evidence/dashboard-r2/en-light/dashboard-1440.png",
+          "command": "node scripts/verify-round2.mjs AC-17",
+          "exitCode": 0,
+          "recordedAt": "2026-10-20T20:22:12.000Z"
+        },
+        {
+          "type": "integration-test",
+          "path": "evidence/dashboard-r2/measurements.json",
+          "command": "node scripts/verify-round2.mjs AC-17",
+          "exitCode": 0,
+          "recordedAt": "2026-10-20T20:22:12.068Z"
+        }
+      ]
+    },
+    {
+      "id": "AC-18",
+      "statement": "Given the four primary KPI cards, when they are rendered, then their padding and their baseline are the same, and the measured offsets are reported.",
+      "sourceRef": {
+        "path": ".quality/runs/dashboard-r2/round2-spec.md",
+        "line": 89
+      },
+      "kind": "ui-visual",
+      "requiresBrowser": true,
+      "requiresAutomatedTest": true,
+      "implementation": [
+        "src/app/shared/components/dashboard/kpi-card/kpi-card.component.html"
+      ],
+      "status": "PASS",
+      "notes": null,
+      "naReason": null,
+      "evidence": [
+        {
+          "type": "screenshot",
+          "path": "evidence/dashboard-r2/en-light/dashboard-1440.png",
+          "command": "node scripts/verify-round2.mjs AC-18",
+          "exitCode": 0,
+          "recordedAt": "2026-10-20T20:22:12.142Z"
+        },
+        {
+          "type": "integration-test",
+          "path": "evidence/dashboard-r2/measurements.json",
+          "command": "node scripts/verify-round2.mjs AC-18",
+          "exitCode": 0,
+          "recordedAt": "2026-10-20T20:22:12.224Z"
+        }
+      ]
+    },
+    {
+      "id": "AC-19",
+      "statement": "Given a KPI card's daily series, when it has fewer than three points, then no sparkline is drawn and no space is reserved for it, and the rule is tested with 1, 2 and 7 points.",
+      "sourceRef": {
+        "path": ".quality/runs/dashboard-r2/round2-spec.md",
+        "line": 92
+      },
+      "kind": "behavior",
+      "requiresBrowser": false,
+      "requiresAutomatedTest": true,
+      "implementation": [
+        "src/app/core/dashboard/sparkline.ts",
+        "src/app/core/dashboard/sparkline.spec.ts"
+      ],
+      "status": "PASS",
+      "notes": null,
+      "naReason": null,
+      "evidence": [
+        {
+          "type": "screenshot",
+          "path": "evidence/dashboard-r2/en-light/dashboard-1440.png",
+          "command": "node scripts/verify-round2.mjs AC-19",
+          "exitCode": 0,
+          "recordedAt": "2026-10-20T20:22:12.295Z"
+        },
+        {
+          "type": "integration-test",
+          "path": "evidence/dashboard-r2/measurements.json",
+          "command": "node scripts/verify-round2.mjs AC-19",
+          "exitCode": 0,
+          "recordedAt": "2026-10-20T20:22:12.363Z"
+        },
+        {
+          "type": "unit-test",
+          "path": ".quality/runs/dashboard-r2/unit-tests.log",
+          "command": "npm run test:unit",
+          "exitCode": 0,
+          "recordedAt": "2026-10-20T20:22:21.710Z"
+        }
+      ]
+    },
+    {
+      "id": "AC-20",
+      "statement": "Given the secondary strip, when it is rendered, then its labels are the same size and weight as the primary cards', and \"currently online\" stays a live indicator rather than a period KPI.",
+      "sourceRef": {
+        "path": ".quality/runs/dashboard-r2/round2-spec.md",
+        "line": 95
+      },
+      "kind": "ui-visual",
+      "requiresBrowser": true,
+      "requiresAutomatedTest": true,
+      "implementation": [
+        "src/app/features/dashboard/dashboard.component.html"
+      ],
+      "status": "PASS",
+      "notes": null,
+      "naReason": null,
+      "evidence": [
+        {
+          "type": "screenshot",
+          "path": "evidence/dashboard-r2/en-light/dashboard-1440.png",
+          "command": "node scripts/verify-round2.mjs AC-20",
+          "exitCode": 0,
+          "recordedAt": "2026-10-20T20:22:12.430Z"
+        },
+        {
+          "type": "integration-test",
+          "path": "evidence/dashboard-r2/measurements.json",
+          "command": "node scripts/verify-round2.mjs AC-20",
+          "exitCode": 0,
+          "recordedAt": "2026-10-20T20:22:12.503Z"
+        }
+      ]
+    },
+    {
+      "id": "AC-21",
+      "statement": "Given the cards of a row, when they are rendered, then they share one height and no card is more than 1.5x the content it holds; each card's content-height ratio and the page height at 1440 are reported before and after.",
+      "sourceRef": {
+        "path": ".quality/runs/dashboard-r2/round2-spec.md",
+        "line": 98
+      },
+      "kind": "ui-visual",
+      "requiresBrowser": true,
+      "requiresAutomatedTest": true,
+      "implementation": [
+        "src/app/shared/components/dashboard/device-list/device-list.component.html",
+        "src/app/shared/components/dashboard/low-stock-products/low-stock-products.component.html"
+      ],
+      "status": "PASS",
+      "notes": null,
+      "naReason": null,
+      "evidence": [
+        {
+          "type": "screenshot",
+          "path": "evidence/dashboard-r2/en-light/dashboard-1440.png",
+          "command": "node scripts/verify-round2.mjs AC-21",
+          "exitCode": 0,
+          "recordedAt": "2026-10-20T20:22:12.575Z"
+        },
+        {
+          "type": "integration-test",
+          "path": "evidence/dashboard-r2/measurements.json",
+          "command": "node scripts/verify-round2.mjs AC-21",
+          "exitCode": 0,
+          "recordedAt": "2026-10-20T20:22:12.645Z"
+        }
+      ]
+    },
+    {
+      "id": "AC-22",
+      "statement": "Given the recent orders, when a row is read, then the relative time carries the full date and time in its tooltip, the row links to the order, and the customer column shows the order's customer name and the order number in the shared format.",
+      "sourceRef": {
+        "path": ".quality/runs/dashboard-r2/round2-spec.md",
+        "line": 102
+      },
+      "kind": "behavior",
+      "requiresBrowser": true,
+      "requiresAutomatedTest": true,
+      "implementation": [
+        "src/app/shared/components/dashboard/recent-orders/recent-orders.component.html"
+      ],
+      "status": "PASS",
+      "notes": null,
+      "naReason": null,
+      "evidence": [
+        {
+          "type": "screenshot",
+          "path": "evidence/dashboard-r2/en-light/dashboard-1440.png",
+          "command": "node scripts/verify-round2.mjs AC-22",
+          "exitCode": 0,
+          "recordedAt": "2026-10-20T20:22:12.717Z"
+        },
+        {
+          "type": "integration-test",
+          "path": "evidence/dashboard-r2/measurements.json",
+          "command": "node scripts/verify-round2.mjs AC-22",
+          "exitCode": 0,
+          "recordedAt": "2026-10-20T20:22:12.790Z"
+        }
+      ]
+    },
+    {
+      "id": "AC-23",
+      "statement": "Given the top products, when they are read, then the column header states what the bar and the number represent (units sold), the Arabic plural is the proper one, and the bar scales to the maximum.",
+      "sourceRef": {
+        "path": ".quality/runs/dashboard-r2/round2-spec.md",
+        "line": 106
+      },
+      "kind": "ui-visual",
+      "requiresBrowser": true,
+      "requiresAutomatedTest": true,
+      "implementation": [
+        "src/app/shared/components/dashboard/top-products/top-products.component.html"
+      ],
+      "status": "PASS",
+      "notes": null,
+      "naReason": null,
+      "evidence": [
+        {
+          "type": "screenshot",
+          "path": "evidence/dashboard-r2/ar-dark/dashboard-1440.png",
+          "command": "node scripts/verify-round2.mjs AC-23",
+          "exitCode": 0,
+          "recordedAt": "2026-10-20T20:22:12.867Z"
+        },
+        {
+          "type": "integration-test",
+          "path": "evidence/dashboard-r2/measurements.json",
+          "command": "node scripts/verify-round2.mjs AC-23",
+          "exitCode": 0,
+          "recordedAt": "2026-10-20T20:22:12.941Z"
+        }
+      ]
+    },
+    {
+      "id": "AC-24",
+      "statement": "Given the round is finished, when the evidence is produced, then the full matrix is re-run, a before/after contact sheet exists for every cell, and design.md and DECISIONS.md are updated.",
+      "sourceRef": {
+        "path": ".quality/runs/dashboard-r2/round2-spec.md",
+        "line": 112
+      },
+      "kind": "behavior",
+      "requiresBrowser": true,
+      "requiresAutomatedTest": true,
+      "implementation": [
+        "scripts/evidence-targets.mjs",
+        "scripts/contact-sheet.py",
+        "design.md",
+        "DECISIONS.md"
+      ],
+      "status": "PASS",
+      "notes": null,
+      "naReason": null,
+      "evidence": [
+        {
+          "type": "integration-test",
+          "path": "evidence/dashboard-r2/results.json",
+          "command": "node scripts/verify-round2.mjs AC-24",
+          "exitCode": 0,
+          "recordedAt": "2026-10-20T20:22:10.280Z"
+        },
+        {
+          "type": "screenshot",
+          "path": "evidence/dashboard-r2/en-light/dashboard-1440.png",
+          "command": "node scripts/verify-round2.mjs AC-24",
+          "exitCode": 0,
+          "recordedAt": "2026-10-20T20:22:10.354Z"
+        }
+      ]
+    },
+    {
+      "id": "AC-25",
+      "statement": "Given the round is finished, when the suites are run, then the unit tests pass and the e2e passes in every cell, including the runtime language switch.",
+      "sourceRef": {
+        "path": ".quality/runs/dashboard-r2/round2-spec.md",
+        "line": 115
+      },
+      "kind": "behavior",
+      "requiresBrowser": true,
+      "requiresAutomatedTest": true,
+      "implementation": [
+        "e2e/dashboard-round2.spec.ts",
+        "e2e/dashboard-language.spec.ts"
+      ],
+      "status": "PASS",
+      "notes": null,
+      "naReason": null,
+      "evidence": [
+        {
+          "type": "screenshot",
+          "path": "evidence/dashboard-r2/en-light/dashboard-1440.png",
+          "command": "node scripts/verify-round2.mjs AC-25",
+          "exitCode": 0,
+          "recordedAt": "2026-10-20T20:22:13.016Z"
+        },
+        {
+          "type": "integration-test",
+          "path": "evidence/dashboard-r2/results.json",
+          "command": "node scripts/verify-round2.mjs AC-25",
+          "exitCode": 0,
+          "recordedAt": "2026-10-20T20:22:13.089Z"
+        },
+        {
+          "type": "unit-test",
+          "path": ".quality/runs/dashboard-r2/unit-tests.log",
+          "command": "npm run test:unit",
+          "exitCode": 0,
+          "recordedAt": "2026-10-20T20:22:30.273Z"
+        },
+        {
+          "type": "e2e",
+          "path": ".quality/runs/dashboard-r2/e2e-round2.log",
+          "command": "npx playwright test e2e/dashboard-round2.spec.ts --reporter=line",
+          "exitCode": 0,
+          "recordedAt": "2026-10-20T20:23:23.424Z"
+        }
+      ]
+    }
+  ],
+  "unresolvedReviewBlockers": []
+}
