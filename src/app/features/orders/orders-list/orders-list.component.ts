@@ -1,4 +1,4 @@
-﻿import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -506,6 +506,7 @@ export class OrdersListComponent {
       // It WALKS the pages: the API caps a page at 100 rows, so a single
       // "size: 1000" request was a 400 — and a 400 inside this forkJoin
       // left the whole list stuck on "Loading".
+      // Walks the pages: the API caps a page at 100 rows.
       kpiRows: this.orderService.getEveryOrder({
         status: status === 'ALL' ? undefined : status,
         ...filter,
@@ -523,7 +524,7 @@ export class OrdersListComponent {
         }
         this.statusCounts.set(counts);
         // Revenue = sum of totalAmount of non-cancelled orders in the filtered set.
-        const allRows = kpiRows;
+        const allRows = kpiRows ?? [];
         const revenue = allRows
           .filter((o) => o.status !== 'CANCELLED')
           .reduce((sum, o) => sum + (o.totalAmount ?? 0), 0);

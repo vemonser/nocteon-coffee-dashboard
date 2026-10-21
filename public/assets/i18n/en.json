@@ -230,7 +230,7 @@
       "confirmed": "Confirmed",
       "unknown": "Unknown",
       "approved": "Approved",
-      "active": "Active",
+      "active": "Enabled",
       "abandoned": "Abandoned",
       "converted": "Converted"
     },
@@ -1192,13 +1192,17 @@
       "dateRange": "Date range",
       "rating": "Minimum rating",
       "verification": "Verification",
-      "clear": "Clear filters"
+      "clear": "Clear filters",
+      "ratingAll": "Rating: all",
+      "ratingAtLeast": "Rating: {{n}}+"
     },
     "stats": {
       "averageRating": "Average rating",
       "distribution": "Star distribution",
       "pending": "Pending",
-      "total": "Total"
+      "total": "Total",
+      "reviews": "reviews",
+      "verifiedShare": "Verified share"
     },
     "dateRange": {
       "all": "All time",
@@ -1883,7 +1887,14 @@
       "status": "Status",
       "dateRange": "Date range",
       "clear": "Clear filters"
-    }
+    },
+    "sending": "Sending...",
+    "markRead": "Mark as read",
+    "markUnread": "Mark as unread",
+    "markUnreadNotSupported": "Mark as unread is not available",
+    "bulkSelected": "{{count}} selected",
+    "bulkMarkRead": "Mark as read",
+    "bulkDelete": "Delete selected"
   },
   "unauthorized": {
     "title": "Access Denied",

@@ -28,21 +28,12 @@ import { PagerComponent } from '../../../shared/components/pager/pager.component
 import { PluralPipe } from '../../../shared/pipes/plural.pipe';
 import { HlmTextareaImports } from '@spartan-ng/helm/textarea';
 import { UserAvatarComponent } from '../../../shared/ui/user-avatar/user-avatar.component';
-import { OrderDialogComponent } from '../../orders/components/order-dialog/order-dialog.component';
+import { DialogShellComponent } from '../../../shared/ui/dialog-shell/dialog-shell.component';
 import { ContactResponse } from '../models/contact-message.model';
 import { ContactMessageService } from '../services/contact-message.service';
 
 type MessageTab = 'all' | 'unread' | 'replied';
 
-/**
- * The contact messages console: see what has not been read, open it, write
- * a reply, move on.
- *
- * <p>The reply really emails the customer. The success toast says "Reply
- * sent" ONLY when the recorded email status is SENT — every other status
- * says what happened and offers "Send again". The typed text stays in the
- * box when the send fails: the admin's words are never lost.
- */
 @Component({
   selector: 'app-contact-messages-list',
   standalone: true,
@@ -57,7 +48,7 @@ type MessageTab = 'all' | 'unread' | 'replied';
     PagerComponent,
     HlmTextareaImports,
     UserAvatarComponent,
-    OrderDialogComponent,
+    DialogShellComponent,
     NgIcon,
     TranslocoPipe,
   ],
@@ -90,26 +81,30 @@ export class ContactMessagesListComponent {
   readonly page = signal(0);
   readonly size = signal(20);
   protected readonly pageSizeOptions = [10, 20, 50] as const;
-  /** The rows of the whole loaded set; the pager slices them. */
   readonly allItems = signal<ContactResponse[]>([]);
   readonly search = signal('');
   readonly range = signal('all');
   readonly selected = signal<ContactResponse | null>(null);
   readonly replyText = signal('');
   readonly replying = signal(false);
+  readonly replyError = signal<string | null>(null);
   readonly deleting = signal<ContactResponse | null>(null);
   readonly deletingBusy = signal(false);
+  readonly selectedIds = signal<Set<number>>(new Set());
+  readonly bulkBusy = signal(false);
 
   private searchTimeout: ReturnType<typeof setTimeout> | undefined;
 
   constructor() {
     const status = this.route.snapshot.queryParamMap.get('status');
-    if (status === 'unread') this.tab.set('unread');
+    if (status === 'unread' || status === 'replied' || status === 'all') this.tab.set(status as MessageTab);
+    const q = this.route.snapshot.queryParamMap.get('q');
+    if (q) this.search.set(q);
+    const range = this.route.snapshot.queryParamMap.get('range');
+    if (range) this.range.set(range);
     this.loadPage();
     this.loadUnreadCount();
   }
-
-  // ── the data ──────────────────────────────────────────────────────────────
 
   private loadPage(): void {
     this.loading.set(true);
@@ -133,22 +128,13 @@ export class ContactMessagesListComponent {
     });
   }
 
-  /** The unread count comes from the server's own list, so the badge is
-   *  never an estimate over what happened to be loaded. */
   private loadUnreadCount(): void {
     this.service.getAllUnread({ page: 0, size: 1 }).subscribe({
       next: (res) => this.unreadTotal.set(res.data?.totalElements ?? 0),
-      error: () => {
-        /* the badge stays at zero; the list still works */
-      },
+      error: () => {},
     });
   }
 
-  /**
-   * The search, the date range and the Replied tab are client-side: the
-   * endpoint takes no status filter and no dates, so the page loads the
-   * whole set (up to the API's maximum) and narrows it here.
-   */
   private applyFilters(content: ContactResponse[]): ContactResponse[] {
     const search = this.search().trim().toLowerCase();
     const from = this.rangeStart();
@@ -186,8 +172,6 @@ export class ContactMessagesListComponent {
     return null;
   }
 
-  // ── the tabs ──────────────────────────────────────────────────────────────
-
   protected setTab(tab: MessageTab): void {
     this.tab.set(tab);
     void this.router.navigate([], {
@@ -209,18 +193,40 @@ export class ContactMessagesListComponent {
   protected onSearch(value: string): void {
     this.search.set(value);
     clearTimeout(this.searchTimeout);
-    this.searchTimeout = setTimeout(() => this.loadPage(), 350);
+    this.searchTimeout = setTimeout(() => {
+      this.writeUrl();
+      this.loadPage();
+    }, 350);
   }
 
   protected onRangeChange(): void {
+    this.writeUrl();
     this.loadPage();
   }
 
-  // ── the message ───────────────────────────────────────────────────────────
+  private writeUrl(): void {
+    const params: Record<string, string> = {};
+    if (this.tab() !== 'all') params['status'] = this.tab();
+    if (this.search()) params['q'] = this.search();
+    if (this.range() !== 'all') params['range'] = this.range();
+    void this.router.navigate([], { relativeTo: this.route, queryParams: params, replaceUrl: true });
+  }
+
+  protected clearFilters(): void {
+    this.search.set('');
+    this.range.set('all');
+    this.writeUrl();
+    this.loadPage();
+  }
+
+  protected readonly hasActiveFilters = computed(
+    () => this.search() !== '' || this.range() !== 'all',
+  );
 
   protected openMessage(item: ContactResponse): void {
     this.selected.set(item);
     this.replyText.set('');
+    this.replyError.set(null);
     if (!item.read) {
       this.service.markAsRead(item.id).subscribe({
         next: (res) => {
@@ -236,21 +242,16 @@ export class ContactMessagesListComponent {
   protected closeMessage(): void {
     this.selected.set(null);
     this.replyText.set('');
+    this.replyError.set(null);
   }
 
-  /**
-   * Save the reply and email the customer.
-   *
-   * <p>The typed text stays in the box when the send fails: the admin's
-   * words are never lost. And the success toast says "Reply sent" ONLY
-   * when the email really went out.
-   */
   protected sendReply(): void {
     const item = this.selected();
     const text = this.replyText().trim();
     if (!item || !text) return;
 
     this.replying.set(true);
+    this.replyError.set(null);
     this.service.reply(item.id, text).subscribe({
       next: (res) => {
         this.replying.set(false);
@@ -270,12 +271,12 @@ export class ContactMessagesListComponent {
       },
       error: (err) => {
         this.replying.set(false);
+        this.replyError.set('Could not send the reply');
         this.notify.apiError(err, 'notify.errorFallback', 'Could not send the reply');
       },
     });
   }
 
-  /** Send the stored reply again, without changing it. */
   protected resend(item: ContactResponse): void {
     this.service.resendEmail(item.id).subscribe({
       next: (res) => {
@@ -302,6 +303,18 @@ export class ContactMessagesListComponent {
     this.notify.success('contactMessages.copyEmail', 'Email copied');
   }
 
+  protected markRead(message: ContactResponse): void {
+    this.service.markAsRead(message.id).subscribe({
+      next: (res) => {
+        if (res?.data) {
+          this.items.update((list) => list.map((m) => (m.id === message.id ? res.data! : m)));
+          if (this.selected()?.id === message.id) this.selected.set(res.data);
+        }
+        this.loadUnreadCount();
+      },
+    });
+  }
+
   protected confirmDelete(item: ContactResponse): void {
     this.deleting.set(item);
   }
@@ -326,7 +339,61 @@ export class ContactMessagesListComponent {
     });
   }
 
-  // ── the labels ────────────────────────────────────────────────────────────
+  protected toggleSelect(id: number, checked: boolean): void {
+    const next = new Set(this.selectedIds());
+    checked ? next.add(id) : next.delete(id);
+    this.selectedIds.set(next);
+  }
+
+  protected clearSelection(): void {
+    this.selectedIds.set(new Set());
+  }
+
+  protected bulkMarkRead(): void {
+    const ids = Array.from(this.selectedIds());
+    if (ids.length === 0) return;
+    this.bulkBusy.set(true);
+    let remaining = ids.length;
+    for (const id of ids) {
+      this.service.markAsRead(id).subscribe({
+        next: (res) => {
+          if (res?.data) {
+            this.items.update((list) => list.map((m) => (m.id === id ? res.data! : m)));
+          }
+          if (--remaining === 0) {
+            this.bulkBusy.set(false);
+            this.clearSelection();
+            this.loadUnreadCount();
+          }
+        },
+        error: () => {
+          if (--remaining === 0) this.bulkBusy.set(false);
+        },
+      });
+    }
+  }
+
+  protected bulkDelete(): void {
+    const ids = Array.from(this.selectedIds());
+    if (ids.length === 0) return;
+    this.bulkBusy.set(true);
+    let remaining = ids.length;
+    for (const id of ids) {
+      this.service.delete(id).subscribe({
+        next: () => {
+          if (--remaining === 0) {
+            this.bulkBusy.set(false);
+            this.clearSelection();
+            this.loadPage();
+            this.loadUnreadCount();
+          }
+        },
+        error: () => {
+          if (--remaining === 0) this.bulkBusy.set(false);
+        },
+      });
+    }
+  }
 
   protected relativeTime(value: string): string {
     return formatRelativeTime(value, this.language.language());
@@ -350,8 +417,6 @@ export class ContactMessagesListComponent {
     }
   }
 
-  // ── the pager ───────────────────────────────────────────────────────────
-
   protected goToPage(page: number): void {
     this.page.set(page);
   }
@@ -362,7 +427,6 @@ export class ContactMessagesListComponent {
     this.page.set(0);
   }
 
-  /** The page of rows the pager is showing. */
   protected readonly pageItems = computed(() => {
     const start = this.page() * this.size();
     return this.items().slice(start, start + this.size());

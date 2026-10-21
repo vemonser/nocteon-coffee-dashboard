@@ -1,5 +1,4 @@
 <div class="mx-auto flex w-full max-w-7xl flex-col gap-6 p-6">
-  <!-- Header -->
   <header class="flex flex-wrap items-start justify-between gap-4">
     <div>
       <h1 class="text-2xl font-medium tracking-tight">{{ 'contactMessages.title' | transloco }}</h1>
@@ -10,7 +9,6 @@
     </div>
   </header>
 
-  <!-- Tabs + filters, in one toolbar row -->
   <div class="flex flex-wrap items-center justify-between gap-3">
     <div
       role="tablist"
@@ -63,10 +61,41 @@
           [placeholder]="'contactMessages.search' | transloco"
         />
       </div>
+
+      @if (hasActiveFilters()) {
+        <button hlmBtn variant="ghost" size="sm" (click)="clearFilters()">
+          {{ 'contactMessages.filters.clear' | transloco }}
+        </button>
+      }
     </div>
   </div>
 
-  <!-- The list -->
+  @if (selectedIds().size > 0) {
+    <div
+      class="flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-card)] border bg-card px-4 py-3"
+      role="region"
+    >
+      <p class="text-sm">
+        {{ 'contactMessages.bulkSelected' | transloco: { count: selectedIds().size } }}
+      </p>
+      <div class="flex items-center gap-2">
+        <button hlmBtn size="sm" (click)="bulkMarkRead()" [disabled]="bulkBusy()">
+          {{ 'contactMessages.bulkMarkRead' | transloco }}
+        </button>
+        <button
+          hlmBtn
+          variant="destructive"
+          size="sm"
+          (click)="bulkDelete()"
+          [disabled]="bulkBusy()"
+        >
+          {{ 'contactMessages.bulkDelete' | transloco }}
+        </button>
+        <button hlmBtn variant="ghost" size="sm" (click)="clearSelection()">Clear</button>
+      </div>
+    </div>
+  }
+
   <div class="rounded-[var(--radius-card)] border bg-card">
     @if (loading()) {
       <div class="space-y-0">
@@ -79,7 +108,17 @@
     } @else {
       <div class="divide-y divide-border">
         @for (message of items(); track message.id) {
-          <div class="group flex items-start gap-3 px-4 py-3 transition-colors hover:bg-accent">
+          <div
+            class="group flex items-start gap-3 px-4 py-3 transition-colors hover:bg-accent"
+            [class.bg-primary/5]="!message.read"
+          >
+            <input
+              type="checkbox"
+              class="mt-2 size-4 shrink-0"
+              [checked]="selectedIds().has(message.id)"
+              (change)="toggleSelect(message.id, $any($event.target).checked)"
+              [attr.aria-label]="'Select message'"
+            />
             <button
               type="button"
               data-testid="message-row"
@@ -110,7 +149,6 @@
                     >
                   }
                 </span>
-                <!-- The preview: the admin must not have to open every message. -->
                 <span class="mt-1 block truncate text-xs text-muted-foreground">
                   <bdi>{{ message.message }}</bdi>
                 </span>
@@ -126,7 +164,9 @@
               >
             </button>
 
-            <div class="flex shrink-0 items-center gap-1">
+            <div
+              class="flex shrink-0 items-center gap-1 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:focus-within:opacity-100"
+            >
               <button
                 type="button"
                 hlmBtn
@@ -138,6 +178,31 @@
               >
                 <ng-icon name="lucideCopy" class="size-4" aria-hidden="true" />
               </button>
+              @if (!message.read) {
+                <button
+                  type="button"
+                  hlmBtn
+                  variant="ghost"
+                  size="icon"
+                  (click)="markRead(message)"
+                  [attr.aria-label]="'contactMessages.markRead' | transloco"
+                  [title]="'contactMessages.markRead' | transloco"
+                >
+                  <ng-icon name="lucideMail" class="size-4" aria-hidden="true" />
+                </button>
+              } @else {
+                <button
+                  type="button"
+                  hlmBtn
+                  variant="ghost"
+                  size="icon"
+                  disabled
+                  [attr.aria-label]="'contactMessages.markUnread' | transloco"
+                  [title]="'contactMessages.markUnreadNotSupported' | transloco"
+                >
+                  <ng-icon name="lucideMail" class="size-4" aria-hidden="true" />
+                </button>
+              }
               <button
                 type="button"
                 hlmBtn
@@ -157,7 +222,6 @@
     }
   </div>
 
-  <!-- Pagination -->
   @if (!loading() && items().length > 0) {
     <app-pager
       [page]="page()"
@@ -174,21 +238,32 @@
   }
 </div>
 
-<!-- The message dialog -->
-<app-order-dialog
+<app-dialog-shell
   [open]="selected() !== null"
   [title]="selected()?.subject ?? ''"
-  [confirmLabel]="'contactMessages.replySent' | transloco"
-  [pending]="replying()"
-  (confirmed)="sendReply()"
+  [subtitle]="selected() ? (selected()!.name + ' · ' + selected()!.email) : ''"
   (closed)="closeMessage()"
 >
   @if (selected(); as message) {
     <div class="space-y-4">
-      <!-- The date: dimmed text under the subject, no seconds, no pill. -->
-      <p class="text-xs text-muted-foreground">
-        <app-localized-date [value]="message.createdAt" />
-      </p>
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <p class="text-xs text-muted-foreground" [attr.title]="absoluteTime(message.createdAt)">
+          <app-localized-date [value]="message.createdAt" [showTime]="true" />
+        </p>
+        @if (message.emailStatus && message.emailStatus !== 'NONE') {
+          <span
+            class="shrink-0 rounded-full px-2 py-0.5 text-xs font-medium"
+            [class.bg-success-soft]="message.emailStatus === 'SENT'"
+            [class.text-success]="message.emailStatus === 'SENT'"
+            [class.bg-warning-soft]="message.emailStatus === 'PENDING'"
+            [class.text-warning]="message.emailStatus === 'PENDING'"
+            [class.bg-destructive-soft]="message.emailStatus === 'FAILED' || message.emailStatus === 'DEAD'"
+            [class.text-destructive-text]="message.emailStatus === 'FAILED' || message.emailStatus === 'DEAD'"
+          >
+            {{ emailStatusLabel(message.emailStatus) | transloco }}
+          </span>
+        }
+      </div>
 
       <div class="flex items-center justify-between gap-2">
         <p class="text-sm text-muted-foreground">{{ message.name }} · {{ message.email }}</p>
@@ -208,49 +283,66 @@
             {{ 'contactMessages.yourReply' | transloco }}
           </p>
           <p class="whitespace-pre-wrap text-sm"><bdi>{{ message.replyContent }}</bdi></p>
-        </div>
-      }
-
-      <!-- The email state, as RECORDED. -->
-      @if (message.emailStatus && message.emailStatus !== 'NONE') {
-        <div class="flex items-center justify-between gap-2 rounded-[var(--radius-control)] border px-3 py-2 text-xs">
-          <span
-            [class.text-success]="message.emailStatus === 'SENT'"
-            [class.text-warning]="message.emailStatus === 'PENDING'"
-            [class.text-destructive-text]="
-              message.emailStatus === 'FAILED' || message.emailStatus === 'DEAD'
-            "
-          >
-            {{ emailStatusLabel(message.emailStatus) | transloco }}
-          </span>
           @if (message.emailStatus !== 'SENT') {
-            <button hlmBtn variant="ghost" size="sm" (click)="resend(message)">
+            <button hlmBtn variant="ghost" size="sm" class="mt-2" (click)="resend(message)">
               {{ 'contactMessages.sendAgain' | transloco }}
             </button>
           }
         </div>
       }
 
-      <!-- The reply box -->
       <div class="space-y-2">
         <textarea
           #replyBox
           hlmTextarea
-          rows="5"
-          class="w-full"
+          rows="4"
+          class="w-full resize-none"
           [placeholder]="'contactMessages.replyPlaceholder' | transloco: { email: message.email }"
           [ngModel]="replyText()"
           (ngModelChange)="replyText.set($event)"
+          (keydown.control.enter)="sendReply()"
+          (keydown.meta.enter)="sendReply()"
         ></textarea>
         <p class="text-xs text-muted-foreground">
           {{ 'contactMessages.replyNotice' | transloco: { email: message.email } }}
         </p>
+        @if (replyError()) {
+          <p class="text-xs text-destructive-text">{{ replyError() }}</p>
+          <button hlmBtn variant="ghost" size="sm" (click)="sendReply()">
+            {{ 'common.retry' | transloco }}
+          </button>
+        }
       </div>
     </div>
   }
-</app-order-dialog>
 
-<!-- The delete confirmation -->
+  <div dialog-footer-start>
+    @if (selected()) {
+      <button
+        hlmBtn
+        variant="ghost"
+        class="text-destructive-text hover:bg-destructive/10"
+        (click)="confirmDelete(selected()!)"
+      >
+        {{ 'common.delete' | transloco }}
+      </button>
+    }
+  </div>
+  <div dialog-footer-end>
+    <button hlmBtn variant="outline" type="button" (click)="closeMessage()">
+      {{ 'common.close' | transloco }}
+    </button>
+    <button
+      hlmBtn
+      type="button"
+      [disabled]="replying() || !replyText().trim()"
+      (click)="sendReply()"
+    >
+      {{ replying() ? ('contactMessages.sending' | transloco) : ('contactMessages.sendReply' | transloco) }}
+    </button>
+  </div>
+</app-dialog-shell>
+
 @if (deleting(); as message) {
   <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
     <div class="w-full max-w-sm rounded-xl border bg-card p-6 shadow-2xl" role="alertdialog">
