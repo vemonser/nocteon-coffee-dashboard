@@ -1710,3 +1710,89 @@ reply feature is out of this round. Logged in API_GAPS.md.
 backend response, so the "View order ORD-…" link appears only when both
 arrive. Nothing is invented to fill them. The link is wired, the data is
 not — see API_GAPS.md.
+
+### The dialog is built ON the shared DialogShell, and the shell grew two inputs
+
+`DialogShell` gained two ADDITIVE inputs:
+
+- `mobileSheet` — the panel is a full-width, full-height sheet below `sm`
+  and a centred card above it. The body scrolls and the footer stays put,
+  so the actions are always reachable.
+- `panelRole` — the delete confirmation is an `alertdialog`, not a
+  `dialog`: the difference is what a screen reader announces when the
+  panel opens.
+
+Both default to the previous behaviour, so the ONE other usage — the
+contact-messages dialog — is unchanged (checked in the browser after the
+change: same card, same footer, same Esc). The shell's classes moved into
+two computed strings, because the mobile and the desktop panel are not the
+same classes.
+
+### The footer is a hierarchy, not a row of twins
+
+- The START side: Delete, a ghost button in the destructive colour. A
+  destructive action is never the primary one.
+- The END side: Close (ghost) and then THE action of this review, 12px
+  apart. Approve is the primary button. **Withdraw approval is the
+  secondary one**, because withdrawing an approval is a reversal: it must
+  not look like the thing the admin came to do.
+- The gap is 12px, measured in every cell (`footerGapPx` in
+  results.json). It was 0px before — the two buttons touched.
+
+### The title is sentence case
+
+"Review Details" → "Review details". The Arabic was already sentence
+case. The delete confirmation's title follows the same rule ("Delete
+review").
+
+### The product link points to the product page that EXISTS
+
+`/dashboard/products/:slug` is not a route; the product name linked to a
+URL that resolved to nothing. It links to `/dashboard/products/:slug/edit`
+now, the same target the category, farm and origin pages use.
+
+### The comment is a quote, and its scroll area is focusable
+
+The comment is a `<blockquote>` with `whitespace-pre-wrap` (its line
+breaks are kept) and a `max-h-40` scroll area, so a long comment cannot
+grow the dialog past the viewport. The area carries `tabindex="0"` and an
+aria-label: a scrollable region a keyboard cannot reach is a region a
+keyboard cannot read. This adds ONE stop to the tab order, between the
+product link and the footer; the brief's order (close X → product link →
+order link → footer) is otherwise kept.
+
+### The stars are scaled LOCALLY — RatingStars is not touched
+
+The shared `RatingStars` belongs to the reviews-page task, so the dialog
+does not change it: the large stars are a local `[&_svg]:size-6` wrapper
+around the shared component, and the "4 / 5" next to them is the dialog's
+own text (with `dir="ltr"`, so the numerals never flip in Arabic).
+
+The shared component's aria-label is the English "N out of 5", so the stars
+are `aria-hidden` here and the dialog carries its own TRANSLATED label
+("Rating: 4 out of 5" / "التقييم: 4 من 5"). The English label inside the
+shared component is a known limitation of that component, not of this
+dialog.
+
+### The status is a LABELLED row
+
+"Status: [Approved]" — the label and the badge on one line, instead of a
+badge floating under the comment that says "something is approved" without
+saying what it is.
+
+### The delete confirmation is the shared shell, and it NAMES the review
+
+It was a hand-rolled overlay with a raw `bg-black/50` scrim, no Escape,
+no focus trap. It is the shared DialogShell now, with `role="alertdialog"`,
+the scrim from the `--overlay` token, and a subtitle that names the
+review: the product and its reviewer ("Hario V60 Dripper (Admin)"). The
+confirmation is a question only the admin can answer, so the answer cannot
+be "yes" by default.
+
+### The dialog toasts; the row does not
+
+Approve and withdraw toast their outcome (success and failure) and the
+button waits for the answer (disabled, "Approving…" / "Withdrawing…"). The
+ROW's own Approve button keeps its silent behaviour: the table is not
+this task's scope, and the admin is reading a dialog, not watching a cell
+change under the cursor.
