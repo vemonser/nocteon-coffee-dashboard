@@ -234,3 +234,20 @@ span:lang(ar),
 quill-editor .ql-container {
   min-height: 200px;
 }
+
+/* Print: always light, regardless of the active theme. */
+@media print {
+  :root, :root.dark {
+    color-scheme: light;
+  }
+  .dark {
+    --background: #faf8f5;
+    --foreground: #231a14;
+    --card: #ffffff;
+    --card-foreground: #231a14;
+    --muted: #f6f2ed;
+    --muted-foreground: #6b5d52;
+    --border: #e7dfd5;
+  }
+  body { background: #ffffff !important; color: #231a14 !important; }
+}

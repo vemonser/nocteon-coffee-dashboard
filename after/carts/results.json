@@ -1,0 +1,1680 @@
+{
+  "phase": "carts",
+  "tag": null,
+  "generatedAt": "2026-10-20T22:43:09.934Z",
+  "harness": {
+    "command": "npm run evidence -- carts",
+    "baseUrl": "http://localhost:4200",
+    "url": null,
+    "targets": [
+      "carts-list",
+      "cart-dialog"
+    ],
+    "widths": [
+      375,
+      768,
+      1024,
+      1440,
+      1920
+    ],
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "langs": [
+      "en",
+      "ar"
+    ],
+    "viewportHeight": 900,
+    "storageState": "e2e/.auth/dashboard-admin.json (gitignored; one login, replayed)",
+    "runtimeLanguageSwitch": true,
+    "gitBranch": "ui/global-search-v2",
+    "gitCommit": "b1dd945d",
+    "server": {
+      "pid": 1988401,
+      "cwd": "/home/abdelrhman/Developments/2026/side-projects/nocteon/nocteon-dashboard",
+      "cmd": "ng serve (nocteon-dash)",
+      "listening": true
+    }
+  },
+  "cells": [
+    {
+      "lang": "en",
+      "theme": "light",
+      "width": 375,
+      "runtimeLanguageSwitch": true,
+      "observed": {
+        "lang": "en",
+        "dir": "ltr",
+        "dark": false,
+        "theme": null
+      },
+      "targets": [
+        {
+          "id": "carts-list",
+          "url": "/dashboard/carts",
+          "file": "evidence/carts/en-light/carts-list-375.png",
+          "action": null,
+          "observed": {
+            "lang": "en",
+            "dir": "ltr",
+            "dark": false,
+            "theme": null
+          },
+          "measurements": {
+            "horizontalOverflowPx": 0,
+            "pageHeightPx": 900,
+            "verticalClipped": [],
+            "horizontalClipped": [
+              {
+                "tag": "span",
+                "cls": "block max-w-full truncate text-start text-xs text-muted-foreground",
+                "text": "mohamed@example.com",
+                "scrollWidth": 144,
+                "clientWidth": 141
+              }
+            ],
+            "ellipsised": [
+              {
+                "tag": "span",
+                "cls": "block max-w-full truncate text-start text-xs text-muted-foreground",
+                "text": "mohamed@example.com"
+              }
+            ],
+            "rawI18nKeys": []
+          },
+          "own": {
+            "cartRows": 4,
+            "pageOverflow": false
+          }
+        },
+        {
+          "id": "cart-dialog",
+          "url": "/dashboard/carts",
+          "file": "evidence/carts/en-light/cart-dialog-375.png",
+          "action": {
+            "present": true
+          },
+          "observed": {
+            "lang": "en",
+            "dir": "ltr",
+            "dark": false,
+            "theme": null
+          },
+          "measurements": {
+            "horizontalOverflowPx": 0,
+            "pageHeightPx": 900,
+            "verticalClipped": [],
+            "horizontalClipped": [
+              {
+                "tag": "span",
+                "cls": "block max-w-full truncate text-start text-xs text-muted-foreground",
+                "text": "mohamed@example.com",
+                "scrollWidth": 144,
+                "clientWidth": 141
+              }
+            ],
+            "ellipsised": [
+              {
+                "tag": "span",
+                "cls": "block max-w-full truncate text-start text-xs text-muted-foreground",
+                "text": "mohamed@example.com"
+              }
+            ],
+            "rawI18nKeys": []
+          },
+          "own": null
+        }
+      ]
+    },
+    {
+      "lang": "ar",
+      "theme": "light",
+      "width": 375,
+      "runtimeLanguageSwitch": true,
+      "observed": {
+        "lang": "ar",
+        "dir": "rtl",
+        "dark": false,
+        "theme": null
+      },
+      "targets": [
+        {
+          "id": "carts-list",
+          "url": "/dashboard/carts",
+          "file": "evidence/carts/ar-light/carts-list-375.png",
+          "action": null,
+          "observed": {
+            "lang": "ar",
+            "dir": "rtl",
+            "dark": false,
+            "theme": null
+          },
+          "measurements": {
+            "horizontalOverflowPx": 0,
+            "pageHeightPx": 900,
+            "verticalClipped": [],
+            "horizontalClipped": [],
+            "ellipsised": [],
+            "rawI18nKeys": []
+          },
+          "own": {
+            "cartRows": 4,
+            "pageOverflow": false
+          }
+        },
+        {
+          "id": "cart-dialog",
+          "url": "/dashboard/carts",
+          "file": "evidence/carts/ar-light/cart-dialog-375.png",
+          "action": {
+            "present": true
+          },
+          "observed": {
+            "lang": "ar",
+            "dir": "rtl",
+            "dark": false,
+            "theme": null
+          },
+          "measurements": {
+            "horizontalOverflowPx": 0,
+            "pageHeightPx": 900,
+            "verticalClipped": [],
+            "horizontalClipped": [],
+            "ellipsised": [],
+            "rawI18nKeys": []
+          },
+          "own": null
+        }
+      ]
+    },
+    {
+      "lang": "en",
+      "theme": "dark",
+      "width": 375,
+      "runtimeLanguageSwitch": true,
+      "observed": {
+        "lang": "en",
+        "dir": "ltr",
+        "dark": true,
+        "theme": null
+      },
+      "targets": [
+        {
+          "id": "carts-list",
+          "url": "/dashboard/carts",
+          "file": "evidence/carts/en-dark/carts-list-375.png",
+          "action": null,
+          "observed": {
+            "lang": "en",
+            "dir": "ltr",
+            "dark": true,
+            "theme": null
+          },
+          "measurements": {
+            "horizontalOverflowPx": 0,
+            "pageHeightPx": 900,
+            "verticalClipped": [],
+            "horizontalClipped": [
+              {
+                "tag": "span",
+                "cls": "block max-w-full truncate text-start text-xs text-muted-foreground",
+                "text": "mohamed@example.com",
+                "scrollWidth": 144,
+                "clientWidth": 141
+              }
+            ],
+            "ellipsised": [
+              {
+                "tag": "span",
+                "cls": "block max-w-full truncate text-start text-xs text-muted-foreground",
+                "text": "mohamed@example.com"
+              }
+            ],
+            "rawI18nKeys": []
+          },
+          "own": {
+            "cartRows": 4,
+            "pageOverflow": false
+          }
+        },
+        {
+          "id": "cart-dialog",
+          "url": "/dashboard/carts",
+          "file": "evidence/carts/en-dark/cart-dialog-375.png",
+          "action": {
+            "present": true
+          },
+          "observed": {
+            "lang": "en",
+            "dir": "ltr",
+            "dark": true,
+            "theme": null
+          },
+          "measurements": {
+            "horizontalOverflowPx": 0,
+            "pageHeightPx": 900,
+            "verticalClipped": [],
+            "horizontalClipped": [
+              {
+                "tag": "span",
+                "cls": "block max-w-full truncate text-start text-xs text-muted-foreground",
+                "text": "mohamed@example.com",
+                "scrollWidth": 144,
+                "clientWidth": 141
+              }
+            ],
+            "ellipsised": [
+              {
+                "tag": "span",
+                "cls": "block max-w-full truncate text-start text-xs text-muted-foreground",
+                "text": "mohamed@example.com"
+              }
+            ],
+            "rawI18nKeys": []
+          },
+          "own": null
+        }
+      ]
+    },
+    {
+      "lang": "ar",
+      "theme": "dark",
+      "width": 375,
+      "runtimeLanguageSwitch": true,
+      "observed": {
+        "lang": "ar",
+        "dir": "rtl",
+        "dark": true,
+        "theme": null
+      },
+      "targets": [
+        {
+          "id": "carts-list",
+          "url": "/dashboard/carts",
+          "file": "evidence/carts/ar-dark/carts-list-375.png",
+          "action": null,
+          "observed": {
+            "lang": "ar",
+            "dir": "rtl",
+            "dark": true,
+            "theme": null
+          },
+          "measurements": {
+            "horizontalOverflowPx": 0,
+            "pageHeightPx": 900,
+            "verticalClipped": [],
+            "horizontalClipped": [],
+            "ellipsised": [],
+            "rawI18nKeys": []
+          },
+          "own": {
+            "cartRows": 4,
+            "pageOverflow": false
+          }
+        },
+        {
+          "id": "cart-dialog",
+          "url": "/dashboard/carts",
+          "file": "evidence/carts/ar-dark/cart-dialog-375.png",
+          "action": {
+            "present": true
+          },
+          "observed": {
+            "lang": "ar",
+            "dir": "rtl",
+            "dark": true,
+            "theme": null
+          },
+          "measurements": {
+            "horizontalOverflowPx": 0,
+            "pageHeightPx": 900,
+            "verticalClipped": [],
+            "horizontalClipped": [],
+            "ellipsised": [],
+            "rawI18nKeys": []
+          },
+          "own": null
+        }
+      ]
+    },
+    {
+      "lang": "en",
+      "theme": "light",
+      "width": 768,
+      "runtimeLanguageSwitch": true,
+      "observed": {
+        "lang": "en",
+        "dir": "ltr",
+        "dark": false,
+        "theme": null
+      },
+      "targets": [
+        {
+          "id": "carts-list",
+          "url": "/dashboard/carts",
+          "file": "evidence/carts/en-light/carts-list-768.png",
+          "action": null,
+          "observed": {
+            "lang": "en",
+            "dir": "ltr",
+            "dark": false,
+            "theme": null
+          },
+          "measurements": {
+            "horizontalOverflowPx": 0,
+            "pageHeightPx": 900,
+            "verticalClipped": [],
+            "horizontalClipped": [
+              {
+                "tag": "span",
+                "cls": "block max-w-full truncate text-start text-xs text-muted-foreground",
+                "text": "mohamed@example.com",
+                "scrollWidth": 144,
+                "clientWidth": 141
+              }
+            ],
+            "ellipsised": [
+              {
+                "tag": "span",
+                "cls": "block max-w-full truncate text-start text-xs text-muted-foreground",
+                "text": "mohamed@example.com"
+              }
+            ],
+            "rawI18nKeys": []
+          },
+          "own": {
+            "cartRows": 4,
+            "pageOverflow": false
+          }
+        },
+        {
+          "id": "cart-dialog",
+          "url": "/dashboard/carts",
+          "file": "evidence/carts/en-light/cart-dialog-768.png",
+          "action": {
+            "present": true
+          },
+          "observed": {
+            "lang": "en",
+            "dir": "ltr",
+            "dark": false,
+            "theme": null
+          },
+          "measurements": {
+            "horizontalOverflowPx": 0,
+            "pageHeightPx": 900,
+            "verticalClipped": [],
+            "horizontalClipped": [
+              {
+                "tag": "span",
+                "cls": "block max-w-full truncate text-start text-xs text-muted-foreground",
+                "text": "mohamed@example.com",
+                "scrollWidth": 144,
+                "clientWidth": 141
+              }
+            ],
+            "ellipsised": [
+              {
+                "tag": "span",
+                "cls": "block max-w-full truncate text-start text-xs text-muted-foreground",
+                "text": "mohamed@example.com"
+              }
+            ],
+            "rawI18nKeys": []
+          },
+          "own": null
+        }
+      ]
+    },
+    {
+      "lang": "ar",
+      "theme": "light",
+      "width": 768,
+      "runtimeLanguageSwitch": true,
+      "observed": {
+        "lang": "ar",
+        "dir": "rtl",
+        "dark": false,
+        "theme": null
+      },
+      "targets": [
+        {
+          "id": "carts-list",
+          "url": "/dashboard/carts",
+          "file": "evidence/carts/ar-light/carts-list-768.png",
+          "action": null,
+          "observed": {
+            "lang": "ar",
+            "dir": "rtl",
+            "dark": false,
+            "theme": null
+          },
+          "measurements": {
+            "horizontalOverflowPx": 0,
+            "pageHeightPx": 900,
+            "verticalClipped": [],
+            "horizontalClipped": [],
+            "ellipsised": [],
+            "rawI18nKeys": []
+          },
+          "own": {
+            "cartRows": 4,
+            "pageOverflow": false
+          }
+        },
+        {
+          "id": "cart-dialog",
+          "url": "/dashboard/carts",
+          "file": "evidence/carts/ar-light/cart-dialog-768.png",
+          "action": {
+            "present": true
+          },
+          "observed": {
+            "lang": "ar",
+            "dir": "rtl",
+            "dark": false,
+            "theme": null
+          },
+          "measurements": {
+            "horizontalOverflowPx": 0,
+            "pageHeightPx": 900,
+            "verticalClipped": [],
+            "horizontalClipped": [],
+            "ellipsised": [],
+            "rawI18nKeys": []
+          },
+          "own": null
+        }
+      ]
+    },
+    {
+      "lang": "en",
+      "theme": "dark",
+      "width": 768,
+      "runtimeLanguageSwitch": true,
+      "observed": {
+        "lang": "en",
+        "dir": "ltr",
+        "dark": true,
+        "theme": null
+      },
+      "targets": [
+        {
+          "id": "carts-list",
+          "url": "/dashboard/carts",
+          "file": "evidence/carts/en-dark/carts-list-768.png",
+          "action": null,
+          "observed": {
+            "lang": "en",
+            "dir": "ltr",
+            "dark": true,
+            "theme": null
+          },
+          "measurements": {
+            "horizontalOverflowPx": 0,
+            "pageHeightPx": 900,
+            "verticalClipped": [],
+            "horizontalClipped": [
+              {
+                "tag": "span",
+                "cls": "block max-w-full truncate text-start text-xs text-muted-foreground",
+                "text": "mohamed@example.com",
+                "scrollWidth": 144,
+                "clientWidth": 141
+              }
+            ],
+            "ellipsised": [
+              {
+                "tag": "span",
+                "cls": "block max-w-full truncate text-start text-xs text-muted-foreground",
+                "text": "mohamed@example.com"
+              }
+            ],
+            "rawI18nKeys": []
+          },
+          "own": {
+            "cartRows": 4,
+            "pageOverflow": false
+          }
+        },
+        {
+          "id": "cart-dialog",
+          "url": "/dashboard/carts",
+          "file": "evidence/carts/en-dark/cart-dialog-768.png",
+          "action": {
+            "present": true
+          },
+          "observed": {
+            "lang": "en",
+            "dir": "ltr",
+            "dark": true,
+            "theme": null
+          },
+          "measurements": {
+            "horizontalOverflowPx": 0,
+            "pageHeightPx": 900,
+            "verticalClipped": [],
+            "horizontalClipped": [
+              {
+                "tag": "span",
+                "cls": "block max-w-full truncate text-start text-xs text-muted-foreground",
+                "text": "mohamed@example.com",
+                "scrollWidth": 144,
+                "clientWidth": 141
+              }
+            ],
+            "ellipsised": [
+              {
+                "tag": "span",
+                "cls": "block max-w-full truncate text-start text-xs text-muted-foreground",
+                "text": "mohamed@example.com"
+              }
+            ],
+            "rawI18nKeys": []
+          },
+          "own": null
+        }
+      ]
+    },
+    {
+      "lang": "ar",
+      "theme": "dark",
+      "width": 768,
+      "runtimeLanguageSwitch": true,
+      "observed": {
+        "lang": "ar",
+        "dir": "rtl",
+        "dark": true,
+        "theme": null
+      },
+      "targets": [
+        {
+          "id": "carts-list",
+          "url": "/dashboard/carts",
+          "file": "evidence/carts/ar-dark/carts-list-768.png",
+          "action": null,
+          "observed": {
+            "lang": "ar",
+            "dir": "rtl",
+            "dark": true,
+            "theme": null
+          },
+          "measurements": {
+            "horizontalOverflowPx": 0,
+            "pageHeightPx": 900,
+            "verticalClipped": [],
+            "horizontalClipped": [],
+            "ellipsised": [],
+            "rawI18nKeys": []
+          },
+          "own": {
+            "cartRows": 4,
+            "pageOverflow": false
+          }
+        },
+        {
+          "id": "cart-dialog",
+          "url": "/dashboard/carts",
+          "file": "evidence/carts/ar-dark/cart-dialog-768.png",
+          "action": {
+            "present": true
+          },
+          "observed": {
+            "lang": "ar",
+            "dir": "rtl",
+            "dark": true,
+            "theme": null
+          },
+          "measurements": {
+            "horizontalOverflowPx": 0,
+            "pageHeightPx": 900,
+            "verticalClipped": [],
+            "horizontalClipped": [],
+            "ellipsised": [],
+            "rawI18nKeys": []
+          },
+          "own": null
+        }
+      ]
+    },
+    {
+      "lang": "en",
+      "theme": "light",
+      "width": 1024,
+      "runtimeLanguageSwitch": true,
+      "observed": {
+        "lang": "en",
+        "dir": "ltr",
+        "dark": false,
+        "theme": null
+      },
+      "targets": [
+        {
+          "id": "carts-list",
+          "url": "/dashboard/carts",
+          "file": "evidence/carts/en-light/carts-list-1024.png",
+          "action": null,
+          "observed": {
+            "lang": "en",
+            "dir": "ltr",
+            "dark": false,
+            "theme": null
+          },
+          "measurements": {
+            "horizontalOverflowPx": 0,
+            "pageHeightPx": 900,
+            "verticalClipped": [],
+            "horizontalClipped": [
+              {
+                "tag": "span",
+                "cls": "block max-w-full truncate text-start text-xs text-muted-foreground",
+                "text": "ahmed@example.com",
+                "scrollWidth": 126,
+                "clientWidth": 112
+              },
+              {
+                "tag": "span",
+                "cls": "block max-w-full truncate text-start text-sm font-medium",
+                "text": "Mohamed Hassan",
+                "scrollWidth": 120,
+                "clientWidth": 112
+              },
+              {
+                "tag": "span",
+                "cls": "block max-w-full truncate text-start text-xs text-muted-foreground",
+                "text": "mohamed@example.com",
+                "scrollWidth": 144,
+                "clientWidth": 112
+              }
+            ],
+            "ellipsised": [
+              {
+                "tag": "span",
+                "cls": "block max-w-full truncate text-start text-xs text-muted-foreground",
+                "text": "ahmed@example.com"
+              },
+              {
+                "tag": "span",
+                "cls": "block max-w-full truncate text-start text-sm font-medium",
+                "text": "Mohamed Hassan"
+              },
+              {
+                "tag": "span",
+                "cls": "block max-w-full truncate text-start text-xs text-muted-foreground",
+                "text": "mohamed@example.com"
+              }
+            ],
+            "rawI18nKeys": []
+          },
+          "own": {
+            "cartRows": 4,
+            "pageOverflow": false
+          }
+        },
+        {
+          "id": "cart-dialog",
+          "url": "/dashboard/carts",
+          "file": "evidence/carts/en-light/cart-dialog-1024.png",
+          "action": {
+            "present": true
+          },
+          "observed": {
+            "lang": "en",
+            "dir": "ltr",
+            "dark": false,
+            "theme": null
+          },
+          "measurements": {
+            "horizontalOverflowPx": 0,
+            "pageHeightPx": 900,
+            "verticalClipped": [],
+            "horizontalClipped": [
+              {
+                "tag": "span",
+                "cls": "block max-w-full truncate text-start text-xs text-muted-foreground",
+                "text": "ahmed@example.com",
+                "scrollWidth": 126,
+                "clientWidth": 112
+              },
+              {
+                "tag": "span",
+                "cls": "block max-w-full truncate text-start text-sm font-medium",
+                "text": "Mohamed Hassan",
+                "scrollWidth": 120,
+                "clientWidth": 112
+              },
+              {
+                "tag": "span",
+                "cls": "block max-w-full truncate text-start text-xs text-muted-foreground",
+                "text": "mohamed@example.com",
+                "scrollWidth": 144,
+                "clientWidth": 112
+              }
+            ],
+            "ellipsised": [
+              {
+                "tag": "span",
+                "cls": "block max-w-full truncate text-start text-xs text-muted-foreground",
+                "text": "ahmed@example.com"
+              },
+              {
+                "tag": "span",
+                "cls": "block max-w-full truncate text-start text-sm font-medium",
+                "text": "Mohamed Hassan"
+              },
+              {
+                "tag": "span",
+                "cls": "block max-w-full truncate text-start text-xs text-muted-foreground",
+                "text": "mohamed@example.com"
+              }
+            ],
+            "rawI18nKeys": []
+          },
+          "own": null
+        }
+      ]
+    },
+    {
+      "lang": "ar",
+      "theme": "light",
+      "width": 1024,
+      "runtimeLanguageSwitch": true,
+      "observed": {
+        "lang": "ar",
+        "dir": "rtl",
+        "dark": false,
+        "theme": null
+      },
+      "targets": [
+        {
+          "id": "carts-list",
+          "url": "/dashboard/carts",
+          "file": "evidence/carts/ar-light/carts-list-1024.png",
+          "action": null,
+          "observed": {
+            "lang": "ar",
+            "dir": "rtl",
+            "dark": false,
+            "theme": null
+          },
+          "measurements": {
+            "horizontalOverflowPx": 0,
+            "pageHeightPx": 900,
+            "verticalClipped": [],
+            "horizontalClipped": [
+              {
+                "tag": "span",
+                "cls": "block max-w-full truncate text-start text-xs text-muted-foreground",
+                "text": "ahmed@example.com",
+                "scrollWidth": 120,
+                "clientWidth": 112
+              },
+              {
+                "tag": "span",
+                "cls": "block max-w-full truncate text-start text-sm font-medium",
+                "text": "Mohamed Hassan",
+                "scrollWidth": 114,
+                "clientWidth": 112
+              },
+              {
+                "tag": "span",
+                "cls": "block max-w-full truncate text-start text-xs text-muted-foreground",
+                "text": "mohamed@example.com",
+                "scrollWidth": 137,
+                "clientWidth": 112
+              }
+            ],
+            "ellipsised": [
+              {
+                "tag": "span",
+                "cls": "block max-w-full truncate text-start text-xs text-muted-foreground",
+                "text": "ahmed@example.com"
+              },
+              {
+                "tag": "span",
+                "cls": "block max-w-full truncate text-start text-sm font-medium",
+                "text": "Mohamed Hassan"
+              },
+              {
+                "tag": "span",
+                "cls": "block max-w-full truncate text-start text-xs text-muted-foreground",
+                "text": "mohamed@example.com"
+              }
+            ],
+            "rawI18nKeys": []
+          },
+          "own": {
+            "cartRows": 4,
+            "pageOverflow": false
+          }
+        },
+        {
+          "id": "cart-dialog",
+          "url": "/dashboard/carts",
+          "file": "evidence/carts/ar-light/cart-dialog-1024.png",
+          "action": {
+            "present": true
+          },
+          "observed": {
+            "lang": "ar",
+            "dir": "rtl",
+            "dark": false,
+            "theme": null
+          },
+          "measurements": {
+            "horizontalOverflowPx": 0,
+            "pageHeightPx": 900,
+            "verticalClipped": [],
+            "horizontalClipped": [
+              {
+                "tag": "span",
+                "cls": "block max-w-full truncate text-start text-xs text-muted-foreground",
+                "text": "ahmed@example.com",
+                "scrollWidth": 120,
+                "clientWidth": 112
+              },
+              {
+                "tag": "span",
+                "cls": "block max-w-full truncate text-start text-sm font-medium",
+                "text": "Mohamed Hassan",
+                "scrollWidth": 114,
+                "clientWidth": 112
+              },
+              {
+                "tag": "span",
+                "cls": "block max-w-full truncate text-start text-xs text-muted-foreground",
+                "text": "mohamed@example.com",
+                "scrollWidth": 137,
+                "clientWidth": 112
+              }
+            ],
+            "ellipsised": [
+              {
+                "tag": "span",
+                "cls": "block max-w-full truncate text-start text-xs text-muted-foreground",
+                "text": "ahmed@example.com"
+              },
+              {
+                "tag": "span",
+                "cls": "block max-w-full truncate text-start text-sm font-medium",
+                "text": "Mohamed Hassan"
+              },
+              {
+                "tag": "span",
+                "cls": "block max-w-full truncate text-start text-xs text-muted-foreground",
+                "text": "mohamed@example.com"
+              }
+            ],
+            "rawI18nKeys": []
+          },
+          "own": null
+        }
+      ]
+    },
+    {
+      "lang": "en",
+      "theme": "dark",
+      "width": 1024,
+      "runtimeLanguageSwitch": true,
+      "observed": {
+        "lang": "en",
+        "dir": "ltr",
+        "dark": true,
+        "theme": null
+      },
+      "targets": [
+        {
+          "id": "carts-list",
+          "url": "/dashboard/carts",
+          "file": "evidence/carts/en-dark/carts-list-1024.png",
+          "action": null,
+          "observed": {
+            "lang": "en",
+            "dir": "ltr",
+            "dark": true,
+            "theme": null
+          },
+          "measurements": {
+            "horizontalOverflowPx": 0,
+            "pageHeightPx": 900,
+            "verticalClipped": [],
+            "horizontalClipped": [
+              {
+                "tag": "span",
+                "cls": "block max-w-full truncate text-start text-xs text-muted-foreground",
+                "text": "ahmed@example.com",
+                "scrollWidth": 126,
+                "clientWidth": 112
+              },
+              {
+                "tag": "span",
+                "cls": "block max-w-full truncate text-start text-sm font-medium",
+                "text": "Mohamed Hassan",
+                "scrollWidth": 120,
+                "clientWidth": 112
+              },
+              {
+                "tag": "span",
+                "cls": "block max-w-full truncate text-start text-xs text-muted-foreground",
+                "text": "mohamed@example.com",
+                "scrollWidth": 144,
+                "clientWidth": 112
+              }
+            ],
+            "ellipsised": [
+              {
+                "tag": "span",
+                "cls": "block max-w-full truncate text-start text-xs text-muted-foreground",
+                "text": "ahmed@example.com"
+              },
+              {
+                "tag": "span",
+                "cls": "block max-w-full truncate text-start text-sm font-medium",
+                "text": "Mohamed Hassan"
+              },
+              {
+                "tag": "span",
+                "cls": "block max-w-full truncate text-start text-xs text-muted-foreground",
+                "text": "mohamed@example.com"
+              }
+            ],
+            "rawI18nKeys": []
+          },
+          "own": {
+            "cartRows": 4,
+            "pageOverflow": false
+          }
+        },
+        {
+          "id": "cart-dialog",
+          "url": "/dashboard/carts",
+          "file": "evidence/carts/en-dark/cart-dialog-1024.png",
+          "action": {
+            "present": true
+          },
+          "observed": {
+            "lang": "en",
+            "dir": "ltr",
+            "dark": true,
+            "theme": null
+          },
+          "measurements": {
+            "horizontalOverflowPx": 0,
+            "pageHeightPx": 900,
+            "verticalClipped": [],
+            "horizontalClipped": [
+              {
+                "tag": "span",
+                "cls": "block max-w-full truncate text-start text-xs text-muted-foreground",
+                "text": "ahmed@example.com",
+                "scrollWidth": 126,
+                "clientWidth": 112
+              },
+              {
+                "tag": "span",
+                "cls": "block max-w-full truncate text-start text-sm font-medium",
+                "text": "Mohamed Hassan",
+                "scrollWidth": 120,
+                "clientWidth": 112
+              },
+              {
+                "tag": "span",
+                "cls": "block max-w-full truncate text-start text-xs text-muted-foreground",
+                "text": "mohamed@example.com",
+                "scrollWidth": 144,
+                "clientWidth": 112
+              }
+            ],
+            "ellipsised": [
+              {
+                "tag": "span",
+                "cls": "block max-w-full truncate text-start text-xs text-muted-foreground",
+                "text": "ahmed@example.com"
+              },
+              {
+                "tag": "span",
+                "cls": "block max-w-full truncate text-start text-sm font-medium",
+                "text": "Mohamed Hassan"
+              },
+              {
+                "tag": "span",
+                "cls": "block max-w-full truncate text-start text-xs text-muted-foreground",
+                "text": "mohamed@example.com"
+              }
+            ],
+            "rawI18nKeys": []
+          },
+          "own": null
+        }
+      ]
+    },
+    {
+      "lang": "ar",
+      "theme": "dark",
+      "width": 1024,
+      "runtimeLanguageSwitch": true,
+      "observed": {
+        "lang": "ar",
+        "dir": "rtl",
+        "dark": true,
+        "theme": null
+      },
+      "targets": [
+        {
+          "id": "carts-list",
+          "url": "/dashboard/carts",
+          "file": "evidence/carts/ar-dark/carts-list-1024.png",
+          "action": null,
+          "observed": {
+            "lang": "ar",
+            "dir": "rtl",
+            "dark": true,
+            "theme": null
+          },
+          "measurements": {
+            "horizontalOverflowPx": 0,
+            "pageHeightPx": 900,
+            "verticalClipped": [],
+            "horizontalClipped": [
+              {
+                "tag": "span",
+                "cls": "block max-w-full truncate text-start text-xs text-muted-foreground",
+                "text": "ahmed@example.com",
+                "scrollWidth": 120,
+                "clientWidth": 112
+              },
+              {
+                "tag": "span",
+                "cls": "block max-w-full truncate text-start text-sm font-medium",
+                "text": "Mohamed Hassan",
+                "scrollWidth": 114,
+                "clientWidth": 112
+              },
+              {
+                "tag": "span",
+                "cls": "block max-w-full truncate text-start text-xs text-muted-foreground",
+                "text": "mohamed@example.com",
+                "scrollWidth": 137,
+                "clientWidth": 112
+              }
+            ],
+            "ellipsised": [
+              {
+                "tag": "span",
+                "cls": "block max-w-full truncate text-start text-xs text-muted-foreground",
+                "text": "ahmed@example.com"
+              },
+              {
+                "tag": "span",
+                "cls": "block max-w-full truncate text-start text-sm font-medium",
+                "text": "Mohamed Hassan"
+              },
+              {
+                "tag": "span",
+                "cls": "block max-w-full truncate text-start text-xs text-muted-foreground",
+                "text": "mohamed@example.com"
+              }
+            ],
+            "rawI18nKeys": []
+          },
+          "own": {
+            "cartRows": 4,
+            "pageOverflow": false
+          }
+        },
+        {
+          "id": "cart-dialog",
+          "url": "/dashboard/carts",
+          "file": "evidence/carts/ar-dark/cart-dialog-1024.png",
+          "action": {
+            "present": true
+          },
+          "observed": {
+            "lang": "ar",
+            "dir": "rtl",
+            "dark": true,
+            "theme": null
+          },
+          "measurements": {
+            "horizontalOverflowPx": 0,
+            "pageHeightPx": 900,
+            "verticalClipped": [],
+            "horizontalClipped": [
+              {
+                "tag": "span",
+                "cls": "block max-w-full truncate text-start text-xs text-muted-foreground",
+                "text": "ahmed@example.com",
+                "scrollWidth": 120,
+                "clientWidth": 112
+              },
+              {
+                "tag": "span",
+                "cls": "block max-w-full truncate text-start text-sm font-medium",
+                "text": "Mohamed Hassan",
+                "scrollWidth": 114,
+                "clientWidth": 112
+              },
+              {
+                "tag": "span",
+                "cls": "block max-w-full truncate text-start text-xs text-muted-foreground",
+                "text": "mohamed@example.com",
+                "scrollWidth": 137,
+                "clientWidth": 112
+              }
+            ],
+            "ellipsised": [
+              {
+                "tag": "span",
+                "cls": "block max-w-full truncate text-start text-xs text-muted-foreground",
+                "text": "ahmed@example.com"
+              },
+              {
+                "tag": "span",
+                "cls": "block max-w-full truncate text-start text-sm font-medium",
+                "text": "Mohamed Hassan"
+              },
+              {
+                "tag": "span",
+                "cls": "block max-w-full truncate text-start text-xs text-muted-foreground",
+                "text": "mohamed@example.com"
+              }
+            ],
+            "rawI18nKeys": []
+          },
+          "own": null
+        }
+      ]
+    },
+    {
+      "lang": "en",
+      "theme": "light",
+      "width": 1440,
+      "runtimeLanguageSwitch": true,
+      "observed": {
+        "lang": "en",
+        "dir": "ltr",
+        "dark": false,
+        "theme": null
+      },
+      "targets": [
+        {
+          "id": "carts-list",
+          "url": "/dashboard/carts",
+          "file": "evidence/carts/en-light/carts-list-1440.png",
+          "action": null,
+          "observed": {
+            "lang": "en",
+            "dir": "ltr",
+            "dark": false,
+            "theme": null
+          },
+          "measurements": {
+            "horizontalOverflowPx": 0,
+            "pageHeightPx": 900,
+            "verticalClipped": [],
+            "horizontalClipped": [],
+            "ellipsised": [],
+            "rawI18nKeys": []
+          },
+          "own": {
+            "cartRows": 4,
+            "pageOverflow": false
+          }
+        },
+        {
+          "id": "cart-dialog",
+          "url": "/dashboard/carts",
+          "file": "evidence/carts/en-light/cart-dialog-1440.png",
+          "action": {
+            "present": true
+          },
+          "observed": {
+            "lang": "en",
+            "dir": "ltr",
+            "dark": false,
+            "theme": null
+          },
+          "measurements": {
+            "horizontalOverflowPx": 0,
+            "pageHeightPx": 900,
+            "verticalClipped": [],
+            "horizontalClipped": [],
+            "ellipsised": [],
+            "rawI18nKeys": []
+          },
+          "own": null
+        }
+      ]
+    },
+    {
+      "lang": "ar",
+      "theme": "light",
+      "width": 1440,
+      "runtimeLanguageSwitch": true,
+      "observed": {
+        "lang": "ar",
+        "dir": "rtl",
+        "dark": false,
+        "theme": null
+      },
+      "targets": [
+        {
+          "id": "carts-list",
+          "url": "/dashboard/carts",
+          "file": "evidence/carts/ar-light/carts-list-1440.png",
+          "action": null,
+          "observed": {
+            "lang": "ar",
+            "dir": "rtl",
+            "dark": false,
+            "theme": null
+          },
+          "measurements": {
+            "horizontalOverflowPx": 0,
+            "pageHeightPx": 900,
+            "verticalClipped": [],
+            "horizontalClipped": [],
+            "ellipsised": [],
+            "rawI18nKeys": []
+          },
+          "own": {
+            "cartRows": 4,
+            "pageOverflow": false
+          }
+        },
+        {
+          "id": "cart-dialog",
+          "url": "/dashboard/carts",
+          "file": "evidence/carts/ar-light/cart-dialog-1440.png",
+          "action": {
+            "present": true
+          },
+          "observed": {
+            "lang": "ar",
+            "dir": "rtl",
+            "dark": false,
+            "theme": null
+          },
+          "measurements": {
+            "horizontalOverflowPx": 0,
+            "pageHeightPx": 900,
+            "verticalClipped": [],
+            "horizontalClipped": [],
+            "ellipsised": [],
+            "rawI18nKeys": []
+          },
+          "own": null
+        }
+      ]
+    },
+    {
+      "lang": "en",
+      "theme": "dark",
+      "width": 1440,
+      "runtimeLanguageSwitch": true,
+      "observed": {
+        "lang": "en",
+        "dir": "ltr",
+        "dark": true,
+        "theme": null
+      },
+      "targets": [
+        {
+          "id": "carts-list",
+          "url": "/dashboard/carts",
+          "file": "evidence/carts/en-dark/carts-list-1440.png",
+          "action": null,
+          "observed": {
+            "lang": "en",
+            "dir": "ltr",
+            "dark": true,
+            "theme": null
+          },
+          "measurements": {
+            "horizontalOverflowPx": 0,
+            "pageHeightPx": 900,
+            "verticalClipped": [],
+            "horizontalClipped": [],
+            "ellipsised": [],
+            "rawI18nKeys": []
+          },
+          "own": {
+            "cartRows": 4,
+            "pageOverflow": false
+          }
+        },
+        {
+          "id": "cart-dialog",
+          "url": "/dashboard/carts",
+          "file": "evidence/carts/en-dark/cart-dialog-1440.png",
+          "action": {
+            "present": true
+          },
+          "observed": {
+            "lang": "en",
+            "dir": "",
+            "dark": false,
+            "theme": null
+          },
+          "measurements": {
+            "horizontalOverflowPx": 0,
+            "pageHeightPx": 900,
+            "verticalClipped": [],
+            "horizontalClipped": [],
+            "ellipsised": [],
+            "rawI18nKeys": []
+          },
+          "own": null
+        }
+      ]
+    },
+    {
+      "lang": "ar",
+      "theme": "dark",
+      "width": 1440,
+      "runtimeLanguageSwitch": true,
+      "observed": {
+        "lang": "ar",
+        "dir": "rtl",
+        "dark": true,
+        "theme": null
+      },
+      "targets": [
+        {
+          "id": "carts-list",
+          "url": "/dashboard/carts",
+          "file": "evidence/carts/ar-dark/carts-list-1440.png",
+          "action": null,
+          "observed": {
+            "lang": "ar",
+            "dir": "rtl",
+            "dark": true,
+            "theme": null
+          },
+          "measurements": {
+            "horizontalOverflowPx": 0,
+            "pageHeightPx": 900,
+            "verticalClipped": [],
+            "horizontalClipped": [],
+            "ellipsised": [],
+            "rawI18nKeys": []
+          },
+          "own": {
+            "cartRows": 2,
+            "pageOverflow": false
+          }
+        },
+        {
+          "id": "cart-dialog",
+          "url": "/dashboard/carts",
+          "file": "evidence/carts/ar-dark/cart-dialog-1440.png",
+          "action": {
+            "present": true
+          },
+          "observed": {
+            "lang": "ar",
+            "dir": "rtl",
+            "dark": true,
+            "theme": null
+          },
+          "measurements": {
+            "horizontalOverflowPx": 0,
+            "pageHeightPx": 900,
+            "verticalClipped": [],
+            "horizontalClipped": [],
+            "ellipsised": [],
+            "rawI18nKeys": []
+          },
+          "own": null
+        }
+      ]
+    },
+    {
+      "lang": "en",
+      "theme": "light",
+      "width": 1920,
+      "runtimeLanguageSwitch": true,
+      "observed": {
+        "lang": "en",
+        "dir": "ltr",
+        "dark": false,
+        "theme": null
+      },
+      "targets": [
+        {
+          "id": "carts-list",
+          "url": "/dashboard/carts",
+          "file": "evidence/carts/en-light/carts-list-1920.png",
+          "action": null,
+          "observed": {
+            "lang": "en",
+            "dir": "ltr",
+            "dark": false,
+            "theme": null
+          },
+          "measurements": {
+            "horizontalOverflowPx": 0,
+            "pageHeightPx": 900,
+            "verticalClipped": [],
+            "horizontalClipped": [],
+            "ellipsised": [],
+            "rawI18nKeys": []
+          },
+          "own": {
+            "cartRows": 4,
+            "pageOverflow": false
+          }
+        },
+        {
+          "id": "cart-dialog",
+          "url": "/dashboard/carts",
+          "file": "evidence/carts/en-light/cart-dialog-1920.png",
+          "action": {
+            "present": true
+          },
+          "observed": {
+            "lang": "en",
+            "dir": "ltr",
+            "dark": false,
+            "theme": null
+          },
+          "measurements": {
+            "horizontalOverflowPx": 0,
+            "pageHeightPx": 900,
+            "verticalClipped": [],
+            "horizontalClipped": [],
+            "ellipsised": [],
+            "rawI18nKeys": []
+          },
+          "own": null
+        }
+      ]
+    },
+    {
+      "lang": "ar",
+      "theme": "light",
+      "width": 1920,
+      "runtimeLanguageSwitch": true,
+      "observed": {
+        "lang": "ar",
+        "dir": "rtl",
+        "dark": false,
+        "theme": null
+      },
+      "targets": [
+        {
+          "id": "carts-list",
+          "url": "/dashboard/carts",
+          "file": "evidence/carts/ar-light/carts-list-1920.png",
+          "action": null,
+          "observed": {
+            "lang": "ar",
+            "dir": "rtl",
+            "dark": false,
+            "theme": null
+          },
+          "measurements": {
+            "horizontalOverflowPx": 0,
+            "pageHeightPx": 900,
+            "verticalClipped": [],
+            "horizontalClipped": [],
+            "ellipsised": [],
+            "rawI18nKeys": []
+          },
+          "own": {
+            "cartRows": 4,
+            "pageOverflow": false
+          }
+        },
+        {
+          "id": "cart-dialog",
+          "url": "/dashboard/carts",
+          "file": "evidence/carts/ar-light/cart-dialog-1920.png",
+          "action": {
+            "present": true
+          },
+          "observed": {
+            "lang": "ar",
+            "dir": "rtl",
+            "dark": false,
+            "theme": null
+          },
+          "measurements": {
+            "horizontalOverflowPx": 0,
+            "pageHeightPx": 900,
+            "verticalClipped": [],
+            "horizontalClipped": [],
+            "ellipsised": [],
+            "rawI18nKeys": []
+          },
+          "own": null
+        }
+      ]
+    },
+    {
+      "lang": "en",
+      "theme": "dark",
+      "width": 1920,
+      "runtimeLanguageSwitch": true,
+      "observed": {
+        "lang": "en",
+        "dir": "ltr",
+        "dark": true,
+        "theme": null
+      },
+      "targets": [
+        {
+          "id": "carts-list",
+          "url": "/dashboard/carts",
+          "file": "evidence/carts/en-dark/carts-list-1920.png",
+          "action": null,
+          "observed": {
+            "lang": "en",
+            "dir": "ltr",
+            "dark": true,
+            "theme": null
+          },
+          "measurements": {
+            "horizontalOverflowPx": 0,
+            "pageHeightPx": 900,
+            "verticalClipped": [],
+            "horizontalClipped": [],
+            "ellipsised": [],
+            "rawI18nKeys": []
+          },
+          "own": {
+            "cartRows": 4,
+            "pageOverflow": false
+          }
+        },
+        {
+          "id": "cart-dialog",
+          "url": "/dashboard/carts",
+          "file": "evidence/carts/en-dark/cart-dialog-1920.png",
+          "action": {
+            "present": true
+          },
+          "observed": {
+            "lang": "en",
+            "dir": "ltr",
+            "dark": true,
+            "theme": null
+          },
+          "measurements": {
+            "horizontalOverflowPx": 0,
+            "pageHeightPx": 900,
+            "verticalClipped": [],
+            "horizontalClipped": [],
+            "ellipsised": [],
+            "rawI18nKeys": []
+          },
+          "own": null
+        }
+      ]
+    },
+    {
+      "lang": "ar",
+      "theme": "dark",
+      "width": 1920,
+      "runtimeLanguageSwitch": true,
+      "observed": {
+        "lang": "ar",
+        "dir": "rtl",
+        "dark": true,
+        "theme": null
+      },
+      "targets": [
+        {
+          "id": "carts-list",
+          "url": "/dashboard/carts",
+          "file": "evidence/carts/ar-dark/carts-list-1920.png",
+          "action": null,
+          "observed": {
+            "lang": "ar",
+            "dir": "rtl",
+            "dark": true,
+            "theme": null
+          },
+          "measurements": {
+            "horizontalOverflowPx": 0,
+            "pageHeightPx": 900,
+            "verticalClipped": [],
+            "horizontalClipped": [],
+            "ellipsised": [],
+            "rawI18nKeys": []
+          },
+          "own": {
+            "cartRows": 4,
+            "pageOverflow": false
+          }
+        },
+        {
+          "id": "cart-dialog",
+          "url": "/dashboard/carts",
+          "file": "evidence/carts/ar-dark/cart-dialog-1920.png",
+          "action": {
+            "present": true
+          },
+          "observed": {
+            "lang": "ar",
+            "dir": "rtl",
+            "dark": true,
+            "theme": null
+          },
+          "measurements": {
+            "horizontalOverflowPx": 0,
+            "pageHeightPx": 900,
+            "verticalClipped": [],
+            "horizontalClipped": [],
+            "ellipsised": [],
+            "rawI18nKeys": []
+          },
+          "own": null
+        }
+      ]
+    }
+  ],
+  "measurements": null,
+  "measurementError": null
+}

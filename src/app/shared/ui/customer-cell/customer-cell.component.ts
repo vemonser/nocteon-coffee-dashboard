@@ -1,11 +1,10 @@
 import { Component, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { TranslocoPipe } from '@jsverse/transloco';
 
 @Component({
   selector: 'app-customer-cell',
   standalone: true,
-  imports: [CommonModule, TranslocoPipe],
+  imports: [CommonModule],
   template: `
     <div class="flex items-center gap-2 min-w-[180px]">
       <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-medium text-muted-foreground">

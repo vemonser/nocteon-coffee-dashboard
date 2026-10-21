@@ -372,18 +372,18 @@
               <label for="order-note-body" class="sr-only">
                 {{ 'orders.detail.addNote' | transloco }}
               </label>
-              <input
+              <textarea
                 id="order-note-body"
                 hlmInput
-                type="text"
                 dir="auto"
-                class="min-w-0 flex-1"
+                rows="2"
+                class="min-w-0 flex-1 resize-none auto-grow"
                 data-testid="order-note-input"
                 [ngModel]="noteDraft()"
                 (ngModelChange)="noteDraft.set($event)"
-                (keydown.enter)="addNote()"
+                (keydown)="onNoteKeydown($event)"
                 [placeholder]="'orders.detail.notePlaceholder' | transloco"
-              />
+              ></textarea>
               <button
                 hlmBtn
                 variant="outline"

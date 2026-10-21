@@ -19,6 +19,7 @@ import { AuthService } from '../../../core/auth/auth.service';
 import { LanguageService } from '../../../core/i18n/language.service';
 import { TranslocoService } from '@jsverse/transloco';
 import { ThemeToggleComponent } from '../../../core/theme/theme-toggle.component';
+
 import { NotificationComponent } from '../../notification/components/notification.component';
 import { BreadcrumbComponent } from '../../../shared/components/breadcrumb/breadcrumb.component';
 import { UserMenuComponent } from '../../../shared/ui/user-menu/user-menu.component';
@@ -57,12 +58,12 @@ export class NavigationBarComponent {
   protected readonly auth = inject(AuthService);
   protected readonly language = inject(LanguageService);
   private readonly transloco = inject(TranslocoService);
-  private readonly router = inject(Router);
 
   protected readonly toggleSidebarLabel = computed(() => {
     this.language.language();
     return this.transloco.translate('common.toggleSidebar');
   });
+  private readonly router = inject(Router);
 
   readonly paletteOpen = signal(false);
   readonly paletteTrigger = viewChild<ElementRef<HTMLElement>>('searchTrigger');

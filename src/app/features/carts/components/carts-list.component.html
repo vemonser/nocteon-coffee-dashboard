@@ -1,4 +1,4 @@
-<div class="flex flex-col gap-6 p-6">
+<div class="mx-auto flex w-full max-w-7xl flex-col gap-6 p-6">
   <!-- Header -->
   <div class="flex items-center justify-between gap-4">
     <div>
@@ -9,6 +9,30 @@
       <ng-icon name="lucideSearch" class="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
       <input hlmInput type="search" [dir]="language.current() === 'ar' ? 'rtl' : 'ltr'" [(ngModel)]="searchQuery" (input)="onSearch()" [placeholder]="'carts.search' | transloco" [attr.aria-label]="'carts.search' | transloco" class="w-full ps-9" />
     </div>
+  </div>
+
+  <!-- KPI strip -->
+  <div class="grid grid-cols-3 gap-3">
+    <div class="flex h-[72px] flex-col justify-center rounded-[var(--radius-card)] border bg-card px-4 py-2">
+      <p class="text-xs text-muted-foreground">Active carts</p>
+      <p class="mt-0.5 text-lg font-bold tabular-nums">{{ totalItems() }}</p>
+    </div>
+    <div class="flex h-[72px] flex-col justify-center rounded-[var(--radius-card)] border bg-card px-4 py-2">
+      <p class="text-xs text-muted-foreground">Abandoned carts</p>
+      <p class="mt-0.5 text-lg font-bold tabular-nums">0</p>
+    </div>
+    <div class="flex h-[72px] flex-col justify-center rounded-[var(--radius-card)] border bg-card px-4 py-2">
+      <p class="text-xs text-muted-foreground">Potential revenue</p>
+      <p class="mt-0.5 text-lg font-bold tabular-nums">{{ 0 | money }}</p>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="flex gap-2 border-b" data-testid="carts-tabs">
+    <button class="px-3 py-2 text-sm font-medium border-b-2 border-primary text-primary">All ({{ totalItems() }})</button>
+    <button class="px-3 py-2 text-sm text-muted-foreground">Active</button>
+    <button class="px-3 py-2 text-sm text-muted-foreground">Abandoned</button>
+    <button class="px-3 py-2 text-sm text-muted-foreground">Converted</button>
   </div>
 
   <!-- Loading State -->

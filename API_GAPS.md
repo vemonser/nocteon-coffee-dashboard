@@ -1,59 +1,80 @@
-# API_GAPS.md — Nocteon Dashboard
+# API_GAPS.md — proposed contracts the frontend is waiting on
 
-Appended by the global search round (ui/global-search-v2).
+Status: PROPOSAL ONLY. Nothing here has been implemented on the backend.
+The frontend builds against typed adapters behind flags (see DECISIONS.md)
+so the UI can be demonstrated, but real data flows only once these land.
 
-## Aggregated search endpoint (BLOCKED on backend)
+## Orders
 
-Frontend expects (behind flag `GLOBAL_SEARCH_USE_MOCK = true` in
-`src/app/features/layout/navigation-bar/global-search/service/global-search.service.ts`):
+### 1. KPI aggregates on the stats endpoint
+`GET /api/dashboard/orders/stats` currently returns counts only. The 4 compact
+KPI cards (Revenue net of refunds, Open orders, Avg order value,
+Refund/cancel rate) need:
+```json
+"data": {
+  "total": 17,
+  "revenueNetOfRefunds": 1176.25,
+  "refundedAmount": 0.00,
+  "avgOrderValue": 69.19,
+  "cancelRate": 0.294,
+  "byStatus": [...],
+  "byPaymentStatus": [...],
+  "byPaymentMethod": [...]
+}
+```
+Frontend adapter: computes revenue/cancelRate from a full read of the filtered
+set behind flag `COMPUTE_KPI_FROM_ALL_ROWS` (default true) until this lands.
 
-`GET /api/admin/search?q=&limitPerType=5`
+### 2. Order status history / activity events
+No endpoint exists for order events (status changes, payment, shipment,
+email, notes, refunds). Proposed:
+`GET /api/dashboard/orders/{id}/activity` returning
+```json
+[
+  { "type": "STATUS_CHANGE", "from": "CONFIRMED", "to": "PROCESSING", "actor": "admin@...", "at": "...", "note": "..." },
+  { "type": "PAYMENT", "status": "PAID", "amount": 120.50, "reference": "...", "at": "..." },
+  { "type": "SHIPMENT", "carrier": "...", "trackingNumber": "...", "at": "..." },
+  { "type": "EMAIL", "kind": "STATUS_UPDATE", "to": "...", "at": "..." },
+  { "type": "NOTE", "body": "...", "author": "...", "at": "..." },
+  { "type": "REFUND", "amount": 10.00, "reason": "...", "at": "..." }
+]
+```
+Frontend builds against `getActivity()` adapter (history + notes + payment)
+until this lands; shows "No recorded events yet" only when truly empty.
 
-Response: `ApiResponse<{ groups: SearchGroup[], totalCount: number }>` where
-`SearchGroup = { type, total, items: SearchItem[] }` and
-`SearchItem = { id, type, title, subtitle, status (raw enum), thumbnail, meta, route, ...type-specific fields }`.
+### 3. Refunded amount on an order
+`OrderResponse.totalAmount` must stay the original total. Add `refundedAmount`
+and `netPaid` (already in OrderPaymentDetails) to the order row so the list
+can show "Refunded EGP x" without a second call.
 
-Entities and match fields:
-- orders: full number (ORD-2026-000002), partial number ("2026-000002", "#2"), customer name/email/phone, transaction reference, tracking number
-- products: name (EN + AR), SKU
-- categories: name (EN + AR)
-- customers: name, email, phone
-- reviews: comment text, reviewer name
-- contact messages: subject, sender name/email, body
-- carts: customer name/email
-- shipping zones: name
+### 4. COD + Cancelled payment status
+COD cannot "fail". Propose payment status `NOT_COLLECTED` for cancelled COD
+orders instead of `FAILED`.
 
-Must respect admin permissions (staff accounts, if searchable, are a separate group).
+### 5. Paid-at + transaction reference
+Paid orders must populate `paidAt` and `transactionReference`. Frontend shows a
+data warning when missing.
 
-Arabic normalization on backend: strip tashkeel; unify alef variants (أ إ آ -> ا), ي/ى, ة/ه. Ranking: exact match, then prefix, then substring.
+## Carts
 
-## Order identifier
-Orders pages must use the full order number (`ORD-2026-000002`) everywhere (list, details, search, breadcrumbs) instead of "Order #2". Backend already returns orderNumber; frontend should prefer it over numeric id.
-EOF
-## Contact messages & reviews round (ui/contact-reviews-v2)
+### 6. Cart status, last activity, converted order
+`CartResponse` needs: `status` (ACTIVE/ABANDONED/CONVERTED), `lastActivityAt`,
+`convertedOrderId`. Abandoned threshold default 24h, configurable (see
+DECISIONS.md). Frontend derives status client-side until backend sends it.
 
-### Contact messages
-- **Mark as unread**: no `PATCH /api/dashboard/contact-messages/{id}/unread` endpoint. Only mark-as-read exists. Frontend disables the action and logs it. (gap)
-- **Bulk mark-read / bulk delete**: no bulk endpoints. Frontend falls back to per-id calls. (gap)
-- **Resend email**: frontend calls `/resend-email` which does not exist in backend (404). Backend has no resend capability. (gap)
-- **Reply metadata**: backend `ContactResponse` has no `repliedAt`/`repliedBy`/`emailStatus`. Frontend `emailStatus` is always undefined; email-state block hidden. Add these fields or remove frontend reliance. (gap)
-- **Pagination/filtering**: contact endpoint takes no status filter, search, or date params; frontend loads whole set (max 100) and filters client-side. (gap, by design)
-- **Reply persistence**: `replyContent` is returned after reply; `replied` flag set. Confirmed working.
+### 7. Send reminder endpoint
+`POST /api/dashboard/carts/{id}/remind` — sends an abandonment reminder
+e-mail. Returns 202. Frontend calls it behind a flag; shows toast either way.
 
-### Reviews
-- **Rejected/hidden state**: backend has only `isApproved` boolean. No rejected state, no reject endpoint. Frontend does not add a Rejected tab. (gap)
-- **Verified purchase verification**: backend `ReviewResponse` has no `orderId`/`orderNumber`. Frontend `VerifiedBadge` links to order only when present (never). Verified = reviewer has a Delivered order containing the product; seed audit needed. (gap)
-- **Reviewer identity**: backend returns `username` (lowercase) only, no full name. Frontend displays username. Source of truth decision pending (Orders show full name). (gap)
-- **Verified count in stats**: `ReviewStatsResponse` has no verified count. Frontend computes verified share from loaded page only (approximate). (gap)
-- **Admin response to review**: no backend support. (gap)
-- **Bulk approval**: backend `setApproval` accepts `ids[]` (exists). OK.
-- **Product name sort**: backend sorts by entity field; `product.name` nested path may or may not be supported. (gap, verify)
+### 8. Stock/low-stock on cart lines
+`CartItemResponse.stockQuantity` exists. Add `lowStockThreshold` (default 3) so
+the UI can show a warning chip consistently.
 
-## Orders list v3 (ui/orders-list-v3)
+## Shared
 
-- `refunded_amount` / refund amount not in `OrderResponse`; list shows secondary "Refunded" line only when present (optional field added). Backend gap: expose refunded amount on order/payment.
-- Resend email: no backend endpoint; action reports unavailable.
-- Bulk status change: no bulk endpoint; frontend applies per selected order.
+### 9. SKU format
+Orders use `SKU-1-1`, carts use `SKU-001`. Propose a single format
+`SKU-<product>-<variant>` zero-padded to 3 digits. Document in SEED_PROPOSAL.
 
 ## Reviews v3 (ui/reviews-v3)
 
@@ -94,3 +115,7 @@ Every line below was checked against the RUNNING backend (`main`, live call on
   name in the dialog links to `/dashboard/products/:slug/edit`, the only
   product page the dashboard has. A read-only product page would be a routing
   task, not an API one. (gap, frontend)
+### 10. Currency/scale
+Cart prices (12.50/14/11) vs order prices (650/525) suggest different scales.
+Confirm whether carts are in a different currency or the seed is wrong;
+propose a single currency (EGP) and a single scale across both entities.
