@@ -120,3 +120,15 @@ export interface OrdersUrlState {
   page: number;
   size: number;
 }
+
+/**
+ * The stats response from the backend for the orders list.
+ */
+export interface OrderStatsResponse {
+  total: number;
+  revenue: number;
+  revenueOrderCount: number;
+  byStatus: Array<{ status: string; count: number }>;
+  byPaymentStatus: Array<{ paymentStatus: string; count: number }>;
+  byPaymentMethod: Array<{ paymentMethod: string; count: number }>;
+}

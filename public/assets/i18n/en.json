@@ -77,13 +77,14 @@
     "products": "Products",
     "promoCodes": "Promo Codes",
     "journalPosts": "Journal Posts",
+    "reviews": "Reviews",
     "searching": "Searching…",
     "customers": "Customers",
     "recentSearches": "Recent searches",
     "quickLinks": "Quick links",
     "quickActions": "Quick actions",
-    "viewAll": "View all {n}",
-    "noResultsFor": "No results for “{q}”",
+    "viewAll": "View all {{n}}",
+    "noResultsFor": "No results for “{{q}}”",
     "noResultsHint": "Check spelling, or try an order number or email.",
     "hintNavigate": "navigate",
     "hintOpen": "open",
@@ -93,7 +94,9 @@
     "actions": "Actions",
     "addProduct": "Add product",
     "addCategory": "Add category",
-    "shippingZones": "Shipping zones"
+    "shippingZones": "Shipping zones",
+    "contactMessages": "Contact Messages",
+    "carts": "Carts"
   },
   "StoreSettingPage": {
     "title": "Store Setting"
@@ -1206,7 +1209,9 @@
       "averageRating": "Average rating",
       "distribution": "Star distribution",
       "pending": "Pending",
-      "total": "Total"
+      "total": "Total",
+      "reviews": "Reviews",
+      "verifiedShare": "Verified share"
     },
     "dateRange": {
       "all": "All time",
@@ -1353,7 +1358,13 @@
       "matching": "Matching filters",
       "open": "Open",
       "delivered": "Delivered",
-      "cancelled": "Cancelled"
+      "cancelled": "Cancelled",
+      "revenue": "Revenue",
+      "avgOrderValue": "Average order value",
+      "cancelRate": "Cancellation rate",
+      "revenueTooltip": "The money the orders in this view brought in: the paid orders, minus the refunds, cancelled orders excluded.",
+      "avgOrderValueTooltip": "Revenue divided by the number of paid orders it came from — cancelled orders are not part of it.",
+      "cancelRateTooltip": "The cancelled orders in this view, as a share of all the orders in it."
     },
     "filters": {
       "paymentStatus": "Payment status",
@@ -1402,7 +1413,8 @@
       "cancel": "Cancel order",
       "refund": "Refund",
       "resendEmail": "Resend email",
-      "copy": "Copy"
+      "copy": "Copy",
+      "copyOrderNumber": "Copy order number"
     },
     "countItems_one": "{{count}} item",
     "countItems_other": "{{count}} items",
@@ -1938,6 +1950,22 @@
       "status": "Status",
       "dateRange": "Date range",
       "clear": "Clear filters"
+    },
+    "bulkSelected": "{{count}} selected",
+    "bulkMarkRead": "Mark as read",
+    "bulkMarkUnread": "Mark as unread",
+    "bulkDelete": "Delete",
+    "markRead": "Mark as read",
+    "markUnread": "Mark as unread",
+    "markUnreadNotSupported": "Mark as unread is not supported",
+    "sending": "Sending…",
+    "bulk": {
+      "selected": "{{count}} selected",
+      "markRead": "Mark as read",
+      "markUnread": "Mark as unread",
+      "markUnreadNotSupported": "Mark as unread is not supported",
+      "delete": "Delete",
+      "sending": "Sending…"
     }
   },
   "unauthorized": {

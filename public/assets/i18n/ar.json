@@ -77,13 +77,14 @@
     "products": "المنتجات",
     "promoCodes": "أكواد الخصم",
     "journalPosts": "مقالات المجلة",
+    "reviews": "التقييمات",
     "searching": "جارٍ البحث…",
     "customers": "العملاء",
     "recentSearches": "عمليات البحث الأخيرة",
     "quickLinks": "روابط سريعة",
     "quickActions": "إجراءات سريعة",
-    "viewAll": "عرض الكل {n}",
-    "noResultsFor": "لا توجد نتائج لـ “{q}”",
+    "viewAll": "عرض الكل {{n}}",
+    "noResultsFor": "لا توجد نتائج لـ “{{q}}”",
     "noResultsHint": "تحقق من الإملاء، أو جرّب رقم طلب أو بريداً.",
     "hintNavigate": "تصفح",
     "hintOpen": "فتح",
@@ -93,7 +94,9 @@
     "actions": "الإجراءات",
     "addProduct": "إضافة منتج",
     "addCategory": "إضافة فئة",
-    "shippingZones": "مناطق الشحن"
+    "shippingZones": "مناطق الشحن",
+    "contactMessages": "رسائل التواصل",
+    "carts": "السلة"
   },
   "StoreSettingPage": {
     "title": "إعدادات المتجر"
@@ -1218,7 +1221,9 @@
       "averageRating": "متوسط التقييم",
       "distribution": "توزيع النجوم",
       "pending": "قيد المراجعة",
-      "total": "الإجمالي"
+      "total": "الإجمالي",
+      "reviews": "التقييمات",
+      "verifiedShare": "نسبة الموثقة"
     },
     "dateRange": {
       "all": "كل الفترات",
@@ -1365,7 +1370,13 @@
       "matching": "المطابقة للفلاتر",
       "open": "قيد التنفيذ",
       "delivered": "تم التوصيل",
-      "cancelled": "ملغاة"
+      "cancelled": "ملغاة",
+      "revenue": "الإيرادات",
+      "avgOrderValue": "متوسط قيمة الطلب",
+      "cancelRate": "معدل الإلغاء",
+      "revenueTooltip": "المال الذي أتت به الطلبات في هذا العرض: الطلبات المدفوعة، ناقص المبالغ المستردة، مع استثناء الطلبات الملغاة.",
+      "avgOrderValueTooltip": "الإيرادات مقسومة على عدد الطلبات المدفوعة التي أتت منها — الطلبات الملغاة ليست جزءاً منها.",
+      "cancelRateTooltip": "الطلبات الملغاة في هذا العرض، كنسبة من جميع الطلبات فيه."
     },
     "filters": {
       "paymentStatus": "حالة الدفع",
@@ -1414,7 +1425,8 @@
       "cancel": "إلغاء الطلب",
       "refund": "استرداد المبلغ",
       "resendEmail": "إعادة إرسال البريد",
-      "copy": "نسخ"
+      "copy": "نسخ",
+      "copyOrderNumber": "نسخ رقم الطلب"
     },
     "countItems_zero": "لا منتجات",
     "countItems_one": "منتج واحد",
@@ -2006,6 +2018,22 @@
       "status": "الحالة",
       "dateRange": "الفترة",
       "clear": "مسح الفلاتر"
+    },
+    "bulkSelected": "تم تحديد {{count}}",
+    "bulkMarkRead": "تحديد كمقروء",
+    "bulkMarkUnread": "تحديد كغير مقروء",
+    "bulkDelete": "حذف",
+    "markRead": "تحديد كمقروء",
+    "markUnread": "تحديد كغير مقروء",
+    "markUnreadNotSupported": "تحديد كغير مقروء غير مدعوم",
+    "sending": "جارٍ الإرسال…",
+    "bulk": {
+      "selected": "تم تحديد {{count}}",
+      "markRead": "تحديد كمقروء",
+      "markUnread": "تحديد كغير مقروء",
+      "markUnreadNotSupported": "تحديد كغير مقروء غير مدعوم",
+      "delete": "حذف",
+      "sending": "جارٍ الإرسال…"
     }
   },
   "unauthorized": {

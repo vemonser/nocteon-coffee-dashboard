@@ -120,26 +120,6 @@ export function orderStatusKind(status: OrderStatus): StatusKind {
 /**
  * The payment status -> badge kind.
  *
- *   Paid = success, Pending = warning, Failed = destructive, Refunded = muted
- */
-export function paymentStatusKind(status: PaymentStatus): StatusKind {
-  switch (status) {
-    case 'PAID':
-      return 'paid';
-    case 'PENDING':
-      return 'pending';
-    case 'FAILED':
-      return 'failed';
-    case 'REFUNDED':
-      return 'refunded';
-    default:
-      return 'unknown';
-  }
-}
-
-/**
- * The payment status -> badge kind.
- *
  *   Paid = success, Pending = warning, Failed = destructive, Refunded = muted,
  *   Not Collected = muted
  */

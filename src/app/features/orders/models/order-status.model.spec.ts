@@ -35,7 +35,7 @@ describe('the order status model', () => {
   });
 
   it('lists the backend payment status enum', () => {
-    expect(PAYMENT_STATUSES).toEqual(['PENDING', 'PAID', 'FAILED', 'REFUNDED']);
+    expect(PAYMENT_STATUSES).toEqual(['PENDING', 'PAID', 'FAILED', 'REFUNDED', 'NOT_COLLECTED']);
   });
 
   it('lists the backend payment method enum', () => {
@@ -118,6 +118,6 @@ describe('the badge mapping', () => {
 
   it('maps every payment status to exactly one badge kind', () => {
     const kinds = PAYMENT_STATUSES.map((s) => paymentStatusKind(s));
-    expect(kinds).toEqual(['pending', 'paid', 'failed', 'refunded']);
+    expect(kinds).toEqual(['pending', 'paid', 'failed', 'refunded', 'notCollected']);
   });
 });
