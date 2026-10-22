@@ -25,4 +25,6 @@ export interface BroadcastResponse {
 export interface BroadcastRequest {
   subject: string;
   content: string;
+  recipientIds?: number[];
+  excludeIds?: number[];
 }

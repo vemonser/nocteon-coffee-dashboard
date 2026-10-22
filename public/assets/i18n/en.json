@@ -2011,7 +2011,12 @@
       "sent": "Delivered to the inbox",
       "failed": "The provider refused it — retry",
       "pending": "Waiting to be sent"
-    }
+    },
+    "audienceAll": "Everyone (all customers + subscribers)",
+    "audienceSpecific": "Specific people only",
+    "audienceExclude": "Everyone except…",
+    "recipientIds": "Send to",
+    "excludeIds": "Exclude"
   },
   "contactMessages": {
     "title": "Contact messages",

@@ -4,6 +4,7 @@ import { FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HasPermissionDirective } from '../../../core/auth/permission.directive';
 import { HlmCardImports } from '@spartan-ng/helm/card';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
+import { HlmNativeSelectImports } from '@spartan-ng/helm/native-select';
 import { HlmBadgeImports } from '@spartan-ng/helm/badge';
 import { HlmInputImports } from '@spartan-ng/helm/input';
 import { HlmLabelImports } from '@spartan-ng/helm/label';
@@ -17,11 +18,14 @@ import {
   lucideRefreshCw,
   lucideSearch,
   lucideTrash2,
+  lucideUsers,
   lucideX,
 } from '@ng-icons/lucide';
 import { BaseListComponent } from '../../../core/crud/base-list.component';
 import { BroadcastRecipientResponse, BroadcastRequest, BroadcastResponse, BroadcastStatus } from '../models/broadcast.model';
 import { BroadcastService } from '../services/broadcast.service';
+import { UserService } from '../../users/services/user.service';
+import { UserResponse } from '../../users/model/user.model';
 import { map, Observable } from 'rxjs';
 import { ApiResponse, PageResponse } from '../../../core/models/api-response.model';
 import { TranslocoPipe } from '@jsverse/transloco';
@@ -62,6 +66,7 @@ import { PluralPipe } from '../../../shared/pipes/plural.pipe';
     HlmCardImports,
     HlmButtonImports,
     HlmBadgeImports,
+    HlmNativeSelectImports,
     HlmInputImports,
     HlmLabelImports,
     NgIcon,
@@ -76,6 +81,7 @@ import { PluralPipe } from '../../../shared/pipes/plural.pipe';
       lucidePlus,
       lucideSearch,
       lucideTrash2,
+      lucideUsers,
       lucideX,
     }),
   ],
@@ -83,9 +89,18 @@ import { PluralPipe } from '../../../shared/pipes/plural.pipe';
 })
 export class BroadcastListComponent extends BaseListComponent<BroadcastResponse, BroadcastRequest> {
   private broadcastService = inject(BroadcastService);
+  private userService = inject(UserService);
 
   /** True while the export is running. */
   protected readonly exporting = signal(false);
+
+  /** All customers — used for recipient selection. */
+  protected readonly customers = signal<UserResponse[]>([]);
+
+  /** The recipients of the broadcast the admin is currently viewing. */
+  protected readonly viewingRecipients = signal<BroadcastResponse | null>(null);
+  protected readonly recipientsList = signal<BroadcastRecipientResponse[]>([]);
+  protected readonly recipientsLoading = signal(false);
 
   protected override getId(item: BroadcastResponse): string {
     return item.id;
@@ -107,6 +122,9 @@ export class BroadcastListComponent extends BaseListComponent<BroadcastResponse,
     return this.fb.group({
       subject: ['', Validators.required],
       content: ['', Validators.required],
+      audience: ['all'],
+      recipientIds: [[]],
+      excludeIds: [[]],
     });
   }
 
@@ -114,11 +132,28 @@ export class BroadcastListComponent extends BaseListComponent<BroadcastResponse,
     // Broadcasts are create-only — list UI never opens the edit dialog.
   }
 
+  /** Load the customer list so the admin can pick recipients. */
+  override ngOnInit(): void {
+    super.ngOnInit();
+    this.userService.getAll({ role: 'CUSTOMER', size: 100 }).subscribe({
+      next: (res) => this.customers.set(res.data?.content ?? []),
+      error: () => this.customers.set([]),
+    });
+  }
+
   protected override toRequest(): BroadcastRequest {
-    return {
+    const audience = this.form.value.audience;
+    const req: BroadcastRequest = {
       subject: this.form.value.subject,
       content: this.form.value.content,
     };
+    if (audience === 'specific') {
+      req.recipientIds = this.form.value.recipientIds ?? [];
+    }
+    if (audience === 'exclude') {
+      req.excludeIds = this.form.value.excludeIds ?? [];
+    }
+    return req;
   }
 
   protected override callCreate(request: BroadcastRequest) {
@@ -155,6 +190,27 @@ export class BroadcastListComponent extends BaseListComponent<BroadcastResponse,
         this.notify.apiError(err, 'broadcasts.sendFailed', 'The broadcast could not be sent');
       },
     });
+  }
+
+  /** Open the recipient delivery-status dialog for a broadcast. */
+  protected viewRecipients(item: BroadcastResponse): void {
+    this.viewingRecipients.set(item);
+    this.recipientsLoading.set(true);
+    this.recipientsList.set([]);
+    this.broadcastService.getRecipients(item.id).subscribe({
+      next: (res) => {
+        this.recipientsList.set(res.data ?? []);
+        this.recipientsLoading.set(false);
+      },
+      error: () => {
+        this.recipientsLoading.set(false);
+      },
+    });
+  }
+
+  protected closeRecipients(): void {
+    this.viewingRecipients.set(null);
+    this.recipientsList.set([]);
   }
 
   protected override deleteToastKey(): string {

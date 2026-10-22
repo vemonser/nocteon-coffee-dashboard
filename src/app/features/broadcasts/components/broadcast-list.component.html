@@ -76,6 +76,19 @@
               <hlm-badge [variant]="item.status === 'COMPLETED' ? 'default' : 'secondary'">
                 {{ statusLabel(item.status) }}
               </hlm-badge>
+              <!-- View who received this broadcast and who did not. -->
+              <button
+                hlmBtn
+                variant="ghost"
+                size="icon"
+                class="size-8 text-muted-foreground hover:text-foreground"
+                [attr.aria-label]="'broadcasts.viewRecipients' | transloco"
+                [title]="'broadcasts.viewRecipients' | transloco"
+                (click)="viewRecipients(item)"
+              >
+                <ng-icon name="lucideUsers" class="size-4" aria-hidden="true" />
+              </button>
+
               <!-- Re-send a broadcast that failed on some addresses. The
                    backend skips the ones that already reached SENT, so this
                    retries only the failed ones. -->
@@ -187,11 +200,45 @@
           }
         </div>
 
-        <!-- The audience: one message, EVERY customer of the store. -->
-        <p class="flex items-start gap-2 rounded-lg bg-muted/60 px-3 py-2 text-xs text-muted-foreground">
-          <ng-icon name="lucideBellRing" class="mt-0.5 size-3.5 shrink-0" />
-          <span>{{ 'broadcasts.audience' | transloco }}</span>
-        </p>
+        <!-- Audience selection: all, specific, or all-except. -->
+        <div class="space-y-2">
+          <label hlmLabel>{{ 'broadcasts.audience' | transloco }}</label>
+          <hlm-native-select formControlName="audience" selectClass="w-full">
+            <option value="all">{{ 'broadcasts.audienceAll' | transloco }}</option>
+            <option value="specific">{{ 'broadcasts.audienceSpecific' | transloco }}</option>
+            <option value="exclude">{{ 'broadcasts.audienceExclude' | transloco }}</option>
+          </hlm-native-select>
+        </div>
+
+        @if (form.get('audience')?.value === 'specific') {
+          <div class="space-y-1.5">
+            <label hlmLabel>{{ 'broadcasts.recipientIds' | transloco }}</label>
+            <hlm-native-select
+              formControlName="recipientIds"
+              multiple
+              selectClass="w-full h-32"
+            >
+              @for (c of customers(); track c.id) {
+                <option [value]="c.id">{{ c.email }} — {{ c.firstName }} {{ c.lastName }}</option>
+              }
+            </hlm-native-select>
+          </div>
+        }
+
+        @if (form.get('audience')?.value === 'exclude') {
+          <div class="space-y-1.5">
+            <label hlmLabel>{{ 'broadcasts.excludeIds' | transloco }}</label>
+            <hlm-native-select
+              formControlName="excludeIds"
+              multiple
+              selectClass="w-full h-32"
+            >
+              @for (c of customers(); track c.id) {
+                <option [value]="c.id">{{ c.email }} — {{ c.firstName }} {{ c.lastName }}</option>
+              }
+            </hlm-native-select>
+          </div>
+        }
 
         <!-- Inline backend/validation error — above the buttons -->
         @if (dialogError()) {
@@ -212,6 +259,77 @@
           </button>
         </div>
       </form>
+    </div>
+  </div>
+}
+
+<!-- Recipients Delivery Status Dialog -->
+@if (viewingRecipients()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+    <div class="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-xl bg-card shadow-2xl border">
+      <div class="flex items-center justify-between p-6 border-b sticky top-0 bg-card">
+        <div>
+          <h2 class="text-lg font-medium">{{ 'broadcasts.recipientsTitle' | transloco }}</h2>
+          <p class="text-xs text-muted-foreground mt-1">{{ viewingRecipients()!.subject }}</p>
+        </div>
+        <button hlmBtn variant="ghost" size="icon" (click)="closeRecipients()">
+          <ng-icon name="lucideX" class="size-4" />
+        </button>
+      </div>
+
+      <div class="p-6">
+        @if (recipientsLoading()) {
+          <div class="flex items-center justify-center py-8">
+            <ng-icon name="lucideLoader2" class="size-6 animate-spin text-muted-foreground" />
+          </div>
+        } @else {
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b text-left text-xs text-muted-foreground">
+                <th class="pb-2 pe-4">{{ 'broadcasts.recipients' | transloco }}</th>
+                <th class="pb-2 pe-4">{{ 'broadcasts.recipientStatus.sent' | transloco }}</th>
+                <th class="pb-2 pe-4">Attempts</th>
+                <th class="pb-2">Sent at</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (r of recipientsList(); track r.id) {
+                <tr class="border-b last:border-0">
+                  <td class="py-2 pe-4 font-mono text-xs">{{ r.email }}</td>
+                  <td class="py-2 pe-4">
+                    @if (r.status === 'SENT') {
+                      <span class="text-emerald-600 dark:text-emerald-400">{{ 'broadcasts.recipientStatus.sent' | transloco }}</span>
+                    } @else if (r.status === 'FAILED') {
+                      <span class="text-destructive" [title]="r.lastError ?? ''">{{ 'broadcasts.recipientStatus.failed' | transloco }}</span>
+                    } @else {
+                      <span class="text-muted-foreground">{{ 'broadcasts.recipientStatus.pending' | transloco }}</span>
+                    }
+                  </td>
+                  <td class="py-2 pe-4">{{ r.attemptCount }}</td>
+                  <td class="py-2 text-xs text-muted-foreground">
+                    @if (r.sentAt) {
+                      <app-localized-date [value]="r.sentAt" />
+                    } @else {
+                      —
+                    }
+                  </td>
+                </tr>
+                @if (r.lastError) {
+                  <tr class="border-b last:border-0">
+                    <td colspan="4" class="pb-2 ps-4 text-xs text-destructive">
+                      {{ r.lastError }}
+                    </td>
+                  </tr>
+                }
+              }
+            </tbody>
+          </table>
+
+          @if (recipientsList().length === 0) {
+            <p class="py-8 text-center text-sm text-muted-foreground">No recipients</p>
+          }
+        }
+      </div>
     </div>
   </div>
 }

@@ -2079,7 +2079,12 @@
       "sent": "تم التسليم إلى البريد",
       "failed": "رفضه Provider — أعد الإرسال",
       "pending": "في انتظار الإرسال"
-    }
+    },
+    "audienceAll": "الجميع (كل العملاء + المشتركين)",
+    "audienceSpecific": "أُناس محددون فقط",
+    "audienceExclude": "الجميع ما عدا…",
+    "recipientIds": "إرسال إلى",
+    "excludeIds": "استثناء"
   },
   "contactMessages": {
     "title": "رسائل التواصل",
