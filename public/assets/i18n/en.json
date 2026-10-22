@@ -1531,7 +1531,10 @@
       "collected": "Collected",
       "collectedAt": "Collected at",
       "collectedBasis": "From {{count}} paid order(s)",
-      "collectedHelp": "Sum of totals of PAID orders only"
+      "collectedHelp": "Sum of totals of PAID orders only",
+      "noItemsWarning": "This order has no line items — the total is shipping minus discount.",
+      "estimatedDeliveryAt": "Estimated delivery",
+      "viewCustomerOrders": "View customer orders"
     },
     "dialogs": {
       "status": {
@@ -1542,7 +1545,8 @@
         "notify": "Notify the customer by email",
         "notifyHint": "The customer is told after the change is saved.",
         "confirm": "Update status",
-        "noTransitions": "This order has reached a final status and cannot be changed."
+        "noTransitions": "This order has reached a final status and cannot be changed.",
+        "selectLabel": "New status"
       },
       "cancel": {
         "title": "Cancel this order",
