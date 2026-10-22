@@ -52,9 +52,8 @@ import {
   canChangeStatus,
   canCancel,
   canRefund,
-  tabToApiParams,
 } from '../models/order-status.model';
-import { computeKpi, type KpiValues } from '../utils/order-kpi';
+import { computeKpi, tabToApiParams, type KpiValues } from '../utils/order-kpi';
 import { ORDER_COUNT_SCOPES } from '../../../core/dashboard/order-scope';
 import type { RowMenuAction } from '../../../shared/ui/actions-cell/actions-cell.component';
 import { formatCurrencyPlain } from '../../../shared/utils/locale-format';
@@ -227,7 +226,7 @@ export class OrdersListComponent {
   );
 
   /** The 7 tabs: All + 5 order statuses + Refunded (payment status). */
-  protected readonly tabs = computed(() => [
+  protected readonly tabs = computed((): Array<{ id: OrderStatus | 'ALL' | 'REFUNDED'; label: string; count: number }> => [
     { id: 'ALL', label: 'orders.statusFilter.all', count: this.allTotal() },
     { id: 'PENDING', label: 'orders.statuses.PENDING', count: this.counts()['PENDING'] ?? 0 },
     { id: 'PROCESSING', label: 'orders.statuses.PROCESSING', count: this.counts()['PROCESSING'] ?? 0 },
@@ -686,7 +685,7 @@ export class OrdersListComponent {
         },
         error: () => {
           this.loading.set(false);
-          this.notify.error('orders.export.error', 'Export failed');
+          this.notify.apiError(new Error(), 'orders.export.error', 'Export failed');
         },
       });
   }
