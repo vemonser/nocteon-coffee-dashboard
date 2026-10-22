@@ -199,6 +199,8 @@ export class DataTableComponent {
 
   loading = input<boolean>(false);
   emptyMessage = input<string>('No data found');
+  /** Optional action button shown in the empty state (e.g., "Clear filters"). */
+  emptyAction = input<{ label: string; action: () => void } | null>(null);
   sortChange = output<TableSortEvent | null>();
   edit = output<any>();
   delete = output<any>();

@@ -77,13 +77,14 @@
     "products": "Products",
     "promoCodes": "Promo Codes",
     "journalPosts": "Journal Posts",
+    "reviews": "Reviews",
     "searching": "Searching…",
     "customers": "Customers",
     "recentSearches": "Recent searches",
     "quickLinks": "Quick links",
     "quickActions": "Quick actions",
-    "viewAll": "View all {n}",
-    "noResultsFor": "No results for “{q}”",
+    "viewAll": "View all {{n}}",
+    "noResultsFor": "No results for “{{q}}”",
     "noResultsHint": "Check spelling, or try an order number or email.",
     "hintNavigate": "navigate",
     "hintOpen": "open",
@@ -93,7 +94,9 @@
     "actions": "Actions",
     "addProduct": "Add product",
     "addCategory": "Add category",
-    "shippingZones": "Shipping zones"
+    "shippingZones": "Shipping zones",
+    "contactMessages": "Contact Messages",
+    "carts": "Carts"
   },
   "StoreSettingPage": {
     "title": "Store Setting"
@@ -1428,8 +1431,15 @@
       "all": "All orders",
       "matching": "Matching filters",
       "open": "Open",
+      "openTooltip": "The orders in this view that are still being fulfilled.",
       "delivered": "Delivered",
-      "cancelled": "Cancelled"
+      "cancelled": "Cancelled",
+      "revenue": "Revenue",
+      "avgOrderValue": "Average order value",
+      "cancelRate": "Cancellation rate",
+      "revenueTooltip": "The money the orders in this view brought in: the paid orders, minus the refunds, cancelled orders excluded.",
+      "avgOrderValueTooltip": "Revenue divided by the number of paid orders it came from — cancelled orders are not part of it.",
+      "cancelRateTooltip": "The cancelled orders in this view, as a share of all the orders in it."
     },
     "filters": {
       "paymentStatus": "Payment status",
@@ -1478,7 +1488,8 @@
       "cancel": "Cancel order",
       "refund": "Refund",
       "resendEmail": "Resend email",
-      "copy": "Copy"
+      "copy": "Copy",
+      "copyOrderNumber": "Copy order number"
     },
     "countItems_one": "{{count}} item",
     "countItems_other": "{{count}} items",
@@ -1594,7 +1605,10 @@
       "collected": "Collected",
       "collectedAt": "Collected at",
       "collectedBasis": "From {{count}} paid order(s)",
-      "collectedHelp": "Sum of totals of PAID orders only"
+      "collectedHelp": "Sum of totals of PAID orders only",
+      "noItemsWarning": "This order has no line items — the total is shipping minus discount.",
+      "estimatedDeliveryAt": "Estimated delivery",
+      "viewCustomerOrders": "View customer orders"
     },
     "dialogs": {
       "status": {
@@ -1605,7 +1619,8 @@
         "notify": "Notify the customer by email",
         "notifyHint": "The customer is told after the change is saved.",
         "confirm": "Update status",
-        "noTransitions": "This order has reached a final status and cannot be changed."
+        "noTransitions": "This order has reached a final status and cannot be changed.",
+        "selectLabel": "New status"
       },
       "cancel": {
         "title": "Cancel this order",
@@ -2032,6 +2047,22 @@
       "dateRange": "Date range",
       "clear": "Clear filters"
     },
+    "bulkSelected": "{{count}} selected",
+    "bulkMarkRead": "Mark as read",
+    "bulkMarkUnread": "Mark as unread",
+    "bulkDelete": "Delete",
+    "markRead": "Mark as read",
+    "markUnread": "Mark as unread",
+    "markUnreadNotSupported": "Mark as unread is not supported",
+    "sending": "Sending…",
+    "bulk": {
+      "selected": "{{count}} selected",
+      "markRead": "Mark as read",
+      "markUnread": "Mark as unread",
+      "markUnreadNotSupported": "Mark as unread is not supported",
+      "delete": "Delete",
+      "sending": "Sending…"
+    }
     "sort": {
       "date": "Date",
       "name": "Name",

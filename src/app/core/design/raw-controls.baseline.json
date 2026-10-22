@@ -10,6 +10,11 @@
     "select": 0,
     "button": 3
   },
+  "src/app/features/carts/components/carts-list.component.html": {
+    "input": 0,
+    "select": 0,
+    "button": 4
+  },
   "src/app/features/categories/category-detail/components/category-detail.component.html": {
     "input": 1,
     "select": 0,
@@ -43,7 +48,7 @@
   "src/app/features/layout/navigation-bar/navigation-bar.component.html": {
     "input": 0,
     "select": 0,
-    "button": 1
+    "button": 2
   },
   "src/app/features/layout/sidebar/app-sidebar.component.html": {
     "input": 0,
@@ -63,7 +68,7 @@
   "src/app/features/orders/order-detail/order-detail.component.html": {
     "input": 0,
     "select": 0,
-    "button": 2
+    "button": 6
   },
   "src/app/features/origins/components/origins-list.component.html": {
     "input": 0,

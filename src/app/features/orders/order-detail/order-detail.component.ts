@@ -25,6 +25,9 @@ import {
   lucidePackage,
   lucideTriangleAlert,
   lucideUser,
+  lucideClipboard,
+  lucideLink,
+  lucideEye,
 } from '@ng-icons/lucide';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
@@ -37,7 +40,7 @@ import { catchError, forkJoin, map, of } from 'rxjs';
 import { OrderService } from '../services/order.service';
 import { ProductService } from '../../products/services/product.service';
 import type { ProductDetail } from '../../products/models/product.models';
-import { OrderResponse, OrderStatus, PaymentStatus } from '../models/order.model';
+import { OrderResponse, OrderStatus, PaymentStatus, PaymentMethod } from '../models/order.model';
 import {
   OrderNote,
   OrderPaymentDetails,
@@ -45,7 +48,7 @@ import {
   OrderShipment,
   OrderStatusHistoryEntry,
 } from '../models/order-activity.model';
-import { orderStatusKind, paymentStatusKind, nextStatuses } from '../models/order-status.model';
+import { orderStatusKind, paymentStatusKind, nextStatuses, effectivePaymentStatus, canChangeStatus, canCancel, canRefund } from '../models/order-status.model';
 import { computeOrderTotals } from '../utils/order-totals';
 import { computeSettlement } from '../utils/order-settlement';
 import { summarizeCustomerOrders, type CustomerSummary } from '../utils/customer-summary';
@@ -80,7 +83,7 @@ interface OrderEventView extends OrderEvent {
 }
 
 /**
- * The order detail page.
+ * The order detail page — v5.
  *
  * <p>Two columns: the order on the left, the facts about it on the right.
  * The numbers are the product: the total is the backend's stored value, the
@@ -88,10 +91,10 @@ interface OrderEventView extends OrderEvent {
  * store does not record is stated as missing — never rendered as a silent
  * dash that looks like a zero.
  *
- * <p>Every event on the timeline is a recorded timestamp. The backend today
- * returns no status history and no notes; the page then shows the order's
- * creation (a real timestamp) and says that the store does not record the
- * rest, rather than inventing a journey.
+ * <p>Every event on the timeline is a recorded timestamp. The backend now
+ * returns status history; the page shows the progress tracker with recorded
+ * dates and a merged activity log. When history is empty, it shows the
+ * order's creation and says the store does not record the rest.
  */
 @Component({
   selector: 'app-order-detail',
@@ -138,6 +141,9 @@ interface OrderEventView extends OrderEvent {
       lucidePackage,
       lucideTriangleAlert,
       lucideUser,
+      lucideClipboard,
+      lucideLink,
+      lucideEye,
     }),
   ],
   templateUrl: './order-detail.component.html',
@@ -211,19 +217,19 @@ export class OrderDetailComponent {
   /** Can this order still change status? */
   protected readonly canChangeStatus = computed(() => {
     const order = this.order();
-    return !!order && nextStatuses(order.status).length > 0;
+    return !!order && canChangeStatus(order);
   });
 
   /** Can this order still be cancelled? */
   protected readonly canCancel = computed(() => {
     const order = this.order();
-    return !!order && nextStatuses(order.status).includes('CANCELLED');
+    return !!order && canCancel(order);
   });
 
   /** Can money go back? Only a payment the store marks PAID. */
   protected readonly canRefund = computed(() => {
     const order = this.order();
-    return !!order && order.paymentStatus === 'PAID' && !this.updating();
+    return !!order && canRefund(order) && !this.updating();
   });
 
   protected readonly alreadyRefunded = computed(() => {
@@ -350,6 +356,19 @@ export class OrderDetailComponent {
   protected readonly shipmentMissingForStatus = computed(() => {
     const status = this.order()?.status;
     return (status === 'SHIPPED' || status === 'DELIVERED') && !this.hasShipment();
+  });
+
+  /** The allowed next statuses for the dropdown. */
+  protected readonly allowedNextStatuses = computed(() => {
+    const order = this.order();
+    return order ? nextStatuses(order.status) : [];
+  });
+
+  /** The effective payment status for display (NOT_COLLECTED for cancelled COD). */
+  protected readonly displayPaymentStatus = computed(() => {
+    const order = this.order();
+    if (!order) return 'PENDING';
+    return effectivePaymentStatus(order);
   });
 
   private wasDark = false;

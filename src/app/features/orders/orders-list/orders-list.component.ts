@@ -11,6 +11,12 @@ import {
   lucideX,
   lucideCreditCard,
   lucideBanknote,
+  lucideCopy,
+  lucideInfo,
+  lucideTrendingUp,
+  lucideUsers,
+  lucideDollarSign,
+  lucideXCircle,
 } from '@ng-icons/lucide';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
@@ -34,6 +40,7 @@ import {
   OrderStatus,
   PaymentMethod,
   PaymentStatus,
+  OrderStatsResponse,
 } from '../models/order.model';
 import {
   ORDER_STATUSES,
@@ -41,26 +48,33 @@ import {
   PAYMENT_STATUSES,
   orderStatusKind,
   paymentStatusKind,
+  effectivePaymentStatus,
+  canChangeStatus,
+  canCancel,
+  canRefund,
 } from '../models/order-status.model';
-import { formatCurrencyPlain } from '../../../shared/utils/locale-format';
-import { formatOrderNumber } from '../utils/order-number';
+import { computeKpi, tabToApiParams, type KpiValues } from '../utils/order-kpi';
 import { ORDER_COUNT_SCOPES } from '../../../core/dashboard/order-scope';
 import type { RowMenuAction } from '../../../shared/ui/actions-cell/actions-cell.component';
+import { formatCurrencyPlain } from '../../../shared/utils/locale-format';
+import { formatOrderNumber } from '../utils/order-number';
 
 /**
- * The orders list.
+ * The orders list — v4.
  *
- * The whole page state — the status tab, the filters, the sort, the page —
- * lives in the URL, so a link is shareable, a refresh keeps the view, and
- * the browser's back button walks back through the changes.
+ * The page state lives in the URL (tab, filters, sort, page) so links are
+ * shareable and refresh/back-button work.
  *
- * The NUMBERS are the point of this page, and they come from the API:
+ * Two sets, named once:
+ *   - FILTERED SET = date range + payment status/method + search (NO tab)
+ *   - VIEW = filtered set ∩ selected tab
  *
- *  - the ROWS are the API's page of the filtered set;
- *  - the CARDS and the TAB COUNTS are the API's counts of the same set.
+ * The rows, the pager, the header count, and all 4 KPI cards describe the VIEW.
+ * The tab counts are the single exception: facet counts of the filtered set,
+ * so clicking a tab doesn't zero the other tabs.
  *
- * So a card can never contradict the rows below it, and the browser never
- * filters a page of rows it happens to have.
+ * The backend stats endpoint now returns `revenue` and `revenueOrderCount`
+ * for the exact filter you send, so the KPI cards never read the whole set.
  */
 @Component({
   selector: 'app-orders-list',
@@ -87,6 +101,12 @@ import type { RowMenuAction } from '../../../shared/ui/actions-cell/actions-cell
       lucideX,
       lucideCreditCard,
       lucideBanknote,
+      lucideCopy,
+      lucideInfo,
+      lucideTrendingUp,
+      lucideUsers,
+      lucideDollarSign,
+      lucideXCircle,
     }),
   ],
   templateUrl: './orders-list.component.html',
@@ -101,32 +121,32 @@ export class OrdersListComponent {
   private readonly storeSettings = inject(StoreSettingsService);
   private readonly transloco = inject(TranslocoService);
 
-  /** The rows of the current page, straight from the API. */
+  /** The rows of the current page (the VIEW). */
   protected readonly rows = signal<OrderResponse[]>([]);
   protected readonly loading = signal(false);
   protected readonly error = signal<string | null>(null);
 
-  /** How many orders the filter selects, across every page. */
+  /** The VIEW's total (for the pager). */
   protected readonly pageTotal = signal(0);
 
-  /** The counts of the filtered set, and of the whole store. */
+  /** The FILTERED SET totals (for the scope note). */
   protected readonly filteredTotal = signal(0);
   protected readonly allTotal = signal(0);
-  protected readonly statusCounts = signal<Record<string, number>>({});
-  // KPI aggregates computed from the filtered set (revenue/avg/cancel rate).
-  // The backend stats endpoint only returns counts today, so these come from
-  // a full read of the filtered set — see API_GAPS.md. Flag-gated in DECISIONS.md.
-  protected readonly kpiRevenue = signal(0);
 
-  protected readonly status = signal<OrderStatus | 'ALL'>('ALL');
+  /** Status counts for the FILTERED SET (for tab counts). */
+  protected readonly statusCounts = signal<Record<string, number>>({});
+
+  /** KPI values for the VIEW (from backend stats with tab). */
+  protected readonly kpi = signal<KpiValues>({ revenue: 0, openCount: 0, avgOrderValue: 0, cancelRate: 0 });
+
+  /** Current tab. */
+  protected readonly status = signal<OrderStatus | 'ALL' | 'REFUNDED'>('ALL');
   protected readonly paymentStatus = signal<PaymentStatus | 'ALL'>('ALL');
   protected readonly paymentMethod = signal<PaymentMethod | 'ALL'>('ALL');
   protected readonly range = signal<'today' | '7d' | '30d' | 'all' | 'custom'>('all');
   protected readonly dateFrom = signal<string | null>(null);
   protected readonly dateTo = signal<string | null>(null);
-  /** What is in the search field. */
   protected readonly searchField = signal('');
-  /** What is REQUESTED — the URL's search term. */
   protected readonly searchTerm = signal('');
 
   protected readonly sort = signal('createdAt');
@@ -141,34 +161,36 @@ export class OrdersListComponent {
   protected readonly paymentStatuses = PAYMENT_STATUSES;
   protected readonly paymentMethods = PAYMENT_METHODS;
 
-  /**
-   * The id of the newest request. A response that is not the newest is
-   * DISCARDED, so switching a filter quickly can never show the data of an
-   * older request.
-   */
   private requestId = 0;
 
   /** ── the derived view ───────────────────────────────────────────────── */
 
-  /** The rows the API returned. */
   protected readonly visibleRows = computed(() => this.rows());
 
   protected readonly selectedCount = computed(() => this.selectedIds().size);
 
-  /**
-   * What the count covers.
-   *
-   * <p>The dashboard counts the PAID orders and this page counts every
-   * order, so the page says which set it is showing — one definition, in
-   * one place, for both surfaces.
-   */
+  /** Scope note — filter-aware. */
   protected readonly scopeNote = computed(() => {
-    const help = ORDER_COUNT_SCOPES.all.helpKey;
-    const value = this.transloco.translate(help);
-    return typeof value === 'string' && value !== help ? value : help;
+    const base = this.hasActiveFilters() || this.status() !== 'ALL'
+      ? ORDER_COUNT_SCOPES.all.helpKey.replace('allHelp', 'matchingHelp')
+      : ORDER_COUNT_SCOPES.all.helpKey;
+    const key = this.status() !== 'ALL'
+      ? `orders.orderScope.filteredWithTab`
+      : this.hasActiveFilters()
+        ? `orders.orderScope.matchingHelp`
+        : `orders.orderScope.allHelp`;
+    const value = this.transloco.translate(key);
+    return typeof value === 'string' && value !== key ? value : key;
   });
 
-  /** How many pages the filtered set has. */
+  /** The tab's label key for the scope note. */
+  protected readonly tabLabel = computed(() => {
+    const tab = this.status();
+    if (tab === 'ALL') return 'orders.statusFilter.all';
+    if (tab === 'REFUNDED') return 'orders.statusFilter.refunded';
+    return `orders.statuses.${tab}`;
+  });
+
   protected readonly totalPages = computed(() =>
     Math.max(1, Math.ceil(this.pageTotal() / this.size())),
   );
@@ -176,11 +198,7 @@ export class OrdersListComponent {
   protected readonly first = computed(() => this.page() === 0);
   protected readonly last = computed(() => this.page() >= this.totalPages() - 1);
 
-  /**
-   * The empty state says WHICH emptiness it is: a store with no orders, or
-   * orders that the current filters exclude. They need different words and a
-   * different way out.
-   */
+  /** Empty state message. */
   protected readonly emptyMessage = computed(() => {
     if (this.allTotal() === 0) return this.t('orders.emptyState.noOrders', 'No orders yet');
     if (this.hasActiveFilters() || this.status() !== 'ALL') {
@@ -189,34 +207,16 @@ export class OrdersListComponent {
     return this.t('orders.empty', 'No orders found');
   });
 
-  /** Translate with an English fallback — never a raw key. */
+  /** Translate with English fallback — never a raw key. */
   protected t(key: string, fallback: string): string {
     const value = this.transloco.translate(key);
     return typeof value === 'string' && value.length > 0 && value !== key ? value : fallback;
   }
 
-  /** The counts per status, within the filtered set. */
+  /** Status counts for the FILTERED SET (for tab counts). */
   protected readonly counts = computed(() => this.statusCounts());
 
-  // Open = Pending + Confirmed + Processing + Shipped (per the ticket).
-  // Derived from the same status-counts source as the tabs/KPIs so the
-  // two can never disagree.
-  protected readonly openCount = computed(() => {
-    const c = this.counts();
-    return (c['PENDING'] ?? 0) + (c['CONFIRMED'] ?? 0) + (c['PROCESSING'] ?? 0) + (c['SHIPPED'] ?? 0);
-  });
-  protected readonly deliveredCount = computed(() => this.counts()['DELIVERED'] ?? 0);
-  protected readonly cancelledCount = computed(() => this.counts()['CANCELLED'] ?? 0);
-  protected readonly avgOrderValue = computed(() => {
-    const n = this.filteredTotal();
-    return n > 0 ? this.kpiRevenue() / n : 0;
-  });
-  protected readonly cancelRate = computed(() => {
-    const n = this.filteredTotal();
-    return n > 0 ? (this.cancelledCount() / n) * 100 : 0;
-  });
-
-  /** Is a filter other than the status tab active? */
+  /** Whether any filter (other than the tab) is active. */
   protected readonly hasActiveFilters = computed(
     () =>
       this.paymentStatus() !== 'ALL' ||
@@ -225,65 +225,65 @@ export class OrdersListComponent {
       this.searchTerm().trim() !== '',
   );
 
+  /** The 7 tabs: All + 5 order statuses + Refunded (payment status). */
+  protected readonly tabs = computed((): Array<{ id: OrderStatus | 'ALL' | 'REFUNDED'; label: string; count: number }> => [
+    { id: 'ALL', label: 'orders.statusFilter.all', count: this.allTotal() },
+    { id: 'PENDING', label: 'orders.statuses.PENDING', count: this.counts()['PENDING'] ?? 0 },
+    { id: 'PROCESSING', label: 'orders.statuses.PROCESSING', count: this.counts()['PROCESSING'] ?? 0 },
+    { id: 'SHIPPED', label: 'orders.statuses.SHIPPED', count: this.counts()['SHIPPED'] ?? 0 },
+    { id: 'DELIVERED', label: 'orders.statuses.DELIVERED', count: this.counts()['DELIVERED'] ?? 0 },
+    { id: 'CANCELLED', label: 'orders.statuses.CANCELLED', count: this.counts()['CANCELLED'] ?? 0 },
+    { id: 'REFUNDED', label: 'orders.statusFilter.refunded', count: this.counts()['REFUNDED'] ?? 0 },
+  ]);
+
   /** ── the columns ────────────────────────────────────────────────────── */
 
   private readonly columnHelper = createColumnHelper<OrderResponse>();
 
-  /**
-   * The column order (ticket 3.1): select, order #, customer, items, order
-   * status, payment status, method, total, created at, actions.
-   */
+  /** Column order: select, order #, customer, items, order status, payment status, method, total, created at, actions. */
   protected readonly columns: ColumnDef<OrderResponse, any>[] = [
     this.columnHelper.accessor(
       (row) => formatOrderNumber(row.orderNumber, row.id),
-      { id: 'orderNumber', header: 'Order #', enableSorting: false, meta: { width: '165px' } },
+      { id: 'orderNumber', header: 'orders.columns.orderNumber', enableSorting: false, meta: { width: '140px' } },
     ),
     this.columnHelper.accessor(
       (row) => ({ name: row.customer?.name ?? null, email: row.customer?.email ?? null }),
-      { id: 'customer', header: 'Customer', enableSorting: false, meta: { width: '92px' } },
+      { id: 'customer', header: 'orders.columns.customer', enableSorting: false, meta: { width: '190px' } },
     ),
-    this.columnHelper.accessor('items', {
-      id: 'items',
-      header: 'Items',
-      enableSorting: false,
-      meta: { width: '84px' },
-    }),
+    this.columnHelper.accessor(
+      (row) => `${(row.items ?? []).length} items`,
+      { id: 'items', header: 'orders.columns.items', enableSorting: false, meta: { width: '84px' } },
+    ),
     this.columnHelper.accessor(
       (row) => orderStatusKind(row.status),
-      { id: 'orderStatus', header: 'Order status', enableSorting: true, meta: { width: '118px' } },
+      { id: 'orderStatus', header: 'orders.columns.status', enableSorting: true, meta: { width: '112px' } },
     ),
     this.columnHelper.accessor(
-      (row) => paymentStatusKind(row.paymentStatus),
-      { id: 'paymentStatus', header: 'Payment status', enableSorting: true, meta: { width: '134px' } },
+      (row) => paymentStatusKind(effectivePaymentStatus(row)),
+      { id: 'paymentStatus', header: 'orders.columns.paymentStatus', enableSorting: true, meta: { width: '128px' } },
     ),
     this.columnHelper.accessor(
       (row) => ({
         icon: row.paymentMethod === 'ONLINE' ? 'lucideCreditCard' : 'lucideBanknote',
         method: row.paymentMethod,
       }),
-      { id: 'paymentMethod', header: 'Method', enableSorting: false, meta: { width: '168px' } },
+      { id: 'paymentMethod', header: 'orders.columns.paymentMethod', enableSorting: false, meta: { width: '168px' } },
     ),
     this.columnHelper.accessor('totalAmount', {
       id: 'totalAmount',
-      header: 'Total',
+      header: 'orders.columns.total',
       enableSorting: true,
-      meta: { width: '112px', align: 'end' },
+      meta: { width: '110px', align: 'end' },
     }),
     this.columnHelper.accessor('createdAt', {
       id: 'createdAtTime',
-      header: 'Created at',
+      header: 'orders.columns.createdAt',
       enableSorting: true,
-      meta: { width: '110px' },
+      meta: { width: '124px' },
     }),
-    this.columnHelper.display({ id: 'actions', header: 'Actions', meta: { width: '82px' } }),
+    this.columnHelper.display({ id: 'actions', header: 'orders.columns.actions', meta: { width: '80px' } }),
   ];
 
-  /**
-   * The display column id -> the `Order` entity's own property.
-   *
-   * The sort is the BACKEND's: the table uses `manualSorting`, and a
-   * display id the API does not know is a 400.
-   */
   private static readonly SORT_PROPERTY: Record<string, string> = {
     orderNumber: 'orderNumber',
     customer: 'createdAt',
@@ -295,14 +295,12 @@ export class OrdersListComponent {
     createdAtTime: 'createdAt',
   };
 
-  /** The row id the table keys its selection on. */
   protected readonly rowId = (row: OrderResponse): number | null => row?.id ?? null;
 
-  /** The order number is the row's link to its own page. */
   protected readonly cellHref = (columnId: string, row: OrderResponse): any[] | null =>
     columnId === 'orderNumber' ? ['/dashboard/orders', row.id] : null;
 
-  /** The row's overflow menu. */
+  /** Row menu actions. */
   protected readonly menuActions: RowMenuAction[] = [
     { id: 'changeStatus', label: 'orders.actions.changeStatus', icon: 'lucideRefreshCw' },
     { id: 'printInvoice', label: 'orders.actions.printInvoice', icon: 'lucidePrinter' },
@@ -313,8 +311,6 @@ export class OrdersListComponent {
     this.readUrl();
     this.load();
 
-    // The URL is the source of truth: a back/forward navigation or a shared
-    // link changes the query params, and the page follows them.
     this.route.queryParamMap.subscribe((params) => {
       const next = this.stateFromParams(params);
       if (JSON.stringify(next) !== JSON.stringify(this.currentState())) {
@@ -347,8 +343,8 @@ export class OrdersListComponent {
     const range = params.get('range') ?? 'all';
 
     return {
-      status: (ORDER_STATUSES as readonly string[]).includes(status)
-        ? (status as OrderStatus)
+      status: (['ALL', 'REFUNDED', ...ORDER_STATUSES] as const).includes(status as never)
+        ? (status as OrderStatus | 'ALL' | 'REFUNDED')
         : ('ALL' as const),
       paymentStatus: (params.get('paymentStatus') ?? 'ALL').toUpperCase() as PaymentStatus | 'ALL',
       paymentMethod: (params.get('paymentMethod') ?? 'ALL').toUpperCase() as PaymentMethod | 'ALL',
@@ -409,8 +405,6 @@ export class OrdersListComponent {
     if (f.range !== 'all') params['range'] = f.range;
     if (f.dateFrom) params['from'] = f.dateFrom;
     if (f.dateTo) params['to'] = f.dateTo;
-    // What the field holds is what is asked for: the URL write is the
-    // request, and the field is what the admin typed.
     if (this.searchField().trim()) params['q'] = this.searchField().trim();
     if (f.sort !== 'createdAt') params['sort'] = f.sort;
     if (f.direction !== 'desc') params['direction'] = f.direction;
@@ -424,14 +418,8 @@ export class OrdersListComponent {
     });
   }
 
-  // ── the API filters ─────────────────────────────────────────────────────
+  // ── the API filters ──────────────────────────────────────────────────────
 
-  /**
-   * The date range as the API takes it: two inclusive calendar days.
-   *
-   * The days are CALENDAR days in the browser's own time zone, which is the
-   * store's time zone — so an order placed at 23:30 belongs to that day.
-   */
   private apiRange(): { dateFrom?: string; dateTo?: string } {
     const range = this.range();
     if (range === 'all') return {};
@@ -460,27 +448,34 @@ export class OrdersListComponent {
     return `${y}-${m}-${d}`;
   }
 
-  /** The filters, WITHOUT the status tab: the counts describe the whole set. */
+  /** Filters WITHOUT the status tab — for the facet counts. */
   private apiFilter(): OrderFilterRequest {
     const range = this.apiRange();
     return {
-      paymentStatus:
-        this.paymentStatus() === 'ALL' ? undefined : (this.paymentStatus() as PaymentStatus),
-      paymentMethod:
-        this.paymentMethod() === 'ALL' ? undefined : (this.paymentMethod() as PaymentMethod),
+      paymentStatus: this.paymentStatus() === 'ALL' ? undefined : (this.paymentStatus() as PaymentStatus),
+      paymentMethod: this.paymentMethod() === 'ALL' ? undefined : (this.paymentMethod() as PaymentMethod),
       search: this.searchTerm().trim() || undefined,
       ...range,
     };
   }
 
+  /** Filters WITH the status tab — for the view (rows + KPIs). */
+  private apiFilterWithTab(): OrderFilterRequest {
+    const filter = this.apiFilter();
+    const tab = this.status();
+    const tabParams = tabToApiParams(tab);
+    return { ...filter, ...tabParams };
+  }
+
   // ── loading ──────────────────────────────────────────────────────────────
 
   /**
-   * Load the page and the counts.
+   * Load the view (rows + KPIs) and the facet counts.
    *
-   * Three requests in one round trip: the rows, the counts of the filtered
-   * set, and the counts of the whole store. They answer together or not at
-   * all, so the cards and the rows are always of the same vintage.
+   * Two stats calls:
+   *  1. Facets (filtered set, no tab) → tab counts
+   *  2. Cards (filtered set + tab) → KPIs for the view
+   * Rows come from the list endpoint with the tab.
    */
   protected load(): void {
     const requestId = ++this.requestId;
@@ -488,7 +483,8 @@ export class OrdersListComponent {
     this.error.set(null);
 
     const filter = this.apiFilter();
-    const status = this.status();
+    const filterWithTab = this.apiFilterWithTab();
+    const tab = this.status();
 
     forkJoin({
       rows: this.orderService.getAll({
@@ -496,46 +492,36 @@ export class OrdersListComponent {
         size: this.size(),
         sort: this.sort(),
         direction: this.direction(),
-        status: status === 'ALL' ? undefined : status,
-        ...filter,
+        ...filterWithTab,
       }),
-      stats: this.orderService.getStats(filter),
+      facets: this.orderService.getStats(filter),
+      cards: this.orderService.getStats(filterWithTab),
       all: this.orderService.getStats({}),
-      // Full read of the filtered set to compute revenue/avg until the
-      // backend exposes them on the stats endpoint (see API_GAPS.md).
-      // It WALKS the pages: the API caps a page at 100 rows, so a single
-      // "size: 1000" request was a 400 — and a 400 inside this forkJoin
-      // left the whole list stuck on "Loading".
-      kpiRows: this.orderService.getAll({
-        page: 0,
-        size: 1000,
-        status: status === 'ALL' ? undefined : status,
-        ...filter,
-      }),
     }).subscribe({
-      next: ({ rows, stats, all, kpiRows }) => {
+      next: ({ rows, facets, cards, all }) => {
         if (requestId !== this.requestId) return;
+
         this.rows.set(rows.data?.content ?? []);
         this.pageTotal.set(rows.data?.totalElements ?? 0);
-        this.filteredTotal.set(stats.data?.total ?? 0);
+
+        this.filteredTotal.set(facets.data?.total ?? 0);
         this.allTotal.set(all.data?.total ?? 0);
+
         const counts: Record<string, number> = {};
-        for (const entry of stats.data?.byStatus ?? []) {
+        for (const entry of facets.data?.byStatus ?? []) {
           counts[entry.status] = entry.count;
         }
         this.statusCounts.set(counts);
-        // Revenue = sum of totalAmount of non-cancelled orders in the filtered set.
-        const allRows = kpiRows.data?.content ?? [];
-        const revenue = allRows
-          .filter((o: any) => o.status !== 'CANCELLED')
-          .reduce((sum: number, o: any) => sum + (o.totalAmount ?? 0), 0);
-        this.kpiRevenue.set(revenue);
+
+        // KPIs from the card stats (with tab)
+        this.kpi.set(computeKpi(cards.data as OrderStatsResponse, counts, this.filteredTotal()));
+
         this.loading.set(false);
       },
       error: (err) => {
         if (requestId !== this.requestId) return;
         this.loading.set(false);
-        this.error.set(err?.error?.message ?? 'orders.errorState.title');
+        this.error.set(err?.error?.message ?? this.t('orders.errorState.title', 'The orders could not be loaded'));
       },
     });
   }
@@ -546,7 +532,7 @@ export class OrdersListComponent {
 
   // ── interactions ─────────────────────────────────────────────────────────
 
-  protected setStatus(status: OrderStatus | 'ALL'): void {
+  protected setStatus(status: OrderStatus | 'ALL' | 'REFUNDED'): void {
     if (this.status() === status) return;
     this.status.set(status);
     this.page.set(0);
@@ -555,6 +541,7 @@ export class OrdersListComponent {
   }
 
   protected setPaymentStatus(value: string): void {
+    if (this.status() === 'REFUNDED' && value !== 'ALL') return; // disabled when Refunded tab active
     this.paymentStatus.set(value as PaymentStatus | 'ALL');
     this.page.set(0);
     this.writeUrl();
@@ -593,8 +580,6 @@ export class OrdersListComponent {
     clearTimeout(this.searchTimeout);
     this.searchTimeout = setTimeout(() => {
       this.page.set(0);
-      // The URL is the request: writing it is what makes the list ask the
-      // API again.
       this.writeUrl(true);
     }, 350);
   }
@@ -618,7 +603,6 @@ export class OrdersListComponent {
     this.writeUrl();
   }
 
-  /** The column id the table shows the sort arrow on. */
   protected get sortColumnId(): string {
     const property = this.sort();
     const entry = Object.entries(OrdersListComponent.SORT_PROPERTY).find(
@@ -655,8 +639,6 @@ export class OrdersListComponent {
           queryParams: { action: event.id },
         });
         break;
-      default:
-        break;
     }
   }
 
@@ -689,23 +671,27 @@ export class OrdersListComponent {
     });
   }
 
-  /**
-   * Export the orders that match the current filters as CSV.
-   *
-   * The export states what it exports and for which filters, and it exports
-   * the MATCHING set — not the rows on the current page.
-   *
-   * The money in the file is formatted by the SHARED money formatter, the
-   * same one the screen uses, so a number in the file and a number on the
-   * page are the same number written the same way.
-   */
+  /** Export the VIEW (filtered set ∩ tab) as CSV — walks all pages. */
   protected exportCsv(): void {
-    const rows = this.rows();
-    if (!rows.length) return;
+    const filterWithTab = this.apiFilterWithTab();
+    this.loading.set(true);
 
+    this.orderService
+      .getEveryOrder(filterWithTab)
+      .subscribe({
+        next: (allRows) => {
+          this.loading.set(false);
+          this.exportRows(allRows);
+        },
+        error: () => {
+          this.loading.set(false);
+          this.notify.apiError(new Error(), 'orders.export.error', 'Export failed');
+        },
+      });
+  }
+
+  private exportRows(rows: OrderResponse[]): void {
     const money = (value: number): string =>
-      // The PLAIN money: a file is not a paragraph, so the bidi isolate
-      // would be written into the CSV as an invisible control character.
       formatCurrencyPlain(value, this.language.current(), this.storeSettings.currency());
 
     const header = [
@@ -737,7 +723,7 @@ export class OrdersListComponent {
           order.orderNumber ?? `#${order.id}`,
           order.createdAt,
           order.status,
-          order.paymentStatus,
+          effectivePaymentStatus(order),
           order.paymentMethod,
           order.customer?.name ?? '',
           order.customer?.email ?? '',
@@ -753,8 +739,6 @@ export class OrdersListComponent {
       );
     }
 
-    // The BOM makes Excel read the file as UTF-8, so the Arabic names are
-    // not mangled.
     const blob = new Blob(['\uFEFF' + lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement('a');
