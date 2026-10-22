@@ -1,63 +1,157 @@
 <div class="mx-auto flex w-full max-w-7xl flex-col gap-6 p-6">
   <!-- Header -->
-  <div class="flex items-center justify-between gap-4">
+  <header class="flex flex-wrap items-start justify-between gap-4">
     <div>
       <h1 class="text-2xl font-bold tracking-tight">{{ 'carts.title' | transloco }}</h1>
-      <p class="text-muted-foreground">{{ totalItems() }} {{ 'common.total' | transloco }}</p>
+      <p class="text-sm text-muted-foreground">
+        {{ pageData()?.totalElements ?? 0 }} {{ 'common.total' | transloco }}
+      </p>
     </div>
-    <div class="relative w-full max-w-64 sm:w-64">
-      <ng-icon name="lucideSearch" class="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-      <input hlmInput type="search" [dir]="language.current() === 'ar' ? 'rtl' : 'ltr'" [(ngModel)]="searchQuery" (input)="onSearch()" [placeholder]="'carts.search' | transloco" [attr.aria-label]="'carts.search' | transloco" class="w-full ps-9" />
+    <div class="flex items-center gap-2">
+      <div class="relative w-full max-w-64 sm:w-64">
+        <ng-icon name="lucideSearch" class="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+        <input
+          hlmInput
+          type="search"
+          [dir]="language.current() === 'ar' ? 'rtl' : 'ltr'"
+          [(ngModel)]="searchQuery"
+          (input)="onSearch()"
+          [placeholder]="'carts.search' | transloco"
+          [attr.aria-label]="'carts.search' | transloco"
+          class="w-full ps-9"
+        />
+      </div>
+    </div>
+  </header>
+
+  <!-- KPI Strip: 4 cards -->
+  <div class="grid grid-cols-2 gap-3 md:grid-cols-4" role="region" aria-label="{{ 'carts.kpi.regionLabel' | transloco }}">
+    <div class="flex h-[72px] flex-col justify-center rounded-[var(--radius-card)] border bg-card px-4 py-2">
+      <p class="text-xs text-muted-foreground">{{ 'carts.kpi.activeCarts' | transloco }}</p>
+      <p class="mt-0.5 text-lg font-bold tabular-nums">{{ stats()?.activeCarts ?? 0 }}</p>
+      <span
+        hlmTooltip
+        position="top"
+        [brnTooltip]="'carts.kpi.activeCartsTooltip' | transloco"
+        class="inline-flex mt-1"
+      >
+        <ng-icon name="lucideActivity" class="size-3.5 text-muted-foreground" aria-hidden="true" />
+      </span>
+    </div>
+    <div class="flex h-[72px] flex-col justify-center rounded-[var(--radius-card)] border bg-card px-4 py-2">
+      <p class="text-xs text-muted-foreground">{{ 'carts.kpi.abandonedCarts' | transloco }}</p>
+      <p class="mt-0.5 text-lg font-bold tabular-nums">{{ stats()?.abandonedCarts ?? 0 }}</p>
+      <span
+        hlmTooltip
+        position="top"
+        [brnTooltip]="'carts.kpi.abandonedCartsTooltip' | transloco"
+        class="inline-flex mt-1"
+      >
+        <ng-icon name="lucideAlertCircle" class="size-3.5 text-muted-foreground" aria-hidden="true" />
+      </span>
+    </div>
+    <div class="flex h-[72px] flex-col justify-center rounded-[var(--radius-card)] border bg-card px-4 py-2">
+      <p class="text-xs text-muted-foreground">{{ 'carts.kpi.totalPotentialRevenue' | transloco }}</p>
+      <p class="mt-0.5 text-lg font-bold tabular-nums">{{ (stats()?.totalPotentialRevenue ?? 0) | money }}</p>
+      <span
+        hlmTooltip
+        position="top"
+        [brnTooltip]="'carts.kpi.totalPotentialRevenueTooltip' | transloco"
+        class="inline-flex mt-1"
+      >
+        <ng-icon name="lucideDollarSign" class="size-3.5 text-muted-foreground" aria-hidden="true" />
+      </span>
+    </div>
+    <div class="flex h-[72px] flex-col justify-center rounded-[var(--radius-card)] border bg-card px-4 py-2">
+      <p class="text-xs text-muted-foreground">{{ 'carts.kpi.averageCartValue' | transloco }}</p>
+      <p class="mt-0.5 text-lg font-bold tabular-nums">{{ (stats()?.averageCartValue ?? 0) | money }}</p>
+      <span
+        hlmTooltip
+        position="top"
+        [brnTooltip]="'carts.kpi.averageCartValueTooltip' | transloco"
+        class="inline-flex mt-1"
+      >
+        <ng-icon name="lucideTrendingUp" class="size-3.5 text-muted-foreground" aria-hidden="true" />
+      </span>
     </div>
   </div>
 
-  <!-- KPI strip -->
-  <div class="grid grid-cols-3 gap-3">
-    <div class="flex h-[72px] flex-col justify-center rounded-[var(--radius-card)] border bg-card px-4 py-2">
-      <p class="text-xs text-muted-foreground">Active carts</p>
-      <p class="mt-0.5 text-lg font-bold tabular-nums">{{ totalItems() }}</p>
+  <!-- Lifecycle Tabs + optional filters -->
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <app-cart-status-tabs
+      [selected]="listView()"
+      [allLabel]="'carts.tabs.all' | transloco"
+      [activeLabel]="'carts.tabs.active' | transloco"
+      [abandonedLabel]="'carts.tabs.abandoned' | transloco"
+      [convertedLabel]="'carts.tabs.converted' | transloco"
+      [allCount]="totalItems()"
+      [activeCount]="stats()?.activeCarts ?? 0"
+      [abandonedCount]="stats()?.abandonedCarts ?? 0"
+      [convertedCount]="stats()?.convertedCarts ?? 0"
+      [tablistLabel]="'carts.tabs.label' | transloco"
+      (viewChange)="setListView($event)"
+    />
+    <div class="flex flex-1 items-center justify-end gap-3">
+      @if (listView() === 'all') {
+        <hlm-native-select
+          selectClass="w-36"
+          size="sm"
+          [ngModel]="currentSort"
+          (ngModelChange)="currentSort = $event"
+        >
+          <option value="lastActivityAt">{{ 'carts.sort.lastActivity' | transloco }}</option>
+          <option value="createdAt">{{ 'carts.sort.createdAt' | transloco }}</option>
+          <option value="total">{{ 'carts.sort.total' | transloco }}</option>
+          <option value="userFullName">{{ 'carts.sort.customer' | transloco }}</option>
+        </hlm-native-select>
+        <button hlmBtn variant="outline" size="sm" (click)="loadPage()" [disabled]="loading()">
+          <ng-icon name="lucideRefreshCw" class="size-4 mr-1" [class.animate-spin]="loading()" />
+          {{ 'common.refresh' | transloco }}
+        </button>
+      }
     </div>
-    <div class="flex h-[72px] flex-col justify-center rounded-[var(--radius-card)] border bg-card px-4 py-2">
-      <p class="text-xs text-muted-foreground">Abandoned carts</p>
-      <p class="mt-0.5 text-lg font-bold tabular-nums">0</p>
-    </div>
-    <div class="flex h-[72px] flex-col justify-center rounded-[var(--radius-card)] border bg-card px-4 py-2">
-      <p class="text-xs text-muted-foreground">Potential revenue</p>
-      <p class="mt-0.5 text-lg font-bold tabular-nums">{{ 0 | money }}</p>
-    </div>
-  </div>
-
-  <!-- Tabs -->
-  <div class="flex gap-2 border-b" data-testid="carts-tabs">
-    <button class="px-3 py-2 text-sm font-medium border-b-2 border-primary text-primary">All ({{ totalItems() }})</button>
-    <button class="px-3 py-2 text-sm text-muted-foreground">Active</button>
-    <button class="px-3 py-2 text-sm text-muted-foreground">Abandoned</button>
-    <button class="px-3 py-2 text-sm text-muted-foreground">Converted</button>
   </div>
 
   <!-- Loading State -->
   @if (loading()) {
-    <div class="rounded-md border">
-      <div class="h-12 border-b bg-muted/50 animate-pulse" *ngFor="let _ of [1, 2, 3, 4, 5]"></div>
+    <div class="rounded-md border" role="status" aria-label="{{ 'carts.loading' | transloco }}">
+      @for (_ of [1, 2, 3, 4, 5]; track $index) {
+        <div class="h-12 border-b bg-muted/50 animate-pulse"></div>
+      }
+    </div>
+  }
+
+  <!-- Error State -->
+  @if (!loading() && error()) {
+    <div class="rounded-[var(--radius-card)] border bg-card p-6 text-center" role="alert">
+      <ng-icon name="lucideAlertCircle" class="mx-auto size-12 text-destructive mb-3" />
+      <p class="font-medium text-destructive">{{ 'carts.errorState.title' | transloco }}</p>
+      <p class="mt-1 text-sm text-muted-foreground">{{ 'carts.errorState.hint' | transloco }}</p>
+      <button hlmBtn variant="outline" class="mt-4" (click)="loadPage()">
+        {{ 'common.retry' | transloco }}
+      </button>
     </div>
   }
 
   <!-- Table -->
-  <div class="rounded-md border bg-card">
-    <app-data-table
-      [data]="items()"
-      [columns]="columns"
-      [loading]="loading()"
-      [initialSort]="{ column: currentSort, direction: currentDirection }"
-      (sortChange)="onSortChange($event)"
-      (rowClick)="openView($event)"
-      [showEdit]="false"
-      [showDelete]="false"
-    />
-  </div>
+  @if (!loading() && !error()) {
+    <div class="rounded-[var(--radius-card)] border bg-card">
+      <app-data-table
+        [data]="items()"
+        [columns]="columns"
+        [loading]="false"
+        [initialSort]="{ column: currentSort, direction: currentDirection }"
+        [showView]="true"
+        [showEdit]="false"
+        [showDelete]="false"
+        (sortChange)="onSortChange($event)"
+        (rowClick)="openView($event)"
+      />
+    </div>
+  }
 
   <!-- Pagination -->
-  @if (pageData() && !loading()) {
+  @if (pageData() && !loading() && !error()) {
     <app-pager
       class="view-fade"
       [page]="pageData()!.page"
@@ -72,99 +166,213 @@
       (sizeChange)="onPageSizeChange($event)"
     />
   }
+
+  <!-- Empty State -->
+  @if (!loading() && !error() && items().length === 0 && pageData()?.totalElements === 0) {
+    <div class="rounded-[var(--radius-card)] border bg-card p-12 text-center">
+      <ng-icon name="lucideShoppingCart" class="mx-auto size-12 text-muted-foreground/50 mb-3" />
+      <p class="text-muted-foreground">{{ 'carts.empty' | transloco }}</p>
+    </div>
+  }
 </div>
 
-<!-- ══════ View Cart Detail Dialog ══════ -->
-@if (viewing()) {
-  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-    <div class="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl bg-card shadow-2xl border">
-      <div class="flex items-center justify-between p-6 border-b sticky top-0 bg-card">
-        <h2 class="text-lg font-bold">{{ viewing()!.userFullName }}'s {{ 'carts.cart' | transloco }} #{{ viewing()!.id }}</h2>
-        <button hlmBtn variant="ghost" size="icon" class="size-8" (click)="closeView()">
-          <ng-icon name="lucideX" class="size-4" />
-        </button>
+<!-- ══════════════════════════════════════════════════════════
+     Cart Detail Dialog (using shared DialogShell)
+══════════════════════════════════════════════════════════ -->
+<app-dialog-shell
+  [open]="!!viewing()"
+  [title]="'carts.detail.title' | transloco: { id: viewing()?.id }"
+  [subtitle]="viewing() ? (cartStatusLabel(viewing()!) + ' · ' + formatRelativeTime(viewing()!.lastActivityAt ?? viewing()!.updatedAt, language.current())) : ''"
+  [mobileSheet]="true"
+  [testId]="'cart-detail-dialog'"
+  (closed)="closeView()"
+>
+  <div class="space-y-5">
+    <!-- Customer Info -->
+    <div class="flex items-center gap-3 rounded-md border p-4">
+      <app-user-avatar [src]="viewing()?.avatarUrl ?? null" [name]="viewing()?.userFullName ?? ''" size="md" />
+      <div class="min-w-0 flex-1">
+        <p class="text-sm font-medium truncate">{{ viewing()?.userFullName ?? '' }}</p>
+        <p class="text-xs text-muted-foreground truncate" dir="ltr">{{ viewing()?.userEmail ?? '' }}</p>
       </div>
+      <app-status-badge [status]="cartStatusKind(viewing()!)" />
+    </div>
 
-      <div class="p-6 space-y-5">
-        <!-- Customer Info -->
-        <div class="rounded-md border p-4">
-          <p class="text-sm font-medium text-muted-foreground mb-1">{{ 'carts.customer' | transloco }}</p>
-          <p class="text-sm font-medium">{{ viewing()!.userFullName }}</p>
-          <p class="text-sm text-muted-foreground">{{ viewing()!.userEmail }}</p>
-        </div>
-
-        <!-- Summary -->
-        <div class="grid grid-cols-2 gap-4">
-          <div class="rounded-md border p-4">
-            <p class="text-sm font-medium text-muted-foreground mb-1">{{ 'carts.total' | transloco }}</p>
-            <p class="text-lg font-bold">{{ viewing()!.total | money }}</p>
-          </div>
-          <div class="rounded-md border p-4">
-            <p class="text-sm font-medium text-muted-foreground mb-1">{{ 'carts.items' | transloco }}</p>
-            <p class="text-lg font-bold">{{ viewing()!.itemCount }}</p>
-          </div>
-        </div>
-
-        <!-- Dates -->
-        <div class="grid grid-cols-2 gap-4">
-          <div class="rounded-md border p-4">
-            <p class="text-sm font-medium text-muted-foreground mb-1">{{ 'carts.created' | transloco }}</p>
-            <p class="text-sm"><app-localized-date [value]="viewing()!.createdAt" variant="long" /></p>
-          </div>
-          <div class="rounded-md border p-4">
-            <p class="text-sm font-medium text-muted-foreground mb-1">{{ 'carts.lastUpdated' | transloco }}</p>
-            <p class="text-sm"><app-localized-date [value]="viewing()!.updatedAt" variant="long" /></p>
-          </div>
-        </div>
-
-        <!-- Cart Items -->
-        <div>
-          <p class="text-sm font-medium text-muted-foreground mb-3">{{ 'carts.cartItems' | transloco }}</p>
-          @if (viewing()!.items.length === 0) {
-            <div class="text-center py-6 text-muted-foreground">
-              <ng-icon name="lucidePackage" class="mx-auto size-8 opacity-20 mb-2" />
-              <p class="text-sm">{{ 'carts.noItems' | transloco }}</p>
-            </div>
+    <!-- Summary Stats -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div class="rounded-md border p-3">
+        <p class="text-xs text-muted-foreground">{{ 'carts.detail.items' | transloco }}</p>
+        <p class="text-lg font-bold">{{ viewing()?.itemCount }}</p>
+      </div>
+      <div class="rounded-md border p-3">
+        <p class="text-xs text-muted-foreground">{{ 'carts.detail.subtotal' | transloco }}</p>
+        <p class="text-lg font-bold">{{ viewing()?.total | money }}</p>
+      </div>
+      <div class="rounded-md border p-3">
+        <p class="text-xs text-muted-foreground">{{ 'carts.detail.estShipping' | transloco }}</p>
+        <p class="text-lg font-bold">
+          @if (viewing()?.qualifiesForFreeShipping) {
+            <span class="text-success">{{ 'carts.detail.free' | transloco }}</span>
           } @else {
-            <div class="space-y-3">
-              @for (item of viewing()!.items; track item.id; let i = $index) {
-                <div class="flex gap-3 rounded-md border p-3">
-                  <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-medium text-muted-foreground">{{ i + 1 }}</span>
-                  <div class="h-16 w-16 flex-shrink-0 rounded-md bg-muted overflow-hidden">
-                    @if (item.primaryImageUrl) {
-                      <img
-                        [src]="item.primaryImageUrl"
-                        [alt]="item.productName"
-                        class="h-full w-full object-cover"
-                      />
-                    } @else {
-                      <div class="flex h-full items-center justify-center">
-                        <ng-icon name="lucidePackage" class="size-6 text-muted-foreground opacity-30" />
-                      </div>
-                    }
-                  </div>
-                  <div class="flex-1 min-w-0">
-                    <p class="text-sm font-medium truncate">{{ item.productName }}</p>
-                    <p class="text-xs text-muted-foreground">SKU: {{ item.sku }}<span *ngIf="item.optionValues?.length"> ·
-                      {{ item.optionValues.map(o => o.value).join(' · ') }}</span></p>
-                    <div class="flex items-center gap-2 mt-1">
-                      <span class="text-sm font-medium">{{ item.price | money }}</span>
-                      @if (item.discountPercentage > 0) {
-                        <hlm-badge variant="destructive" class="text-xs">-{{ item.discountPercentage }}%</hlm-badge>
-                      }
-                    </div>
-                  </div>
-                  <div class="text-right flex-shrink-0">
-                    <p class="text-sm font-medium">x{{ item.quantity }}</p>
-                    <p class="text-xs text-muted-foreground">{{ item.subtotal | money }}</p>
-                    <p class="text-xs text-muted-foreground">{{ 'carts.stock' | transloco }}: {{ item.stockQuantity }}</p>
-                  </div>
-                </div>
-              }
-            </div>
+            {{ viewing()?.estimatedShipping | money }}
           }
+        </p>
+      </div>
+      <div class="rounded-md border p-3">
+        <p class="text-xs text-muted-foreground">{{ 'carts.detail.total' | transloco }}</p>
+        <p class="text-lg font-bold">{{ (viewing()!.total + (viewing()!.qualifiesForFreeShipping ? 0 : viewing()!.estimatedShipping)) | money }}</p>
+      </div>
+    </div>
+
+    <!-- Dates -->
+    <div class="grid grid-cols-2 gap-3">
+      <div class="rounded-md border p-3">
+        <p class="text-xs text-muted-foreground">{{ 'carts.detail.created' | transloco }}</p>
+        <p class="text-sm"><app-localized-date [value]="viewing()!.createdAt" variant="long" /></p>
+      </div>
+      <div class="rounded-md border p-3">
+        <p class="text-xs text-muted-foreground">{{ 'carts.detail.lastActivity' | transloco }}</p>
+        <p class="text-sm"><app-localized-date [value]="viewing()!.lastActivityAt ?? viewing()!.updatedAt" variant="long" /></p>
+      </div>
+    </div>
+
+    @if (viewing()!.convertedOrderId) {
+      <div class="rounded-md border p-3 bg-success/5 border-success/20">
+        <div class="flex items-center gap-2">
+          <ng-icon name="lucideCheckCircle" class="text-success" />
+          <span class="text-sm font-medium">
+            {{ 'carts.detail.converted' | transloco: { orderId: viewing()!.convertedOrderId } }}
+          </span>
         </div>
+      </div>
+    }
+
+    <!-- Cart Items Table -->
+    <div>
+      <p class="text-sm font-medium text-muted-foreground mb-3">{{ 'carts.detail.itemsList' | transloco }}</p>
+      @if (viewing()!.items.length === 0) {
+        <div class="text-center py-6 text-muted-foreground">
+          <ng-icon name="lucidePackage" class="mx-auto size-8 opacity-20 mb-2" />
+          <p class="text-sm">{{ 'carts.noItems' | transloco }}</p>
+        </div>
+      } @else {
+        <div class="rounded-md border overflow-hidden">
+          <table class="w-full text-sm">
+            <thead class="bg-muted/50">
+              <tr>
+                <th class="px-3 py-2 text-start font-medium text-muted-foreground">{{ 'carts.detail.col.product' | transloco }}</th>
+                <th class="px-3 py-2 text-start font-medium text-muted-foreground w-24">{{ 'carts.detail.col.sku' | transloco }}</th>
+                <th class="px-3 py-2 text-center font-medium text-muted-foreground w-16">{{ 'carts.detail.col.qty' | transloco }}</th>
+                <th class="px-3 py-2 text-end font-medium text-muted-foreground w-24">{{ 'carts.detail.col.price' | transloco }}</th>
+                <th class="px-3 py-2 text-end font-medium text-muted-foreground w-28">{{ 'carts.detail.col.subtotal' | transloco }}</th>
+                <th class="px-3 py-2 text-center font-medium text-muted-foreground w-20">{{ 'carts.detail.col.stock' | transloco }}</th>
+                <th class="px-3 py-2 text-center font-medium text-muted-foreground w-20">{{ 'carts.detail.col.status' | transloco }}</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y">
+              @for (item of viewing()!.items; track item.id; let i = $index) {
+                <tr class="hover:bg-muted/30">
+                  <td class="px-3 py-2">
+                    <div class="flex items-center gap-2 min-w-0">
+                      <div class="h-10 w-10 shrink-0 rounded-md bg-muted overflow-hidden">
+                        @if (item.primaryImageUrl) {
+                          <img [src]="item.primaryImageUrl" [alt]="item.productName" class="h-full w-full object-cover" />
+                        } @else {
+                          <div class="flex h-full items-center justify-center">
+                            <ng-icon name="lucidePackage" class="size-5 text-muted-foreground opacity-30" />
+                          </div>
+                        }
+                      </div>
+                      <div class="min-w-0">
+                        <p class="truncate font-medium">{{ item.productName }}</p>
+                        @if (item.optionValues?.length) {
+                          <p class="text-xs text-muted-foreground truncate">
+                            {{ item.optionValues.map(o => o.value).join(' · ') }}
+                          </p>
+                        }
+                        <p class="text-xs text-muted-foreground truncate" dir="ltr">SKU: {{ item.sku }}</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="px-3 py-2 text-start text-xs font-mono text-muted-foreground">{{ item.sku }}</td>
+                  <td class="px-3 py-2 text-center">{{ item.quantity }}</td>
+                  <td class="px-3 py-2 text-end font-medium">{{ item.price | money }}</td>
+                  <td class="px-3 py-2 text-end font-medium">{{ item.subtotal | money }}</td>
+                  <td class="px-3 py-2 text-center">
+                    @if (item.outOfStock) {
+                      <span class="text-xs text-destructive font-medium">{{ 'carts.detail.outOfStock' | transloco }}</span>
+                    } @else if (item.lowStock) {
+                      <span class="text-xs text-warning font-medium">{{ 'carts.detail.lowStock' | transloco }} ({{ item.availableStock }})</span>
+                    } @else {
+                      <span class="text-xs text-muted-foreground">{{ item.availableStock }}</span>
+                    }
+                  </td>
+                  <td class="px-3 py-2 text-center">
+                    @if (!item.productIsActive) {
+                      <app-status-badge status="disabled" />
+                    } @else if (!item.variantIsActive) {
+                      <app-status-badge status="disabled" />
+                    } @else if (item.outOfStock) {
+                      <app-status-badge status="failed" />
+                    } @else {
+                      <app-status-badge status="enabled" />
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+
+    <!-- Totals Breakdown -->
+    <div class="rounded-md border p-4 bg-muted/30">
+      <p class="text-sm font-medium mb-3">{{ 'carts.detail.totalsBreakdown' | transloco }}</p>
+      <div class="grid grid-cols-2 gap-2 text-sm">
+        <span>{{ 'carts.detail.subtotal' | transloco }}</span>
+        <span class="text-end font-medium">{{ viewing()?.total | money }}</span>
+        <span>{{ 'carts.detail.discount' | transloco }}</span>
+        <span class="text-end font-medium text-success">-0 {{ viewing()?.currency ?? 'EGP' }}</span>
+        <span>{{ 'carts.detail.shipping' | transloco }}</span>
+        <span class="text-end font-medium">
+          @if (viewing()?.qualifiesForFreeShipping) {
+            <span class="text-success">{{ 'carts.detail.free' | transloco }}</span>
+          } @else {
+            {{ viewing()?.estimatedShipping | money }}
+          }
+        </span>
+        <span class="font-bold">{{ 'carts.detail.total' | transloco }}</span>
+        <span class="text-end font-bold text-lg">{{ (viewing()!.total + (viewing()!.qualifiesForFreeShipping ? 0 : viewing()!.estimatedShipping)) | money }}</span>
       </div>
     </div>
   </div>
-}
+
+  <!-- Footer Actions -->
+  <div dialog-footer-end class="flex items-center gap-2">
+    @if (viewing()?.status === 'ABANDONED') {
+      <button
+        hlmBtn
+        variant="outline"
+        size="sm"
+        (click)="sendReminder(viewing()!)"
+        [disabled]="sendingReminder()"
+      >
+        <ng-icon name="lucideMail" class="mr-1 size-3.5" />
+        {{ sendingReminder() ? ('carts.sendingReminder' | transloco) : ('carts.sendReminder' | transloco) }}
+      </button>
+    }
+    <button
+      hlmBtn
+      variant="outline"
+      size="sm"
+      (click)="copyCartLink(viewing()!)"
+    >
+      <ng-icon name="lucideCopy" class="mr-1 size-3.5" />
+      {{ 'carts.copyLink' | transloco }}
+    </button>
+    <button hlmBtn variant="secondary" size="sm" (click)="closeView()">
+      {{ 'common.close' | transloco }}
+    </button>
+  </div>
+</app-dialog-shell>

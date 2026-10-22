@@ -8,6 +8,7 @@
       <p class="text-sm text-muted-foreground" data-testid="reviews-count">
         {{ stats().total | plural: 'reviews.countReviews' }} ·
         {{ stats().approved | plural: 'reviews.countApproved' }} ·
+        {{ stats().rejected | plural: 'reviews.countRejected' }} ·
         {{ stats().pending | plural: 'reviews.countPending' }}
       </p>
     </div>
@@ -156,14 +157,14 @@
   <!-- The statistics strip -->
   <div class="grid grid-cols-2 gap-4 md:grid-cols-4">
     <div class="rounded-[var(--radius-card)] border bg-card p-4" data-testid="reviews-stat-average">
-      <p class="text-sm text-muted-foreground">{{ 'reviews.stats.averageRating' | transloco }}</p>
+      <p class="text-sm text-muted-foreground">{{ 'reviews.stats.averageRatingAll' | transloco }}</p>
       <div class="mt-1 flex items-center gap-2">
-        <app-rating-stars [rating]="stats().averageRating ?? 0" />
+        <app-rating-stars [rating]="stats().averageRatingAll ?? 0" />
         <span class="text-2xl font-bold tabular-nums">
-          {{ stats().averageRating === null ? '—' : (stats().averageRating | number: '1.1-1') }} / 5
+          {{ stats().averageRatingAll === null ? '—' : (stats().averageRatingAll | number: '1.1-1') }} / 5
         </span>
       </div>
-      <p class="text-xs text-muted-foreground">{{ stats().total }} {{ 'reviews.stats.reviews' | transloco }}</p>
+      <p class="text-xs text-muted-foreground">{{ stats().total }} {{ 'reviews.stats.reviews' | transloco }} (all)</p>
     </div>
 
     <div class="rounded-[var(--radius-card)] border bg-card p-4" data-testid="reviews-stat-distribution">
@@ -218,6 +219,12 @@
       <div class="flex items-center gap-2">
         <button hlmBtn size="sm" (click)="bulkApprove()" [disabled]="bulkSubmitting()">
           {{ 'reviews.bulk.approve' | transloco }}
+        </button>
+        <button hlmBtn size="sm" variant="destructive" (click)="bulkReject()" [disabled]="bulkSubmitting()">
+          {{ 'reviews.bulk.reject' | transloco }}
+        </button>
+        <button hlmBtn size="sm" variant="destructive" (click)="bulkDelete()" [disabled]="bulkSubmitting()">
+          {{ 'reviews.bulk.delete' | transloco }}
         </button>
         <button hlmBtn variant="ghost" size="sm" (click)="clearSelection()">
           {{ 'reviews.bulk.clear' | transloco }}
@@ -280,13 +287,13 @@
             }
             <div class="min-w-0 flex-1">
               <div class="flex items-start justify-between gap-2">
-                <p class="truncate text-sm font-medium">
+                <p class="line-clamp-2 text-sm font-medium" [title]="item.productName ?? item.productSlug">
                   <bdi>{{ item.productName ?? item.productSlug }}</bdi>
                 </p>
                 <app-status-badge
                   class="shrink-0"
-                  [status]="item.approved ? 'approved' : 'pending'"
-                  [customLabel]="item.approved ? 'reviews.status.approved' : 'reviews.status.pending'"
+                  [status]="item.status === 'APPROVED' ? 'approved' : item.status === 'REJECTED' ? 'rejected' : 'pending'"
+                  [customLabel]="item.status === 'APPROVED' ? 'reviews.status.approved' : item.status === 'REJECTED' ? 'reviews.status.rejected' : 'reviews.status.pending'"
                 />
               </div>
               <div class="mt-1 flex items-center gap-1.5">
@@ -307,7 +314,7 @@
             </div>
           </div>
           <div class="mt-auto flex items-center gap-2 border-t px-4 py-3">
-            @if (!item.approved) {
+            @if (item.status === 'PENDING') {
               <button
                 *hasPermission="'review:moderate'"
                 hlmBtn
@@ -315,6 +322,25 @@
                 (click)="approve(item)"
               >
                 {{ 'reviews.approve' | transloco }}
+              </button>
+              <button
+                *hasPermission="'review:moderate'"
+                hlmBtn
+                size="sm"
+                variant="destructive"
+                (click)="reject(item)"
+              >
+                {{ 'reviews.reject' | transloco }}
+              </button>
+            } @else if (item.status === 'APPROVED') {
+              <button
+                *hasPermission="'review:moderate'"
+                hlmBtn
+                size="sm"
+                variant="secondary"
+                (click)="setApproval(item, false)"
+              >
+                {{ 'reviews.withdrawApproval' | transloco }}
               </button>
             }
             <app-actions-cell
@@ -427,8 +453,8 @@
       <div class="flex items-center gap-2 text-sm">
         <span class="text-muted-foreground">{{ 'common.status' | transloco }}:</span>
         <app-status-badge
-          [status]="review.approved ? 'approved' : 'pending'"
-          [customLabel]="review.approved ? 'reviews.status.approved' : 'reviews.status.pending'"
+          [status]="review.status === 'APPROVED' ? 'approved' : review.status === 'REJECTED' ? 'rejected' : 'pending'"
+          [customLabel]="review.status === 'APPROVED' ? 'reviews.status.approved' : review.status === 'REJECTED' ? 'reviews.status.rejected' : 'reviews.status.pending'"
         />
       </div>
 
@@ -464,13 +490,13 @@
   <!-- The end side: Close first, then THE action of this review. The gap is
        12px, and the two never look the same: Close is a ghost, and the
        action is the primary button (or the secondary one, when the action
-       is a reversal). -->
+       is a reversal). The current status button is DISABLED. -->
   <div dialog-footer-end class="flex items-center gap-3">
     <button hlmBtn variant="ghost" type="button" (click)="closeView()">
       {{ 'common.close' | transloco }}
     </button>
     @if (viewing(); as review) {
-      @if (!review.approved) {
+      @if (review.status === 'PENDING') {
         <button
           hlmBtn
           type="button"
@@ -483,10 +509,30 @@
               : ('reviews.approve' | transloco)
           }}
         </button>
-      } @else {
+        <button
+          hlmBtn
+          variant="destructive"
+          type="button"
+          [disabled]="dialogBusy()"
+          (click)="setRejectedFromDialog(review)"
+        >
+          {{
+            dialogBusy()
+              ? ('reviews.action.rejecting' | transloco)
+              : ('reviews.reject' | transloco)
+          }}
+        </button>
+      } @else if (review.status === 'APPROVED') {
         <button
           hlmBtn
           variant="secondary"
+          type="button"
+          [disabled]="true"
+        >
+          {{ 'reviews.approve' | transloco }}
+        </button>
+        <button
+          hlmBtn
           type="button"
           [disabled]="dialogBusy()"
           (click)="setApprovalFromDialog(review, false)"
@@ -495,6 +541,26 @@
             dialogBusy()
               ? ('reviews.action.withdrawing' | transloco)
               : ('reviews.withdrawApproval' | transloco)
+          }}
+        </button>
+      } @else if (review.status === 'REJECTED') {
+        <button
+          hlmBtn
+          type="button"
+          [disabled]="true"
+        >
+          {{ 'reviews.reject' | transloco }}
+        </button>
+        <button
+          hlmBtn
+          type="button"
+          [disabled]="dialogBusy()"
+          (click)="setApprovalFromDialog(review, true)"
+        >
+          {{
+            dialogBusy()
+              ? ('reviews.action.approving' | transloco)
+              : ('reviews.approve' | transloco)
           }}
         </button>
       }

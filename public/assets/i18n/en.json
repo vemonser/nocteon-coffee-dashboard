@@ -1121,6 +1121,7 @@
     "total": "Total",
     "approved": "Approved",
     "pending": "Pending",
+    "rejected": "Rejected",
     "search": "Search Reviews...",
     "all": "All",
     "verification": "Verification",
@@ -1134,6 +1135,7 @@
     "verifiedPurchase": "Verified Purchase",
     "notVerified": "Not Verified",
     "approve": "Approve",
+    "reject": "Reject",
     "unapprove": "Unapprove",
     "view": "View",
     "bulkActions": "Bulk actions",
@@ -1158,6 +1160,8 @@
     "action": {
       "approved": "Review approved",
       "approvalWithdrawn": "Approval withdrawn",
+      "rejected": "Review rejected",
+      "rejecting": "Rejecting…",
       "approving": "Approving…",
       "withdrawing": "Withdrawing…"
     },
@@ -1168,15 +1172,19 @@
     "countApproved_other": "{{count}} approved",
     "countPending_one": "{{count}} pending",
     "countPending_other": "{{count}} pending",
+    "countRejected_one": "{{count}} rejected",
+    "countRejected_other": "{{count}} rejected",
     "tabs": {
       "label": "Review status",
       "pending": "Pending",
       "approved": "Approved",
+      "rejected": "Rejected",
       "all": "All"
     },
     "status": {
       "approved": "Approved",
-      "pending": "Pending"
+      "pending": "Pending",
+      "rejected": "Rejected"
     },
     "withdrawApproval": "Withdraw approval",
     "emptyState": {
@@ -1186,8 +1194,11 @@
     "bulk": {
       "selected": "{{count}} selected",
       "approve": "Approve selected",
+      "reject": "Reject selected",
+      "delete": "Delete selected",
       "clear": "Clear selection",
-      "approved": "Reviews approved"
+      "approved": "Reviews approved",
+      "rejected": "Reviews rejected"
     },
     "columns": {
       "product": "Product",
@@ -1206,12 +1217,13 @@
       "clear": "Clear filters"
     },
     "stats": {
-      "averageRating": "Average rating",
+      "averageRating": "Average rating (approved)",
+      "averageRatingAll": "Average rating (all)",
       "distribution": "Star distribution",
       "pending": "Pending",
       "total": "Total",
-      "reviews": "Reviews",
-      "verifiedShare": "Verified share"
+      "reviews": "reviews",
+      "verifiedShare": "verified"
     },
     "dateRange": {
       "all": "All time",
@@ -1287,10 +1299,43 @@
     "noItems": "No items in this cart",
     "stock": "Stock",
     "status": {
-      "active": "Enabled"
+      "active": "Active",
+      "abandoned": "Abandoned",
+      "converted": "Converted"
+    },
+    "kpi": {
+      "activeCarts": "Active carts",
+      "abandonedCarts": "Abandoned carts",
+      "totalPotentialRevenue": "Total potential revenue",
+      "averageCartValue": "Avg. cart value",
+      "activeCartsTooltip": "Carts with recent activity (updated within the abandonment threshold)",
+      "abandonedCartsTooltip": "Carts with no activity for 24+ hours",
+      "totalPotentialRevenueTooltip": "Sum of subtotals from active and abandoned carts",
+      "averageCartValueTooltip": "Total potential revenue divided by active + abandoned carts"
+    },
+    "tabs": {
+      "label": "Cart status",
+      "all": "All",
+      "active": "Active",
+      "abandoned": "Abandoned",
+      "converted": "Converted"
+    },
+    "columns": {
+      "customer": "Customer",
+      "items": "Items",
+      "itemCount": "Count",
+      "total": "Total",
+      "lastActivity": "Last activity",
+      "actions": "Actions"
+    },
+    "sort": {
+      "lastActivity": "Last activity",
+      "createdAt": "Created at",
+      "total": "Total",
+      "customer": "Customer"
     },
     "detail": {
-      "title": "Cart details",
+      "title": "Cart #{{id}}",
       "customer": "Customer",
       "items": "Items",
       "notFound": "Cart not found",
@@ -1300,7 +1345,36 @@
       "status": "Status",
       "subtotal": "Subtotal",
       "total": "Total",
-      "updatedAt": "Updated at"
+      "updatedAt": "Updated at",
+      "itemsList": "Items",
+      "col": {
+        "product": "Product",
+        "sku": "SKU",
+        "qty": "Qty",
+        "price": "Unit price",
+        "subtotal": "Subtotal",
+        "stock": "Stock",
+        "status": "Status"
+      },
+      "estShipping": "Est. shipping",
+      "free": "Free",
+      "converted": "Converted to order #{{orderId}}",
+      "totalsBreakdown": "Totals breakdown",
+      "discount": "Discount",
+      "shipping": "Shipping"
+    },
+    "sendReminder": "Send reminder",
+    "sendingReminder": "Sending…",
+    "reminderSent": "Reminder sent",
+    "reminderFailed": "Could not send reminder",
+    "copyLink": "Copy cart link",
+    "linkCopied": "Cart link copied",
+    "linkCopyFailed": "Failed to copy link",
+    "outOfStock": "Out of stock",
+    "lowStock": "Low stock",
+    "errorState": {
+      "title": "Could not load carts",
+      "hint": "Check your connection and try again."
     }
   },
   "orders": {
@@ -1923,11 +1997,18 @@
     "sendReply": "Send reply",
     "countMessages_one": "{{count}} message",
     "countMessages_other": "{{count}} messages",
+    "countNew_one": "{{count}} new",
+    "countNew_other": "{{count}} new",
+    "countReplied_one": "{{count}} replied",
+    "countReplied_other": "{{count}} replied",
+    "countArchived_one": "{{count}} archived",
+    "countArchived_other": "{{count}} archived",
     "countUnread_one": "{{count}} unread",
     "countUnread_other": "{{count}} unread",
     "unread": "Unread",
     "read": "Read",
     "replied": "Replied",
+    "archived": "Archived",
     "yourReply": "Your reply",
     "copyEmail": "Copy email",
     "emailSent": "Email sent",
@@ -1938,11 +2019,21 @@
     "replyNotice": "The reply is emailed to {{email}} and saved here.",
     "replySent": "Reply sent",
     "replySavedNotSent": "Reply saved, but the email could not be sent",
+    "sending": "Sending...",
+    "markRead": "Mark as read",
+    "markUnreadNotSupported": "Mark as unread not supported",
+    "archive": "Archive",
+    "bulkSelected": "{{count}} selected",
+    "bulkMarkRead": "Mark as read",
+    "bulkArchive": "Archive",
+    "bulkDelete": "Delete",
+    "bulkClear": "Clear selection",
     "tabs": {
       "label": "Message state",
       "all": "All",
-      "unread": "Unread",
-      "replied": "Replied"
+      "new": "New",
+      "replied": "Replied",
+      "archived": "Archived"
     },
     "dateRange": {
       "all": "All time",
@@ -1952,7 +2043,7 @@
       "custom": "Custom range"
     },
     "filters": {
-      "status": "Status",
+      "sort": "Sort by",
       "dateRange": "Date range",
       "clear": "Clear filters"
     },
@@ -1972,6 +2063,32 @@
       "delete": "Delete",
       "sending": "Sending…"
     }
+    "sort": {
+      "date": "Date",
+      "name": "Name",
+      "email": "Email",
+      "subject": "Subject"
+    },
+    "status": {
+      "new": "New",
+      "replied": "Replied",
+      "archived": "Archived"
+    },
+    "bulkClear": "Clear selection",
+    "selectMessage": "Select message",
+    "copyEmail": "Copy email",
+    "emailSent": "Email sent",
+    "emailNotSent": "Email not sent",
+    "emailQueued": "Queued for retry",
+    "sendAgain": "Send again",
+    "replyPlaceholder": "Reply to {{email}}",
+    "replyNotice": "The reply is emailed to {{email}} and saved here.",
+    "replySent": "Reply sent",
+    "replySavedNotSent": "Reply saved, but the email could not be sent",
+    "sending": "Sending...",
+    "markRead": "Mark as read",
+    "markUnreadNotSupported": "Mark as unread not supported",
+    "archive": "Archive"
   },
   "unauthorized": {
     "title": "Access Denied",

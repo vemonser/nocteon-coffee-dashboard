@@ -1121,6 +1121,7 @@
     "total": "الإجمالي",
     "approved": "موافق عليه",
     "pending": "قيد المراجعة",
+    "rejected": "مرفوض",
     "search": "بحث في التقييمات...",
     "all": "الكل",
     "verification": "التحقق",
@@ -1134,6 +1135,7 @@
     "verifiedPurchase": "شراء موثق",
     "notVerified": "غير موثق",
     "approve": "اعتماد",
+    "reject": "رفض",
     "unapprove": "إلغاء الاعتماد",
     "view": "عرض",
     "bulkActions": "إجراءات جماعية",
@@ -1158,6 +1160,8 @@
     "action": {
       "approved": "تم اعتماد التقييم",
       "approvalWithdrawn": "تم سحب الاعتماد",
+      "rejected": "تم رفض التقييم",
+      "rejecting": "جارٍ الرفض…",
       "approving": "جارٍ الاعتماد…",
       "withdrawing": "جارٍ سحب الاعتماد…"
     },
@@ -1180,15 +1184,23 @@
     "countPending_few": "{{count}} قيد المراجعة",
     "countPending_many": "{{count}} قيد المراجعة",
     "countPending_other": "{{count}} قيد المراجعة",
+    "countRejected_zero": "لا مرفوض",
+    "countRejected_one": "مرفوض واحد",
+    "countRejected_two": "مرفوضان",
+    "countRejected_few": "{{count}} مرفوض",
+    "countRejected_many": "{{count}} مرفوضًا",
+    "countRejected_other": "{{count}} مرفوض",
     "tabs": {
       "label": "حالة التقييم",
       "pending": "قيد المراجعة",
       "approved": "معتمد",
+      "rejected": "مرفوض",
       "all": "الكل"
     },
     "status": {
       "approved": "معتمد",
-      "pending": "قيد المراجعة"
+      "pending": "قيد المراجعة",
+      "rejected": "مرفوض"
     },
     "withdrawApproval": "سحب الاعتماد",
     "emptyState": {
@@ -1198,8 +1210,11 @@
     "bulk": {
       "selected": "تم اختيار {{count}}",
       "approve": "اعتماد المحدد",
+      "reject": "رفض المحدد",
+      "delete": "حذف المحدد",
       "clear": "مسح التحديد",
-      "approved": "تم اعتماد التقييمات"
+      "approved": "تم اعتماد التقييمات",
+      "rejected": "تم رفض التقييمات"
     },
     "columns": {
       "product": "المنتج",
@@ -1218,12 +1233,13 @@
       "clear": "مسح الفلاتر"
     },
     "stats": {
-      "averageRating": "متوسط التقييم",
+      "averageRating": "متوسط التقييم (المعتمد)",
+      "averageRatingAll": "متوسط التقييم (الكل)",
       "distribution": "توزيع النجوم",
       "pending": "قيد المراجعة",
       "total": "الإجمالي",
-      "reviews": "التقييمات",
-      "verifiedShare": "نسبة الموثقة"
+      "reviews": "تقييمات",
+      "verifiedShare": "موثق"
     },
     "dateRange": {
       "all": "كل الفترات",
@@ -1299,10 +1315,43 @@
     "noItems": "لا توجد عناصر في هذه السلة",
     "stock": "المخزون",
     "status": {
-      "active": "مفعّلة"
+      "active": "نشطة",
+      "abandoned": "مهجورة",
+      "converted": "محوّلة"
+    },
+    "kpi": {
+      "activeCarts": "السلات النشطة",
+      "abandonedCarts": "السلات المهجورة",
+      "totalPotentialRevenue": "إجمالي الإيرادات المحتملة",
+      "averageCartValue": "متوسط قيمة السلة",
+      "activeCartsTooltip": "سلات بنشاط حديث (تم تحديثها خلال حد المهجورة)",
+      "abandonedCartsTooltip": "سلات بدون نشاط لمدة 24+ ساعة",
+      "totalPotentialRevenueTooltip": "مجموع المجموعات الفرعية من السلات النشطة والمهجورة",
+      "averageCartValueTooltip": "إجمالي الإيرادات المحتملة مقسوماً على السلات النشطة + المهجورة"
+    },
+    "tabs": {
+      "label": "حالة السلة",
+      "all": "الكل",
+      "active": "نشطة",
+      "abandoned": "مهجورة",
+      "converted": "محوّلة"
+    },
+    "columns": {
+      "customer": "العميل",
+      "items": "العناصر",
+      "itemCount": "العدد",
+      "total": "الإجمالي",
+      "lastActivity": "آخر نشاط",
+      "actions": "إجراءات"
+    },
+    "sort": {
+      "lastActivity": "آخر نشاط",
+      "createdAt": "تاريخ الإنشاء",
+      "total": "الإجمالي",
+      "customer": "العميل"
     },
     "detail": {
-      "title": "تفاصيل السلة",
+      "title": "السلة #{{id}}",
       "customer": "العميل",
       "items": "العناصر",
       "notFound": "السلة غير موجودة",
@@ -1312,7 +1361,36 @@
       "status": "الحالة",
       "subtotal": "المجموع الفرعي",
       "total": "الإجمالي",
-      "updatedAt": "آخر تحديث"
+      "updatedAt": "آخر تحديث",
+      "itemsList": "العناصر",
+      "col": {
+        "product": "المنتج",
+        "sku": "SKU",
+        "qty": "الكمية",
+        "price": "سعر الوحدة",
+        "subtotal": "المجموع الفرعي",
+        "stock": "المخزون",
+        "status": "الحالة"
+      },
+      "estShipping": "الشحن المقدر",
+      "free": "مجاني",
+      "converted": "تم تحويلها للطلب #{{orderId}}",
+      "totalsBreakdown": "تفاصيل المجموع",
+      "discount": "الخصم",
+      "shipping": "الشحن"
+    },
+    "sendReminder": "إرسال تذكير",
+    "sendingReminder": "جارٍ الإرسال…",
+    "reminderSent": "تم إرسال التذكير",
+    "reminderFailed": "تعذر إرسال التذكير",
+    "copyLink": "نسخ رابط السلة",
+    "linkCopied": "تم نسخ رابط السلة",
+    "linkCopyFailed": "فشل نسخ الرابط",
+    "outOfStock": "نفد المخزون",
+    "lowStock": "مخزون منخفض",
+    "errorState": {
+      "title": "تعذر تحميل السلات",
+      "hint": "تحقق من اتصالك وحاول مرة أخرى."
     }
   },
   "orders": {
@@ -1987,6 +2065,24 @@
     "countMessages_few": "{{count}} رسائل",
     "countMessages_many": "{{count}} رسالة",
     "countMessages_other": "{{count}} رسالة",
+    "countNew_zero": "لا رسائل جديدة",
+    "countNew_one": "رسالة جديدة واحدة",
+    "countNew_two": "رسالتان جديدتان",
+    "countNew_few": "{{count}} رسائل جديدة",
+    "countNew_many": "{{count}} رسالة جديدة",
+    "countNew_other": "{{count}} رسالة جديدة",
+    "countReplied_zero": "لا رسائل تم الرد عليها",
+    "countReplied_one": "رسالة واحدة تم الرد عليها",
+    "countReplied_two": "رسالتان تم الرد عليهما",
+    "countReplied_few": "{{count}} رسائل تم الرد عليها",
+    "countReplied_many": "{{count}} رسالة تم الرد عليها",
+    "countReplied_other": "{{count}} رسالة تم الرد عليها",
+    "countArchived_zero": "لا رسائل مؤرشفة",
+    "countArchived_one": "رسالة واحدة مؤرشفة",
+    "countArchived_two": "رسالتان مؤرشفان",
+    "countArchived_few": "{{count}} رسائل مؤرشفة",
+    "countArchived_many": "{{count}} رسالة مؤرشفة",
+    "countArchived_other": "{{count}} رسالة مؤرشفة",
     "countUnread_zero": "لا غير مقروءة",
     "countUnread_one": "غير مقروءة واحدة",
     "countUnread_two": "غير مقروءتان",
@@ -1996,6 +2092,7 @@
     "unread": "غير مقروءة",
     "read": "مقروءة",
     "replied": "تم الرد عليها",
+    "archived": "مؤرشفة",
     "yourReply": "ردّك",
     "copyEmail": "نسخ البريد الإلكتروني",
     "emailSent": "تم إرسال الإيميل",
@@ -2006,11 +2103,21 @@
     "replyNotice": "الرد بيتبعت إيميل على {{email}} وبيتحفظ هنا.",
     "replySent": "تم إرسال الرد",
     "replySavedNotSent": "تم حفظ الرد، بس الإيميل ما اتبعتش",
+    "sending": "جاري الإرسال...",
+    "markRead": "تعليم كمقروءة",
+    "markUnreadNotSupported": "تعليم كغير مقروءة غير مدعوم",
+    "archive": "أرشفة",
+    "bulkSelected": "{{count}} محددة",
+    "bulkMarkRead": "تعليم كمقروءة",
+    "bulkArchive": "أرشفة",
+    "bulkDelete": "حذف",
+    "bulkClear": "إلغاء التحديد",
     "tabs": {
       "label": "حالة الرسالة",
       "all": "الكل",
-      "unread": "غير مقروءة",
-      "replied": "تم الرد عليها"
+      "new": "جديدة",
+      "replied": "تم الرد عليها",
+      "archived": "مؤرشفة"
     },
     "dateRange": {
       "all": "كل الفترات",
@@ -2020,26 +2127,36 @@
       "custom": "فترة مخصصة"
     },
     "filters": {
-      "status": "الحالة",
+      "sort": "ترتيب حسب",
       "dateRange": "الفترة",
       "clear": "مسح الفلاتر"
     },
-    "bulkSelected": "تم تحديد {{count}}",
-    "bulkMarkRead": "تحديد كمقروء",
-    "bulkMarkUnread": "تحديد كغير مقروء",
-    "bulkDelete": "حذف",
-    "markRead": "تحديد كمقروء",
-    "markUnread": "تحديد كغير مقروء",
-    "markUnreadNotSupported": "تحديد كغير مقروء غير مدعوم",
-    "sending": "جارٍ الإرسال…",
-    "bulk": {
-      "selected": "تم تحديد {{count}}",
-      "markRead": "تحديد كمقروء",
-      "markUnread": "تحديد كغير مقروء",
-      "markUnreadNotSupported": "تحديد كغير مقروء غير مدعوم",
-      "delete": "حذف",
-      "sending": "جارٍ الإرسال…"
-    }
+    "sort": {
+      "date": "التاريخ",
+      "name": "الاسم",
+      "email": "البريد الإلكتروني",
+      "subject": "الموضوع"
+    },
+    "status": {
+      "new": "جديدة",
+      "replied": "تم الرد عليها",
+      "archived": "مؤرشفة"
+    },
+    "bulkClear": "إلغاء التحديد",
+    "selectMessage": "تحديد الرسالة",
+    "copyEmail": "نسخ البريد الإلكتروني",
+    "emailSent": "تم إرسال الإيميل",
+    "emailNotSent": "لم يتم إرسال الإيميل",
+    "emailQueued": "في الانتظار",
+    "sendAgain": "إعادة الإرسال",
+    "replyPlaceholder": "رد على {{email}}",
+    "replyNotice": "الرد بيتبعت إيميل على {{email}} وبيتحفظ هنا.",
+    "replySent": "تم إرسال الرد",
+    "replySavedNotSent": "تم حفظ الرد، بس الإيميل ما اتبعتش",
+    "sending": "جاري الإرسال...",
+    "markRead": "تعليم كمقروءة",
+    "markUnreadNotSupported": "تعليم كغير مقروءة غير مدعوم",
+    "archive": "أرشفة"
   },
   "unauthorized": {
     "title": "الوصول مرفوض",

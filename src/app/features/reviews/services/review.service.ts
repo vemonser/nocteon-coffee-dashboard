@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 
 import { ApiResponse, PageResponse } from '../../../core/models/api-response.model';
 import { environment } from '../../../../environments/environment';
-import { ReviewListParams, ReviewResponse, ReviewStats } from '../models/review.model';
+import { ReviewListParams, ReviewResponse, ReviewStats, ReviewRejectRequest } from '../models/review.model';
 
 @Injectable({ providedIn: 'root' })
 export class ReviewService {
@@ -19,7 +19,8 @@ export class ReviewService {
       .set('direction', params.direction ?? 'desc');
     if (params.productSlug) httpParams = httpParams.set('productSlug', params.productSlug);
     if (params.search) httpParams = httpParams.set('search', params.search);
-    if (params.isApproved !== undefined) httpParams = httpParams.set('isApproved', params.isApproved);
+    if (params.status) httpParams = httpParams.set('status', params.status);
+    else if (params.isApproved !== undefined) httpParams = httpParams.set('isApproved', params.isApproved);
     if (params.isVerified !== undefined) httpParams = httpParams.set('isVerified', params.isVerified);
     if (params.minRating !== undefined) httpParams = httpParams.set('minRating', params.minRating);
     if (params.createdFrom) httpParams = httpParams.set('createdFrom', params.createdFrom);
@@ -46,6 +47,13 @@ export class ReviewService {
       `${environment.apiUrl}${this.basePath}/${id}/approval`,
       null,
       { params: new HttpParams().set('approved', approved) },
+    );
+  }
+
+  setRejected(id: number): Observable<ApiResponse<ReviewResponse>> {
+    return this.http.patch<ApiResponse<ReviewResponse>>(
+      `${environment.apiUrl}${this.basePath}/${id}/reject`,
+      null,
     );
   }
 
