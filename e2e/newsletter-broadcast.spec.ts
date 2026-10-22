@@ -136,7 +136,7 @@ test.describe('newsletter and broadcasts', () => {
 
     // The delete action, and the confirmation.
     const card = page.locator('div.rounded-md.border.bg-card', { hasText: subject }).first();
-    await card.locator('button[aria-label]').click();
+    await card.locator('button[aria-label*="Delete"]').click();
     await page.locator('button:has-text("Delete")').last().click();
     await expect(page.locator(`text=${subject}`)).toHaveCount(0, { timeout: 20_000 });
   });
