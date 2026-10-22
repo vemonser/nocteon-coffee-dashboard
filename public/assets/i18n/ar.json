@@ -2066,7 +2066,20 @@
     "totalCount_few": "{{count}} رسائل",
     "totalCount_many": "{{count}} رسالة",
     "totalCount_other": "{{count}} رسالة",
-    "resend": "إعادة إرسال"
+    "resend": "إعادة إرسال",
+    "recipients": "المستلمون",
+    "recipientsTitle": "من وصلهم",
+    "viewRecipients": "عرض المستلمين",
+    "recipientStatus": {
+      "sent": "مرسل",
+      "failed": "فشل",
+      "pending": "في الانتظار"
+    },
+    "recipientStatusTooltip": {
+      "sent": "تم التسليم إلى البريد",
+      "failed": "رفضه Provider — أعد الإرسال",
+      "pending": "في انتظار الإرسال"
+    }
   },
   "contactMessages": {
     "title": "رسائل التواصل",

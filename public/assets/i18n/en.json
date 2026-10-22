@@ -1998,7 +1998,20 @@
     },
     "totalCount_one": "1 broadcast",
     "totalCount_other": "{{count}} broadcasts",
-    "resend": "Resend"
+    "resend": "Resend",
+    "recipients": "Recipients",
+    "recipientsTitle": "Who this reached",
+    "viewRecipients": "View recipients",
+    "recipientStatus": {
+      "sent": "Sent",
+      "failed": "Failed",
+      "pending": "Pending"
+    },
+    "recipientStatusTooltip": {
+      "sent": "Delivered to the inbox",
+      "failed": "The provider refused it — retry",
+      "pending": "Waiting to be sent"
+    }
   },
   "contactMessages": {
     "title": "Contact messages",
