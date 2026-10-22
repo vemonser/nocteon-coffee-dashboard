@@ -117,7 +117,7 @@
           "path": "evidence/orders-v5/orders-list-light-en.png",
           "command": "npx playwright test e2e/orders-do-d.spec.ts --reporter=list",
           "exitCode": 0,
-          "recordedAt": "2026-10-22T12:46:42.276Z"
+          "recordedAt": "2026-10-22T15:10:57.526Z"
         }
       ]
     },
@@ -144,14 +144,14 @@
           "path": ".quality/runs/2026-10-22T12-13-23/artifacts/e2e-empty-state.log",
           "command": "npx playwright test e2e/orders-states.spec.ts --reporter=list",
           "exitCode": 0,
-          "recordedAt": "2026-10-22T12:30:17.801Z"
+          "recordedAt": "2026-10-22T15:08:11.485Z"
         },
         {
           "type": "screenshot",
           "path": "evidence/orders-v5/orders-list-light-en.png",
           "command": "npx playwright test e2e/orders-do-d.spec.ts --reporter=list",
           "exitCode": 0,
-          "recordedAt": "2026-10-22T12:49:14.322Z"
+          "recordedAt": "2026-10-22T15:13:10.901Z"
         }
       ]
     },
@@ -178,14 +178,14 @@
           "path": "evidence/orders-v5/orders-list-dark-ar.png",
           "command": "npx playwright test e2e/orders-do-d.spec.ts --reporter=list",
           "exitCode": 0,
-          "recordedAt": "2026-10-22T12:45:22.801Z"
+          "recordedAt": "2026-10-22T15:11:37.248Z"
         },
         {
           "type": "unit-test",
           "path": ".quality/runs/2026-10-22T12-13-23/artifacts/status-badge-unit.log",
           "command": "npm run test:unit",
           "exitCode": 0,
-          "recordedAt": "2026-10-22T12:48:25.540Z"
+          "recordedAt": "2026-10-22T15:14:27.983Z"
         }
       ]
     },
@@ -208,17 +208,17 @@
       "evidence": [
         {
           "type": "e2e",
-          "path": ".quality/runs/2026-10-22T12-13-23/artifacts/e2e-orders-list-full.log",
+          "path": ".quality/runs/2026-10-22T12-13-23/artifacts/e2e-orders-list.log",
           "command": "npx playwright test e2e/orders.spec.ts --reporter=list",
           "exitCode": 0,
-          "recordedAt": "2026-10-22T12:39:56.011Z"
+          "recordedAt": "2026-10-22T15:10:10.559Z"
         },
         {
           "type": "screenshot",
           "path": "evidence/orders-v5/orders-list-light-en.png",
           "command": "npx playwright test e2e/orders-do-d.spec.ts --reporter=list",
           "exitCode": 0,
-          "recordedAt": "2026-10-22T12:49:53.222Z"
+          "recordedAt": "2026-10-22T15:13:50.551Z"
         }
       ]
     },
@@ -456,7 +456,7 @@
           "path": "evidence/orders-v5/order-detail-light-ar.png",
           "command": "npx playwright test e2e/orders-do-d.spec.ts --reporter=list",
           "exitCode": 0,
-          "recordedAt": "2026-10-22T12:46:02.345Z"
+          "recordedAt": "2026-10-22T15:12:16.483Z"
         }
       ]
     },

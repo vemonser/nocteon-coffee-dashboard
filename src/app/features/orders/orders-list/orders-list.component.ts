@@ -198,10 +198,12 @@ export class OrdersListComponent {
   protected readonly first = computed(() => this.page() === 0);
   protected readonly last = computed(() => this.page() >= this.totalPages() - 1);
 
-  /** Empty state message. */
+  /** Empty state message: a store with no orders, or orders the filters exclude. */
   protected readonly emptyMessage = computed(() => {
-    if (this.allTotal() === 0) return this.t('orders.emptyState.noOrders', 'No orders yet');
-    if (this.hasActiveFilters() || this.status() !== 'ALL') {
+    if (this.filteredTotal() === 0 && !this.hasActiveFilters() && this.status() === 'ALL') {
+      return this.t('orders.emptyState.noOrders', 'No orders yet');
+    }
+    if (this.filteredTotal() === 0) {
       return this.t('orders.emptyState.noResults', 'No orders match these filters');
     }
     return this.t('orders.empty', 'No orders found');
