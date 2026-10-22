@@ -232,7 +232,8 @@
       "disabled": "معطّل",
       "confirmed": "مؤكد",
       "unknown": "غير معروف",
-      "approved": "معتمد"
+      "approved": "معتمد",
+      "notCollected": "لم يُحصَّل"
     },
     "toggleSidebar": "إظهار/إخفاء القائمة",
     "total": "إجمالي",
@@ -1436,7 +1437,8 @@
       "CASH_ON_DELIVERY": "الدفع عند الاستلام"
     },
     "statusFilter": {
-      "all": "كل الطلبات"
+      "all": "كل الطلبات",
+      "refunded": "تم الاسترداد"
     },
     "columns": {
       "orderNumber": "رقم الطلب",

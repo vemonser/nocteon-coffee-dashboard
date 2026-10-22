@@ -201,6 +201,14 @@ export class DataTableComponent {
   emptyMessage = input<string>('No data found');
   /** Optional action button shown in the empty state (e.g., "Clear filters"). */
   emptyAction = input<{ label: string; action: () => void } | null>(null);
+  /**
+   * The horizontal padding of the cells.
+   *
+   * <p>The default is the roomy `px-4`. A table with many columns can ask
+   * for `px-3` and give every column eight more pixels for the content —
+   * the difference between a truncated value and a whole one.
+   */
+  cellPadding = input<string>('px-4');
   sortChange = output<TableSortEvent | null>();
   edit = output<any>();
   delete = output<any>();

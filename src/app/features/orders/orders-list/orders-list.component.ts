@@ -244,15 +244,15 @@ export class OrdersListComponent {
   protected readonly columns: ColumnDef<OrderResponse, any>[] = [
     this.columnHelper.accessor(
       (row) => formatOrderNumber(row.orderNumber, row.id),
-      { id: 'orderNumber', header: 'orders.columns.orderNumber', enableSorting: false, meta: { width: '140px' } },
+      { id: 'orderNumber', header: 'orders.columns.orderNumber', enableSorting: false, meta: { width: '152px' } },
     ),
     this.columnHelper.accessor(
       (row) => ({ name: row.customer?.name ?? null, email: row.customer?.email ?? null }),
-      { id: 'customer', header: 'orders.columns.customer', enableSorting: false, meta: { width: '190px' } },
+      { id: 'customer', header: 'orders.columns.customer', enableSorting: false, meta: { width: '161px' } },
     ),
     this.columnHelper.accessor(
       (row) => `${(row.items ?? []).length} items`,
-      { id: 'items', header: 'orders.columns.items', enableSorting: false, meta: { width: '84px' } },
+      { id: 'items', header: 'orders.columns.items', enableSorting: false, meta: { width: '69px' } },
     ),
     this.columnHelper.accessor(
       (row) => orderStatusKind(row.status),
@@ -260,28 +260,28 @@ export class OrdersListComponent {
     ),
     this.columnHelper.accessor(
       (row) => paymentStatusKind(effectivePaymentStatus(row)),
-      { id: 'paymentStatus', header: 'orders.columns.paymentStatus', enableSorting: true, meta: { width: '128px' } },
+      { id: 'paymentStatus', header: 'orders.columns.paymentStatus', enableSorting: true, meta: { width: '130px' } },
     ),
     this.columnHelper.accessor(
       (row) => ({
         icon: row.paymentMethod === 'ONLINE' ? 'lucideCreditCard' : 'lucideBanknote',
         method: row.paymentMethod,
       }),
-      { id: 'paymentMethod', header: 'orders.columns.paymentMethod', enableSorting: false, meta: { width: '168px' } },
+      { id: 'paymentMethod', header: 'orders.columns.paymentMethod', enableSorting: false, meta: { width: '151px' } },
     ),
     this.columnHelper.accessor('totalAmount', {
       id: 'totalAmount',
       header: 'orders.columns.total',
       enableSorting: true,
-      meta: { width: '110px', align: 'end' },
+      meta: { width: '105px', align: 'end' },
     }),
     this.columnHelper.accessor('createdAt', {
       id: 'createdAtTime',
       header: 'orders.columns.createdAt',
       enableSorting: true,
-      meta: { width: '124px' },
+      meta: { width: '102px' },
     }),
-    this.columnHelper.display({ id: 'actions', header: 'orders.columns.actions', meta: { width: '80px' } }),
+    this.columnHelper.display({ id: 'actions', header: 'orders.columns.actions', meta: { width: '78px' } }),
   ];
 
   private static readonly SORT_PROPERTY: Record<string, string> = {
@@ -309,11 +309,18 @@ export class OrdersListComponent {
 
   constructor() {
     this.readUrl();
+    // The URL the page opened with IS the state the first load answers, so
+    // the subscription below does not ask for the same rows twice.
+    this.loadedState = JSON.stringify(this.currentState());
     this.load();
 
     this.route.queryParamMap.subscribe((params) => {
       const next = this.stateFromParams(params);
-      if (JSON.stringify(next) !== JSON.stringify(this.currentState())) {
+      // The comparison is with the state of the LAST LOAD, not with the
+      // signals: a control that sets its own signal first (the status tab,
+      // the page size) would otherwise look unchanged to the URL, and the
+      // table would keep showing the old rows.
+      if (JSON.stringify(next) !== JSON.stringify(this.loadedState)) {
         this.applyState(next);
         this.load();
       }
@@ -321,6 +328,16 @@ export class OrdersListComponent {
   }
 
   // ── URL state ────────────────────────────────────────────────────────────
+
+  /**
+   * The state the rows on screen were loaded with.
+   *
+   * <p>The URL is the request: a control writes the URL, and the URL
+   * subscription asks the API again. This snapshot is what the subscription
+   * compares against, so a control that sets its own signal first still
+   * triggers a reload.
+   */
+  private loadedState: string = '';
 
   private currentState() {
     return {
@@ -516,6 +533,9 @@ export class OrdersListComponent {
         // KPIs from the card stats (with tab)
         this.kpi.set(computeKpi(cards.data as OrderStatsResponse, counts, this.filteredTotal()));
 
+        // The rows on screen now answer THIS state, so the URL subscription
+        // knows what it is comparing against.
+        this.loadedState = JSON.stringify(this.currentState());
         this.loading.set(false);
       },
       error: (err) => {

@@ -169,29 +169,144 @@ test.describe('orders list', () => {
     expect(headers.map((h) => h.trim())).not.toContain('ID');
   });
 
-  test('the cards count the whole set, not the page rows', async () => {
-    // The API is the reference: the total of the list. The call is made
-    // through the app's own session, and the API rate-limits, so a failed
-    // call skips the comparison instead of failing the test on a number it
-    // never got.
-    const total = await apiTotal(page);
+  test('the four cards are the numbers the API reports', async () => {
+    // The API is the reference. The call is made through the app's own
+    // session, and the API rate-limits, so a failed call skips the
+    // comparison instead of failing the test on a number it never got.
+    const stats = await apiStats(page);
 
     const cards = page.locator('[data-testid="orders-stat-card"]');
-    await expect(cards).toHaveCount(5);
+    await expect(cards).toHaveCount(4);
 
-    const all = await cards.nth(0).locator('[data-testid="stat-value"]').innerText();
-    if (total !== null) {
-      expect(Number(all.trim()), 'the "All orders" card must equal the API total').toBe(total);
+    // The revenue is the BACKEND's aggregate, never a sum the browser made.
+    if (stats) {
+      const revenue = await cards.nth(0).locator('[data-testid="stat-value"]').innerText();
+      const money = Number(revenue.replace(/[^\d.]/g, ''));
+      expect(money, 'the revenue card must equal the API revenue').toBeCloseTo(stats.revenue, 1);
     }
 
-    // The "Cancelled" card must agree with the CANCELLED tab, and with the
-    // rows that say Cancelled — the defect this page was rebuilt for. This
-    // check needs no API call, so it always runs.
-    const cancelledCard = await cards.nth(4).locator('[data-testid="stat-value"]').innerText();
+    // The AVERAGE is the revenue over the PAID orders only — never over
+    // every order, and never over the cancelled ones.
+    if (stats && stats.revenueOrderCount > 0) {
+      const aov = await cards.nth(2).locator('[data-testid="stat-value"]').innerText();
+      const money = Number(aov.replace(/[^\d.]/g, ''));
+      expect(money, 'the average must be revenue / the PAID orders').toBeCloseTo(
+        stats.revenue / stats.revenueOrderCount,
+        0,
+      );
+    }
+  });
+
+  test('the cancel rate is the cancelled orders over the orders shown', async () => {
+    const cards = page.locator('[data-testid="orders-stat-card"]');
+    const rate = await cards.nth(3).locator('[data-testid="stat-value"]').innerText();
+    const percent = Number(rate.replace(/[^\d.]/g, ''));
+
+    // The cancelled TAB carries the same number: it is the same set.
     const cancelledTab = await page
       .locator('[data-testid="orders-status-tab"]', { hasText: 'Cancelled' })
       .innerText();
-    expect(cancelledTab).toContain(cancelledCard.trim());
+    const cancelled = Number(cancelledTab.replace(/[^\d]/g, ''));
+    const all = Number(
+      (await page.locator('[data-testid="orders-status-tab"]', { hasText: 'All orders' }).innerText())
+        .replace(/[^\d]/g, ''),
+    );
+    expect(percent).toBeCloseTo((cancelled / all) * 100, 0);
+  });
+
+  test('the pager says 1-10 of 17 and exactly ten rows are on screen', async () => {
+    await page.goto(`${ORDERS}?size=10`, { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(1500);
+
+    const pager = await page.locator('app-pager').innerText();
+    expect(pager).toMatch(/1\s*-\s*10\s+of\s+17/);
+
+    const rows = await page.locator('app-data-table tbody tr').count();
+    expect(rows, 'the pager says ten rows, so ten rows are on screen').toBe(10);
+  });
+
+  test('changing the page changes the rows, and the total never changes', async () => {
+    await page.goto(`${ORDERS}?size=10`, { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(1500);
+
+    const first = await page.locator('app-data-table tbody tr').first().innerText();
+    await page.locator('app-pager button', { hasText: '2' }).first().click();
+    await page.waitForTimeout(1500);
+
+    const second = await page.locator('app-data-table tbody tr').first().innerText();
+    expect(second, 'the second page shows different orders').not.toBe(first);
+
+    const pager = await page.locator('app-pager').innerText();
+    expect(pager, 'the total is the whole set, whatever the page').toMatch(/of 17/);
+  });
+
+  test('the seven tabs are the ones the spec names', async () => {
+    const tabs = await page.locator('[data-testid="orders-status-tab"]').allInnerTexts();
+    const names = tabs.map((t) => t.replace(/[↕↑↓]/g, '').trim());
+    expect(names).toHaveLength(7);
+    expect(names[0]).toContain('All orders');
+    expect(names.join(' ')).toContain('Pending');
+    expect(names.join(' ')).toContain('Processing');
+    expect(names.join(' ')).toContain('Shipped');
+    expect(names.join(' ')).toContain('Delivered');
+    expect(names.join(' ')).toContain('Cancelled');
+    expect(names.join(' ')).toContain('Refunded');
+    // Confirmed has no tab of its own in this spec.
+    expect(names.join(' ')).not.toContain('Confirmed');
+  });
+
+  test('the Refunded tab filters by the payment status', async () => {
+    await page.locator('[data-testid="orders-status-tab"]', { hasText: 'Refunded' }).click();
+    await page.waitForTimeout(1500);
+
+    expect(new URL(page.url()).searchParams.get('status')).toBe('REFUNDED');
+    const badges = await page.locator('app-data-table tbody tr td[data-column="paymentStatus"]').allInnerTexts();
+    expect(badges.length).toBeGreaterThan(0);
+    for (const badge of badges) {
+      expect(badge, 'every row of the Refunded tab is refunded').toContain('Refunded');
+    }
+  });
+
+  test('a cancelled cash-on-delivery order says "Not collected", not "Failed"', async () => {
+    await page.goto(`${ORDERS}?status=CANCELLED`, { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(1500);
+
+    const badges = await page
+      .locator('app-data-table tbody tr td[data-column="paymentStatus"]')
+      .allInnerTexts();
+    expect(badges.length).toBeGreaterThan(0);
+    // The cancelled COD order is in this tab, and it says "Not collected".
+    expect(badges.join(' ')).toContain('Not collected');
+    // The cancelled ONLINE order keeps "Failed": a gateway really refused it.
+    expect(badges.join(' ')).toContain('Failed');
+  });
+
+  test('an order with no line items is flagged, and its total is not zero', async () => {
+    // ORD-9 had no line items and a total of 0.00. The seed fixed it, so
+    // the page shows a real total and a real item count.
+    await page.goto(`${ORDERS}?q=ORD-2026-000009`, { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(1500);
+
+    const row = page.locator('app-data-table tbody tr').first();
+    const total = await row.locator('td[data-column="totalAmount"]').innerText();
+    expect(Number(total.replace(/[^\d.]/g, ''))).toBeGreaterThan(0);
+
+    const items = await row.locator('td[data-column="items"]').innerText();
+    expect(items).toMatch(/\d/);
+  });
+
+  test('the table does not scroll sideways at 1440', async () => {
+    const overflow = await page.evaluate(() => {
+      const table = document.querySelector('app-data-table table');
+      const wrapper = document.querySelector('app-data-table .overflow-x-auto');
+      if (!table || !wrapper) return { missing: true };
+      return {
+        table: Math.round(table.scrollWidth),
+        wrapper: Math.round(wrapper.clientWidth),
+      };
+    });
+    expect(overflow).not.toHaveProperty('missing');
+    expect(overflow.table).toBeLessThanOrEqual(overflow.wrapper);
   });
 
   test('the header count agrees with the row count', async () => {
@@ -375,18 +490,27 @@ test.describe('orders list', () => {
 
     await page.goto(`${ORDERS}?paymentStatus=PAID`, { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(150);
-    await page.goto(`${ORDERS}?paymentStatus=FAILED`, { waitUntil: 'domcontentloaded' });
+    await page.goto(`${ORDERS}?paymentStatus=REFUNDED`, { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(3000);
 
     const url = new URL(page.url());
-    expect(url.searchParams.get('paymentStatus')).toBe('FAILED');
-    // The card counts what the API returned for the LAST request.
-    const matching = await page
+    expect(url.searchParams.get('paymentStatus')).toBe('REFUNDED');
+    // The card counts what the API returned for the LAST request. The
+    // REFUNDED set is TWO orders (both delivered, one cancelled); the PAID
+    // set is ten. If the first (delayed) response had won, the table would
+    // show ten rows and the revenue card would be the paid orders' revenue.
+    const rows = await page.locator('app-data-table tbody tr').count();
+    expect(rows, 'the rows answer the LAST request, not the first').toBe(2);
+
+    const revenue = await page
       .locator('[data-testid="orders-stat-card"]')
-      .nth(1)
+      .nth(0)
       .locator('[data-testid="stat-value"]')
       .innerText();
-    expect(Number(matching.trim())).toBeGreaterThan(0);
+    expect(
+      Number(revenue.replace(/[^\d.]/g, '')),
+      'the REFUNDED set has no paid revenue',
+    ).toBe(0);
     await page.unroute('**/api/dashboard/orders**');
   });
 });
@@ -433,23 +557,43 @@ test.describe('order detail', () => {
   });
 
   test('the status dialog offers only the transitions the backend allows', async () => {
-    // A DELIVERED order is terminal: the action is disabled and the dialog
-    // offers nothing.
-    await expect(page.locator('[data-testid="order-update-status"]')).toBeDisabled();
+    // A DELIVERED order is terminal: the action is HIDDEN, not a greyed-out
+    // button the reader has to puzzle over.
+    await expect(page.locator('[data-testid="order-update-status"]')).toHaveCount(0);
 
-    // A PENDING order may be confirmed or cancelled — and cancelling has
-    // its own dialog, so the status dialog offers the confirmation.
-    await page.goto('/dashboard/orders/6', { waitUntil: 'domcontentloaded' });
+    // A PROCESSING order may be shipped or cancelled — and cancelling has
+    // its own dialog, so the status dialog offers the shipment.
+    await page.goto('/dashboard/orders/13', { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(1500);
     const button = page.locator('[data-testid="order-update-status"]');
-    if (await button.isEnabled()) {
-      await button.click();
-      await page.waitForTimeout(500);
-      const options = await page.locator('[data-testid="status-option"]').allInnerTexts();
-      expect(options.length).toBeGreaterThan(0);
-      expect(options.join(' ')).not.toContain('Delivered');
-      expect(options.join(' ')).not.toContain('Shipped');
-    }
+    await expect(button).toBeVisible();
+    await button.click();
+    await page.waitForTimeout(500);
+
+    const options = await page
+      .locator('[data-testid="order-status-select"] option')
+      .allInnerTexts();
+    expect(options.length).toBeGreaterThan(0);
+    // From PROCESSING the order may be shipped or cancelled — and nothing
+    // else: it can never go back to Pending or jump to Delivered.
+    expect(options.join(' ')).toContain('Shipped');
+    expect(options.join(' ')).not.toContain('Delivered');
+    expect(options.join(' ')).not.toContain('Pending');
+    expect(options.join(' ')).not.toContain('Confirmed');
+  });
+
+  test('a cancelled order hides the actions that cannot apply', async () => {
+    // ORD-6 is a cancelled cash-on-delivery order: it cannot change status,
+    // and it cannot be cancelled again.
+    await page.goto('/dashboard/orders/6', { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(1500);
+
+    await expect(page.locator('[data-testid="order-update-status"]')).toHaveCount(0);
+
+    await page.locator('[data-testid="order-more-actions"]').click();
+    await page.waitForTimeout(400);
+    await expect(page.locator('[data-testid="order-cancel"]')).toHaveCount(0);
+    await expect(page.locator('[data-testid="order-refund"]')).toHaveCount(0);
   });
 
   test('a raw translation key never reaches the screen', async () => {
@@ -594,6 +738,62 @@ async function apiTotal(p: Page): Promise<number | null> {
     }
     const body = await response.json();
     return body?.data?.totalElements ?? null;
+  }
+  return null;
+}
+
+/**
+ * The stats the API reports for the whole set: the revenue, the number of
+ * paid orders it came from, and the counts per status.
+ *
+ * `null` when the API could not be reached — the backend rate-limits the
+ * general API, and a suite that opens many pages gets close to it. The
+ * test then skips the comparison rather than comparing against a number it
+ * never received.
+ */
+interface ApiStats {
+  total: number;
+  revenue: number;
+  revenueOrderCount: number;
+  byStatus: Record<string, number>;
+  byPaymentStatus: Record<string, number>;
+}
+
+async function apiStats(p: Page): Promise<ApiStats | null> {
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    const token = await p.evaluate(async () => {
+      try {
+        const body = await fetch('http://localhost:8080/api/auth/refresh', {
+          method: 'POST',
+          credentials: 'include',
+        }).then((r) => r.json());
+        return body?.data?.accessToken ?? '';
+      } catch {
+        return '';
+      }
+    });
+    if (!token) {
+      await p.waitForTimeout(3000);
+      continue;
+    }
+    const response = await p.request.get('http://localhost:8080/api/dashboard/orders/stats', {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!response.ok()) {
+      await p.waitForTimeout(3000);
+      continue;
+    }
+    const data = (await response.json())?.data;
+    if (!data) return null;
+    return {
+      total: data.total ?? 0,
+      revenue: Number(data.revenue ?? 0),
+      revenueOrderCount: Number(data.revenueOrderCount ?? 0),
+      byStatus: Object.fromEntries((data.byStatus ?? []).map((b: any) => [b.status, b.count])),
+      byPaymentStatus: Object.fromEntries(
+        (data.byPaymentStatus ?? []).map((b: any) => [b.paymentStatus, b.count]),
+      ),
+    };
   }
   return null;
 }

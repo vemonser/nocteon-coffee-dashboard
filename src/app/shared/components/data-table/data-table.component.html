@@ -39,8 +39,7 @@
           @for (header of headerGroup.headers; track header.id) {
             <th
               class="py-3 text-start text-xs font-medium text-muted-foreground"
-              [class.px-4]="header.column.id !== 'actions'"
-              [class.px-2]="header.column.id === 'actions'"
+              [class]="header.column.id === 'actions' ? 'px-2' : cellPadding()"
               [style.width]="widthFor(header.column.id, header.column.columnDef)"
               [style.max-width]="
                 header.column.id === 'main_en' || header.column.id === 'main_ar'
@@ -142,8 +141,7 @@
             @for (colId of skeletonColumns(); track colId) {
               <td
                 class="py-3"
-                [class.px-4]="colId !== 'actions'"
-                [class.px-2]="colId === 'actions'"
+                [class]="colId === 'actions' ? 'px-2' : cellPadding()"
                 [class.col-narrow-hide]="
                   colId === 'createdAt' ||
                   colId === 'updatedAt' ||
@@ -242,8 +240,7 @@
             <td
               class="py-3"
               [attr.data-column]="cell.column.id"
-              [class.px-4]="cell.column.id !== 'actions'"
-              [class.px-2]="cell.column.id === 'actions'"
+              [class]="cell.column.id === 'actions' ? 'px-2' : cellPadding()"
               [class.col-narrow-hide]="
                 cell.column.id === 'createdAt' ||
                 cell.column.id === 'updatedAt' ||
@@ -477,8 +474,7 @@
                     <time [attr.datetime]="$any(cell.getValue())">
                       <app-localized-date
                         [value]="$any(cell.getValue())"
-                        [showTime]="true"
-                        [stackTime]="true"
+                        [showTime]="false"
                       />
                     </time>
                   </span>

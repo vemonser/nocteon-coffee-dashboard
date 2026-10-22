@@ -276,29 +276,6 @@
     </div>
   }
 
-  <!-- ── Status tabs ────────────────────────────────────────────────────── -->
-  <div
-    role="tablist"
-    class="flex flex-wrap items-center gap-2"
-    [attr.aria-label]="'orders.statusFilter.all' | transloco"
-  >
-    @for (tab of tabs(); track tab.id) {
-      <button
-        role="tab"
-        hlmBtn
-        size="sm"
-        data-testid="orders-status-tab"
-        [attr.aria-selected]="status() === tab.id"
-        [variant]="status() === tab.id ? 'default' : 'outline'"
-        (click)="setStatus(tab.id)"
-        [disabled]="loading()"
-      >
-        {{ tab.label | transloco }}
-        <span class="ms-1 tabular-nums opacity-80">{{ tab.count }}</span>
-      </button>
-    }
-  </div>
-
   <!-- ── The table ──────────────────────────────────────────────────────── -->
   @if (error()) {
     <div
@@ -320,6 +297,7 @@
         [loading]="loading()"
         [emptyMessage]="emptyMessage()"
         [initialSort]="{ column: sortColumnId, direction: direction() }"
+        [cellPadding]="'px-3'"
         [showEdit]="false"
         [showDelete]="false"
         [showView]="true"
@@ -330,7 +308,7 @@
         [clickableRows]="true"
         [stickyStartColumn]="'orderNumber'"
         [menuActions]="menuActions"
-        [minWidth]="'1176px'"
+        [minWidth]="'1100px'"
         [emptyAction]="{ label: 'orders.filters.clear' | transloco, action: clearFilters }"
         (sortChange)="onSortChange($event)"
         (rowClick)="openView($event)"

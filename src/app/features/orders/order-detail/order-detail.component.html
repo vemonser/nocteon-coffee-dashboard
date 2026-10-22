@@ -82,34 +82,24 @@
         </div>
 
         <div class="flex flex-wrap items-center gap-2 print-hidden">
-          <!-- Update status dropdown (only allowed transitions) -->
+          <!--
+            The status change: a DIALOG whose status field is a dropdown of
+            the ONLY transitions the backend allows. The dialog is where the
+            note and the "tell the customer" switch live, so a quick status
+            change is never a click that forgets them.
+          -->
           @if (canChangeStatus() && allowedNextStatuses().length > 0) {
-            <div class="relative" hlmDropdownMenuTrigger="statusMenu">
-              <button
-                hlmBtn
-                variant="default"
-                data-testid="order-update-status"
-                [disabled]="updating()"
-                [attr.aria-label]="'orders.detail.updateStatus' | transloco"
-              >
-                <ng-icon name="lucideRefreshCw" class="size-4" aria-hidden="true" />
-                {{ 'orders.detail.updateStatus' | transloco }}
-              </button>
-              <ng-template #statusMenu>
-                <hlm-dropdown-menu class="min-w-56 rounded-md">
-                  @for (status of allowedNextStatuses(); track status) {
-                    <button
-                      hlmDropdownMenuItem
-                      class="flex items-center gap-2"
-                      data-testid="order-status-dropdown-item"
-                      (click)="applyStatus({ status, note: '', notifyCustomer: false })"
-                    >
-                      <app-status-badge [status]="statusKind(status)" [customLabel]="names.orderStatus(status)" />
-                    </button>
-                  }
-                </hlm-dropdown-menu>
-              </ng-template>
-            </div>
+            <button
+              hlmBtn
+              variant="default"
+              data-testid="order-update-status"
+              [disabled]="updating()"
+              (click)="openStatusDialog()"
+              [attr.aria-label]="'orders.detail.updateStatus' | transloco"
+            >
+              <ng-icon name="lucideRefreshCw" class="size-4" aria-hidden="true" />
+              {{ 'orders.detail.updateStatus' | transloco }}
+            </button>
           }
 
           <!-- Print invoice -->
