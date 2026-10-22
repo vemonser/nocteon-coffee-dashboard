@@ -102,6 +102,11 @@ export class BroadcastListComponent extends BaseListComponent<BroadcastResponse,
   protected readonly recipientsList = signal<BroadcastRecipientResponse[]>([]);
   protected readonly recipientsLoading = signal(false);
 
+  /** Selected recipient IDs (for 'specific' audience). */
+  protected readonly selectedRecipientIds = signal<number[]>([]);
+  /** Excluded recipient IDs (for 'exclude' audience). */
+  protected readonly excludedIds = signal<number[]>([]);
+
   protected override getId(item: BroadcastResponse): string {
     return item.id;
   }
@@ -123,13 +128,18 @@ export class BroadcastListComponent extends BaseListComponent<BroadcastResponse,
       subject: ['', Validators.required],
       content: ['', Validators.required],
       audience: ['all'],
-      recipientIds: [[]],
-      excludeIds: [[]],
     });
   }
 
   protected override onEditOpen(_item: BroadcastResponse): void {
     // Broadcasts are create-only — list UI never opens the edit dialog.
+  }
+
+  /** Reset selection when the create dialog opens. */
+  override openCreateDialog(): void {
+    super.openCreateDialog();
+    this.selectedRecipientIds.set([]);
+    this.excludedIds.set([]);
   }
 
   /** Load the customer list so the admin can pick recipients. */
@@ -148,10 +158,10 @@ export class BroadcastListComponent extends BaseListComponent<BroadcastResponse,
       content: this.form.value.content,
     };
     if (audience === 'specific') {
-      req.recipientIds = this.form.value.recipientIds ?? [];
+      req.recipientIds = this.selectedRecipientIds();
     }
     if (audience === 'exclude') {
-      req.excludeIds = this.form.value.excludeIds ?? [];
+      req.excludeIds = this.excludedIds();
     }
     return req;
   }
@@ -211,6 +221,34 @@ export class BroadcastListComponent extends BaseListComponent<BroadcastResponse,
   protected closeRecipients(): void {
     this.viewingRecipients.set(null);
     this.recipientsList.set([]);
+  }
+
+  /** Check if a customer is selected as a recipient. */
+  protected isRecipientSelected(id: string | number): boolean {
+    return this.selectedRecipientIds().includes(Number(id));
+  }
+
+  /** Toggle a customer in the recipient selection. */
+  protected toggleRecipient(id: string | number, event: Event): void {
+    const numId = Number(id);
+    const checked = (event.target as HTMLInputElement).checked;
+    this.selectedRecipientIds.update((ids) =>
+      checked ? [...ids, numId] : ids.filter((i) => i !== numId),
+    );
+  }
+
+  /** Check if a customer is excluded. */
+  protected isExcluded(id: string | number): boolean {
+    return this.excludedIds().includes(Number(id));
+  }
+
+  /** Toggle a customer in the exclusion list. */
+  protected toggleExclude(id: string | number, event: Event): void {
+    const numId = Number(id);
+    const checked = (event.target as HTMLInputElement).checked;
+    this.excludedIds.update((ids) =>
+      checked ? [...ids, numId] : ids.filter((i) => i !== numId),
+    );
   }
 
   protected override deleteToastKey(): string {

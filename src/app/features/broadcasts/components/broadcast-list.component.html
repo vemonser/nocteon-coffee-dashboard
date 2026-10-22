@@ -213,30 +213,44 @@
         @if (form.get('audience')?.value === 'specific') {
           <div class="space-y-1.5">
             <label hlmLabel>{{ 'broadcasts.recipientIds' | transloco }}</label>
-            <hlm-native-select
-              formControlName="recipientIds"
-              multiple
-              selectClass="w-full h-32"
-            >
+            <div class="max-h-40 overflow-y-auto rounded-md border p-2 space-y-1">
               @for (c of customers(); track c.id) {
-                <option [value]="c.id">{{ c.email }} — {{ c.firstName }} {{ c.lastName }}</option>
+                <label class="flex items-center gap-2 text-sm cursor-pointer hover:bg-muted/50 rounded px-1 py-0.5">
+                  <input type="checkbox" class="table-check"
+                    [checked]="isRecipientSelected(c.id)"
+                    (change)="toggleRecipient(c.id, $event)" />
+                  <span class="truncate">{{ c.email }}</span>
+                  @if (c.firstName) {
+                    <span class="text-xs text-muted-foreground">— {{ c.firstName }} {{ c.lastName }}</span>
+                  }
+                </label>
               }
-            </hlm-native-select>
+              @if (customers().length === 0) {
+                <p class="text-xs text-muted-foreground py-2 text-center">No customers</p>
+              }
+            </div>
           </div>
         }
 
         @if (form.get('audience')?.value === 'exclude') {
           <div class="space-y-1.5">
             <label hlmLabel>{{ 'broadcasts.excludeIds' | transloco }}</label>
-            <hlm-native-select
-              formControlName="excludeIds"
-              multiple
-              selectClass="w-full h-32"
-            >
+            <div class="max-h-40 overflow-y-auto rounded-md border p-2 space-y-1">
               @for (c of customers(); track c.id) {
-                <option [value]="c.id">{{ c.email }} — {{ c.firstName }} {{ c.lastName }}</option>
+                <label class="flex items-center gap-2 text-sm cursor-pointer hover:bg-muted/50 rounded px-1 py-0.5">
+                  <input type="checkbox" class="table-check"
+                    [checked]="isExcluded(c.id)"
+                    (change)="toggleExclude(c.id, $event)" />
+                  <span class="truncate">{{ c.email }}</span>
+                  @if (c.firstName) {
+                    <span class="text-xs text-muted-foreground">— {{ c.firstName }} {{ c.lastName }}</span>
+                  }
+                </label>
               }
-            </hlm-native-select>
+              @if (customers().length === 0) {
+                <p class="text-xs text-muted-foreground py-2 text-center">No customers</p>
+              }
+            </div>
           </div>
         }
 
