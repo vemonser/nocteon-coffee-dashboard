@@ -70,98 +70,74 @@
                 <bdi>{{ orderNumber() }}</bdi>
               </h1>
               <app-status-badge [status]="statusKind(o.status)" data-testid="order-status-badge" />
-              <app-status-badge [status]="paymentKind(o.paymentStatus)" data-testid="order-payment-badge" />
+              <app-status-badge [status]="paymentKind(displayPaymentStatus())" data-testid="order-payment-badge" />
             </div>
-            <p class="mt-1 text-sm text-muted-foreground">
+            <div class="mt-1 text-sm text-muted-foreground">
               <span>{{ 'orders.detail.createdAt' | transloco }}:</span>
               <time [attr.datetime]="o.createdAt" [attr.title]="createdAtTitle()">
                 {{ dates.formatDateAndTime(o.createdAt) }}
               </time>
-            </p>
+            </div>
           </div>
         </div>
 
         <div class="flex flex-wrap items-center gap-2 print-hidden">
-          @if (statusDisabledReason(); as reason) {
-            <span
-              hlmTooltip
-              position="top"
-              [brnTooltip]="reason"
-              class="inline-flex"
-              tabindex="0"
-              role="group"
-              [attr.aria-label]="reason"
-              [attr.data-tooltip]="'disabled'"
-            >
+          <!-- Update status dropdown (only allowed transitions) -->
+          @if (canChangeStatus() && allowedNextStatuses().length > 0) {
+            <div class="relative" hlmDropdownMenuTrigger="statusMenu">
               <button
                 hlmBtn
                 variant="default"
-                class="disabled:border-dashed disabled:border-border disabled:bg-muted disabled:text-muted-foreground"
-                disabled
                 data-testid="order-update-status"
-                [attr.data-tooltip]="'disabled'"
-                [attr.data-disabled-reason]="reason"
-                [attr.title]="reason"
+                [disabled]="updating()"
+                [attr.aria-label]="'orders.detail.updateStatus' | transloco"
               >
                 <ng-icon name="lucideRefreshCw" class="size-4" aria-hidden="true" />
                 {{ 'orders.detail.updateStatus' | transloco }}
               </button>
-            </span>
-          } @else {
-            <button
-              hlmBtn
-              variant="default"
-              data-testid="order-update-status"
-              [disabled]="updating()"
-              (click)="openStatusDialog()"
-            >
-              <ng-icon name="lucideRefreshCw" class="size-4" aria-hidden="true" />
-              {{ 'orders.detail.updateStatus' | transloco }}
-            </button>
+              <ng-template #statusMenu>
+                <hlm-dropdown-menu class="min-w-56 rounded-md">
+                  @for (status of allowedNextStatuses(); track status) {
+                    <button
+                      hlmDropdownMenuItem
+                      class="flex items-center gap-2"
+                      data-testid="order-status-dropdown-item"
+                      (click)="applyStatus({ status, note: '', notifyCustomer: false })"
+                    >
+                      <app-status-badge [status]="statusKind(status)" [customLabel]="names.orderStatus(status)" />
+                    </button>
+                  }
+                </hlm-dropdown-menu>
+              </ng-template>
+            </div>
           }
 
+          <!-- Print invoice -->
           <button
             hlmBtn
             variant="outline"
             data-testid="order-print-invoice"
             (click)="printInvoice()"
+            [attr.aria-label]="'orders.detail.printInvoice' | transloco"
           >
             <ng-icon name="lucidePrinter" class="size-4" aria-hidden="true" />
             {{ 'orders.detail.printInvoice' | transloco }}
           </button>
 
-          <!--
-            The store sends order e-mails automatically, but it has no endpoint
-            to send one on demand, so the action is disabled and says why. A
-            tooltip on the wrapper, because a disabled button does not emit
-            pointer events of its own.
-          -->
-          <span
-            hlmTooltip
-            position="top"
-            [brnTooltip]="resendReason()"
-            class="inline-flex"
-            tabindex="0"
-            role="group"
-            [attr.aria-label]="resendReason()"
-            [attr.data-tooltip]="'disabled'"
+          <!-- Copy order number -->
+          <button
+            hlmBtn
+            variant="outline"
+            size="icon"
+            class="min-h-10 min-w-10"
+            (click)="copyOrderNumber()"
+            [attr.aria-label]="'orders.actions.copyOrderNumber' | transloco"
+            data-testid="order-copy-number"
           >
-            <button
-              hlmBtn
-              variant="outline"
-              class="disabled:border-dashed disabled:border-border disabled:bg-muted disabled:text-muted-foreground"
-              disabled
-              data-testid="order-resend-email"
-              [attr.data-tooltip]="'disabled'"
-              [attr.data-disabled-reason]="resendReason()"
-              [attr.title]="resendReason()"
-              [attr.aria-label]="'orders.detail.resendEmail' | transloco"
-            >
-              <ng-icon name="lucideMail" class="size-4" aria-hidden="true" />
-              {{ 'orders.detail.resendEmail' | transloco }}
-            </button>
-          </span>
+            <ng-icon name="lucideClipboard" class="size-4" aria-hidden="true" />
+          </button>
 
+          <!-- More actions kebab -->
           <button
             hlmBtn
             variant="outline"
@@ -176,46 +152,62 @@
 
           <ng-template #moreMenu>
             <hlm-dropdown-menu class="min-w-56 rounded-md">
-              <button
-                hlmDropdownMenuItem
-                class="flex items-center gap-2"
-                data-testid="order-cancel"
-                [disabled]="!!cancelDisabledReason()"
-                [attr.title]="cancelDisabledReason()"
-                (click)="openCancelDialog()"
-              >
-                <ng-icon name="lucideCircleSlash" class="size-4" aria-hidden="true" />
-                <span>{{ 'orders.actions.cancel' | transloco }}</span>
-              </button>
-              <button
-                hlmDropdownMenuItem
-                class="flex items-center gap-2"
-                data-testid="order-refund"
-                [disabled]="!!refundDisabledReason()"
-                [attr.title]="refundDisabledReason()"
-                (click)="openRefundDialog()"
-              >
-                <ng-icon name="lucideRotateCcw" class="size-4" aria-hidden="true" />
-                <span>{{ 'orders.actions.refund' | transloco }}</span>
-              </button>
+              <!-- Cancel (only when allowed) -->
+              @if (canCancel()) {
+                <button
+                  hlmDropdownMenuItem
+                  class="flex items-center gap-2"
+                  data-testid="order-cancel"
+                  (click)="openCancelDialog()"
+                >
+                  <ng-icon name="lucideCircleSlash" class="size-4" aria-hidden="true" />
+                  <span>{{ 'orders.actions.cancel' | transloco }}</span>
+                </button>
+              }
+
+              <!-- Refund (only when allowed) -->
+              @if (canRefund()) {
+                <button
+                  hlmDropdownMenuItem
+                  class="flex items-center gap-2"
+                  data-testid="order-refund"
+                  (click)="openRefundDialog()"
+                >
+                  <ng-icon name="lucideRotateCcw" class="size-4" aria-hidden="true" />
+                  <span>{{ 'orders.actions.refund' | transloco }}</span>
+                </button>
+              }
+
               <hlm-dropdown-menu-separator />
+
               <button
                 hlmDropdownMenuItem
                 class="flex items-center gap-2"
                 data-testid="order-copy-link"
                 (click)="copyLink()"
               >
-                <ng-icon name="lucideCopy" class="size-4" aria-hidden="true" />
+                <ng-icon name="lucideLink" class="size-4" aria-hidden="true" />
                 <span>{{ 'orders.detail.copyLink' | transloco }}</span>
               </button>
+
               <button
                 hlmDropdownMenuItem
                 class="flex items-center gap-2"
                 data-testid="order-copy-number"
                 (click)="copyOrderNumber()"
               >
-                <ng-icon name="lucideCopy" class="size-4" aria-hidden="true" />
+                <ng-icon name="lucideClipboard" class="size-4" aria-hidden="true" />
                 <span>{{ 'orders.actions.copyOrderNumber' | transloco }}</span>
+              </button>
+
+              <button
+                hlmDropdownMenuItem
+                class="flex items-center gap-2"
+                data-testid="order-view-customer"
+                (click)="goBack()"
+              >
+                <ng-icon name="lucideUser" class="size-4" aria-hidden="true" />
+                <span>{{ 'orders.detail.viewCustomer' | transloco }}</span>
               </button>
             </hlm-dropdown-menu>
           </ng-template>
@@ -243,9 +235,12 @@
           </header>
           <div class="px-4 pb-4 pt-3" data-testid="detail-card-body">
             @if (o.items.length === 0) {
-              <p class="py-6 text-center text-sm text-muted-foreground" data-testid="order-no-items">
-                {{ 'orders.detail.noItems' | transloco }}
-              </p>
+              <div class="py-6 text-center" data-testid="order-no-items">
+                <ng-icon name="lucideTriangleAlert" class="mx-auto size-6 text-warning" aria-hidden="true" />
+                <p class="mt-2 text-sm text-warning" data-testid="order-no-items-text">
+                  {{ 'orders.detail.noItemsWarning' | transloco }}
+                </p>
+              </div>
             } @else {
               <ul class="flex flex-col divide-y divide-border">
                 @for (view of itemViews(); track view.item.id) {
@@ -286,13 +281,13 @@
                       }
                       <p class="mt-0.5 flex flex-wrap items-center gap-1 text-xs text-muted-foreground">
                         <span>{{ 'orders.detail.sku' | transloco }}</span>
-                        <bdi class="font-mono" data-testid="order-item-sku">{{ view.displaySku }}</bdi>
+                        <bdi class="font-mono" data-testid="order-item-sku">{{ view.item.sku }}</bdi>
                       </p>
                     </div>
                     <div class="shrink-0 text-end">
                       <div class="flex flex-wrap items-baseline justify-end gap-1.5 text-sm tabular-nums">
                         <span>{{ view.item.quantity }} × {{ view.item.unitPrice | money }}</span>
-                        @if (view.originalUnitPrice; as regular) {
+                        @if (view.originalUnitPrice !== null) {
                           <span
                             class="inline-flex items-baseline gap-1 text-xs text-muted-foreground"
                             data-testid="order-item-regular-price"
@@ -303,7 +298,7 @@
                               class="text-xs"
                               [attr.aria-label]="'orders.detail.regularPrice' | transloco"
                             >
-                              {{ regular | money }}
+                              {{ view.originalUnitPrice | money }}
                             </s>
                           </span>
                         }
@@ -427,7 +422,7 @@
           <div class="px-4 pb-4 pt-3" data-testid="detail-card-body">
             <app-order-progress
               [status]="o.status"
-              [paymentStatus]="o.paymentStatus"
+              [paymentStatus]="displayPaymentStatus()"
               [cancelReason]="o.cancellationReason ?? null"
               [stepRecords]="stepRecords()"
               [historyMissing]="historyMissing()"
@@ -647,6 +642,14 @@
                 {{ 'orders.detail.viewCustomer' | transloco }}
                 <ng-icon name="lucideExternalLink" class="size-3.5" aria-hidden="true" />
               </a>
+              <a
+                [routerLink]="['/dashboard/orders', { userId: customer.id }]"
+                class="mt-1 inline-flex items-center gap-1.5 text-sm hover:underline"
+                data-testid="order-customer-orders-link"
+              >
+                {{ 'orders.detail.viewCustomerOrders' | transloco }}
+                <ng-icon name="lucideLink" class="size-3.5" aria-hidden="true" />
+              </a>
             } @else {
               <p class="text-sm text-muted-foreground">{{ 'orders.detail.notRecorded' | transloco }}</p>
             }
@@ -714,7 +717,7 @@
             </div>
             <div class="flex items-center justify-between gap-3">
               <span class="text-sm text-muted-foreground">{{ 'orders.paymentStatus' | transloco }}</span>
-              <app-status-badge [status]="paymentKind(o.paymentStatus)" />
+              <app-status-badge [status]="paymentKind(displayPaymentStatus())" />
             </div>
 
             @if (isCashOnDelivery() && o.paymentStatus !== 'FAILED') {
@@ -932,6 +935,14 @@
                     <span class="text-muted-foreground">{{ 'orders.detail.deliveredAt' | transloco }}</span>
                     <span class="text-sm">
                       {{ dates.formatDateAndTime(deliveredAt) }}
+                    </span>
+                  </div>
+                }
+                @if (shipment()?.estimatedDeliveryAt; as estimatedDeliveryAt) {
+                  <div class="flex items-center justify-between gap-3">
+                    <span class="text-muted-foreground">{{ 'orders.detail.estimatedDeliveryAt' | transloco }}</span>
+                    <span class="text-sm">
+                      {{ dates.formatDateAndTime(estimatedDeliveryAt) }}
                     </span>
                   </div>
                 }

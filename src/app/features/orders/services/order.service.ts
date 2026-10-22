@@ -146,7 +146,12 @@ export class OrderService {
   /** Record (or change) the shipment of an order. */
   updateShipment(
     id: number,
-    payload: { carrier?: string; trackingNumber?: string; trackingUrl?: string },
+    payload: {
+      carrier?: string;
+      trackingNumber?: string;
+      trackingUrl?: string;
+      estimatedDeliveryAt?: string | null;
+    },
   ): Observable<ApiResponse<OrderShipment>> {
     return this.http.put<ApiResponse<OrderShipment>>(`${this.base}/${id}/shipment`, payload);
   }

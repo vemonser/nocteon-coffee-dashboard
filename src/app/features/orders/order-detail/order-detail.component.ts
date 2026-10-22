@@ -834,18 +834,25 @@ export class OrderDetailComponent {
     const order = this.order();
     if (!order) return;
     this.updating.set(true);
-    this.orderService.updateShipment(order.id, draft).subscribe({
-      next: (res) => {
-        this.shipment.set(res.data);
-        this.updating.set(false);
-        this.shipmentDialogOpen.set(false);
-        this.notify.success('orders.detail.shipmentSaved', 'Shipment saved');
-      },
-      error: (err) => {
-        this.updating.set(false);
-        this.notify.apiError(err, 'notify.errorFallback', 'Could not save the shipment');
-      },
-    });
+    // The dialog speaks LOCAL time (a `datetime-local` value); the API
+    // speaks ISO instants. An empty field clears the ETA.
+    const estimatedDeliveryAt = draft.estimatedDeliveryAt
+      ? new Date(draft.estimatedDeliveryAt).toISOString()
+      : null;
+    this.orderService
+      .updateShipment(order.id, { ...draft, estimatedDeliveryAt })
+      .subscribe({
+        next: (res) => {
+          this.shipment.set(res.data);
+          this.updating.set(false);
+          this.shipmentDialogOpen.set(false);
+          this.notify.success('orders.detail.shipmentSaved', 'Shipment saved');
+        },
+        error: (err) => {
+          this.updating.set(false);
+          this.notify.apiError(err, 'notify.errorFallback', 'Could not save the shipment');
+        },
+      });
   }
 
   // ── the clipboard ────────────────────────────────────────────────────────

@@ -31,6 +31,8 @@ export interface OrderShipment {
   trackingUrl: string | null;
   shippedAt: string | null;
   deliveredAt: string | null;
+  /** When the parcel is expected, if the store recorded an ETA. */
+  estimatedDeliveryAt: string | null;
 }
 
 /** A refund: money that was given back. */
