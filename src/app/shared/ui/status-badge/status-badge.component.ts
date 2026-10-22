@@ -32,7 +32,8 @@ export type StatusKind =
   | 'unknown'
   | 'active'
   | 'abandoned'
-  | 'converted';
+  | 'converted'
+  | 'notCollected';
 
 /**
  * Centralized status badge mapping.
@@ -124,6 +125,7 @@ export const STATUS_BADGE_LABELS: Record<StatusKind, string> = {
   active: 'common.statuses.active',
   abandoned: 'common.statuses.abandoned',
   converted: 'common.statuses.converted',
+  notCollected: 'common.statuses.notCollected',
 };
 
 /** The icon of each kind. */
@@ -144,6 +146,7 @@ export const STATUS_BADGE_ICONS: Record<StatusKind, string> = {
   active: 'lucideShoppingCart',
   abandoned: 'lucideClock',
   converted: 'lucideCheckCircle',
+  notCollected: 'lucideCircleDot',
 };
 
 /**
@@ -172,4 +175,5 @@ export const STATUS_BADGE_CLASSES: Record<StatusKind, string> = {
   active: 'bg-success-soft text-success',
   abandoned: 'bg-warning-soft text-warning',
   converted: 'bg-muted text-muted-foreground',
+  notCollected: 'bg-muted text-muted-foreground',
 };

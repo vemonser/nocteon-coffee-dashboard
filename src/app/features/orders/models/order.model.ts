@@ -16,7 +16,7 @@ export type OrderStatus =
   | 'DELIVERED'
   | 'CANCELLED';
 
-export type PaymentStatus = 'PENDING' | 'PAID' | 'FAILED' | 'REFUNDED';
+export type PaymentStatus = 'PENDING' | 'PAID' | 'FAILED' | 'REFUNDED' | 'NOT_COLLECTED';
 
 export type PaymentMethod = 'ONLINE' | 'CASH_ON_DELIVERY';
 
@@ -74,6 +74,7 @@ export interface OrderResponse {
     trackingUrl: string | null;
     shippedAt: string | null;
     deliveredAt: string | null;
+    estimatedDeliveryAt: string | null;
   } | null;
   items: OrderItemResponse[];
   createdAt: string;

@@ -35,6 +35,7 @@ export const PAYMENT_STATUSES: readonly PaymentStatus[] = [
   'PAID',
   'FAILED',
   'REFUNDED',
+  'NOT_COLLECTED',
 ];
 
 /** The payment method list. */
@@ -134,6 +135,62 @@ export function paymentStatusKind(status: PaymentStatus): StatusKind {
     default:
       return 'unknown';
   }
+}
+
+/**
+ * The payment status -> badge kind.
+ *
+ *   Paid = success, Pending = warning, Failed = destructive, Refunded = muted,
+ *   Not Collected = muted
+ */
+export function paymentStatusKind(status: PaymentStatus): StatusKind {
+  switch (status) {
+    case 'PAID':
+      return 'paid';
+    case 'PENDING':
+      return 'pending';
+    case 'FAILED':
+      return 'failed';
+    case 'REFUNDED':
+      return 'refunded';
+    case 'NOT_COLLECTED':
+      return 'notCollected';
+    default:
+      return 'unknown';
+  }
+}
+
+/**
+ * Can this order still change status?
+ */
+export function canChangeStatus(order: { status: OrderStatus }): boolean {
+  return nextStatuses(order.status).length > 0;
+}
+
+/**
+ * Can this order still be cancelled?
+ */
+export function canCancel(order: { status: OrderStatus }): boolean {
+  return nextStatuses(order.status).includes('CANCELLED');
+}
+
+/**
+ * Can money go back? Only a payment the store marks PAID.
+ */
+export function canRefund(order: { paymentStatus: PaymentStatus }): boolean {
+  return order.paymentStatus === 'PAID';
+}
+
+/**
+ * The effective payment status for display.
+ * Cancelled COD orders with PENDING/FAILED payment status show as NOT_COLLECTED.
+ */
+export function effectivePaymentStatus(order: { status: OrderStatus; paymentMethod: PaymentMethod; paymentStatus: PaymentStatus }): PaymentStatus {
+  if (order.status === 'CANCELLED' && order.paymentMethod === 'CASH_ON_DELIVERY' &&
+      (order.paymentStatus === 'PENDING' || order.paymentStatus === 'FAILED')) {
+    return 'NOT_COLLECTED';
+  }
+  return order.paymentStatus;
 }
 
 /** The payment method -> a stable key for the i18n lookup. */
