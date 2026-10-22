@@ -3,26 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { ApiResponse, PageResponse } from '../../../core/models/api-response.model';
 import { environment } from '../../../../environments/environment';
-import { CartResponse } from '../models/cart.model';
-
-export interface CartListParams {
-  page?: number;
-  size?: number;
-  sort?: string;
-  direction?: string;
-  search?: string;
-  hasItems?: boolean;
-}
-
-interface SpringPage<T> {
-  content: T[];
-  number: number;
-  size: number;
-  totalElements: number;
-  totalPages: number;
-  first: boolean;
-  last: boolean;
-}
+import { CartResponse, CartStatsResponse, CartListParams } from '../models/cart.model';
 
 @Injectable({ providedIn: 'root' })
 export class CartService {
@@ -36,6 +17,9 @@ export class CartService {
     if (params.hasItems !== undefined) p = p.set('hasItems', params.hasItems);
     if (params.sort) p = p.set('sort', params.sort);
     if (params.direction) p = p.set('direction', params.direction);
+    if (params.status) p = p.set('status', params.status);
+    if (params.from) p = p.set('from', params.from);
+    if (params.to) p = p.set('to', params.to);
 
     return this.http.get<ApiResponse<PageResponse<CartResponse>>>(this.base, { params: p });
   }
@@ -44,13 +28,11 @@ export class CartService {
     return this.http.get<ApiResponse<CartResponse>>(`${this.base}/${id}`);
   }
 
-  /**
-   * Ask the backend to send a reminder e-mail for an abandoned cart.
-   *
-   * PROPOSED endpoint — see API_GAPS.md. Returns 404 today; the UI keeps
-   * the action behind a flag and shows a toast either way.
-   */
-  sendReminder(id: number): Observable<ApiResponse<unknown>> {
-    return this.http.post<ApiResponse<unknown>>(`${this.base}/${id}/remind`, {});
+  getStats(): Observable<ApiResponse<CartStatsResponse>> {
+    return this.http.get<ApiResponse<CartStatsResponse>>(`${this.base}/stats`);
+  }
+
+  sendReminder(id: number): Observable<ApiResponse<boolean>> {
+    return this.http.post<ApiResponse<boolean>>(`${this.base}/${id}/remind`, {});
   }
 }

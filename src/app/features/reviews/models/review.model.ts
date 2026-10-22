@@ -5,7 +5,7 @@ export interface ReviewResponse {
   rating: number;
   comment: string;
   verified: boolean;
-  approved: boolean;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED';
   productName: string | null;
   productSlug: string;
   primaryImageUrl: string | null;
@@ -19,12 +19,19 @@ export interface ReviewRequest {
   approved: boolean;
 }
 
+export interface ReviewRejectRequest {
+  rejected: boolean;
+}
+
 /** The moderation statistics — the counts the tabs and the strip show. */
 export interface ReviewStats {
   total: number;
   pending: number;
   approved: number;
+  rejected: number;
+  verified: number;
   averageRating: number | null;
+  averageRatingAll: number | null;
   /** Keys "1" … "5". Every key is present, even when it is zero. */
   distribution: Record<string, number>;
 }
@@ -41,4 +48,5 @@ export interface ReviewListParams {
   minRating?: number;
   createdFrom?: string;
   createdTo?: string;
+  status?: 'PENDING' | 'APPROVED' | 'REJECTED';
 }

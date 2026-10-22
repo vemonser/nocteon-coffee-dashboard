@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 
 import { ApiResponse, PageResponse } from '../../../core/models/api-response.model';
 import { environment } from '../../../../environments/environment';
-import { ContactListParams, ContactResponse } from '../models/contact-message.model';
+import { ContactListParams, ContactResponse, ContactStats } from '../models/contact-message.model';
 
 @Injectable({ providedIn: 'root' })
 export class ContactMessageService {
@@ -12,10 +12,24 @@ export class ContactMessageService {
   private basePath = '/api/dashboard/contact-messages';
 
   getAll(params: ContactListParams = {}): Observable<ApiResponse<PageResponse<ContactResponse>>> {
+    let httpParams = this.toParams(params);
+    if (params.status) httpParams = httpParams.set('status', params.status);
     return this.http.get<ApiResponse<PageResponse<ContactResponse>>>(
       `${environment.apiUrl}${this.basePath}`,
-      { params: this.toParams(params) },
+      { params: httpParams },
     );
+  }
+
+  getByStatus(status: 'NEW' | 'REPLIED' | 'ARCHIVED', params: ContactListParams = {}): Observable<ApiResponse<PageResponse<ContactResponse>>> {
+    let httpParams = this.toParams(params);
+    return this.http.get<ApiResponse<PageResponse<ContactResponse>>>(
+      `${environment.apiUrl}${this.basePath}/status/${status}`,
+      { params: httpParams },
+    );
+  }
+
+  getStats(): Observable<ApiResponse<ContactStats>> {
+    return this.http.get<ApiResponse<ContactStats>>(`${environment.apiUrl}${this.basePath}/stats/summary`);
   }
 
   /** The unread list comes from its own endpoint, so the count and the rows
@@ -61,6 +75,13 @@ export class ContactMessageService {
   resendEmail(id: number): Observable<ApiResponse<ContactResponse>> {
     return this.http.post<ApiResponse<ContactResponse>>(
       `${environment.apiUrl}${this.basePath}/${id}/resend-email`,
+      null,
+    );
+  }
+
+  archive(id: number): Observable<ApiResponse<ContactResponse>> {
+    return this.http.patch<ApiResponse<ContactResponse>>(
+      `${environment.apiUrl}${this.basePath}/${id}/archive`,
       null,
     );
   }

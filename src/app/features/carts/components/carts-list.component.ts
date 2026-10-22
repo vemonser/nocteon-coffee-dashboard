@@ -1,4 +1,4 @@
-﻿import { Component, computed, inject, signal } from '@angular/core';
+﻿import { Component, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
@@ -8,6 +8,9 @@ import { HlmBadgeImports } from '@spartan-ng/helm/badge';
 import { HlmInputImports } from '@spartan-ng/helm/input';
 import { HlmTableImports } from '@spartan-ng/helm/table';
 import { HlmSkeletonImports } from '@spartan-ng/helm/skeleton';
+import { HlmNativeSelectImports } from '@spartan-ng/helm/native-select';
+import { HlmTooltipImports } from '@spartan-ng/helm/tooltip';
+import { BrnTooltip } from '@spartan-ng/brain/tooltip';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
   lucideSearch,
@@ -16,76 +19,34 @@ import {
   lucideShoppingCart,
   lucidePackage,
   lucideX,
+  lucideActivity,
+  lucideDollarSign,
+  lucideUsers,
+  lucideTrendingUp,
+  lucideRefreshCw,
+  lucideCopy,
+  lucideMail,
+  lucideAlertCircle,
+  lucideCheckCircle,
 } from '@ng-icons/lucide';
 import { PageResponse } from '../../../core/models/api-response.model';
-import { CartItemResponse, CartResponse } from '../models/cart.model';
+import { CartItemResponse, CartResponse, CartStatsResponse, CartListParams } from '../models/cart.model';
 import { StatusKind } from '../../../shared/ui/status-badge/status-badge.component';
 import { CartService } from '../services/cart.service';
 import { LanguageService } from '../../../core/i18n/language.service';
+import { TranslocoService } from '@jsverse/transloco';
 import { ColumnDef, createColumnHelper } from '@tanstack/table-core';
-import { ViewMode } from '../../../core/crud/base-list.component';
 import { NotifyService } from '../../../core/notify/notify.service';
+import { formatRelativeTime } from '../../../core/i18n/relative-time';
 
 import { TranslocoPipe } from '@jsverse/transloco';
 import { MoneyPipe } from '../../../shared/pipes/money.pipe';
 import { PagerComponent } from '../../../shared/components/pager/pager.component';
 import { LocalizedDateComponent } from '../../../shared/ui/localized-date/localized-date.component';
 import { StatusBadgeComponent } from '../../../shared/ui/status-badge/status-badge.component';
-import { CustomerCellComponent } from '../../../shared/ui/customer-cell/customer-cell.component';
-import { ItemsThumbsComponent } from '../../../shared/ui/items-thumbs/items-thumbs.component';
-const IMG = {
-  ethiopia: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=800',
-  colombia: 'https://images.unsplash.com/photo-1498804103079-a6351b050096?w=800',
-  kenya: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=800',
-  brazil: 'https://images.unsplash.com/photo-1521302080334-4bebac2763a6?w=800',
-  hario: 'https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=800',
-  chemex: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=800',
-};
-
-const MOCK_CARTS: CartResponse[] = [
-  {
-    id: 1,
-    userId: 1,
-    userFullName: 'Sara Khaled',
-    userEmail: 'sara@example.com',
-    items: [
-      { id: 1, variantId: 1, sku: 'SKU-001', productSlug: 'ethiopia-yirgacheffe', productName: 'Ethiopia Yirgacheffe', primaryImageUrl: IMG.ethiopia, price: 12.5, compareAtPrice: null, discountPercentage: 10, optionValues: [{ optionSlug: 'size', optionName: 'Size', valueSlug: '250g', value: '250g' }], quantity: 2, stockQuantity: 10, subtotal: 22.5 },
-      { id: 2, variantId: 2, sku: 'SKU-002', productSlug: 'colombia-huila', productName: 'Colombia Huila', primaryImageUrl: IMG.colombia, price: 14.0, compareAtPrice: null, discountPercentage: 0, optionValues: [], quantity: 1, stockQuantity: 5, subtotal: 14.0 },
-      { id: 3, variantId: 3, sku: 'SKU-003', productSlug: 'brazil-mogiana', productName: 'Brazil Mogiana', primaryImageUrl: IMG.brazil, price: 11.0, compareAtPrice: null, discountPercentage: 0, optionValues: [], quantity: 3, stockQuantity: 8, subtotal: 33.0 },
-    ],
-    total: 69.5,
-    itemCount: 3,
-    createdAt: '2026-10-20T05:49:47.936218Z',
-    updatedAt: '2026-10-20T05:49:47.936218Z',
-  },
-  {
-    id: 2,
-    userId: 2,
-    userFullName: 'Ahmed Ali',
-    userEmail: 'ahmed@example.com',
-    items: [
-      { id: 4, variantId: 4, sku: 'SKU-004', productSlug: 'kenya-nyeri', productName: 'Kenya Nyeri', primaryImageUrl: IMG.kenya, price: 13.5, compareAtPrice: null, discountPercentage: 5, optionValues: [], quantity: 1, stockQuantity: 4, subtotal: 12.83 },
-      { id: 5, variantId: 5, sku: 'SKU-005', productSlug: 'hario-v60', productName: 'Hario V60 Dripper', primaryImageUrl: IMG.hario, price: 15.0, compareAtPrice: null, discountPercentage: 0, optionValues: [], quantity: 2, stockQuantity: 6, subtotal: 30.0 },
-    ],
-    total: 42.83,
-    itemCount: 2,
-    createdAt: '2026-10-19T10:00:00.000000Z',
-    updatedAt: '2026-10-19T12:00:00.000000Z',
-  },
-  {
-    id: 3,
-    userId: 3,
-    userFullName: 'Mohamed Hassan',
-    userEmail: 'mohamed@example.com',
-    items: [
-      { id: 6, variantId: 6, sku: 'SKU-006', productSlug: 'chemex-6-cup', productName: 'Chemex 6 Cup', primaryImageUrl: IMG.chemex, price: 16.0, compareAtPrice: null, discountPercentage: 0, optionValues: [], quantity: 4, stockQuantity: 12, subtotal: 64.0 },
-    ],
-    total: 64.0,
-    itemCount: 1,
-    createdAt: '2026-10-18T08:30:00.000000Z',
-    updatedAt: '2026-10-18T09:00:00.000000Z',
-  },
-];
+import { CartStatusTabsComponent } from '../../../shared/components/cart-status-tabs/cart-status-tabs.component';
+import { DialogShellComponent } from '../../../shared/ui/dialog-shell/dialog-shell.component';
+import { UserAvatarComponent } from '../../../shared/ui/user-avatar/user-avatar.component';
 
 @Component({
   selector: 'app-carts-list',
@@ -102,12 +63,16 @@ const MOCK_CARTS: CartResponse[] = [
     HlmInputImports,
     HlmTableImports,
     HlmSkeletonImports,
+    HlmNativeSelectImports,
+    HlmTooltipImports,
+    BrnTooltip,
     NgIcon,
     TranslocoPipe,
     MoneyPipe,
     StatusBadgeComponent,
-    CustomerCellComponent,
-    ItemsThumbsComponent,
+    CartStatusTabsComponent,
+    DialogShellComponent,
+    UserAvatarComponent,
   ],
   providers: [
     provideIcons({
@@ -117,113 +82,114 @@ const MOCK_CARTS: CartResponse[] = [
       lucideShoppingCart,
       lucidePackage,
       lucideX,
+      lucideActivity,
+      lucideDollarSign,
+      lucideUsers,
+      lucideTrendingUp,
+      lucideRefreshCw,
+      lucideCopy,
+      lucideMail,
+      lucideAlertCircle,
+      lucideCheckCircle,
     }),
   ],
   templateUrl: './carts-list.component.html',
 })
-
 export class CartsListComponent {
   private notify = inject(NotifyService);
   private cartService = inject(CartService);
   protected readonly language = inject(LanguageService);
+  private readonly transloco = inject(TranslocoService);
 
   protected readonly Math = Math;
+  protected readonly formatRelativeTime = formatRelativeTime;
 
   items = signal<CartResponse[]>([]);
   loading = signal(false);
   pageData = signal<PageResponse<CartResponse> | null>(null);
+  stats = signal<CartStatsResponse | null>(null);
+  error = signal(false);
   currentPage = signal(0);
   pageSize = signal(20);
   readonly pageSizeOptions = [10, 20, 50] as const;
-  currentSort = 'createdAt';
+  currentSort = 'lastActivityAt';
   currentDirection: 'asc' | 'desc' = 'desc';
   searchQuery = '';
   private searchTimeout: any;
 
+  /** Current lifecycle tab: 'active' | 'abandoned' | 'converted' | 'all' */
+  listView = signal<'all' | 'active' | 'abandoned' | 'converted'>('all');
+
   viewing = signal<CartResponse | null>(null);
-  viewMode = signal<ViewMode>('list');
+  sendingReminder = signal(false);
 
   readonly totalItems = computed(() => this.pageData()?.totalElements ?? 0);
 
-  /** Derive a cart status when the backend does not send one (see API_GAPS.md). */
-  cartStatus(cart: CartResponse): StatusKind {
-    if (cart.status) {
-      if (cart.status === 'ACTIVE') return 'active';
-      if (cart.status === 'ABANDONED') return 'abandoned';
-      if (cart.status === 'CONVERTED') return 'converted';
-    }
-    const ref = cart.lastActivityAt ?? cart.updatedAt ?? cart.createdAt;
-    const ageMs = Date.now() - new Date(ref).getTime();
-    const abandonedThresholdMs = 24 * 60 * 60 * 1000;
-    if (ageMs > abandonedThresholdMs) return 'abandoned';
-    return 'active';
-  }
-
-  sendReminder(cart: CartResponse): void {
-    this.cartService.sendReminder(cart.id).subscribe({
-      next: () => this.notify.success('carts.reminderSent', 'Reminder sent'),
-      error: (err) => this.notify.apiError(err, 'notify.errorFallback', 'Could not send reminder'),
-    });
-  }
-
   private columnHelper = createColumnHelper<CartResponse>();
   columns: ColumnDef<CartResponse, any>[] = [
-    this.columnHelper.accessor((row) => ({
-      name: row.userFullName,
-      email: row.userEmail,
-      avatar: row.userAvatarUrl ?? row.avatarUrl ?? row.avatar ?? null,
-    }), { id: 'userFullName', header: 'Customer', enableSorting: true }),
-    this.columnHelper.accessor('items', { id: 'items', header: 'Items', enableSorting: false }),
-    this.columnHelper.accessor('itemCount', { header: 'Count', enableSorting: false }),
-    this.columnHelper.accessor('total', { header: 'Total', enableSorting: true, meta: { width: '140px' } }),
-    this.columnHelper.accessor('createdAt', { header: 'Created', enableSorting: true }),
-    this.columnHelper.accessor('updatedAt', { header: 'Updated At', enableSorting: true }),
-    this.columnHelper.display({ id: 'actions', header: 'Actions' }),
+    this.columnHelper.accessor(
+      (row) => ({
+        name: row.userFullName,
+        email: row.userEmail,
+        avatar: row.avatarUrl,
+      }),
+      { id: 'userFullName', header: 'carts.columns.customer', enableSorting: true },
+    ),
+    this.columnHelper.accessor('items', { id: 'items', header: 'carts.columns.items', enableSorting: false }),
+    this.columnHelper.accessor('itemCount', { header: 'carts.columns.itemCount', enableSorting: false, meta: { width: '70px' } }),
+    this.columnHelper.accessor('total', { header: 'carts.columns.total', enableSorting: true, meta: { width: '140px' } }),
+    this.columnHelper.accessor(
+      (row) => row.lastActivityAt ?? row.updatedAt,
+      { id: 'lastActivity', header: 'carts.columns.lastActivity', enableSorting: true, meta: { width: '160px' } },
+    ),
+    this.columnHelper.display({ id: 'actions', header: 'carts.columns.actions', meta: { width: '100px' } }),
   ];
 
   constructor() {
-    this.loadPage();
+    effect(() => {
+      this.listView();
+      this.currentPage.set(0);
+      this.loadPage();
+      this.loadStats();
+    });
+  }
+
+  loadStats(): void {
+    this.cartService.getStats().subscribe({
+      next: (res) => this.stats.set(res.data),
+      error: () => this.stats.set(null),
+    });
   }
 
   loadPage(): void {
     this.loading.set(true);
-    this.cartService
-      .getAll({
-        page: this.currentPage(),
-        size: this.pageSize(),
-        search: this.searchQuery || undefined,
-        sort: this.currentSort,
-        direction: this.currentDirection,
-        // Only carts that actually contain items are useful to review.
-        hasItems: true,
-      })
-      .subscribe({
-        next: (res) => {
-          // Dev-only: when the backend has no populated carts, fall back to
-          // dummy data so the page layout can be tuned.
-          if ((res.data?.content?.length ?? 0) === 0) {
-            const size = this.pageSize();
-            this.pageData.set({
-              content: MOCK_CARTS,
-              page: 0,
-              size: size,
-              totalElements: MOCK_CARTS.length,
-              totalPages: Math.max(1, Math.ceil(MOCK_CARTS.length / size)),
-              first: true,
-              last: true,
-            } as PageResponse<CartResponse>);
-            this.items.set(MOCK_CARTS);
-          } else {
-            this.pageData.set(res.data);
-            this.items.set(res.data.content);
-          }
-          this.loading.set(false);
-        },
-        error: (err) => {
-          this.loading.set(false);
-          this.notify.apiError(err, 'notify.errorFallback', 'Could not load carts');
-        },
-      });
+    this.error.set(false);
+    const params: CartListParams = {
+      page: this.currentPage(),
+      size: this.pageSize(),
+      search: this.searchQuery || undefined,
+      sort: this.currentSort,
+      direction: this.currentDirection,
+      hasItems: true,
+    };
+
+    // Map lifecycle tab to backend status filter
+    if (this.listView() !== 'all') {
+      params.status = this.listView().toUpperCase();
+    }
+
+    this.cartService.getAll(params).subscribe({
+      next: (res) => {
+        this.pageData.set(res.data);
+        this.items.set(res.data.content);
+        this.loading.set(false);
+      },
+      error: (err) => {
+        this.loading.set(false);
+        this.error.set(true);
+        this.notify.apiError(err, 'notify.errorFallback', 'Could not load carts');
+      },
+    });
   }
 
   onSearch(): void {
@@ -246,6 +212,10 @@ export class CartsListComponent {
     this.loadPage();
   }
 
+  setListView(view: 'all' | 'active' | 'abandoned' | 'converted'): void {
+    this.listView.set(view);
+  }
+
   openView(cart: CartResponse): void {
     this.viewing.set(cart);
   }
@@ -254,14 +224,73 @@ export class CartsListComponent {
     this.viewing.set(null);
   }
 
-  toggleView(mode: ViewMode): void {
-    this.viewMode.set(mode);
-  }
-
   onSortChange(event: { column: string; direction: 'asc' | 'desc' } | null): void {
-    this.currentSort = event?.column ?? 'createdAt';
+    this.currentSort = event?.column ?? 'lastActivityAt';
     this.currentDirection = event?.direction ?? 'desc';
     this.currentPage.set(0);
     this.loadPage();
+  }
+
+  /** Map backend status to StatusKind for the badge component. */
+  cartStatusKind(cart: CartResponse): StatusKind {
+    switch (cart.status) {
+      case 'ACTIVE': return 'active';
+      case 'ABANDONED': return 'abandoned';
+      case 'CONVERTED': return 'converted';
+      default: return 'active';
+    }
+  }
+
+  /** Send abandonment reminder for a cart. */
+  sendReminder(cart: CartResponse): void {
+    this.sendingReminder.set(true);
+    this.cartService.sendReminder(cart.id).subscribe({
+      next: (res) => {
+        this.sendingReminder.set(false);
+        if (res.data) {
+          this.notify.success('carts.reminderSent', 'Reminder sent');
+        } else {
+          this.notify.warning('carts.reminderFailed', 'Could not send reminder');
+        }
+      },
+      error: (err) => {
+        this.sendingReminder.set(false);
+        this.notify.apiError(err, 'notify.errorFallback', 'Could not send reminder');
+      },
+    });
+  }
+
+  /** Human-readable status label for the dialog subtitle. */
+  cartStatusLabel(cart: CartResponse): string {
+    const key = `carts.status.${cart.status.toLowerCase()}`;
+    return this.transloco.translate(key);
+  }
+
+  /** Copy cart link to clipboard (dashboard URL). */
+  copyCartLink(cart: CartResponse): void {
+    const url = `${window.location.origin}/dashboard/carts/${cart.id}`;
+    navigator.clipboard.writeText(url).then(() => {
+      this.notify.success('carts.linkCopied', 'Cart link copied');
+    }).catch(() => {
+      this.notify.apiError(new Error('clipboard'), 'carts.linkCopyFailed', 'Failed to copy link');
+    });
+  }
+
+  /** Count of carts for a given status (for tab badges). */
+  countForStatus(status: 'ACTIVE' | 'ABANDONED' | 'CONVERTED'): number {
+    const s = this.stats();
+    if (!s) return 0;
+    switch (status) {
+      case 'ACTIVE': return s.activeCarts;
+      case 'ABANDONED': return s.abandonedCarts;
+      case 'CONVERTED': return s.convertedCarts;
+    }
+  }
+
+  /** Tab label with count. */
+  tabLabel(status: 'ACTIVE' | 'ABANDONED' | 'CONVERTED'): string {
+    const count = this.countForStatus(status);
+    const key = `carts.status.${status.toLowerCase()}`;
+    return `${this.transloco.translate(key)} (${count})`;
   }
 }

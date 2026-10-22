@@ -12,13 +12,35 @@ import { UserAvatarComponent } from '../../../shared/ui/user-avatar/user-avatar.
 import { TranslocoPipe } from '@jsverse/transloco';
 import { MoneyPipe } from '../../../shared/pipes/money.pipe';
 import { LocalizedDateComponent } from '../../../shared/ui/localized-date/localized-date.component';
+import { StatusBadgeComponent, StatusKind } from '../../../shared/ui/status-badge/status-badge.component';
 
 @Component({
   selector: 'app-cart-detail',
   standalone: true,
   imports: [
-    LocalizedDateComponent,CommonModule, HlmCardImports, HlmCardContent, HlmButtonImports, HlmBadgeImports, NgIcon, TranslocoPipe, MoneyPipe, UserAvatarComponent],
-  providers: [provideIcons({ lucideArrowLeft, lucidePackage, lucideUser, lucideShoppingCart, lucideDollarSign, lucideClock, lucideMail })],
+    LocalizedDateComponent,
+    CommonModule,
+    HlmCardImports,
+    HlmCardContent,
+    HlmButtonImports,
+    HlmBadgeImports,
+    NgIcon,
+    TranslocoPipe,
+    MoneyPipe,
+    UserAvatarComponent,
+    StatusBadgeComponent,
+  ],
+  providers: [
+    provideIcons({
+      lucideArrowLeft,
+      lucidePackage,
+      lucideUser,
+      lucideShoppingCart,
+      lucideDollarSign,
+      lucideClock,
+      lucideMail,
+    }),
+  ],
   templateUrl: './cart-detail.component.html',
 })
 export class CartDetailComponent {
@@ -49,5 +71,14 @@ export class CartDetailComponent {
 
   goBack(): void {
     this.router.navigate(['/dashboard/carts']);
+  }
+
+  cartStatusKind(cart: CartResponse): StatusKind {
+    switch (cart.status) {
+      case 'ACTIVE': return 'active';
+      case 'ABANDONED': return 'abandoned';
+      case 'CONVERTED': return 'converted';
+      default: return 'active';
+    }
   }
 }
