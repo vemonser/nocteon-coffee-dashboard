@@ -1997,7 +1997,8 @@
       "failed": "The broadcasts could not be exported"
     },
     "totalCount_one": "1 broadcast",
-    "totalCount_other": "{{count}} broadcasts"
+    "totalCount_other": "{{count}} broadcasts",
+    "resend": "Resend"
   },
   "contactMessages": {
     "title": "Contact messages",

@@ -2065,7 +2065,8 @@
     "totalCount_two": "رسالتان",
     "totalCount_few": "{{count}} رسائل",
     "totalCount_many": "{{count}} رسالة",
-    "totalCount_other": "{{count}} رسالة"
+    "totalCount_other": "{{count}} رسالة",
+    "resend": "إعادة إرسال"
   },
   "contactMessages": {
     "title": "رسائل التواصل",

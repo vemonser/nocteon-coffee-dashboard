@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BaseCrudService, BaseListParams } from '../../../core/crud/base-crud.service';
-import { BroadcastRequest, BroadcastResponse } from '../models/broadcast.model';
+import { BroadcastRecipientResponse, BroadcastRequest, BroadcastResponse } from '../models/broadcast.model';
 import { EMPTY, Observable, expand, toArray } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { ApiResponse, PageResponse } from '../../../core/models/api-response.model';
@@ -47,5 +47,28 @@ export class BroadcastService extends BaseCrudService<BroadcastResponse, Broadca
    */
   deleteBroadcast(id: string): Observable<ApiResponse<void>> {
     return this.http.delete<ApiResponse<void>>(`${this.fullUrl}/${id}`);
+  }
+
+  /**
+   * Re-send a broadcast that failed on some recipients.
+   *
+   * The backend sends the broadcast the same way it did the first time;
+   * recipients that already reached SENT are skipped, so only the failed
+   * ones are retried.
+   */
+  sendBroadcast(id: string): Observable<ApiResponse<BroadcastResponse>> {
+    return this.http.post<ApiResponse<BroadcastResponse>>(`${this.fullUrl}/${id}/send`, {});
+  }
+
+  /**
+   * The recipients of a broadcast, with their delivery status.
+   *
+   * The backend returns one row per recipient: email, status (SENT/FAILED/
+   * PENDING), attempt count, and the last error when it failed.
+   */
+  getRecipients(id: string): Observable<ApiResponse<BroadcastRecipientResponse[]>> {
+    return this.http.get<ApiResponse<BroadcastRecipientResponse[]>>(
+      `${this.fullUrl}/${id}/recipients`,
+    );
   }
 }

@@ -76,6 +76,25 @@
               <hlm-badge [variant]="item.status === 'COMPLETED' ? 'default' : 'secondary'">
                 {{ statusLabel(item.status) }}
               </hlm-badge>
+              <!-- Re-send a broadcast that failed on some addresses. The
+                   backend skips the ones that already reached SENT, so this
+                   retries only the failed ones. -->
+              @if (item.failedCount > 0) {
+                <button
+                  *hasPermission="'broadcast:create'"
+                  hlmBtn
+                  variant="outline"
+                  size="sm"
+                  class="print-hidden"
+                  [disabled]="submitting()"
+                  (click)="resendBroadcast(item)"
+                  [attr.aria-label]="'broadcasts.resend' | transloco"
+                  [title]="'broadcasts.resend' | transloco"
+                >
+                  <ng-icon name="lucideRefreshCw" class="size-3.5" aria-hidden="true" />
+                  {{ 'broadcasts.resend' | transloco }}
+                </button>
+              }
               <!-- The backend has DELETE /api/dashboard/broadcasts/{id}. -->
               <button
                 *hasPermission="'broadcast:delete'"

@@ -14,12 +14,13 @@ import {
   lucideChevronRight,
   lucideLoader2,
   lucidePlus,
+  lucideRefreshCw,
   lucideSearch,
   lucideTrash2,
   lucideX,
 } from '@ng-icons/lucide';
 import { BaseListComponent } from '../../../core/crud/base-list.component';
-import { BroadcastRequest, BroadcastResponse, BroadcastStatus } from '../models/broadcast.model';
+import { BroadcastRecipientResponse, BroadcastRequest, BroadcastResponse, BroadcastStatus } from '../models/broadcast.model';
 import { BroadcastService } from '../services/broadcast.service';
 import { map, Observable } from 'rxjs';
 import { ApiResponse, PageResponse } from '../../../core/models/api-response.model';
@@ -32,17 +33,20 @@ import { PluralPipe } from '../../../shared/pipes/plural.pipe';
  * The broadcasts list.
  *
  * A broadcast reaches EVERY customer of the store: the backend picks the
- * recipients with `findByRoleAndSubscribedTrue(CUSTOMER)`, so there is no
- * audience to choose in the UI — one message, everybody. The page says so
- * in the create dialog, and every row carries the number of recipients the
- * backend counted, so "who did this go to" is never a guess.
+ * recipients with `findByRoleAndSubscribedTrue(CUSTOMER)` plus the
+ * newsletter subscribers, so there is no audience to choose in the UI —
+ * one message, everybody. The page says so in the create dialog, and
+ * every row carries the number of recipients the backend counted, so
+ * "who did this go to" is never a guess.
  *
- * THE SENDING IS THE BACKEND'S (and it is a known gap):
- * `BroadcastCreationService` creates the broadcast and its recipient rows
- * and stops there. The build in the container has no sender and no
- * scheduler for it, so a broadcast stays PENDING with `sentCount = 0`.
- * The page therefore says "Queued" and shows what HAS been sent, rather
- * than pretending the delivery is done.
+ * THE SENDING IS THE BACKEND'S, AND IT HAPPENS NOW:
+ * `BroadcastCreationService` creates the broadcast, its recipient rows,
+ * and sends it in the same request. Each recipient's email is enqueued
+ * (and attempted inline, the way every other email in this store is), the
+ * recipient ends in SENT or FAILED with the error recorded, and the
+ * broadcast ends in COMPLETED with the counters saying how many of each.
+ * A failed address does not stop the others, and a broadcast that failed
+ * on some addresses can be re-sent from the row.
  */
 @Component({
   selector: 'app-broadcast-list',
@@ -135,6 +139,22 @@ export class BroadcastListComponent extends BaseListComponent<BroadcastResponse,
    */
   protected override callDelete(id: string): Observable<ApiResponse<void>> {
     return this.broadcastService.deleteBroadcast(id);
+  }
+
+  /**
+   * Re-send a broadcast that failed on some addresses. The backend skips the
+   * ones that already reached SENT, so only the failed ones are retried.
+   */
+  protected resendBroadcast(item: BroadcastResponse): void {
+    this.broadcastService.sendBroadcast(item.id).subscribe({
+      next: (res) => {
+        this.notify.apiSuccess(res, 'broadcasts.sent', 'The broadcast was sent');
+        this.load();
+      },
+      error: (err) => {
+        this.notify.apiError(err, 'broadcasts.sendFailed', 'The broadcast could not be sent');
+      },
+    });
   }
 
   protected override deleteToastKey(): string {
