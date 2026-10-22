@@ -29,6 +29,10 @@ export type StatusKind =
   | 'enabled'
   | 'disabled'
   | 'approved'
+  | 'rejected'
+  | 'new'
+  | 'replied'
+  | 'archived'
   | 'unknown'
   | 'active'
   | 'abandoned'
@@ -120,6 +124,10 @@ export const STATUS_BADGE_LABELS: Record<StatusKind, string> = {
   enabled: 'common.statuses.enabled',
   disabled: 'common.statuses.disabled',
   approved: 'common.statuses.approved',
+  rejected: 'common.statuses.rejected',
+  new: 'common.statuses.new',
+  replied: 'common.statuses.replied',
+  archived: 'common.statuses.archived',
   unknown: 'common.statuses.unknown',
   active: 'common.statuses.active',
   abandoned: 'common.statuses.abandoned',
@@ -140,6 +148,10 @@ export const STATUS_BADGE_ICONS: Record<StatusKind, string> = {
   enabled: 'lucideCheckCircle',
   disabled: 'lucideXCircle',
   approved: 'lucideCheckCircle',
+  rejected: 'lucideXCircle',
+  new: 'lucideInbox',
+  replied: 'lucideMail',
+  archived: 'lucideArchive',
   unknown: 'lucideCircleDot',
   active: 'lucideShoppingCart',
   abandoned: 'lucideClock',
@@ -154,6 +166,10 @@ export const STATUS_BADGE_ICONS: Record<StatusKind, string> = {
  * Processing — the full info tint. Shipped — the slate chart token, as a
  * tint of itself. Cancelled / Failed — destructive. Refunded / Disabled /
  * Unknown — muted.
+ * Rejected — destructive.
+ * New — info.
+ * Replied — success.
+ * Archived — muted.
  */
 export const STATUS_BADGE_CLASSES: Record<StatusKind, string> = {
   pending: 'bg-warning-soft text-warning',
@@ -168,6 +184,10 @@ export const STATUS_BADGE_CLASSES: Record<StatusKind, string> = {
   enabled: 'bg-success-soft text-success',
   disabled: 'bg-muted text-muted-foreground',
   approved: 'bg-success-soft text-success',
+  rejected: 'bg-destructive-soft text-destructive-text',
+  new: 'bg-info-soft text-info',
+  replied: 'bg-success-soft text-success',
+  archived: 'bg-muted text-muted-foreground',
   unknown: 'bg-muted text-muted-foreground',
   active: 'bg-success-soft text-success',
   abandoned: 'bg-warning-soft text-warning',

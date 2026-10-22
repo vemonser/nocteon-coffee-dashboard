@@ -18,7 +18,7 @@
         <div hlmCardContent class="space-y-2">
           <div class="flex items-center gap-3">
             <app-user-avatar
-              [src]="cart()!.userAvatarUrl ?? cart()!.avatarUrl ?? cart()!.avatar ?? null"
+              [src]="cart()!.avatarUrl"
               [name]="cart()!.userFullName"
               size="md"
             />
@@ -43,7 +43,7 @@
           <h3 hlmCardTitle>{{ 'carts.detail.status' | transloco }}</h3>
         </hlm-card-header>
         <div hlmCardContent>
-          <hlm-badge variant="default">{{ 'carts.status.active' | transloco }}</hlm-badge>
+          <app-status-badge [status]="cartStatusKind(cart()!)" />
         </div>
       </hlm-card>
 

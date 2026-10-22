@@ -1,0 +1,77 @@
+<div
+  #tablist
+  role="tablist"
+  [attr.aria-label]="tablistLabel()"
+  class="relative inline-flex items-center gap-1 rounded-lg bg-muted/50 p-1"
+>
+  <!-- Sliding pill -->
+  <div #pill class="tab-pill" aria-hidden="true"></div>
+
+  <!-- All tab -->
+  <button
+    #trigger
+    role="tab"
+    [attr.aria-selected]="selected() === 'all'"
+    [attr.aria-controls]="'cart-panel-all'"
+    [id]="'cart-tab-all'"
+    (click)="select('all')"
+    (keydown)="onKeydown($event, 0)"
+    class="relative z-10 flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+  >
+    {{ allLabel() }}
+    @if (allCount() !== null) {
+      <span class="tabular-nums opacity-70">({{ allCount() }})</span>
+    }
+  </button>
+
+  <!-- Active tab -->
+  <button
+    #trigger
+    role="tab"
+    [attr.aria-selected]="selected() === 'active'"
+    [attr.aria-controls]="'cart-panel-active'"
+    [id]="'cart-tab-active'"
+    (click)="select('active')"
+    (keydown)="onKeydown($event, 1)"
+    class="relative z-10 flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+  >
+    {{ activeLabel() }}
+    @if (activeCount() !== null) {
+      <span class="tabular-nums opacity-70">({{ activeCount() }})</span>
+    }
+  </button>
+
+  <!-- Abandoned tab -->
+  <button
+    #trigger
+    role="tab"
+    [attr.aria-selected]="selected() === 'abandoned'"
+    [attr.aria-controls]="'cart-panel-abandoned'"
+    [id]="'cart-tab-abandoned'"
+    (click)="select('abandoned')"
+    (keydown)="onKeydown($event, 2)"
+    class="relative z-10 flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+  >
+    {{ abandonedLabel() }}
+    @if (abandonedCount() !== null) {
+      <span class="tabular-nums opacity-70">({{ abandonedCount() }})</span>
+    }
+  </button>
+
+  <!-- Converted tab -->
+  <button
+    #trigger
+    role="tab"
+    [attr.aria-selected]="selected() === 'converted'"
+    [attr.aria-controls]="'cart-panel-converted'"
+    [id]="'cart-tab-converted'"
+    (click)="select('converted')"
+    (keydown)="onKeydown($event, 3)"
+    class="relative z-10 flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+  >
+    {{ convertedLabel() }}
+    @if (convertedCount() !== null) {
+      <span class="tabular-nums opacity-70">({{ convertedCount() }})</span>
+    }
+  </button>
+</div>

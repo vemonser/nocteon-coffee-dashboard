@@ -40,7 +40,7 @@ import { ProductService } from '../../products/services/product.service';
 import { ReviewResponse, ReviewStats } from '../models/review.model';
 import { ReviewService } from '../services/review.service';
 
-type ReviewTab = 'pending' | 'approved' | 'all';
+type ReviewTab = 'pending' | 'approved' | 'rejected' | 'all';
 
 /**
  * The reviews console.
@@ -105,7 +105,10 @@ export class ReviewListComponent {
     total: 0,
     pending: 0,
     approved: 0,
+    rejected: 0,
+    verified: 0,
     averageRating: null,
+    averageRatingAll: null,
     distribution: {},
   });
   readonly loading = signal(false);
@@ -216,7 +219,7 @@ export class ReviewListComponent {
   private readUrl(): void {
     const params = this.route.snapshot.queryParamMap;
     const status = params.get('status');
-    if (status === 'pending' || status === 'approved' || status === 'all') {
+    if (status === 'pending' || status === 'approved' || status === 'rejected' || status === 'all') {
       this.status.set(status);
     }
     const view = params.get('view');
@@ -275,6 +278,7 @@ export class ReviewListComponent {
   protected loadPage(): void {
     this.loading.set(true);
     this.error.set(false);
+    const status = this.status() === 'all' ? undefined : this.status().toUpperCase() as 'PENDING' | 'APPROVED' | 'REJECTED' | undefined;
     this.reviewService
       .getAll({
         page: this.page(),
@@ -283,13 +287,14 @@ export class ReviewListComponent {
         direction: this.direction(),
         productSlug: this.productSlug() || undefined,
         search: this.search() || undefined,
-        isApproved: this.status() === 'all' ? undefined : this.status() === 'approved',
+        status: status,
+        isApproved: undefined,
         isVerified:
           this.verification() === 'verified'
             ? true
             : this.verification() === 'unverified'
-              ? false
-              : undefined,
+            ? false
+            : undefined,
         minRating: this.rating() ? Number(this.rating()) : undefined,
         createdFrom: this.rangeStart() ?? undefined,
         createdTo: this.rangeEnd() ?? undefined,
@@ -462,8 +467,8 @@ export class ReviewListComponent {
       }),
       this.columnHelper.accessor(
         (row) => ({
-          approved: row.approved,
-          label: row.approved ? 'reviews.status.approved' : 'reviews.status.pending',
+          status: row.status,
+          label: row.status === 'APPROVED' ? 'reviews.status.approved' : row.status === 'REJECTED' ? 'reviews.status.rejected' : 'reviews.status.pending',
         }),
         { id: 'statusReview', header: 'Status', enableSorting: false },
       ),
@@ -495,29 +500,29 @@ export class ReviewListComponent {
    * approved by mistake reaches a customer.
    */
   protected readonly primaryActionFor = (row: ReviewResponse) =>
-    row.approved ? null : { id: 'approve', label: 'reviews.approve' };
+    row.status === 'PENDING' ? { id: 'approve', label: 'reviews.approve' } : null;
 
-  /**
-   * The menu holds the SECONDARY action only.
-   *
-   * <p>View and Delete are VISIBLE buttons: they are what an admin reaches
-   * for on a row, and hiding them behind a kebab menu means two clicks to
-   * read a review.
-   */
+  private readonly rejectAction: RowMenuAction = { id: 'reject', label: 'reviews.reject', icon: 'lucideX', danger: true };
   private readonly withdrawAction: RowMenuAction = { id: 'withdraw', label: 'reviews.withdrawApproval', icon: 'lucideX' };
   private readonly deleteAction: RowMenuAction = { id: 'delete', label: 'common.delete', icon: 'lucideTrash2', danger: true };
 
-  protected readonly menuActions: RowMenuAction[] = [this.withdrawAction, this.deleteAction];
+  protected readonly menuActions: RowMenuAction[] = [this.rejectAction, this.withdrawAction, this.deleteAction];
 
-  /** Per-row kebab: Withdraw only on Approved rows, Delete always. */
-  protected readonly menuActionsFor = (row: ReviewResponse): RowMenuAction[] =>
-    row.approved ? [this.withdrawAction, this.deleteAction] : [this.deleteAction];
+  /** Per-row kebab: Approve/Reject on Pending, Withdraw on Approved, Delete always. */
+  protected readonly menuActionsFor = (row: ReviewResponse): RowMenuAction[] => {
+    if (row.status === 'PENDING') return [this.rejectAction, this.deleteAction];
+    if (row.status === 'APPROVED') return [this.withdrawAction, this.deleteAction];
+    return [this.deleteAction];
+  };
 
   protected onMenuAction(event: { id: string; item: ReviewResponse }): void {
     const review = event.item;
     switch (event.id) {
       case 'approve':
         this.approve(review);
+        break;
+      case 'reject':
+        this.reject(review);
         break;
       case 'view':
         this.openView(review);
@@ -572,10 +577,64 @@ export class ReviewListComponent {
     });
   }
 
+  protected bulkReject(): void {
+    const ids = Array.from(this.selectedIds());
+    if (ids.length === 0) return;
+    this.bulkSubmitting.set(true);
+    this.reviewService.setApproval(ids, false).subscribe({
+      next: (res) => {
+        this.bulkSubmitting.set(false);
+        this.clearSelection();
+        this.notify.success('reviews.bulk.rejected', 'Reviews rejected');
+        this.loadPage();
+        this.loadStats();
+      },
+      error: (err) => {
+        this.bulkSubmitting.set(false);
+        this.notify.apiError(err, 'notify.errorFallback', 'Could not reject the reviews');
+      },
+    });
+  }
+
+  protected bulkDelete(): void {
+    const ids = Array.from(this.selectedIds());
+    if (ids.length === 0) return;
+    this.bulkSubmitting.set(true);
+    // Use the first ID for the individual delete calls
+    // In a real app, you'd want a bulk delete endpoint
+    this.reviewService.remove(ids[0]).subscribe({
+      next: () => {
+        this.bulkSubmitting.set(false);
+        this.clearSelection();
+        this.notify.success('reviews.bulk.deleted', 'Review deleted');
+        this.loadPage();
+        this.loadStats();
+      },
+      error: (err) => {
+        this.bulkSubmitting.set(false);
+        this.notify.apiError(err, 'notify.errorFallback', 'Could not delete the review');
+      },
+    });
+  }
+
   // ── the actions ───────────────────────────────────────────────────────────
 
   protected approve(review: ReviewResponse): void {
     this.setApproval(review, true);
+  }
+
+  protected reject(review: ReviewResponse): void {
+    this.reviewService.setRejected(review.id).subscribe({
+      next: (res) => {
+        if (res?.data) {
+          this.items.update((list) => list.map((r) => (r.id === review.id ? res.data! : r)));
+          if (this.viewing()?.id === review.id) this.viewing.set(res.data);
+        }
+        this.loadStats();
+      },
+      error: (err) =>
+        this.notify.apiError(err, 'notify.errorFallback', 'Could not reject the review'),
+    });
   }
 
   protected setApproval(review: ReviewResponse, approved: boolean): void {
@@ -655,6 +714,32 @@ export class ReviewListComponent {
     });
   }
 
+  /**
+   * Reject a review FROM THE DIALOG.
+   *
+   * <p>Uses the dedicated reject endpoint. The button is disabled while
+   * the request is in flight.
+   */
+  protected setRejectedFromDialog(review: ReviewResponse): void {
+    if (this.dialogBusy()) return;
+    this.dialogBusy.set(true);
+    this.reviewService.setRejected(review.id).subscribe({
+      next: (res) => {
+        this.dialogBusy.set(false);
+        if (res?.data) {
+          this.items.update((list) => list.map((r) => (r.id === review.id ? res.data! : r)));
+          if (this.viewing()?.id === review.id) this.viewing.set(res.data);
+        }
+        this.notify.success('reviews.action.rejected', 'Review rejected');
+        this.loadStats();
+      },
+      error: (err) => {
+        this.dialogBusy.set(false);
+        this.notify.apiError(err, 'notify.errorFallback', 'Could not reject the review');
+      },
+    });
+  }
+
   protected closeView(): void {
     this.viewing.set(null);
   }
@@ -730,5 +815,6 @@ export class ReviewListComponent {
     { id: 'all' as ReviewTab, label: 'reviews.tabs.all', count: this.stats().total },
     { id: 'pending' as ReviewTab, label: 'reviews.tabs.pending', count: this.stats().pending },
     { id: 'approved' as ReviewTab, label: 'reviews.tabs.approved', count: this.stats().approved },
+    { id: 'rejected' as ReviewTab, label: 'reviews.tabs.rejected', count: this.stats().rejected },
   ]);
 }

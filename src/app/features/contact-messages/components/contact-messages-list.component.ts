@@ -16,9 +16,11 @@ import {
   lucideSend,
   lucideTrash2,
   lucideX,
+  lucideArrowUpDown,
 } from '@ng-icons/lucide';
 import { TranslocoPipe } from '@jsverse/transloco';
 
+import { ViewMode } from '../../../core/crud/base-list.component';
 import { LanguageService } from '../../../core/i18n/language.service';
 import { NotifyService } from '../../../core/notify/notify.service';
 import { formatRelativeTime } from '../../../core/i18n/relative-time';
@@ -29,10 +31,11 @@ import { PluralPipe } from '../../../shared/pipes/plural.pipe';
 import { HlmTextareaImports } from '@spartan-ng/helm/textarea';
 import { UserAvatarComponent } from '../../../shared/ui/user-avatar/user-avatar.component';
 import { DialogShellComponent } from '../../../shared/ui/dialog-shell/dialog-shell.component';
-import { ContactResponse } from '../models/contact-message.model';
+import { StatusBadgeComponent } from '../../../shared/ui/status-badge/status-badge.component';
+import { ContactResponse, ContactStats } from '../models/contact-message.model';
 import { ContactMessageService } from '../services/contact-message.service';
 
-type MessageTab = 'all' | 'unread' | 'replied';
+type MessageTab = 'all' | 'new' | 'replied' | 'archived';
 
 @Component({
   selector: 'app-contact-messages-list',
@@ -49,6 +52,7 @@ type MessageTab = 'all' | 'unread' | 'replied';
     HlmTextareaImports,
     UserAvatarComponent,
     DialogShellComponent,
+    StatusBadgeComponent,
     NgIcon,
     TranslocoPipe,
   ],
@@ -62,6 +66,7 @@ type MessageTab = 'all' | 'unread' | 'replied';
       lucideSend,
       lucideTrash2,
       lucideX,
+      lucideArrowUpDown,
     }),
   ],
   templateUrl: './contact-messages-list.component.html',
@@ -73,7 +78,13 @@ export class ContactMessagesListComponent {
   private readonly service = inject(ContactMessageService);
   protected readonly language = inject(LanguageService);
 
-  readonly items = signal<ContactResponse[]>([]);
+  readonly stats = signal<ContactStats>({
+    total: 0,
+    newCount: 0,
+    repliedCount: 0,
+    archivedCount: 0,
+    unreadCount: 0,
+  });
   readonly loading = signal(false);
   readonly total = signal(0);
   readonly unreadTotal = signal(0);
@@ -81,8 +92,10 @@ export class ContactMessagesListComponent {
   readonly page = signal(0);
   readonly size = signal(20);
   protected readonly pageSizeOptions = [10, 20, 50] as const;
-  readonly allItems = signal<ContactResponse[]>([]);
+  readonly items = signal<ContactResponse[]>([]);
   readonly search = signal('');
+  readonly sort = signal('createdAt');
+  readonly direction = signal<'asc' | 'desc'>('desc');
   readonly range = signal('all');
   readonly selected = signal<ContactResponse | null>(null);
   readonly replyText = signal('');
@@ -93,32 +106,71 @@ export class ContactMessagesListComponent {
   readonly selectedIds = signal<Set<number>>(new Set());
   readonly bulkBusy = signal(false);
 
+  private readonly VIEW_KEY = 'nocteon-contact-messages-view-mode';
+  readonly viewMode = signal<ViewMode>(this.readViewMode());
+
   private searchTimeout: ReturnType<typeof setTimeout> | undefined;
 
   constructor() {
     const status = this.route.snapshot.queryParamMap.get('status');
-    if (status === 'unread' || status === 'replied' || status === 'all') this.tab.set(status as MessageTab);
+    if (status === 'new' || status === 'replied' || status === 'archived' || status === 'all') this.tab.set(status as MessageTab);
     const q = this.route.snapshot.queryParamMap.get('q');
     if (q) this.search.set(q);
     const range = this.route.snapshot.queryParamMap.get('range');
     if (range) this.range.set(range);
+    const sort = this.route.snapshot.queryParamMap.get('sort');
+    if (sort) this.sort.set(sort);
+    const dir = this.route.snapshot.queryParamMap.get('direction');
+    if (dir === 'asc' || dir === 'desc') this.direction.set(dir);
+    const view = this.route.snapshot.queryParamMap.get('view');
+    if (view === 'grid' || view === 'list') {
+      this.viewMode.set(view as ViewMode);
+      localStorage.setItem(this.VIEW_KEY, view);
+    }
     this.loadPage();
-    this.loadUnreadCount();
+    this.loadStats();
   }
 
-  private loadPage(): void {
+  private readViewMode(): ViewMode {
+    const stored = localStorage.getItem(this.VIEW_KEY);
+    return stored === 'grid' ? 'grid' : 'list';
+  }
+
+  protected toggleView(mode: ViewMode): void {
+    this.viewMode.set(mode);
+    localStorage.setItem(this.VIEW_KEY, mode);
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { view: mode === 'grid' ? 'grid' : null },
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
+  }
+
+  private loadStats(): void {
+    this.service.getStats().subscribe({
+      next: (res) => {
+        if (res?.data) this.stats.set(res.data);
+      },
+      error: () => {},
+    });
+  }
+
+  protected loadPage(): void {
     this.loading.set(true);
-    const request =
-      this.tab() === 'unread'
-        ? this.service.getAllUnread({ page: 0, size: 100 })
-        : this.service.getAll({ page: 0, size: 100 });
+    const tab = this.tab();
+    let request;
+    if (tab === 'all') {
+      request = this.service.getAll({ page: this.page(), size: this.size(), sort: this.sort(), direction: this.direction() });
+    } else {
+      request = this.service.getByStatus(tab as 'NEW' | 'REPLIED' | 'ARCHIVED', { page: this.page(), size: this.size(), sort: this.sort(), direction: this.direction() });
+    }
 
     request.subscribe({
       next: (res) => {
         const content = res.data?.content ?? [];
         this.total.set(res.data?.totalElements ?? content.length);
-        this.allItems.set(content);
-        this.items.set(this.applyFilters(content));
+        this.items.set(content);
         this.loading.set(false);
       },
       error: (err) => {
@@ -128,52 +180,9 @@ export class ContactMessagesListComponent {
     });
   }
 
-  private loadUnreadCount(): void {
-    this.service.getAllUnread({ page: 0, size: 1 }).subscribe({
-      next: (res) => this.unreadTotal.set(res.data?.totalElements ?? 0),
-      error: () => {},
-    });
-  }
-
-  private applyFilters(content: ContactResponse[]): ContactResponse[] {
-    const search = this.search().trim().toLowerCase();
-    const from = this.rangeStart();
-    const to = this.rangeEnd();
-
-    return content.filter((message) => {
-      if (this.tab() === 'replied' && !message.replied) return false;
-      if (from && new Date(message.createdAt) < from) return false;
-      if (to && new Date(message.createdAt) > to) return false;
-      if (!search) return true;
-      return (
-        message.subject.toLowerCase().includes(search) ||
-        message.name.toLowerCase().includes(search) ||
-        message.email.toLowerCase().includes(search) ||
-        message.message.toLowerCase().includes(search)
-      );
-    });
-  }
-
-  private rangeStart(): Date | null {
-    const now = Date.now();
-    switch (this.range()) {
-      case 'today':
-        return new Date(new Date(now).toISOString().slice(0, 10) + 'T00:00:00Z');
-      case '7d':
-        return new Date(now - 7 * 86400000);
-      case '30d':
-        return new Date(now - 30 * 86400000);
-      default:
-        return null;
-    }
-  }
-
-  private rangeEnd(): Date | null {
-    return null;
-  }
-
   protected setTab(tab: MessageTab): void {
     this.tab.set(tab);
+    this.page.set(0);
     void this.router.navigate([], {
       relativeTo: this.route,
       queryParams: tab === 'all' ? {} : { status: tab },
@@ -183,12 +192,11 @@ export class ContactMessagesListComponent {
   }
 
   protected readonly tabs = computed(() => [
-    { id: 'all' as MessageTab, label: 'contactMessages.tabs.all', count: this.total() },
-    { id: 'unread' as MessageTab, label: 'contactMessages.tabs.unread', count: this.unreadTotal() },
-    { id: 'replied' as MessageTab, label: 'contactMessages.tabs.replied', count: this.repliedCount() },
+    { id: 'all' as MessageTab, label: 'contactMessages.tabs.all', count: this.stats().total },
+    { id: 'new' as MessageTab, label: 'contactMessages.tabs.new', count: this.stats().newCount },
+    { id: 'replied' as MessageTab, label: 'contactMessages.tabs.replied', count: this.stats().repliedCount },
+    { id: 'archived' as MessageTab, label: 'contactMessages.tabs.archived', count: this.stats().archivedCount },
   ]);
-
-  private readonly repliedCount = computed(() => this.items().filter((m) => m.replied).length);
 
   protected onSearch(value: string): void {
     this.search.set(value);
@@ -197,6 +205,13 @@ export class ContactMessagesListComponent {
       this.writeUrl();
       this.loadPage();
     }, 350);
+  }
+
+  protected onSortChange(event: { column: string; direction: 'asc' | 'desc' }): void {
+    this.sort.set(event.column);
+    this.direction.set(event.direction);
+    this.writeUrl();
+    this.loadPage();
   }
 
   protected onRangeChange(): void {
@@ -208,6 +223,8 @@ export class ContactMessagesListComponent {
     const params: Record<string, string> = {};
     if (this.tab() !== 'all') params['status'] = this.tab();
     if (this.search()) params['q'] = this.search();
+    if (this.sort() !== 'createdAt') params['sort'] = this.sort();
+    if (this.direction() !== 'desc') params['direction'] = this.direction();
     if (this.range() !== 'all') params['range'] = this.range();
     void this.router.navigate([], { relativeTo: this.route, queryParams: params, replaceUrl: true });
   }
@@ -277,6 +294,22 @@ export class ContactMessagesListComponent {
     });
   }
 
+  protected archive(item: ContactResponse): void {
+    this.service.archive(item.id).subscribe({
+      next: (res) => {
+        if (res?.data) {
+          this.selected.set(res.data);
+          this.items.update((list) => list.map((m) => (m.id === item.id ? res.data! : m)));
+          this.notify.success('contactMessages.archived', 'Message archived');
+          this.loadPage();
+          this.loadStats();
+        }
+      },
+      error: (err) =>
+        this.notify.apiError(err, 'notify.errorFallback', 'Could not archive the message'),
+    });
+  }
+
   protected resend(item: ContactResponse): void {
     this.service.resendEmail(item.id).subscribe({
       next: (res) => {
@@ -310,7 +343,7 @@ export class ContactMessagesListComponent {
           this.items.update((list) => list.map((m) => (m.id === message.id ? res.data! : m)));
           if (this.selected()?.id === message.id) this.selected.set(res.data);
         }
-        this.loadUnreadCount();
+        this.loadStats();
       },
     });
   }
@@ -330,7 +363,7 @@ export class ContactMessagesListComponent {
         this.selected.set(null);
         this.notify.success('notify.deleted', 'Deleted successfully');
         this.loadPage();
-        this.loadUnreadCount();
+        this.loadStats();
       },
       error: (err) => {
         this.deletingBusy.set(false);
@@ -363,7 +396,29 @@ export class ContactMessagesListComponent {
           if (--remaining === 0) {
             this.bulkBusy.set(false);
             this.clearSelection();
-            this.loadUnreadCount();
+            this.loadStats();
+          }
+        },
+        error: () => {
+          if (--remaining === 0) this.bulkBusy.set(false);
+        },
+      });
+    }
+  }
+
+  protected bulkArchive(): void {
+    const ids = Array.from(this.selectedIds());
+    if (ids.length === 0) return;
+    this.bulkBusy.set(true);
+    let remaining = ids.length;
+    for (const id of ids) {
+      this.service.archive(id).subscribe({
+        next: () => {
+          if (--remaining === 0) {
+            this.bulkBusy.set(false);
+            this.clearSelection();
+            this.loadPage();
+            this.loadStats();
           }
         },
         error: () => {
@@ -385,7 +440,7 @@ export class ContactMessagesListComponent {
             this.bulkBusy.set(false);
             this.clearSelection();
             this.loadPage();
-            this.loadUnreadCount();
+            this.loadStats();
           }
         },
         error: () => {
