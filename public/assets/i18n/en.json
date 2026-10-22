@@ -1357,6 +1357,7 @@
       "all": "All orders",
       "matching": "Matching filters",
       "open": "Open",
+      "openTooltip": "The orders in this view that are still being fulfilled.",
       "delivered": "Delivered",
       "cancelled": "Cancelled",
       "revenue": "Revenue",
