@@ -1,29 +1,41 @@
 # API_GAPS.md — proposed contracts the frontend is waiting on
 
-Status: PROPOSAL ONLY. Nothing here has been implemented on the backend.
-The frontend builds against typed adapters behind flags (see DECISIONS.md)
-so the UI can be demonstrated, but real data flows only once these land.
+Status: a MIX. An entry is either OPEN (the backend does not have it yet) or
+CLOSED (it landed; the entry stays so the history is not lost).
+
+## Closed
+
+| # | What landed |
+|---|-------------|
+| 1 | The stats endpoint returns `revenue` and `revenueOrderCount` |
+| 4 | `PaymentStatus.NOT_COLLECTED` for a cancelled cash-on-delivery order |
+| 5 | Paid orders carry `paidAt` and a transaction reference |
+| Orders v4 #1 | The status history is stored and returned, oldest first |
+| Orders v4 #2 | The shipment is stamped and the ETA is a column of its own |
+| Orders v4 #3 | The refund rows exist, so the net paid is computable |
 
 ## Orders
 
-### 1. KPI aggregates on the stats endpoint
-`GET /api/dashboard/orders/stats` currently returns counts only. The 4 compact
-KPI cards (Revenue net of refunds, Open orders, Avg order value,
-Refund/cancel rate) need:
+### 1. KPI aggregates on the stats endpoint — CLOSED
+
+`GET /api/dashboard/orders/stats` returns the aggregates of the filtered
+set:
 ```json
 "data": {
   "total": 17,
-  "revenueNetOfRefunds": 1176.25,
-  "refundedAmount": 0.00,
-  "avgOrderValue": 69.19,
-  "cancelRate": 0.294,
+  "revenue": 21326.50,
+  "revenueOrderCount": 10,
   "byStatus": [...],
   "byPaymentStatus": [...],
   "byPaymentMethod": [...]
 }
 ```
-Frontend adapter: computes revenue/cancelRate from a full read of the filtered
-set behind flag `COMPUTE_KPI_FROM_ALL_ROWS` (default true) until this lands.
+`revenue` is the sum of the PAID, non-cancelled orders, less the refunds
+recorded against them. `revenueOrderCount` is how many orders that sum was
+taken over, so the average is the revenue over the PAID orders — never over
+every order, and never over the cancelled ones.
+
+The browser no longer reads the whole set to add it up.
 
 ### 2. Order status history / activity events
 No endpoint exists for order events (status changes, payment, shipment,
@@ -47,13 +59,18 @@ until this lands; shows "No recorded events yet" only when truly empty.
 and `netPaid` (already in OrderPaymentDetails) to the order row so the list
 can show "Refunded EGP x" without a second call.
 
-### 4. COD + Cancelled payment status
-COD cannot "fail". Propose payment status `NOT_COLLECTED` for cancelled COD
-orders instead of `FAILED`.
+### 4. COD + Cancelled payment status — CLOSED
 
-### 5. Paid-at + transaction reference
-Paid orders must populate `paidAt` and `transactionReference`. Frontend shows a
-data warning when missing.
+`PaymentStatus` carries `NOT_COLLECTED`: money that was never collected
+cannot have failed. The cancellation flow sets it for a cancelled
+cash-on-delivery order, and the frontend applies the same rule so the screen
+is right even against a database that has not been migrated.
+
+### 5. Paid-at + transaction reference — CLOSED
+
+A paid order carries `paidAt` and a transaction reference; the payment
+endpoint returns them. The frontend still shows a warning when they are
+missing — a missing fact is still a missing fact.
 
 ## Carts
 

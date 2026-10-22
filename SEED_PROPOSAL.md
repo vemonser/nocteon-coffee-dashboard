@@ -328,3 +328,58 @@ Delivered+Refunded (9) and Confirmed+COD pending with no items (15). Missing:
 a Processing order, a Pending order, a SHIPPED order with a real shipment, a
 partial refund, a COD order paid at delivery, and an order with a recorded
 history (creation + transitions + actor + note).
+
+---
+
+## Orders v5 — the seed after the audit (2026-10-22)
+
+The orders v5 work changed what the seed says. Two things were wrong and one
+thing was missing.
+
+### The cancelled cash-on-delivery orders
+
+The expiry sweep used to cancel the pending cash-on-delivery orders, so the
+store's data only showed a cancelled COD order after a scheduled job had run.
+The seed now says it outright:
+
+| Order | Status | Payment | Why |
+|---|---|---|---|
+| ORD-2026-000006 | CANCELLED | NOT_COLLECTED | Cancelled before the customer paid |
+| ORD-2026-000010 | CANCELLED | NOT_COLLECTED | The same |
+
+`NOT_COLLECTED` is not a flavour of `FAILED`: money that was never collected
+cannot have failed. The order page says exactly that, and the badge is the
+muted one — a payment that never happened is not a red alarm.
+
+### The orders have their own hours
+
+All seventeen orders used to carry the SAME `created_at`, so "created at,
+newest first" had no order at all: page 1 and page 2 showed the same rows.
+Each order now has its own hour, oldest first, so the list is a real list.
+
+### What the seeded orders carry now
+
+| Order | Status | Payment | Items | History | Total |
+|---|---|---|---|---|---|
+| ORD-2026-000001..5 | DELIVERED | PAID | 2 | 5 rows | 1875.00 .. 3707.00 |
+| ORD-2026-000006 | CANCELLED | NOT_COLLECTED | 0 | 2 rows | 50.00 |
+| ORD-2026-000007 | CANCELLED | FAILED | 0 | 3 rows | 50.00 |
+| ORD-2026-000008 | SHIPPED | PAID | 2 | 4 rows | 1654.00 |
+| ORD-2026-000009 | DELIVERED | REFUNDED | 2 | 5 rows | 1339.00 |
+| ORD-2026-000010 | CANCELLED | NOT_COLLECTED | 0 | 2 rows | 50.00 |
+| ORD-2026-000011 | DELIVERED | PAID | 2 | 5 rows | 2054.00 |
+| ORD-2026-000012 | CANCELLED | REFUNDED | 0 | 6 rows | 40.00 |
+| ORD-2026-000013 | PROCESSING | PAID | 2 | 3 rows | 1286.00 |
+| ORD-2026-000014 | PENDING | PENDING | 0 | 1 row | 50.00 |
+| ORD-2026-000015 | CONFIRMED | PENDING | 0 | 2 rows | 50.00 |
+| ORD-2026-000016 | DELIVERED | PAID | 2 | 5 rows | 1984.50 |
+| ORD-2026-000017 | DELIVERED | PAID | 2 | 5 rows | 2700.00 |
+
+ORD-9 was the order with no line items and a total of `0.00`. It now has two
+items and a real total, and its refund row says how much was given back.
+
+### The migrations own their tables
+
+The seed owns the orders; the order tables own their rows. There is no second
+migration that writes the same table, so the owner of a table is found in one
+file.

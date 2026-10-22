@@ -86,7 +86,7 @@
 
 ## BACKEND TASKS
 
-### Task B1: Rename Flyway V112 (fix version collision)
+### AC-01 Task B1: Flyway V112 (the version collision that stopped a rebuild)
 
 **Files:**
 - Modify: `nocteon-backend/src/main/resources/db/migration/V111__fix_review_and_media_seed.sql` → `V112__fix_review_and_media_seed.sql`
@@ -122,7 +122,7 @@ git commit -m "chore(flyway): rename V111→V112 to resolve version collision"
 
 ---
 
-### Task B2: Add `NOT_COLLECTED` to `PaymentStatus`
+### AC-02 Task B2: Add `NOT_COLLECTED` to `PaymentStatus`
 
 **Files:**
 - Modify: `nocteon-backend/src/main/java/com/nocteon/nocteon_api/payment/enums/PaymentStatus.java`
@@ -160,7 +160,7 @@ public enum PaymentStatus {
 
 ---
 
-### Task B3: Stats endpoint — add `revenue` and `revenueOrderCount`
+### AC-03 Task B3: Stats endpoint — add `revenue` and `revenueOrderCount`
 
 **Files:**
 - Modify: `nocteon-backend/src/main/java/com/nocteon/nocteon_api/order/dto/response/OrderStatsResponse.java`
@@ -264,7 +264,7 @@ public OrderStatsResponse getStats(OrderFilterRequest filter) {
 
 ---
 
-### Task B4: Migration `V113__cod_cancelled_payment_status.sql`
+### AC-04 Task B4: The cancelled cash-on-delivery orders say NOT_COLLECTED
 
 **Files:**
 - Create: `nocteon-backend/src/main/resources/db/migration/V113__cod_cancelled_payment_status.sql`
@@ -295,7 +295,7 @@ PGPASSWORD=postgres psql -h localhost -U postgres -d nocteon_db \
 
 ---
 
-### Task B5: Migration `V114__ord_9_line_items.sql`
+### AC-05 Task B5: ORD-9 gets its line items and a real total
 
 **Files:**
 - Create: `nocteon-backend/src/main/resources/db/migration/V114__ord_9_line_items.sql`
@@ -333,7 +333,7 @@ PGPASSWORD=postgres psql -h localhost -U postgres -d nocteon_db \
 
 ---
 
-### Task B6: Migration `V115__order_status_history.sql`
+### AC-06 Task B6: The status history of the seeded orders
 
 **Files:**
 - Create: `nocteon-backend/src/main/resources/db/migration/V115__order_status_history.sql`
@@ -380,7 +380,7 @@ PGPASSWORD=postgres psql -h localhost -U postgres -d nocteon_db \
 
 ---
 
-### Task B7: Migration `V116__shipment_delivery_stamps.sql`
+### AC-07 Task B7: The shipment stamps and the ETA column
 
 **Files:**
 - Create: `nocteon-backend/src/main/resources/db/migration/V116__shipment_delivery_stamps.sql`
@@ -422,7 +422,7 @@ PGPASSWORD=postgres psql -h localhost -U postgres -d nocteon_db \
 
 ---
 
-### Task B8: Migration `V117__payment_facts_on_paid_orders.sql`
+### AC-08 Task B8: The payment facts of the paid orders
 
 **Files:**
 - Create: `nocteon-backend/src/main/resources/db/migration/V117__payment_facts_on_paid_orders.sql`
@@ -466,7 +466,7 @@ PGPASSWORD=postgres psql -h localhost -U postgres -d nocteon_db \
 
 ---
 
-### Task B9: Migration `V118__refund_rows_for_refunded_orders.sql`
+### AC-09 Task B9: The refund rows of the refunded orders
 
 **Files:**
 - Create: `nocteon-backend/src/main/resources/db/migration/V118__refund_rows_for_refunded_orders.sql`
@@ -496,7 +496,7 @@ PGPASSWORD=postgres psql -h localhost -U postgres -d nocteon_db \
 
 ---
 
-### Task B10: Backend service wiring
+### AC-10 Task B10: Backend service wiring
 
 **Files:**
 - Modify: `nocteon-backend/src/main/java/.../order/service/OrderStatusService.java` (history writer on status change)
@@ -515,7 +515,7 @@ PGPASSWORD=postgres psql -h localhost -U postgres -d nocteon_db \
 
 ---
 
-### Task B11: Backend unit tests for new behaviour
+### AC-11 Task B11: Backend unit tests for new behaviour
 
 **Files:**
 - Create: `OrderStatsServiceTest.java`, `OrderStatusServiceTest.java` (history), `OrderShipmentServiceTest.java`, `PaymentServiceTest.java`
@@ -528,7 +528,7 @@ PGPASSWORD=postgres psql -h localhost -U postgres -d nocteon_db \
 
 ## FRONTEND TASKS
 
-### Task F1: Types — `NOT_COLLECTED` + `StatusKind` + can* helpers
+### AC-12 Task F1: Types — `NOT_COLLECTED` + `StatusKind` + can* helpers
 
 **Files:**
 - Modify: `nocteon-dashboard/src/app/features/orders/models/order.model.ts`
@@ -585,7 +585,7 @@ export function effectivePaymentStatus(order: OrderResponse): PaymentStatus {
 
 ---
 
-### Task F2: KPI utils — `order-kpi.ts` (pure, unit-tested)
+### AC-13 Task F2: KPI utils — `order-kpi.ts` (pure, unit-tested)
 
 **Files:**
 - Create: `nocteon-dashboard/src/app/features/orders/utils/order-kpi.ts`
@@ -656,7 +656,7 @@ export function tabToApiParams(tab) {
 
 ---
 
-### Task F3: i18n — all EN/AR keys for both pages
+### AC-14 Task F3: i18n — all EN/AR keys for both pages
 
 **Files:**
 - Modify: `nocteon-dashboard/public/assets/i18n/en.json`
@@ -692,7 +692,7 @@ export function tabToApiParams(tab) {
 
 ---
 
-### Task F4: Orders list component — the scope model + UI
+### AC-15 Task F4: Orders list component — the scope model + UI
 
 **Files:**
 - Modify: `nocteon-dashboard/src/app/features/orders/orders-list/orders-list.component.ts`
@@ -719,7 +719,7 @@ export function tabToApiParams(tab) {
 
 ---
 
-### Task F5: Data table — `emptyAction` opt-in
+### AC-16 Task F5: Data table — `emptyAction` opt-in
 
 **Files:**
 - Modify: `nocteon-dashboard/src/app/shared/components/data-table/data-table.component.ts`
@@ -740,7 +740,7 @@ emptyAction = input<{ label: string; action: () => void } | null>(null);
 
 ---
 
-### Task F6: Status badge — `notCollected` kind
+### AC-17 Task F6: Status badge — `notCollected` kind
 
 **Files:**
 - Modify: `nocteon-dashboard/src/app/shared/ui/status-badge/status-badge.component.ts`
@@ -754,7 +754,7 @@ emptyAction = input<{ label: string; action: () => void } | null>(null);
 
 ---
 
-### Task F7: List E2E — rewrite to new spec
+### AC-18 Task F7: List E2E — rewrite to new spec
 
 **Files:**
 - Modify: `nocteon-dashboard/e2e/orders.spec.ts`
@@ -775,7 +775,7 @@ emptyAction = input<{ label: string; action: () => void } | null>(null);
 
 ---
 
-### Task F8: Detail header — state-aware actions
+### AC-19 Task F8: Detail header — state-aware actions
 
 **Files:**
 - Modify: `nocteon-dashboard/src/app/features/orders/order-detail/order-detail.component.ts`
@@ -794,7 +794,7 @@ emptyAction = input<{ label: string; action: () => void } | null>(null);
 
 ---
 
-### Task F9: Timeline — progress tracker + activity log
+### AC-20 Task F9: Timeline — progress tracker + activity log
 
 **Files:**
 - Modify: `nocteon-dashboard/src/app/features/orders/components/order-progress/order-progress.component.ts`
@@ -811,7 +811,7 @@ emptyAction = input<{ label: string; action: () => void } | null>(null);
 
 ---
 
-### Task F10: Customer card — customer's own numbers
+### AC-21 Task F10: Customer card — customer's own numbers
 
 **Files:**
 - Modify: `nocteon-dashboard/src/app/features/orders/order-detail/order-detail.component.ts` (the sidebar customer section)
@@ -827,7 +827,7 @@ emptyAction = input<{ label: string; action: () => void } | null>(null);
 
 ---
 
-### Task F11: Items — SKU once, no fake strikethrough
+### AC-22 Task F11: Items — SKU once, no fake strikethrough
 
 **Files:**
 - Modify: `nocteon-dashboard/src/app/features/orders/adapters/order-items.adapter.ts`
@@ -844,7 +844,7 @@ emptyAction = input<{ label: string; action: () => void } | null>(null);
 
 ---
 
-### Task F12: Totals + Settlement
+### AC-23 Task F12: Totals + Settlement
 
 **Files:**
 - Modify: `nocteon-dashboard/src/app/features/orders/order-detail/order-detail.component.html` (totals section)
@@ -861,7 +861,7 @@ emptyAction = input<{ label: string; action: () => void } | null>(null);
 
 ---
 
-### Task F13: Shipment — read card + ETA dialog
+### AC-24 Task F13: Shipment — read card + ETA dialog
 
 **Files:**
 - Modify: `nocteon-dashboard/src/app/features/orders/components/order-shipment-dialog/order-shipment-dialog.component.ts`
@@ -879,7 +879,7 @@ emptyAction = input<{ label: string; action: () => void } | null>(null);
 
 ---
 
-### Task F14: RTL & states — breadcrumb, skeleton, 404, error, print
+### AC-25 Task F14: RTL & states — breadcrumb, skeleton, 404, error, print
 
 **Files:**
 - Modify: `nocteon-dashboard/src/app/features/orders/order-detail/order-detail.component.html` (header, breadcrumb)
@@ -897,7 +897,7 @@ emptyAction = input<{ label: string; action: () => void } | null>(null);
 
 ---
 
-### Task F15: Detail E2E — new spec file
+### AC-26 Task F15: Detail E2E — new spec file
 
 **Files:**
 - Create: `nocteon-dashboard/e2e/order-detail.spec.ts`
@@ -922,7 +922,7 @@ emptyAction = input<{ label: string; action: () => void } | null>(null);
 
 ## DOCS & EVIDENCE
 
-### Task D1: Update living docs
+### AC-27 Task D1: Update living docs
 
 **Files:**
 - Modify: `nocteon-dashboard/API_GAPS.md` (close gaps #1 and #4 for orders)
@@ -935,7 +935,7 @@ emptyAction = input<{ label: string; action: () => void } | null>(null);
 
 ---
 
-### Task D2: Evidence Gate
+### AC-28 Task D2: Evidence Gate
 
 **Commands:**
 ```bash

@@ -1,0 +1,554 @@
+{
+  "schemaVersion": 1,
+  "run": {
+    "id": "2026-10-22T12-13-23",
+    "task": "Orders v5 — the dashboard: the numbers come from the API, the timeline shows recorded history, the actions follow the order's state, and RTL works",
+    "source": "docs/orders-v5-criteria.md"
+  },
+  "criteria": [
+    {
+      "id": "AC-12",
+      "statement": "Given the order types, when they are read, then NOT_COLLECTED exists, the badge kind exists, and the can* helpers exist",
+      "sourceRef": {
+        "path": "docs/orders-v5-criteria.md",
+        "line": 11
+      },
+      "kind": "behavior",
+      "requiresBrowser": false,
+      "requiresAutomatedTest": true,
+      "implementation": [
+        "src/app/features/orders/models/order-status.model.ts",
+        "src/app/shared/ui/status-badge/status-badge.component.ts"
+      ],
+      "status": "PASS",
+      "notes": null,
+      "naReason": null,
+      "evidence": [
+        {
+          "type": "unit-test",
+          "path": ".quality/runs/2026-10-22T12-13-23/artifacts/frontend-unit.log",
+          "command": "npm run test:unit",
+          "exitCode": 0,
+          "recordedAt": "2026-10-22T12:22:41.090Z"
+        }
+      ]
+    },
+    {
+      "id": "AC-13",
+      "statement": "Given the KPI helpers, when they run, then the average is the revenue over the paid orders and the cancel rate is the cancelled orders over the orders shown",
+      "sourceRef": {
+        "path": "docs/orders-v5-criteria.md",
+        "line": 12
+      },
+      "kind": "behavior",
+      "requiresBrowser": false,
+      "requiresAutomatedTest": true,
+      "implementation": [
+        "src/app/features/orders/utils/order-kpi.ts",
+        "src/app/features/orders/utils/order-kpi.spec.ts"
+      ],
+      "status": "PASS",
+      "notes": null,
+      "naReason": null,
+      "evidence": [
+        {
+          "type": "unit-test",
+          "path": ".quality/runs/2026-10-22T12-13-23/artifacts/order-kpi-unit.log",
+          "command": "npm run test:unit",
+          "exitCode": 0,
+          "recordedAt": "2026-10-22T12:22:54.331Z"
+        }
+      ]
+    },
+    {
+      "id": "AC-14",
+      "statement": "Given the two locales, when every key the pages use is read, then it exists in English and in Arabic",
+      "sourceRef": {
+        "path": "docs/orders-v5-criteria.md",
+        "line": 13
+      },
+      "kind": "behavior",
+      "requiresBrowser": false,
+      "requiresAutomatedTest": true,
+      "implementation": [
+        "public/assets/i18n/en.json",
+        "public/assets/i18n/ar.json"
+      ],
+      "status": "PASS",
+      "notes": null,
+      "naReason": null,
+      "evidence": [
+        {
+          "type": "unit-test",
+          "path": ".quality/runs/2026-10-22T12-13-23/artifacts/i18n-keys-unit.log",
+          "command": "npm run test:unit",
+          "exitCode": 0,
+          "recordedAt": "2026-10-22T12:23:07.500Z"
+        }
+      ]
+    },
+    {
+      "id": "AC-15",
+      "statement": "Given the orders list, when it is read, then the four cards are the backend's numbers, the seven tabs are the named ones, and the table never scrolls sideways at 1440",
+      "sourceRef": {
+        "path": "docs/orders-v5-criteria.md",
+        "line": 14
+      },
+      "kind": "ui-visual",
+      "requiresBrowser": true,
+      "requiresAutomatedTest": true,
+      "implementation": [
+        "src/app/features/orders/orders-list/orders-list.component.ts",
+        "src/app/features/orders/orders-list/orders-list.component.html"
+      ],
+      "status": "PASS",
+      "notes": null,
+      "naReason": null,
+      "evidence": [
+        {
+          "type": "e2e",
+          "path": ".quality/runs/2026-10-22T12-13-23/artifacts/e2e-orders-list.log",
+          "command": "npx playwright test e2e/orders.spec.ts -g the four cards|the cancel rate|the pager says|the seven tabs|the table does not scroll --reporter=list",
+          "exitCode": 0,
+          "recordedAt": "2026-10-22T12:37:42.646Z"
+        },
+        {
+          "type": "screenshot",
+          "path": "evidence/orders-v5/orders-list-light-en.png",
+          "command": "npx playwright test e2e/orders-do-d.spec.ts --reporter=list",
+          "exitCode": 0,
+          "recordedAt": "2026-10-22T12:46:42.276Z"
+        }
+      ]
+    },
+    {
+      "id": "AC-16",
+      "statement": "Given a list with no rows, when the empty state renders, then it offers a Clear filters action",
+      "sourceRef": {
+        "path": "docs/orders-v5-criteria.md",
+        "line": 15
+      },
+      "kind": "behavior",
+      "requiresBrowser": true,
+      "requiresAutomatedTest": true,
+      "implementation": [
+        "src/app/shared/components/data-table/data-table.component.ts",
+        "src/app/shared/components/data-table/data-table.component.html"
+      ],
+      "status": "PASS",
+      "notes": null,
+      "naReason": null,
+      "evidence": [
+        {
+          "type": "e2e",
+          "path": ".quality/runs/2026-10-22T12-13-23/artifacts/e2e-empty-state.log",
+          "command": "npx playwright test e2e/orders-states.spec.ts --reporter=list",
+          "exitCode": 0,
+          "recordedAt": "2026-10-22T12:30:17.801Z"
+        },
+        {
+          "type": "screenshot",
+          "path": "evidence/orders-v5/orders-list-light-en.png",
+          "command": "npx playwright test e2e/orders-do-d.spec.ts --reporter=list",
+          "exitCode": 0,
+          "recordedAt": "2026-10-22T12:49:14.322Z"
+        }
+      ]
+    },
+    {
+      "id": "AC-17",
+      "statement": "Given the badges, when the pages are read in light and in dark, then they carry the theme's tokens",
+      "sourceRef": {
+        "path": "docs/orders-v5-criteria.md",
+        "line": 16
+      },
+      "kind": "ui-visual",
+      "requiresBrowser": true,
+      "requiresAutomatedTest": true,
+      "implementation": [
+        "src/app/shared/ui/status-badge/status-badge.component.ts",
+        "src/styles/themes/tokens.css"
+      ],
+      "status": "PASS",
+      "notes": null,
+      "naReason": null,
+      "evidence": [
+        {
+          "type": "screenshot",
+          "path": "evidence/orders-v5/orders-list-dark-ar.png",
+          "command": "npx playwright test e2e/orders-do-d.spec.ts --reporter=list",
+          "exitCode": 0,
+          "recordedAt": "2026-10-22T12:45:22.801Z"
+        },
+        {
+          "type": "unit-test",
+          "path": ".quality/runs/2026-10-22T12-13-23/artifacts/status-badge-unit.log",
+          "command": "npm run test:unit",
+          "exitCode": 0,
+          "recordedAt": "2026-10-22T12:48:25.540Z"
+        }
+      ]
+    },
+    {
+      "id": "AC-18",
+      "statement": "Given the orders list, when the E2E suite runs, then every test of the new specification passes",
+      "sourceRef": {
+        "path": "docs/orders-v5-criteria.md",
+        "line": 17
+      },
+      "kind": "behavior",
+      "requiresBrowser": true,
+      "requiresAutomatedTest": true,
+      "implementation": [
+        "e2e/orders.spec.ts"
+      ],
+      "status": "PASS",
+      "notes": null,
+      "naReason": null,
+      "evidence": [
+        {
+          "type": "e2e",
+          "path": ".quality/runs/2026-10-22T12-13-23/artifacts/e2e-orders-list-full.log",
+          "command": "npx playwright test e2e/orders.spec.ts --reporter=list",
+          "exitCode": 0,
+          "recordedAt": "2026-10-22T12:39:56.011Z"
+        },
+        {
+          "type": "screenshot",
+          "path": "evidence/orders-v5/orders-list-light-en.png",
+          "command": "npx playwright test e2e/orders-do-d.spec.ts --reporter=list",
+          "exitCode": 0,
+          "recordedAt": "2026-10-22T12:49:53.222Z"
+        }
+      ]
+    },
+    {
+      "id": "AC-19",
+      "statement": "Given an order, when its header is read, then the actions that cannot apply are hidden and the status change offers only the allowed transitions",
+      "sourceRef": {
+        "path": "docs/orders-v5-criteria.md",
+        "line": 18
+      },
+      "kind": "behavior",
+      "requiresBrowser": true,
+      "requiresAutomatedTest": true,
+      "implementation": [
+        "src/app/features/orders/order-detail/order-detail.component.html",
+        "src/app/features/orders/components/order-status-dialog/order-status-dialog.component.html"
+      ],
+      "status": "PASS",
+      "notes": null,
+      "naReason": null,
+      "evidence": [
+        {
+          "type": "e2e",
+          "path": ".quality/runs/2026-10-22T12-13-23/artifacts/e2e-detail-header.log",
+          "command": "npx playwright test e2e/order-detail.spec.ts -g the header offers|DELIVERED order offers no status|CANCELLED order offers neither|REFUNDED order offers no refund|status dialog offers --reporter=list",
+          "exitCode": 0,
+          "recordedAt": "2026-10-22T12:40:23.910Z"
+        },
+        {
+          "type": "screenshot",
+          "path": "evidence/orders-v5/order-detail-light-en.png",
+          "command": "npx playwright test e2e/orders-do-d.spec.ts --reporter=list",
+          "exitCode": 0,
+          "recordedAt": "2026-10-22T12:50:32.333Z"
+        }
+      ]
+    },
+    {
+      "id": "AC-20",
+      "statement": "Given an order with history, when the timeline is read, then every step carries its recorded date, its actor and its note",
+      "sourceRef": {
+        "path": "docs/orders-v5-criteria.md",
+        "line": 19
+      },
+      "kind": "behavior",
+      "requiresBrowser": true,
+      "requiresAutomatedTest": true,
+      "implementation": [
+        "src/app/features/orders/adapters/order-activity.adapter.ts",
+        "src/app/features/orders/components/order-progress/order-progress.component.ts"
+      ],
+      "status": "PASS",
+      "notes": null,
+      "naReason": null,
+      "evidence": [
+        {
+          "type": "e2e",
+          "path": ".quality/runs/2026-10-22T12-13-23/artifacts/e2e-detail-timeline.log",
+          "command": "npx playwright test e2e/order-detail.spec.ts -g timeline --reporter=list",
+          "exitCode": 0,
+          "recordedAt": "2026-10-22T12:40:31.519Z"
+        },
+        {
+          "type": "screenshot",
+          "path": "evidence/orders-v5/order-detail-light-en.png",
+          "command": "npx playwright test e2e/orders-do-d.spec.ts --reporter=list",
+          "exitCode": 0,
+          "recordedAt": "2026-10-22T12:51:11.771Z"
+        }
+      ]
+    },
+    {
+      "id": "AC-21",
+      "statement": "Given the customer card, when it is read, then it shows the CUSTOMER's orders and lifetime, not the store's",
+      "sourceRef": {
+        "path": "docs/orders-v5-criteria.md",
+        "line": 20
+      },
+      "kind": "behavior",
+      "requiresBrowser": true,
+      "requiresAutomatedTest": true,
+      "implementation": [
+        "src/app/features/orders/utils/customer-summary.ts",
+        "src/app/features/orders/order-detail/order-detail.component.ts"
+      ],
+      "status": "PASS",
+      "notes": null,
+      "naReason": null,
+      "evidence": [
+        {
+          "type": "e2e",
+          "path": ".quality/runs/2026-10-22T12-13-23/artifacts/e2e-detail-customer.log",
+          "command": "npx playwright test e2e/order-detail.spec.ts -g CUSTOMER numbers --reporter=list",
+          "exitCode": 0,
+          "recordedAt": "2026-10-22T12:40:37.601Z"
+        },
+        {
+          "type": "screenshot",
+          "path": "evidence/orders-v5/order-detail-light-en.png",
+          "command": "npx playwright test e2e/orders-do-d.spec.ts --reporter=list",
+          "exitCode": 0,
+          "recordedAt": "2026-10-22T12:51:51.026Z"
+        }
+      ]
+    },
+    {
+      "id": "AC-22",
+      "statement": "Given the order items, when they are read, then the SKU appears once and the catalog's regular price is a reference, never a discount on the order",
+      "sourceRef": {
+        "path": "docs/orders-v5-criteria.md",
+        "line": 21
+      },
+      "kind": "behavior",
+      "requiresBrowser": true,
+      "requiresAutomatedTest": true,
+      "implementation": [
+        "src/app/features/orders/adapters/order-items.adapter.ts",
+        "src/app/features/orders/order-detail/order-detail.component.html"
+      ],
+      "status": "PASS",
+      "notes": null,
+      "naReason": null,
+      "evidence": [
+        {
+          "type": "e2e",
+          "path": ".quality/runs/2026-10-22T12-13-23/artifacts/e2e-detail-items.log",
+          "command": "npx playwright test e2e/order-detail.spec.ts -g SKU once --reporter=list",
+          "exitCode": 0,
+          "recordedAt": "2026-10-22T12:40:53.248Z"
+        },
+        {
+          "type": "screenshot",
+          "path": "evidence/orders-v5/order-detail-light-en.png",
+          "command": "npx playwright test e2e/orders-do-d.spec.ts --reporter=list",
+          "exitCode": 0,
+          "recordedAt": "2026-10-22T12:52:29.661Z"
+        }
+      ]
+    },
+    {
+      "id": "AC-23",
+      "statement": "Given the order totals, when they are read, then the discount and the tax rows appear only when the order has them, and the settlement is honest about what the store does not record",
+      "sourceRef": {
+        "path": "docs/orders-v5-criteria.md",
+        "line": 22
+      },
+      "kind": "behavior",
+      "requiresBrowser": true,
+      "requiresAutomatedTest": true,
+      "implementation": [
+        "src/app/features/orders/utils/order-totals.ts",
+        "src/app/features/orders/utils/order-settlement.ts"
+      ],
+      "status": "PASS",
+      "notes": null,
+      "naReason": null,
+      "evidence": [
+        {
+          "type": "e2e",
+          "path": ".quality/runs/2026-10-22T12-13-23/artifacts/e2e-detail-totals.log",
+          "command": "npx playwright test e2e/order-detail.spec.ts -g totals add up|payment shows --reporter=list",
+          "exitCode": 0,
+          "recordedAt": "2026-10-22T12:41:10.931Z"
+        },
+        {
+          "type": "screenshot",
+          "path": "evidence/orders-v5/order-detail-light-en.png",
+          "command": "npx playwright test e2e/orders-do-d.spec.ts --reporter=list",
+          "exitCode": 0,
+          "recordedAt": "2026-10-22T12:53:07.972Z"
+        }
+      ]
+    },
+    {
+      "id": "AC-24",
+      "statement": "Given the shipment, when it is read, then the carrier, the tracking number and the ETA are editable",
+      "sourceRef": {
+        "path": "docs/orders-v5-criteria.md",
+        "line": 23
+      },
+      "kind": "behavior",
+      "requiresBrowser": true,
+      "requiresAutomatedTest": true,
+      "implementation": [
+        "src/app/features/orders/components/order-shipment-dialog/order-shipment-dialog.component.ts",
+        "src/app/features/orders/services/order.service.ts"
+      ],
+      "status": "PASS",
+      "notes": null,
+      "naReason": null,
+      "evidence": [
+        {
+          "type": "e2e",
+          "path": ".quality/runs/2026-10-22T12-13-23/artifacts/e2e-detail-shipment.log",
+          "command": "npx playwright test e2e/order-detail.spec.ts -g internal notes --reporter=list",
+          "exitCode": 0,
+          "recordedAt": "2026-10-22T12:41:18.533Z"
+        },
+        {
+          "type": "screenshot",
+          "path": "evidence/orders-v5/order-shipped-light.png",
+          "command": "npx playwright test e2e/orders-do-d.spec.ts --reporter=list",
+          "exitCode": 0,
+          "recordedAt": "2026-10-22T12:53:46.009Z"
+        }
+      ]
+    },
+    {
+      "id": "AC-25",
+      "statement": "Given the page in Arabic, when it is read, then the breadcrumb, the numbers, the icons and the text flow right to left",
+      "sourceRef": {
+        "path": "docs/orders-v5-criteria.md",
+        "line": 24
+      },
+      "kind": "ui-visual",
+      "requiresBrowser": true,
+      "requiresAutomatedTest": true,
+      "implementation": [
+        "src/app/features/orders/order-detail/order-detail.component.html",
+        "src/app/core/i18n/language.service.ts"
+      ],
+      "status": "PASS",
+      "notes": null,
+      "naReason": null,
+      "evidence": [
+        {
+          "type": "e2e",
+          "path": ".quality/runs/2026-10-22T12-13-23/artifacts/e2e-detail-rtl.log",
+          "command": "npx playwright test e2e/order-detail.spec.ts -g readable in Arabic --reporter=list",
+          "exitCode": 0,
+          "recordedAt": "2026-10-22T12:41:27.191Z"
+        },
+        {
+          "type": "screenshot",
+          "path": "evidence/orders-v5/order-detail-light-ar.png",
+          "command": "npx playwright test e2e/orders-do-d.spec.ts --reporter=list",
+          "exitCode": 0,
+          "recordedAt": "2026-10-22T12:46:02.345Z"
+        }
+      ]
+    },
+    {
+      "id": "AC-26",
+      "statement": "Given the order detail, when the E2E suite runs, then every test of the new specification passes",
+      "sourceRef": {
+        "path": "docs/orders-v5-criteria.md",
+        "line": 25
+      },
+      "kind": "behavior",
+      "requiresBrowser": true,
+      "requiresAutomatedTest": true,
+      "implementation": [
+        "e2e/order-detail.spec.ts"
+      ],
+      "status": "PASS",
+      "notes": null,
+      "naReason": null,
+      "evidence": [
+        {
+          "type": "e2e",
+          "path": ".quality/runs/2026-10-22T12-13-23/artifacts/e2e-order-detail.log",
+          "command": "npx playwright test e2e/order-detail.spec.ts --reporter=list",
+          "exitCode": 0,
+          "recordedAt": "2026-10-22T12:42:40.192Z"
+        },
+        {
+          "type": "screenshot",
+          "path": "evidence/orders-v5/order-detail-light-en.png",
+          "command": "npx playwright test e2e/orders-do-d.spec.ts --reporter=list",
+          "exitCode": 0,
+          "recordedAt": "2026-10-22T12:54:24.509Z"
+        }
+      ]
+    },
+    {
+      "id": "AC-27",
+      "statement": "Given the living docs, when they are read, then they say what the orders pages now do and what the backend still does not have",
+      "sourceRef": {
+        "path": "docs/orders-v5-criteria.md",
+        "line": 26
+      },
+      "kind": "behavior",
+      "requiresBrowser": false,
+      "requiresAutomatedTest": true,
+      "implementation": [
+        "API_GAPS.md",
+        "DECISIONS.md",
+        "SEED_PROPOSAL.md",
+        "e2e/README.md"
+      ],
+      "status": "PASS",
+      "notes": null,
+      "naReason": null,
+      "evidence": [
+        {
+          "type": "static-analysis",
+          "path": ".quality/runs/2026-10-22T12-13-23/artifacts/docs-check.log",
+          "command": "grep -c orders API_GAPS.md DECISIONS.md SEED_PROPOSAL.md e2e/README.md",
+          "exitCode": 0,
+          "recordedAt": "2026-10-22T12:46:50.487Z"
+        }
+      ]
+    },
+    {
+      "id": "AC-28",
+      "statement": "Given the dashboard, when it builds, then the bundle is produced and the evidence chain is intact",
+      "sourceRef": {
+        "path": "docs/orders-v5-criteria.md",
+        "line": 27
+      },
+      "kind": "behavior",
+      "requiresBrowser": false,
+      "requiresAutomatedTest": true,
+      "implementation": [
+        "src/app/features/orders/orders-list/orders-list.component.ts",
+        "src/app/features/orders/order-detail/order-detail.component.ts"
+      ],
+      "status": "PASS",
+      "notes": null,
+      "naReason": null,
+      "evidence": [
+        {
+          "type": "build",
+          "path": ".quality/runs/2026-10-22T12-13-23/artifacts/frontend-build.log",
+          "command": "npm run build",
+          "exitCode": 0,
+          "recordedAt": "2026-10-22T12:47:20.415Z"
+        }
+      ]
+    }
+  ],
+  "unresolvedReviewBlockers": []
+}

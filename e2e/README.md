@@ -147,3 +147,50 @@ the assertion starts running; until then treat that rule as unproven.
 
 Login is rate limited to 5/min per IP **and** per identifier, so running these
 specs repeatedly in quick succession starts returning `429`.
+
+---
+
+## The orders pages — v5 (2026-10-22)
+
+| Spec | What it proves |
+|---|---|
+| `e2e/orders.spec.ts` | The list: the four cards are the API's numbers, the seven tabs, the pager's range, the NOT_COLLECTED badge, the measured table |
+| `e2e/order-detail.spec.ts` | The order: the actions follow the state, the timeline's recorded history, the customer's own numbers, the items, the totals, the RTL |
+| `e2e/orders-states.spec.ts` | The states: loading, empty (with a Clear filters button), error with a retry, the a11y rules |
+| `e2e/orders-do-d.spec.ts` | The Definition of Done: four screenshots (light/dark × EN/AR) at 1440×900, the three states, and no overflow, no clipping, no raw key |
+
+### The requirements they pin
+
+| Requirement | Test |
+|---|---|
+| The pager says "1-10 of 17" and exactly ten rows are on screen | `the pager says 1-10 of 17 and exactly ten rows are on screen` |
+| Changing the page changes the rows; the total never changes | `changing the page changes the rows, and the total never changes` |
+| The revenue card is the API's revenue | `the four cards are the numbers the API reports` |
+| The average is the revenue over the PAID orders | `the four cards are the numbers the API reports` |
+| The cancel rate is the cancelled orders over the orders shown | `the cancel rate is the cancelled orders over the orders shown` |
+| The seven tabs, and Confirmed has none | `the seven tabs are the ones the spec names` |
+| The Refunded tab filters on the payment status | `the Refunded tab filters by the payment status` |
+| A cancelled COD order says "Not collected", not "Failed" | `a cancelled cash-on-delivery order says "Not collected", not "Failed"` |
+| The table never scrolls sideways at 1440 | `the table does not scroll sideways at 1440` |
+| A terminal order offers no status change | `a DELIVERED order offers no status change` |
+| A cancelled order cannot be cancelled again | `a CANCELLED order offers neither a status change nor a cancel` |
+| The status change offers only the allowed transitions | `the status dialog offers only the transitions the backend allows` |
+| The customer card shows the CUSTOMER's numbers | `the customer card shows the CUSTOMER numbers, not the store numbers` |
+| The SKU appears once; the regular price is a reference | `the items show the SKU once, and no invented discount` |
+| The settlement is honest about what the store does not record | `the totals add up, and the settlement is honest` |
+| The timeline shows the recorded history | `the timeline shows the recorded history, with its dates and actors` |
+| The empty state offers a way out | `the list has a loading, an empty and an error state` |
+| Arabic reads right to left, the numbers stay Latin | `the page is readable in Arabic, and the numbers stay Latin` |
+
+### Two notes for whoever runs them
+
+**The API is rate-limited** (200 requests a minute per identifier) and a suite
+that opens many pages gets close to it. The waits are WAITS, not sleeps: a
+fixed sleep is a race against the limiter. A page that trips the limit shows
+the error state with the API's own message — the message is rendered, not
+swallowed, so a rate limit is visible instead of looking like a defect.
+
+**The orders page asks the stats endpoint twice** — once for the tab counts
+(the filtered set without the tab) and once for the cards (with the tab). That
+is deliberate: each scope is explicit in the code, and the browser never
+reads the whole set to add it up.

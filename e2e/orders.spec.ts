@@ -291,7 +291,7 @@ test.describe('orders list', () => {
     const total = await row.locator('td[data-column="totalAmount"]').innerText();
     expect(Number(total.replace(/[^\d.]/g, ''))).toBeGreaterThan(0);
 
-    const items = await row.locator('td[data-column="items"]').innerText();
+    const items = await row.locator('td[data-column="itemCount"]').innerText();
     expect(items).toMatch(/\d/);
   });
 
@@ -471,8 +471,9 @@ test.describe('orders list', () => {
 
     await page.unroute('**/api/dashboard/orders**');
     await page.locator('[data-testid="orders-error"] button').click();
-    await page.waitForTimeout(1500);
-    await expect(page.locator('[data-testid="orders-error"]')).toHaveCount(0);
+    // The wait is a WAIT, not a sleep: the retry asks the API again, and
+    // the API rate-limits, so a fixed sleep is a race.
+    await expect(page.locator('[data-testid="orders-error"]')).toHaveCount(0, { timeout: 20_000 });
     await expect(page.locator('app-data-table tbody tr').first()).toBeVisible();
   });
 
@@ -480,10 +481,18 @@ test.describe('orders list', () => {
     // The first request is delayed; the second is not. The page must end on
     // the SECOND filter's data.
     let call = 0;
+    // The delayed request must be FINISHED before the test ends: a route
+    // that is still pending when the interception is removed lands on the
+    // next test as "Route is already handled".
+    let firstDone: () => void = () => {};
+    const firstFinished = new Promise<void>((resolve) => {
+      firstDone = resolve;
+    });
     await page.route('**/api/dashboard/orders**', async (route) => {
       call += 1;
       if (call === 1) {
         await new Promise((r) => setTimeout(r, 2500));
+        firstDone();
       }
       await route.continue();
     });
@@ -499,8 +508,13 @@ test.describe('orders list', () => {
     // REFUNDED set is TWO orders (both delivered, one cancelled); the PAID
     // set is ten. If the first (delayed) response had won, the table would
     // show ten rows and the revenue card would be the paid orders' revenue.
-    const rows = await page.locator('app-data-table tbody tr').count();
-    expect(rows, 'the rows answer the LAST request, not the first').toBe(2);
+    //
+    // The wait is a WAIT, not a sleep: the API is rate-limited and the
+    // suite opens many pages, so a fixed sleep is a race.
+    const rows = page.locator('app-data-table tbody tr');
+    await expect(rows, 'the rows answer the LAST request, not the first').toHaveCount(2, {
+      timeout: 20_000,
+    });
 
     const revenue = await page
       .locator('[data-testid="orders-stat-card"]')
@@ -511,6 +525,8 @@ test.describe('orders list', () => {
       Number(revenue.replace(/[^\d.]/g, '')),
       'the REFUNDED set has no paid revenue',
     ).toBe(0);
+
+    await firstFinished;
     await page.unroute('**/api/dashboard/orders**');
   });
 });

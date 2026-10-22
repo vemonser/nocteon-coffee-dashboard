@@ -1703,3 +1703,94 @@ returns every order (API_GAPS.md v4 #1). The page filters client-side:
 `orders.filter(o => o.customer?.id === customerId)` before summarising. This is
 correct for the 17-seed dataset but does not scale; the backend should honour
 the filter server-side.
+
+<!-- ── Orders v5 decisions (ui/orders-list-v4 + ui/order-detail-v5) ──────── -->
+
+### One set: the view is the filtered set intersected with the tab
+
+The rows, the pager, the header count and the four KPI cards all describe the
+same set: the FILTERED set (date range + payment status/method + search)
+intersected with the SELECTED TAB. A card can never contradict the rows under
+it, because they are the same set.
+
+The tab counts are the one exception: they are FACET counts of the filtered
+set, so clicking a tab does not zero the other tabs. The "All" tab counts the
+filtered set too — not the whole store — so the strip never mixes two sets.
+
+### The money comes from the API, and the average is over the PAID orders
+
+`GET /api/dashboard/orders/stats` returns `revenue` (the paid, non-cancelled
+orders, less their refunds) and `revenueOrderCount` (how many orders that sum
+was taken over). The average is the revenue over the PAID orders — not over
+every order, and not over the cancelled ones. The cancel rate is the
+cancelled orders over the orders shown.
+
+Before this, the page read the WHOLE filtered set in the browser to add it up
+— a read the API clamps to 100 rows, so the numbers were wrong past 100
+orders and the browser was doing the store's accounting. There is no flag
+left: the aggregates are the API's now.
+
+### Two stats calls, two scopes, on purpose
+
+The tab counts need the filtered set WITHOUT the tab; the cards need it WITH
+the tab. The page therefore asks the stats endpoint twice. That is cheaper
+than the alternative (a facet count per tab, or a full read in the browser)
+and it keeps each scope explicit in the code.
+
+### The tab click RELOADS
+
+The URL subscription compares the incoming state with the state of the LAST
+LOAD, not with the signals. A control that sets its own signal first (the
+status tab, the page size) would otherwise look unchanged to the URL, and the
+table would keep showing the old rows. The bug was invisible until a test
+compared the tab's rows with the tab's filter.
+
+### An action that cannot apply is HIDDEN
+
+A delivered order offers no status change; a cancelled one cannot be
+cancelled again; a refunded one cannot be refunded again. The button is not
+greyed out — it is not there. A disabled button still asks the reader "why?",
+and the answer ("this order is final") belongs in the order's state, not in a
+tooltip.
+
+### The status change is a DIALOG with a dropdown of the allowed transitions
+
+The dialog carries the note and the "tell the customer" switch, so a quick
+status change is never a click that forgets them. Its status field is a
+dropdown of ONLY the transitions the backend's state machine allows.
+
+### Every column budget is MEASURED, in both languages
+
+The orders table has nine columns and a content column of 1126px at 1440. The
+budgets were measured — the width the header and the widest value need, in
+English AND in Arabic — and the cells take `px-3` so every value has room.
+The Created-at cell is ONE line (the date), with the relative time in the
+tooltip: a two-line cell is what pushed the table into a sideways scroll.
+
+### The customer card shows the CUSTOMER's numbers
+
+The card's order count and lifetime are the customer's own, computed from
+their orders, with the basis in the tooltip. It used to show the store's
+totals, which is a number the reader cannot act on.
+
+### The catalog's regular price is a REFERENCE, not a discount
+
+A struck-through price on a line reads as a discount on the order. The
+catalog's compare-at price is shown with the label "Regular price" and a
+tooltip that says what it is, and it is never subtracted from the totals. A
+discount row appears only when the order has a discount.
+
+### A value the store does not record is missing, not zero
+
+The settlement says "Not recorded" when the refund amount is unknown, and the
+warning banners appear only when the condition is real. An order with no
+line items is flagged with a warning, not shown as a silent "0 items".
+
+### The seed says the truth about the cancelled cash-on-delivery orders
+
+The expiry sweep used to leave the store's data in a state only a scheduled
+job could produce. The seed now says it outright: orders 6 and 10 are
+cancelled cash-on-delivery orders, so "Not collected" exists on a fresh
+database instead of waiting for the sweep. The seventeen orders also have
+their own hours, so "created at, newest first" is a real order and page 1
+and page 2 do not show the same rows.

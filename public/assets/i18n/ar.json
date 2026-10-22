@@ -273,7 +273,14 @@
     "errorTitle": "تعذّر التحميل",
     "processing": "جارٍ التنفيذ…",
     "clear": "مسح",
-    "refresh": "تحديث"
+    "refresh": "تحديث",
+    "countItems_zero": "لا منتجات",
+    "countItems_one": "منتج واحد",
+    "countItems_two": "منتجان",
+    "countItems_few": "{{count}} منتجات",
+    "countItems_many": "{{count}} منتجًا",
+    "countItems_other": "{{count}} منتج",
+    "noItemsWarning": "هذا الطلب لا يحتوي على بنود — إجماله هو الشحن ناقص الخصم."
   },
   "products": {
     "title": "المنتجات",

@@ -326,6 +326,28 @@
                   }
                 }
 
+                <!--
+                  The COUNT of the items, not a stack of thumbnails: a reader
+                  scans a list of orders for "how many things did they
+                  buy", and a number answers that faster than three small
+                  pictures.
+
+                  An order with NO items is a data problem, so it is
+                  flagged — a silent "0 items" would read as a fact.
+                -->
+                @case ('itemCount') {
+                  @if ($any(cell.getValue()).length === 0) {
+                    <span class="flex items-center gap-1.5 text-xs text-warning" [attr.title]="'common.noItemsWarning' | transloco">
+                      <ng-icon name="lucideTriangleAlert" class="size-3.5 shrink-0" aria-hidden="true" />
+                      <span class="tabular-nums">{{ 0 | plural: 'common.countItems' }}</span>
+                    </span>
+                  } @else {
+                    <span class="block truncate text-start text-xs tabular-nums">
+                      {{ $any(cell.getValue()).length | plural: 'common.countItems' }}
+                    </span>
+                  }
+                }
+
                 <!-- The order number: the row's identifier, and its link. -->
                 @case ('orderNumber') {
                   <span

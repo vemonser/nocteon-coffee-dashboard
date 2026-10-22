@@ -13,10 +13,11 @@ import { StatusCellComponent } from '../../ui/status-cell/status-cell.component'
 import { DeletedBadgeComponent } from '../../ui/deleted-badge/deleted-badge.component';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { MoneyPipe } from '../../pipes/money.pipe';
+import { PluralPipe } from '../../pipes/plural.pipe';
 import { LocalizedDateComponent } from '../../ui/localized-date/localized-date.component';
 import { ImageCellComponent } from '../../ui/image-cell/image-cell.component';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucideStar, lucideCreditCard, lucideBanknote, lucideBadgeCheck } from '@ng-icons/lucide';
+import { lucideStar, lucideCreditCard, lucideBanknote, lucideBadgeCheck, lucideTriangleAlert } from '@ng-icons/lucide';
 import { heroStarSolid } from '@ng-icons/heroicons/solid';
 import { heroStar } from '@ng-icons/heroicons/outline';
 import { ColorCellComponent } from '../color-cell/color-cell.component';
@@ -36,8 +37,8 @@ export interface TableSortEvent {
 
 @Component({
   selector: 'app-data-table',
-  imports: [UserAvatarComponent, ImageCellComponent, ActionsCellComponent, StatusCellComponent, DeletedBadgeComponent, LocalizedDateComponent, ColorCellComponent, MainCellComponent, StatusBadgeComponent, RatingStarsComponent, VerifiedBadgeComponent, NgIcon, TranslocoPipe, RouterModule, MoneyPipe],
-  providers: [provideIcons({ lucideStar, lucideCreditCard, lucideBanknote, lucideBadgeCheck, heroStarSolid, heroStar })],
+  imports: [UserAvatarComponent, ImageCellComponent, ActionsCellComponent, StatusCellComponent, DeletedBadgeComponent, LocalizedDateComponent, ColorCellComponent, MainCellComponent, StatusBadgeComponent, RatingStarsComponent, VerifiedBadgeComponent, NgIcon, TranslocoPipe, RouterModule, MoneyPipe, PluralPipe],
+  providers: [provideIcons({ lucideStar, lucideCreditCard, lucideBanknote, lucideBadgeCheck, lucideTriangleAlert, heroStarSolid, heroStar })],
   templateUrl: './data-table.component.html',
   styleUrl: './data-table.component.css',
 })

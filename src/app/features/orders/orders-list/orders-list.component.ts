@@ -248,11 +248,11 @@ export class OrdersListComponent {
     ),
     this.columnHelper.accessor(
       (row) => ({ name: row.customer?.name ?? null, email: row.customer?.email ?? null }),
-      { id: 'customer', header: 'orders.columns.customer', enableSorting: false, meta: { width: '161px' } },
+      { id: 'customer', header: 'orders.columns.customer', enableSorting: false, meta: { width: '172px' } },
     ),
     this.columnHelper.accessor(
-      (row) => `${(row.items ?? []).length} items`,
-      { id: 'items', header: 'orders.columns.items', enableSorting: false, meta: { width: '69px' } },
+      (row) => row.items ?? [],
+      { id: 'itemCount', header: 'orders.columns.items', enableSorting: false, meta: { width: '69px' } },
     ),
     this.columnHelper.accessor(
       (row) => orderStatusKind(row.status),
@@ -513,16 +513,18 @@ export class OrdersListComponent {
       }),
       facets: this.orderService.getStats(filter),
       cards: this.orderService.getStats(filterWithTab),
-      all: this.orderService.getStats({}),
     }).subscribe({
-      next: ({ rows, facets, cards, all }) => {
+      next: ({ rows, facets, cards }) => {
         if (requestId !== this.requestId) return;
 
         this.rows.set(rows.data?.content ?? []);
         this.pageTotal.set(rows.data?.totalElements ?? 0);
 
+        // The FILTERED set's total — the same set the tab counts describe.
+        // It is the facets call's total, so the page needs no fourth
+        // request for the "All orders" tab.
         this.filteredTotal.set(facets.data?.total ?? 0);
-        this.allTotal.set(all.data?.total ?? 0);
+        this.allTotal.set(facets.data?.total ?? 0);
 
         const counts: Record<string, number> = {};
         for (const entry of facets.data?.byStatus ?? []) {

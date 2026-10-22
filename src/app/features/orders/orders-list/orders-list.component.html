@@ -285,6 +285,11 @@
     >
       <p class="font-medium text-destructive">{{ 'orders.errorState.title' | transloco }}</p>
       <p class="mt-1 text-sm text-muted-foreground">{{ 'orders.errorState.hint' | transloco }}</p>
+      @if (error(); as message) {
+        <p class="mt-1 text-sm text-muted-foreground" data-testid="orders-error-message">
+          {{ message }}
+        </p>
+      }
       <button hlmBtn variant="outline" class="mt-4" (click)="retry()">
         {{ 'common.retry' | transloco }}
       </button>
@@ -308,7 +313,7 @@
         [clickableRows]="true"
         [stickyStartColumn]="'orderNumber'"
         [menuActions]="menuActions"
-        [minWidth]="'1100px'"
+        [minWidth]="'1111px'"
         [emptyAction]="{ label: 'orders.filters.clear' | transloco, action: clearFilters }"
         (sortChange)="onSortChange($event)"
         (rowClick)="openView($event)"

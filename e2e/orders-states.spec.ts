@@ -75,34 +75,65 @@ test.describe('states and interactions', () => {
     await expect(page.locator('[data-testid="orders-error"]')).toBeVisible();
     await page.unrouteAll();
 
-    // empty: a filter that matches nothing -> the "no results" empty state.
+    // empty: a filter that matches nothing -> the "no results" empty state,
+    // and it offers a way out: Clear filters.
     await page.goto(`${ORDERS}?q=zzzzzz-no-such-order`, { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(1800);
     await expect(page.locator('app-data-table tbody')).toContainText(/no orders match these filters/i);
+
+    // The empty state is not a dead end: the button clears the filters and
+    // the orders come back.
+    const clear = page.locator('app-data-table button', { hasText: /clear filters/i });
+    await expect(clear).toBeVisible();
+    await clear.click();
+    await page.waitForTimeout(2000);
+    await expect(page.locator('app-data-table tbody tr')).not.toHaveCount(0);
   });
 
   test('a fast filter switch never shows the data of an older request', async () => {
     let call = 0;
+    // The delayed request must be FINISHED before the test ends: a route
+    // that is still pending when the interception is removed lands on the
+    // next test as "Route is already handled".
+    let firstDone: () => void = () => {};
+    const firstFinished = new Promise<void>((resolve) => {
+      firstDone = resolve;
+    });
     await page.route('**/api/dashboard/orders**', async (route) => {
       call += 1;
-      if (call === 1) await new Promise((r) => setTimeout(r, 2500));
+      if (call === 1) {
+        await new Promise((r) => setTimeout(r, 2500));
+        firstDone();
+      }
       await route.continue();
     });
 
     await page.goto(`${ORDERS}?paymentStatus=PAID`, { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(150);
-    await page.goto(`${ORDERS}?paymentStatus=FAILED`, { waitUntil: 'domcontentloaded' });
-    await page.waitForTimeout(3500);
+    await page.goto(`${ORDERS}?paymentStatus=REFUNDED`, { waitUntil: 'domcontentloaded' });
 
-    // The card counts what the LAST request returned, and the request that
-    // answered last is the one on screen.
-    const matching = await page
+    // The rows answer the LAST request. The REFUNDED set is two orders; the
+    // PAID set is ten. If the first (delayed) response had won, the table
+    // would show ten rows.
+    //
+    // The wait is a WAIT, not a sleep: the API is rate-limited and the
+    // suite opens many pages, so a fixed sleep is a race.
+    const rows = page.locator('app-data-table tbody tr');
+    await expect(rows, 'the rows answer the LAST request, not the first').toHaveCount(2, {
+      timeout: 20_000,
+    });
+
+    // And the revenue card is the LAST request's: the refunded set has no
+    // paid revenue.
+    const revenue = await page
       .locator('[data-testid="orders-stat-card"]')
-      .nth(1)
+      .nth(0)
       .locator('[data-testid="stat-value"]')
       .innerText();
-    const rows = await page.locator('app-data-table tbody tr').count();
-    expect(Number(matching.trim())).toBe(rows);
+    expect(Number(revenue.replace(/[^\d.]/g, ''))).toBe(0);
+
+    await firstFinished;
+    await page.unroute('**/api/dashboard/orders**');
   });
 
   test('the dashboard drill-down lands on a PRE-FILTERED list', async () => {

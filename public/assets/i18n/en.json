@@ -273,7 +273,10 @@
     "errorTitle": "Could not load",
     "processing": "Processing…",
     "clear": "Clear",
-    "refresh": "Refresh"
+    "refresh": "Refresh",
+    "countItems_one": "{{count}} item",
+    "countItems_other": "{{count}} items",
+    "noItemsWarning": "This order has no line items — its total is the shipping, less the discount."
   },
   "products": {
     "title": "Products",
