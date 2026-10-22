@@ -271,7 +271,8 @@
     "days": "أيام",
     "errorTitle": "تعذّر التحميل",
     "processing": "جارٍ التنفيذ…",
-    "clear": "مسح"
+    "clear": "مسح",
+    "refresh": "تحديث"
   },
   "products": {
     "title": "المنتجات",
@@ -1315,24 +1316,25 @@
     "noItems": "لا توجد عناصر في هذه السلة",
     "stock": "المخزون",
     "status": {
-      "active": "نشطة",
+      "active": "مفعّلة",
       "abandoned": "مهجورة",
       "converted": "محوّلة"
     },
     "kpi": {
-      "activeCarts": "السلات النشطة",
+      "activeCarts": "السلات المفعّلة",
       "abandonedCarts": "السلات المهجورة",
       "totalPotentialRevenue": "إجمالي الإيرادات المحتملة",
       "averageCartValue": "متوسط قيمة السلة",
       "activeCartsTooltip": "سلات بنشاط حديث (تم تحديثها خلال حد المهجورة)",
       "abandonedCartsTooltip": "سلات بدون نشاط لمدة 24+ ساعة",
-      "totalPotentialRevenueTooltip": "مجموع المجموعات الفرعية من السلات النشطة والمهجورة",
-      "averageCartValueTooltip": "إجمالي الإيرادات المحتملة مقسوماً على السلات النشطة + المهجورة"
+      "totalPotentialRevenueTooltip": "مجموع المجموعات الفرعية من السلات المفعّلة والمهجورة",
+      "averageCartValueTooltip": "إجمالي الإيرادات المحتملة مقسوماً على السلات المفعّلة + المهجورة",
+      "regionLabel": "المنطقة"
     },
     "tabs": {
       "label": "حالة السلة",
       "all": "الكل",
-      "active": "نشطة",
+      "active": "مفعّلة",
       "abandoned": "مهجورة",
       "converted": "محوّلة"
     },
@@ -1377,7 +1379,11 @@
       "converted": "تم تحويلها للطلب #{{orderId}}",
       "totalsBreakdown": "تفاصيل المجموع",
       "discount": "الخصم",
-      "shipping": "الشحن"
+      "shipping": "الشحن",
+      "created": "تاريخ الإنشاء",
+      "lastActivity": "آخر نشاط",
+      "outOfStock": "غير متوفر",
+      "lowStock": "مخزون منخفض"
     },
     "sendReminder": "إرسال تذكير",
     "sendingReminder": "جارٍ الإرسال…",
@@ -1455,7 +1461,7 @@
       "revenueTooltip": "المال الذي أتت به الطلبات في هذا العرض: الطلبات المدفوعة، ناقص المبالغ المستردة، مع استثناء الطلبات الملغاة.",
       "avgOrderValueTooltip": "الإيرادات مقسومة على عدد الطلبات المدفوعة التي أتت منها — الطلبات الملغاة ليست جزءاً منها.",
       "cancelRateTooltip": "الطلبات الملغاة في هذا العرض، كنسبة من جميع الطلبات فيه.",
-      "openTooltip": "الطلبات في هذا العرض التي لا تزال قيد التنفيذ。"
+      "openTooltip": "الطلبات في هذا العرض التي لا تزال قيد التنفيذ."
     },
     "filters": {
       "paymentStatus": "حالة الدفع",
@@ -2107,11 +2113,8 @@
     "markRead": "تعليم كمقروءة",
     "markUnreadNotSupported": "تعليم كغير مقروءة غير مدعوم",
     "archive": "أرشفة",
-    "bulkSelected": "{{count}} محددة",
-    "bulkMarkRead": "تعليم كمقروءة",
     "bulkArchive": "أرشفة",
-    "bulkDelete": "حذف",
-    "bulkClear": "إلغاء التحديد",
+    "bulkClear": "مسح التحديد",
     "tabs": {
       "label": "حالة الرسالة",
       "all": "الكل",
@@ -2135,28 +2138,29 @@
       "date": "التاريخ",
       "name": "الاسم",
       "email": "البريد الإلكتروني",
-      "subject": "الموضوع"
+      "subject": "الموضوع",
+      "desc": "تنازلي",
+      "asc": "تصاعدي"
     },
     "status": {
       "new": "جديدة",
       "replied": "تم الرد عليها",
       "archived": "مؤرشفة"
     },
-    "bulkClear": "إلغاء التحديد",
     "selectMessage": "تحديد الرسالة",
-    "copyEmail": "نسخ البريد الإلكتروني",
-    "emailSent": "تم إرسال الإيميل",
-    "emailNotSent": "لم يتم إرسال الإيميل",
-    "emailQueued": "في الانتظار",
-    "sendAgain": "إعادة الإرسال",
-    "replyPlaceholder": "رد على {{email}}",
-    "replyNotice": "الرد بيتبعت إيميل على {{email}} وبيتحفظ هنا.",
-    "replySent": "تم إرسال الرد",
-    "replySavedNotSent": "تم حفظ الرد، بس الإيميل ما اتبعتش",
-    "sending": "جاري الإرسال...",
-    "markRead": "تعليم كمقروءة",
-    "markUnreadNotSupported": "تعليم كغير مقروءة غير مدعوم",
-    "archive": "أرشفة"
+    "markUnread": "تحديد كغير مقروء",
+    "bulk": {
+      "selected": "تم تحديد {{count}}",
+      "markRead": "تحديد كمقروء",
+      "markUnread": "تحديد كغير مقروء",
+      "markUnreadNotSupported": "تحديد كغير مقروء غير مدعوم",
+      "delete": "حذف",
+      "sending": "جارٍ الإرسال…"
+    },
+    "bulkSelected": "تم تحديد {{count}}",
+    "bulkMarkRead": "تحديد كمقروء",
+    "bulkMarkUnread": "تحديد كغير مقروء",
+    "bulkDelete": "حذف"
   },
   "unauthorized": {
     "title": "الوصول مرفوض",

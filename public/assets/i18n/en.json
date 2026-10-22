@@ -21,7 +21,7 @@
     "statement": "Roasted with intention.",
     "statementAccent": "Brewed with soul.",
     "statementBody": "A considered approach to every bean. Roasting profiles, sensory craft, and green coffee logistics in one unified dashboard.",
-    "statementFooter": "Private Roasters — Est. 2026",
+    "statementFooter": "Private Roasters \u2014 Est. 2026",
     "welcomeBack": "Welcome back.",
     "signInSubtitle": "Sign in to your Nocteon account.",
     "languageToggle": "Language",
@@ -78,13 +78,13 @@
     "promoCodes": "Promo Codes",
     "journalPosts": "Journal Posts",
     "reviews": "Reviews",
-    "searching": "Searching…",
+    "searching": "Searching\u2026",
     "customers": "Customers",
     "recentSearches": "Recent searches",
     "quickLinks": "Quick links",
     "quickActions": "Quick actions",
     "viewAll": "View all {{n}}",
-    "noResultsFor": "No results for “{{q}}”",
+    "noResultsFor": "No results for \u201c{{q}}\u201d",
     "noResultsHint": "Check spelling, or try an order number or email.",
     "hintNavigate": "navigate",
     "hintOpen": "open",
@@ -270,8 +270,9 @@
     "tastingNote": "Tasting Note",
     "days": "days",
     "errorTitle": "Could not load",
-    "processing": "Processing…",
-    "clear": "Clear"
+    "processing": "Processing\u2026",
+    "clear": "Clear",
+    "refresh": "Refresh"
   },
   "products": {
     "title": "Products",
@@ -373,9 +374,9 @@
       "primary": "Primary",
       "setPrimary": "Set Primary",
       "noMedia": "No media uploaded yet.",
-      "loading": "Loading media…",
+      "loading": "Loading media\u2026",
       "upload": "Upload",
-      "uploading": "Uploading…"
+      "uploading": "Uploading\u2026"
     },
     "tastingNotes": {
       "title": "Tasting Notes",
@@ -434,7 +435,7 @@
     "addTitle": "Create category",
     "addDialogTitle": "Add category",
     "editTitle": "Save changes",
-    "deleteConfirm": "Move “{{name}}” to the trash? You can restore it later.",
+    "deleteConfirm": "Move \u201c{{name}}\u201d to the trash? You can restore it later.",
     "trash": {
       "tabActive": "Active",
       "tabTrash": "Trash",
@@ -457,7 +458,7 @@
       "switchToActive": "Open Active",
       "restore": "Restore",
       "movedToTrash": "Moved to trash",
-      "permanentConfirm": "Delete “{{name}}” permanently?",
+      "permanentConfirm": "Delete \u201c{{name}}\u201d permanently?",
       "bulkDeleteConfirm": "Move the {{count}} selected categories to the trash?",
       "bulkPermanentConfirm": "Delete the {{count}} selected categories permanently?",
       "restoreConflictTitle": "Cannot restore",
@@ -629,7 +630,7 @@
       "switchToActive": "Open Active",
       "restore": "Restore",
       "movedToTrash": "Moved to trash",
-      "permanentConfirm": "Delete “{{name}}” permanently?",
+      "permanentConfirm": "Delete \u201c{{name}}\u201d permanently?",
       "bulkDeleteConfirm": "Move the {{count}} selected categories to the trash?",
       "bulkPermanentConfirm": "Delete the {{count}} selected categories permanently?",
       "restoreConflictTitle": "Cannot restore",
@@ -695,7 +696,7 @@
       "switchToActive": "Open Active",
       "restore": "Restore",
       "movedToTrash": "Moved to trash",
-      "permanentConfirm": "Delete “{{name}}” permanently?",
+      "permanentConfirm": "Delete \u201c{{name}}\u201d permanently?",
       "bulkDeleteConfirm": "Move the {{count}} selected categories to the trash?",
       "bulkPermanentConfirm": "Delete the {{count}} selected categories permanently?",
       "restoreConflictTitle": "Cannot restore",
@@ -753,7 +754,7 @@
       "switchToActive": "Open Active",
       "restore": "Restore",
       "movedToTrash": "Moved to trash",
-      "permanentConfirm": "Delete “{{name}}” permanently?",
+      "permanentConfirm": "Delete \u201c{{name}}\u201d permanently?",
       "bulkDeleteConfirm": "Move the {{count}} selected categories to the trash?",
       "bulkPermanentConfirm": "Delete the {{count}} selected categories permanently?",
       "restoreConflictTitle": "Cannot restore",
@@ -815,7 +816,7 @@
       "switchToActive": "Open Active",
       "restore": "Restore",
       "movedToTrash": "Moved to trash",
-      "permanentConfirm": "Delete “{{name}}” permanently?",
+      "permanentConfirm": "Delete \u201c{{name}}\u201d permanently?",
       "bulkDeleteConfirm": "Move the {{count}} selected categories to the trash?",
       "bulkPermanentConfirm": "Delete the {{count}} selected categories permanently?",
       "restoreConflictTitle": "Cannot restore",
@@ -876,7 +877,7 @@
       "switchToActive": "Open Active",
       "restore": "Restore",
       "movedToTrash": "Moved to trash",
-      "permanentConfirm": "Delete “{{name}}” permanently?",
+      "permanentConfirm": "Delete \u201c{{name}}\u201d permanently?",
       "bulkDeleteConfirm": "Move the {{count}} selected categories to the trash?",
       "bulkPermanentConfirm": "Delete the {{count}} selected categories permanently?",
       "restoreConflictTitle": "Cannot restore",
@@ -944,7 +945,7 @@
       "switchToActive": "Open Active",
       "restore": "Restore",
       "movedToTrash": "Moved to trash",
-      "permanentConfirm": "Delete “{{name}}” permanently?",
+      "permanentConfirm": "Delete \u201c{{name}}\u201d permanently?",
       "bulkDeleteConfirm": "Move the {{count}} selected categories to the trash?",
       "bulkPermanentConfirm": "Delete the {{count}} selected categories permanently?",
       "restoreConflictTitle": "Cannot restore",
@@ -1010,7 +1011,7 @@
       "switchToActive": "Open Active",
       "restore": "Restore",
       "movedToTrash": "Moved to trash",
-      "permanentConfirm": "Delete “{{name}}” permanently?",
+      "permanentConfirm": "Delete \u201c{{name}}\u201d permanently?",
       "bulkDeleteConfirm": "Move the {{count}} selected categories to the trash?",
       "bulkPermanentConfirm": "Delete the {{count}} selected categories permanently?",
       "restoreConflictTitle": "Cannot restore",
@@ -1092,7 +1093,7 @@
       "switchToActive": "Open Active",
       "restore": "Restore",
       "movedToTrash": "Moved to trash",
-      "permanentConfirm": "Delete “{{name}}” permanently?",
+      "permanentConfirm": "Delete \u201c{{name}}\u201d permanently?",
       "bulkDeleteConfirm": "Move the {{count}} selected categories to the trash?",
       "bulkPermanentConfirm": "Delete the {{count}} selected categories permanently?",
       "restoreConflictTitle": "Cannot restore",
@@ -1161,9 +1162,9 @@
       "approved": "Review approved",
       "approvalWithdrawn": "Approval withdrawn",
       "rejected": "Review rejected",
-      "rejecting": "Rejecting…",
-      "approving": "Approving…",
-      "withdrawing": "Withdrawing…"
+      "rejecting": "Rejecting\u2026",
+      "approving": "Approving\u2026",
+      "withdrawing": "Withdrawing\u2026"
     },
     "unapproved": "Unapproved",
     "countReviews_one": "{{count}} review",
@@ -1278,7 +1279,7 @@
     "blockUser": "Block user",
     "unblockUser": "Unblock user",
     "confirmAction": "Confirm this action",
-    "processing": "Processing…"
+    "processing": "Processing\u2026"
   },
   "carts": {
     "title": "Carts",
@@ -1295,11 +1296,11 @@
     "created": "Created",
     "customer": "Customer",
     "lastUpdated": "Last updated",
-    "loading": "Loading carts…",
+    "loading": "Loading carts\u2026",
     "noItems": "No items in this cart",
     "stock": "Stock",
     "status": {
-      "active": "Active",
+      "active": "Enabled",
       "abandoned": "Abandoned",
       "converted": "Converted"
     },
@@ -1311,7 +1312,8 @@
       "activeCartsTooltip": "Carts with recent activity (updated within the abandonment threshold)",
       "abandonedCartsTooltip": "Carts with no activity for 24+ hours",
       "totalPotentialRevenueTooltip": "Sum of subtotals from active and abandoned carts",
-      "averageCartValueTooltip": "Total potential revenue divided by active + abandoned carts"
+      "averageCartValueTooltip": "Total potential revenue divided by active + abandoned carts",
+      "regionLabel": "Region"
     },
     "tabs": {
       "label": "Cart status",
@@ -1361,10 +1363,14 @@
       "converted": "Converted to order #{{orderId}}",
       "totalsBreakdown": "Totals breakdown",
       "discount": "Discount",
-      "shipping": "Shipping"
+      "shipping": "Shipping",
+      "created": "Created",
+      "lastActivity": "Last activity",
+      "outOfStock": "Out of stock",
+      "lowStock": "Low stock"
     },
     "sendReminder": "Send reminder",
-    "sendingReminder": "Sending…",
+    "sendingReminder": "Sending\u2026",
     "reminderSent": "Reminder sent",
     "reminderFailed": "Could not send reminder",
     "copyLink": "Copy cart link",
@@ -1380,7 +1386,7 @@
   "orders": {
     "title": "Orders",
     "total": "total",
-    "searchPlaceholder": "Search orders…",
+    "searchPlaceholder": "Search orders\u2026",
     "orderDetail": "Order",
     "status": "Status",
     "paymentStatus": "Payment status",
@@ -1393,7 +1399,7 @@
     "quantity": "Quantity",
     "createdAt": "Created at",
     "changeStatus": "Change status",
-    "loading": "Loading orders…",
+    "loading": "Loading orders\u2026",
     "empty": "No orders found",
     "statuses": {
       "PENDING": "Pending",
@@ -1438,7 +1444,7 @@
       "avgOrderValue": "Average order value",
       "cancelRate": "Cancellation rate",
       "revenueTooltip": "The money the orders in this view brought in: the paid orders, minus the refunds, cancelled orders excluded.",
-      "avgOrderValueTooltip": "Revenue divided by the number of paid orders it came from — cancelled orders are not part of it.",
+      "avgOrderValueTooltip": "Revenue divided by the number of paid orders it came from \u2014 cancelled orders are not part of it.",
       "cancelRateTooltip": "The cancelled orders in this view, as a share of all the orders in it."
     },
     "filters": {
@@ -1517,7 +1523,7 @@
       "tax": "Tax",
       "total": "Total",
       "netPaid": "Net paid",
-      "netPaidUnknown": "Not known — the refund amount is not recorded",
+      "netPaidUnknown": "Not known \u2014 the refund amount is not recorded",
       "totalsMismatch": "The total the store recorded does not match the items on this order. The recorded total is the one shown.",
       "customer": "Customer",
       "shippingAddress": "Shipping address",
@@ -1527,7 +1533,7 @@
       "internalNotes": "Internal notes",
       "noNotes": "No internal notes yet",
       "addNote": "Add a note",
-      "notePlaceholder": "Write a note for the team…",
+      "notePlaceholder": "Write a note for the team\u2026",
       "timeline": "Timeline",
       "noTimeline": "No activity yet",
       "phone": "Phone",
@@ -1574,14 +1580,14 @@
       "paid": "Paid",
       "refunded": "Refunded",
       "balanceDue": "Balance due",
-      "stepHistoryGap": "Step dates are not recorded — the store has no status history for this order yet.",
+      "stepHistoryGap": "Step dates are not recorded \u2014 the store has no status history for this order yet.",
       "stepCurrent": "Current step",
       "stepDone": "Completed",
       "statusSaving": "A change is already being saved.",
-      "statusLockedDelivered": "Delivered is a final status — the order cannot move again.",
-      "statusLockedCancelled": "This order was cancelled — its status cannot change.",
+      "statusLockedDelivered": "Delivered is a final status \u2014 the order cannot move again.",
+      "statusLockedCancelled": "This order was cancelled \u2014 its status cannot change.",
       "refundLockedRefunded": "This order has already been refunded.",
-      "refundLockedUnpaid": "Only a paid order can be refunded — this payment is not paid.",
+      "refundLockedUnpaid": "Only a paid order can be refunded \u2014 this payment is not paid.",
       "cancelLockedCancelled": "The order is already cancelled.",
       "cancelLockedFinal": "A delivered order cannot be cancelled.",
       "copyLink": "Copy link",
@@ -1590,11 +1596,11 @@
       "lifetimeSpend": "Lifetime spend",
       "lifetimeBasis": "Sum of this customer's paid orders. Unpaid, failed and cancelled orders are excluded.",
       "ordersPlaced": "Orders placed",
-      "noteHint": "Ctrl/⌘ + Enter to add",
+      "noteHint": "Ctrl/\u2318 + Enter to add",
       "paymentDataWarning": "This payment is marked paid, but the store did not record when it was paid or its transaction reference.",
       "refundDataWarning": "This order is marked refunded, but no refund line was recorded, so the amount returned is unknown.",
       "regularPrice": "Regular price",
-      "regularPriceHint": "The catalog's regular price for this variant, not a discount on this order.",
+      "regularPriceHint": "The catalog regular price for this variant, not a discount on this order.",
       "noShipmentRecorded": "No shipment recorded for this order.",
       "shipmentMissingWarning": "This order is marked shipped or delivered, but no shipment is recorded.",
       "recordShipment": "Record shipment",
@@ -1606,7 +1612,7 @@
       "collectedAt": "Collected at",
       "collectedBasis": "From {{count}} paid order(s)",
       "collectedHelp": "Sum of totals of PAID orders only",
-      "noItemsWarning": "This order has no line items — the total is shipping minus discount.",
+      "noItemsWarning": "This order has no line items \u2014 the total is shipping minus discount.",
       "estimatedDeliveryAt": "Estimated delivery",
       "viewCustomerOrders": "View customer orders"
     },
@@ -1659,14 +1665,14 @@
       "reason": "Reason",
       "by": "by {{actor}}",
       "notify": "the customer is to be told",
-      "statusChangedFrom": "{{from}} → {{to}}",
+      "statusChangedFrom": "{{from}} \u2192 {{to}}",
       "shipmentShipped": "Shipment handed to the carrier",
       "shipmentDelivered": "Shipment delivered",
       "event": "Activity"
     },
     "orderScope": {
       "all": "All orders",
-      "allHelp": "Every order the store has, whatever its status and whatever its payment status — cancelled, pending and refunded orders are included."
+      "allHelp": "Every order the store has, whatever its status and whatever its payment status \u2014 cancelled, pending and refunded orders are included."
     }
   },
   "notifications": {
@@ -1900,7 +1906,7 @@
     "countSessions_other": "{{count}} sessions",
     "donutRevenue": "Revenue",
     "donutOrders": "Orders",
-    "breakdownNote": "This chart adds up the line items (price × quantity). It does not include shipping or discounts, so it does not add up to the Total revenue card.",
+    "breakdownNote": "This chart adds up the line items (price \u00d7 quantity). It does not include shipping or discounts, so it does not add up to the Total revenue card.",
     "devicesNote": "The store records one row per observed device session. The count is not a count of people.",
     "recentOrdersNote": "The four most recent orders, whatever their date.",
     "daysShort": "days",
@@ -2047,48 +2053,30 @@
       "dateRange": "Date range",
       "clear": "Clear filters"
     },
-    "bulkSelected": "{{count}} selected",
-    "bulkMarkRead": "Mark as read",
     "bulkMarkUnread": "Mark as unread",
-    "bulkDelete": "Delete",
-    "markRead": "Mark as read",
     "markUnread": "Mark as unread",
-    "markUnreadNotSupported": "Mark as unread is not supported",
-    "sending": "Sending…",
     "bulk": {
       "selected": "{{count}} selected",
       "markRead": "Mark as read",
       "markUnread": "Mark as unread",
       "markUnreadNotSupported": "Mark as unread is not supported",
       "delete": "Delete",
-      "sending": "Sending…"
-    }
+      "sending": "Sending\u2026"
+    },
     "sort": {
       "date": "Date",
       "name": "Name",
       "email": "Email",
-      "subject": "Subject"
+      "subject": "Subject",
+      "desc": "Descending",
+      "asc": "Ascending"
     },
     "status": {
       "new": "New",
       "replied": "Replied",
       "archived": "Archived"
     },
-    "bulkClear": "Clear selection",
-    "selectMessage": "Select message",
-    "copyEmail": "Copy email",
-    "emailSent": "Email sent",
-    "emailNotSent": "Email not sent",
-    "emailQueued": "Queued for retry",
-    "sendAgain": "Send again",
-    "replyPlaceholder": "Reply to {{email}}",
-    "replyNotice": "The reply is emailed to {{email}} and saved here.",
-    "replySent": "Reply sent",
-    "replySavedNotSent": "Reply saved, but the email could not be sent",
-    "sending": "Sending...",
-    "markRead": "Mark as read",
-    "markUnreadNotSupported": "Mark as unread not supported",
-    "archive": "Archive"
+    "selectMessage": "Select message"
   },
   "unauthorized": {
     "title": "Access Denied",
@@ -2111,7 +2099,7 @@
   },
   "needsAttention": {
     "title": "Needs attention",
-    "allClear": "All clear — nothing needs attention",
+    "allClear": "All clear \u2014 nothing needs attention",
     "pendingOrders": "Pending orders",
     "lowStock": "Low stock products",
     "viewDetails": "View details",
@@ -2123,7 +2111,7 @@
     "totalCount": "{{count}} addresses in the audience",
     "search": "Search addresses...",
     "empty": "There are no addresses in the audience yet.",
-    "audience": "The audience of a newsletter is the store's customers — the same list a broadcast goes to. The API does not carry a per-address newsletter flag, so an address that unsubscribed is still listed.",
+    "audience": "The audience of a newsletter is the store's customers \u2014 the same list a broadcast goes to. The API does not carry a per-address newsletter flag, so an address that unsubscribed is still listed.",
     "columns": {
       "email": "Email",
       "name": "Name",

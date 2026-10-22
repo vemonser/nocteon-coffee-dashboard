@@ -1,8 +1,9 @@
 import { Component, computed, effect, inject, input, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { TranslocoService } from '@jsverse/transloco';
+import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmInputImports } from '@spartan-ng/helm/input';
+import { HlmNativeSelectImports } from '@spartan-ng/helm/native-select';
 import { HlmSwitchImports } from '@spartan-ng/helm/switch';
 import { OrderDialogComponent } from '../order-dialog/order-dialog.component';
 import type { OrderStatus } from '../../models/order.model';
@@ -25,7 +26,7 @@ import { nextStatuses } from '../../models/order-status.model';
 @Component({
   selector: 'app-order-status-dialog',
   standalone: true,
-  imports: [FormsModule, HlmButtonImports, HlmInputImports, HlmSwitchImports, OrderDialogComponent],
+  imports: [FormsModule, TranslocoPipe, HlmButtonImports, HlmInputImports, HlmNativeSelectImports, HlmSwitchImports, OrderDialogComponent],
   templateUrl: './order-status-dialog.component.html',
 })
 export class OrderStatusDialogComponent {
