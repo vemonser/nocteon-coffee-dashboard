@@ -38,7 +38,7 @@ import { PluralPipe } from '../../../shared/pipes/plural.pipe';
  *
  * A broadcast reaches EVERY customer of the store: the backend picks the
  * recipients with `findByRoleAndSubscribedTrue(CUSTOMER)` plus the
- * newsletter subscribers, so there is no audience to choose in the UI —
+ * newsletter subscribers, so there is no audience to choose in the UI ->
  * one message, everybody. The page says so in the create dialog, and
  * every row carries the number of recipients the backend counted, so
  * "who did this go to" is never a guess.
