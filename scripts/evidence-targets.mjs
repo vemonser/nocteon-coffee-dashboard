@@ -824,14 +824,14 @@ export const TARGET_SETS = {
     {
       // The DELIVERED order with items — the totals mismatch is visible here.
       id: 'order-detail',
-      url: '/dashboard/orders/1',
+      url: '/dashboard/orders/35',
       measure: async (page) => page.evaluate(MEASURE_ORDER_DETAIL),
     },
     {
       // A CONFIRMED order — the tracker's mid-flow state, and the one whose
       // status can still change.
       id: 'order-detail-midflow',
-      url: '/dashboard/orders/15',
+      url: '/dashboard/orders/49',
       measure: async (page) => page.evaluate(MEASURE_ORDER_DETAIL),
     },
     {
@@ -876,11 +876,11 @@ export const TARGET_SETS = {
   //   6 Cancelled+Failed, no items  9 Delivered+Refunded, no items
   //  15 Confirmed+COD pending, no items
   'order-details-v3': [
-    { id: 'delivered', url: '/dashboard/orders/1', measure: async (page) => page.evaluate(MEASURE_ORDER_DETAIL) },
-    { id: 'shipped', url: '/dashboard/orders/8', measure: async (page) => page.evaluate(MEASURE_ORDER_DETAIL) },
-    { id: 'cancelled', url: '/dashboard/orders/6', measure: async (page) => page.evaluate(MEASURE_ORDER_DETAIL) },
-    { id: 'refunded', url: '/dashboard/orders/9', measure: async (page) => page.evaluate(MEASURE_ORDER_DETAIL) },
-    { id: 'no-items', url: '/dashboard/orders/15', measure: async (page) => page.evaluate(MEASURE_ORDER_DETAIL) },
+    { id: 'delivered', url: '/dashboard/orders/35', measure: async (page) => page.evaluate(MEASURE_ORDER_DETAIL) },
+    { id: 'shipped', url: '/dashboard/orders/42', measure: async (page) => page.evaluate(MEASURE_ORDER_DETAIL) },
+    { id: 'cancelled', url: '/dashboard/orders/40', measure: async (page) => page.evaluate(MEASURE_ORDER_DETAIL) },
+    { id: 'refunded', url: '/dashboard/orders/43', measure: async (page) => page.evaluate(MEASURE_ORDER_DETAIL) },
+    { id: 'no-items', url: '/dashboard/orders/49', measure: async (page) => page.evaluate(MEASURE_ORDER_DETAIL) },
   ],
 
   // The order-details v4 matrix: the five real order states plus a populated
@@ -888,11 +888,11 @@ export const TARGET_SETS = {
   // Same five orders as v3, plus the `populated` fixture target that injects
   // shipment, history, notes and payment reference into order 1.
   'order-details-v4': [
-    { id: 'delivered', url: '/dashboard/orders/1', measure: async (page) => page.evaluate(MEASURE_ORDER_DETAIL) },
-    { id: 'shipped', url: '/dashboard/orders/8', measure: async (page) => page.evaluate(MEASURE_ORDER_DETAIL) },
-    { id: 'cancelled', url: '/dashboard/orders/6', measure: async (page) => page.evaluate(MEASURE_ORDER_DETAIL) },
-    { id: 'refunded', url: '/dashboard/orders/9', measure: async (page) => page.evaluate(MEASURE_ORDER_DETAIL) },
-    { id: 'no-items', url: '/dashboard/orders/15', measure: async (page) => page.evaluate(MEASURE_ORDER_DETAIL) },
+    { id: 'delivered', url: '/dashboard/orders/35', measure: async (page) => page.evaluate(MEASURE_ORDER_DETAIL) },
+    { id: 'shipped', url: '/dashboard/orders/42', measure: async (page) => page.evaluate(MEASURE_ORDER_DETAIL) },
+    { id: 'cancelled', url: '/dashboard/orders/40', measure: async (page) => page.evaluate(MEASURE_ORDER_DETAIL) },
+    { id: 'refunded', url: '/dashboard/orders/43', measure: async (page) => page.evaluate(MEASURE_ORDER_DETAIL) },
+    { id: 'no-items', url: '/dashboard/orders/49', measure: async (page) => page.evaluate(MEASURE_ORDER_DETAIL) },
     {
       // Inject shipment, history, notes and payment reference into order 1 so
       // the populated branches of the adapter are exercised. Real orders only,
