@@ -619,7 +619,7 @@
           data-testid="detail-sidebar-section"
           data-card="address"
         >
-          <header class="flex items-center justify-between gap-2 px-6 pt-6">
+          <header class="flex items-start justify-between gap-2 px-6 pt-6">
             <h2 class="text-base font-medium leading-snug" data-testid="detail-card-title">
               {{ 'orders.detail.shippingAddress' | transloco }}
             </h2>
@@ -628,7 +628,7 @@
                 hlmBtn
                 variant="ghost"
                 size="icon"
-                class="size-8 print-hidden"
+                class="size-8 self-start print-hidden"
                 data-testid="order-copy-address"
                 (click)="copyAddress()"
                 [attr.aria-label]="'orders.detail.copyAddress' | transloco"

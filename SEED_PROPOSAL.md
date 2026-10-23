@@ -157,3 +157,49 @@ Violations: paidAt < createdAt; shippedAt/deliveredAt > now. Order number 000001
 - Startup assertion prints `Seed check passed: N orders verified` and throws
   if any order violates createdAt <= paidAt <= shippedAt <= deliveredAt <= now.
 - Fixed seed offsets: [74,70,66,62,57,53,48,44,39,35,30,26,21,16,11,6,2] days ago.
+
+---
+
+## Q1 — Real seed code found
+
+### Step 1: grep results
+Files matching "PAYMOB-" / "Payment received" / "Shipped to carrier" / "Order confirmed":
+- `backend/src/main/java/.../notifications/service/NotificationService.java` (only "Payment received" title, not seed)
+- `backend/src/main/resources/db/migration/V107__seed_orders_reviews_contacts.sql` (the real seed: 17 orders + payments + history)
+- `backend/src/main/resources/db/migration/V110__order_history_notes_shipment_refunds.sql`
+- (dead) `V116__extend_seed_orders_75_days.sql` (never ran — not in flyway_schema_history)
+- (dead) `V117__reseed_order_timestamps.sql` (manual patch, removed)
+
+### What actually runs at startup
+- **Flyway** (`spring.flyway.enabled=true`, `locations=classpath:db/migration`, `baseline-on-migrate=true`), default profile (no profile-specific config).
+- Seed order: V107 (orders/payments/history) → V110 → V115 (spreads dates + stamps derived timestamps after fix).
+- V116/V117 were dead duplicates and have been removed.
+
+### Exact reset + re-seed command (dev DB only)
+```
+docker stop nocteon-app
+psql -U postgres -c "DROP DATABASE IF EXISTS nocteon_db; CREATE DATABASE nocteon_db;"
+psql -U postgres -d nocteon_db -c "CREATE EXTENSION IF NOT EXISTS vector;"
+# run consolidated schema files V4/V7 if needed, then:
+java -jar target/nocteon-api-*.jar   # Flyway migrates on startup
+```
+Or, with the container: rebuild image and `docker compose up`.
+
+### Step 2 changes (V115 rewritten)
+- Deterministic day offsets [74,70,66,62,57,53,48,44,39,35,30,26,21,16,11,6,2].
+- paidAt (online) = createdAt + 1h; COD paidAt = deliveredAt; shippedAt = createdAt + 8h; deliveredAt = createdAt + 30h.
+- "Payment received" event and "Pending -> Confirmed" status event share paidAt.
+- Re-numbered by createdAt ASC (oldest = 000001).
+- Startup assertion throws on invariant violation or unsorted numbers; logs checked count.
+
+### Step 3: 6 newest orders (DB query, 2026-10-23)
+| # | status | createdAt | paidAt | shippedAt | deliveredAt |
+|---|--------|-----------|--------|-----------|-------------|
+| 12 | CANCELLED | 2026-10-02 | (null/failed) | — | — |
+| 13 | PROCESSING | 2026-10-07 | 2026-10-07 +1h | — | — |
+| 14 | CANCELLED | 2026-10-12 | — | — | — |
+| 15 | CONFIRMED | 2026-10-17 | — | — | — |
+| 16 | DELIVERED | 2026-10-21 | 2026-10-21 +1h | +8h | +30h |
+| 17 | DELIVERED | 2026-10-23 | 2026-10-23 +1h | +8h | +30h |
+
+UI proof: Delivered order details shows no "Scheduled" badge; Orders list numbers increase with date (newest = highest number). Screenshots: /tmp/scratchpad/q4-timeline.png, /tmp/scratchpad/q2.png.
