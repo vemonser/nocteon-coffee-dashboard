@@ -54,6 +54,7 @@ import { computeOrderTotals } from '../utils/order-totals';
 import { computeSettlement } from '../utils/order-settlement';
 import { summarizeCustomerOrders, type CustomerSummary } from '../utils/customer-summary';
 import { formatOrderNumber, isolatedOrderNumber } from '../utils/order-number';
+import { orderItemsCount, orderLinesCount } from '../utils/order-items-count';
 import { buildOrderEvents, type OrderEvent } from '../adapters/order-activity.adapter';
 import {
   buildOrderItemViews,
@@ -215,6 +216,9 @@ export class OrderDetailComponent {
   protected readonly itemViews = computed(() =>
     buildOrderItemViews(this.order()?.items ?? [], this.variants()),
   );
+
+  protected readonly itemsCount = computed(() => orderItemsCount(this.order()));
+  protected readonly linesCount = computed(() => orderLinesCount(this.order()));
 
   /** Can this order still change status? */
   protected readonly canChangeStatus = computed(() => {
@@ -985,19 +989,16 @@ export class OrderDetailComponent {
       (part, index) =>
         parts.findIndex((other) => other.trim().toLowerCase() === part.trim().toLowerCase()) === index,
     );
-    return unique.join(', ');
+    const base = unique.join(', ');
+    const postal = address.postalCode?.trim();
+    return postal ? `${base} ${postal}`.trim() : base;
   }
 
-  /** "Egypt 12577" — the parts that exist, joined, without duplicates. */
+  /** Country only — postal code now travels with the city line. */
   protected countryLine(): string {
     const address = this.order()?.address;
     if (!address) return '';
-    const parts = [address.country, address.postalCode].filter((part): part is string => !!part?.trim());
-    const unique = parts.filter(
-      (part, index) =>
-        parts.findIndex((other) => other.trim().toLowerCase() === part.trim().toLowerCase()) === index,
-    );
-    return unique.join(' ');
+    return address.country?.trim() ?? '';
   }
 
   /** The recipient's name on the address card. */

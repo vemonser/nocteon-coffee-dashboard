@@ -13,6 +13,7 @@ import { StatusBadgeComponent } from '../../../ui/status-badge/status-badge.comp
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucidePackage } from '@ng-icons/lucide';
 import { isolatedOrderNumber } from '../../../../features/orders/utils/order-number';
+import { orderItemsCount as countOrderItems } from '../../../../features/orders/utils/order-items-count';
 import { pluralKey } from '../../../../core/i18n/plural';
 
 /**
@@ -99,6 +100,10 @@ export class RecentOrdersComponent implements OnInit {
    */
   orderNumber(order: OrderResponse): string {
     return isolatedOrderNumber(order.orderNumber, order.id);
+  }
+
+  orderItemsCount(order: OrderResponse): number {
+    return countOrderItems(order);
   }
 
   /** A RELATIVE date for the recent ones, an absolute one for the rest. */

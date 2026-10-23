@@ -97,8 +97,8 @@
 
           <!-- Event date if available -->
           @if (stepDate(step)) {
-            <span class="text-[11px] text-muted-foreground">
-              {{ stepDate(step) }}
+            <span class="text-[11px] text-muted-foreground" data-step-date [attr.title]="stepDateTitle(step)">
+              {{ stepDateOnly(step) }}<span class="hidden lg:inline">, {{ stepTime(step) }}</span>
             </span>
           }
 

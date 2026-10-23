@@ -121,6 +121,7 @@
             class="min-h-10 min-w-10"
             (click)="copyOrderNumber()"
             [brnTooltip]="'orders.actions.copyOrderNumber' | transloco"
+            [attr.aria-label]="'orders.actions.copyOrderNumber' | transloco"
             data-testid="order-copy-number"
           >
             <ng-icon name="lucideClipboard" class="size-4" aria-hidden="true" />
@@ -133,6 +134,7 @@
             size="icon"
             class="min-h-10 min-w-10"
             [hlmDropdownMenuTrigger]="moreMenu"
+            [brnTooltip]="'orders.detail.moreActions' | transloco"
             [attr.aria-label]="'orders.detail.moreActions' | transloco"
             data-testid="order-more-actions"
           >
@@ -219,7 +221,7 @@
               {{ 'orders.detail.items' | transloco }}
             </h2>
             <span class="text-xs text-muted-foreground">
-              {{ o.items.length | plural: 'orders.countItems' }}
+              {{ linesCount() | plural: 'orders.detail.productsCount' }} · {{ itemsCount() | plural: 'orders.detail.itemsCount' }}
             </span>
           </header>
           <div class="px-6 pb-6 pt-4" data-testid="detail-card-body">
@@ -571,7 +573,9 @@
           <div class="flex flex-col gap-2 px-6 pb-6 pt-4" data-testid="detail-card-body">
             @if (o.customer; as customer) {
               <p class="truncate font-medium" dir="auto">
-                <bdi>{{ customer.name }}</bdi>
+                <a [routerLink]="['/dashboard/users', customer.id]" class="hover:underline">
+                  <bdi>{{ customer.name }}</bdi>
+                </a>
               </p>
               <a
                 [href]="'mailto:' + customer.email"
@@ -615,19 +619,31 @@
               } @else if (customerSummary(); as summary) {
                 <dl class="mt-1 flex flex-col gap-1 border-t border-border pt-2 text-sm">
                   <div class="flex items-center justify-between gap-3">
-                    <dt class="text-muted-foreground">{{ 'orders.detail.ordersPlaced' | transloco }}</dt>
-                    <dd class="tabular-nums" data-testid="order-customer-orders">
+                    <dt class="whitespace-nowrap text-muted-foreground">{{ 'orders.detail.ordersPlaced' | transloco }}</dt>
+                    <dd class="text-end whitespace-nowrap tabular-nums" data-testid="order-customer-orders">
                       {{ summary.orderCount | plural: 'orders.countOrders' }}
                     </dd>
                   </div>
                   <div class="flex items-center justify-between gap-3">
-                    <dt class="text-muted-foreground">{{ 'orders.detail.lifetimeSpend' | transloco }}</dt>
+                    <dt class="whitespace-nowrap text-muted-foreground">
+                      {{ 'orders.detail.lifetimeSpend' | transloco }}
+                      <span
+                        class="ms-1 inline-flex"
+                        hlmTooltip
+                        position="top"
+                        [brnTooltip]="'Excludes cancelled orders.'"
+                        tabindex="0"
+                        role="button"
+                        aria-label="Excludes cancelled orders."
+                      >
+                        <ng-icon name="lucideInfo" class="size-3.5 text-muted-foreground" aria-hidden="true" />
+                      </span>
+                    </dt>
                     <dd
-                      class="tabular-nums"
+                      class="text-end whitespace-nowrap tabular-nums"
                       data-testid="order-customer-lifetime"
-                      [attr.title]="'orders.detail.lifetimeBasis' | transloco"
                     >
-                      {{ summary.lifetimePaid | money }} (excl. cancelled)
+                      {{ summary.lifetimePaid | money }}
                     </dd>
                   </div>
                 </dl>
@@ -639,7 +655,7 @@
                 data-testid="order-customer-link"
               >
                 {{ 'orders.detail.viewCustomer' | transloco }}
-                <ng-icon name="lucideExternalLink" class="size-3.5" aria-hidden="true" />
+                <ng-icon name="lucideChevronRight" class="size-3.5 rtl:rotate-180" aria-hidden="true" />
               </a>
               <a
                 [routerLink]="['/dashboard/orders', { userId: customer.id }]"
@@ -885,12 +901,12 @@
                   <span class="text-muted-foreground">{{ 'orders.detail.carrier' | transloco }}</span>
                   <span class="truncate" data-testid="order-carrier">{{ shipment()?.carrier || '—' }}</span>
                 </div>
-                @if (shipment()?.trackingNumber; as tracking) {
-                  <div class="flex items-center justify-between gap-3">
-                    <span class="text-muted-foreground">
-                      {{ 'orders.detail.trackingNumber' | transloco }}
-                    </span>
-                    <span class="flex min-w-0 items-center gap-1">
+                <div class="flex items-center justify-between gap-3">
+                  <span class="text-muted-foreground">
+                    {{ 'orders.detail.trackingNumber' | transloco }}
+                  </span>
+                  <span class="flex min-w-0 items-center gap-1">
+                    @if (shipment()?.trackingNumber; as tracking) {
                       <span class="truncate tabular-nums" dir="ltr" data-testid="order-tracking-number">
                         {{ tracking }}
                       </span>
@@ -906,9 +922,11 @@
                       >
                         <ng-icon name="lucideCopy" class="size-3.5" aria-hidden="true" />
                       </button>
-                    </span>
-                  </div>
-                }
+                    } @else {
+                      <span class="text-muted-foreground" data-testid="order-tracking-number">—</span>
+                    }
+                  </span>
+                </div>
                 @if (shipment()?.trackingUrl; as trackingUrl) {
                   <a
                     [href]="trackingUrl"

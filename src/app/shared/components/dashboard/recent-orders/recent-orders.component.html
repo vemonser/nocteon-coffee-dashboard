@@ -57,7 +57,7 @@
               <span class="mt-0.5 flex min-w-0 items-center gap-2 text-xs text-muted-foreground">
                 <app-status-badge class="shrink-0" [status]="getStatusKind(order.status)" />
                 <span class="shrink-0 text-xs text-muted-foreground">
-                  {{ order.items?.length || 0 }} {{ 'dashboard.recentOrders.items' | transloco }}
+                  {{ orderItemsCount(order) }} {{ 'dashboard.recentOrders.items' | transloco }}
                 </span>
                 <span class="hidden shrink-0 sm:inline" [title]="dateTitle(order.createdAt)">
                   {{ relativeDate(order.createdAt) }}
