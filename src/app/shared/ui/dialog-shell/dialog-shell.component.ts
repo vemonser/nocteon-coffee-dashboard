@@ -87,6 +87,9 @@ export class DialogShellComponent {
    */
   readonly mobileSheet = input<boolean>(false);
 
+  /** Width of the panel on sm+ screens. sm = 480px, md = 560px, lg = 720px. */
+  readonly size = input<'sm' | 'md' | 'lg'>('md');
+
   /**
    * The role of the panel. A confirmation that destroys something is an
    * `alertdialog`, not a `dialog`: the difference is what a screen reader
@@ -115,6 +118,7 @@ export class DialogShellComponent {
 
   private readonly panel = viewChild<ElementRef<HTMLElement>>('panel');
   private lastFocused: HTMLElement | null = null;
+  private previousBodyOverflow = '';
 
   /**
    * The scrim. On a phone the sheet reaches the edges of the screen, so the
@@ -127,16 +131,27 @@ export class DialogShellComponent {
   );
 
   /** The panel: a full-height sheet on a phone, a centred card above it. */
-  protected readonly panelClass = computed(() =>
-    this.mobileSheet()
-      ? 'flex h-[100dvh] max-h-[100dvh] w-full max-w-none flex-col border bg-card shadow-2xl outline-none sm:h-auto sm:max-h-[90vh] sm:max-w-lg sm:rounded-[var(--radius-card)]'
-      : 'flex w-full max-w-lg max-h-[90vh] flex-col rounded-[var(--radius-card)] border bg-card shadow-2xl outline-none',
-  );
+  protected readonly panelClass = computed(() => {
+    const size = this.size();
+    if (this.mobileSheet()) {
+      if (size === 'lg') return 'flex h-[100dvh] max-h-[100dvh] w-full max-w-none flex-col border bg-card shadow-2xl outline-none sm:h-auto sm:max-h-[90vh] sm:max-w-[720px] sm:rounded-[var(--radius-card)]';
+      if (size === 'sm') return 'flex h-[100dvh] max-h-[100dvh] w-full max-w-none flex-col border bg-card shadow-2xl outline-none sm:h-auto sm:max-h-[90vh] sm:max-w-[480px] sm:rounded-[var(--radius-card)]';
+      return 'flex h-[100dvh] max-h-[100dvh] w-full max-w-none flex-col border bg-card shadow-2xl outline-none sm:h-auto sm:max-h-[90vh] sm:max-w-[560px] sm:rounded-[var(--radius-card)]';
+    }
+    if (size === 'lg') return 'flex w-full max-w-[720px] max-h-[90vh] flex-col rounded-[var(--radius-card)] border bg-card shadow-2xl outline-none';
+    if (size === 'sm') return 'flex w-full max-w-[480px] max-h-[90vh] flex-col rounded-[var(--radius-card)] border bg-card shadow-2xl outline-none';
+    return 'flex w-full max-w-[560px] max-h-[90vh] flex-col rounded-[var(--radius-card)] border bg-card shadow-2xl outline-none';
+  });
 
   constructor() {
     effect(() => {
       if (this.open()) {
         this.lastFocused = (document.activeElement as HTMLElement) ?? null;
+        // Lock the page scroll behind the modal: a scrollbar visible behind
+        // the dialog means the body is still scrollable, and the page jumps
+        // when the wheel lands on it.
+        this.previousBodyOverflow = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
         setTimeout(() => this.focusFirst());
         // The keys are handled on the DOCUMENT, not on the panel: a control
         // that becomes disabled (the approve button while its request is in
@@ -146,6 +161,8 @@ export class DialogShellComponent {
         document.addEventListener('keydown', this.onKeydown, true);
       } else {
         document.removeEventListener('keydown', this.onKeydown, true);
+        document.body.style.overflow = this.previousBodyOverflow ?? '';
+        this.previousBodyOverflow = '';
         if (this.lastFocused) {
           this.lastFocused.focus();
           this.lastFocused = null;

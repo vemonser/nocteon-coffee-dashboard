@@ -14,6 +14,8 @@ import {
   lucideRefreshCw,
   lucidePrinter,
   lucideCircleSlash,
+  lucideCopy,
+  lucideMail,
 } from '@ng-icons/lucide';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmTooltipImports } from '@spartan-ng/helm/tooltip';
@@ -59,6 +61,8 @@ export interface RowMenuAction {
       lucideRefreshCw,
       lucidePrinter,
       lucideCircleSlash,
+      lucideCopy,
+      lucideMail,
     }),
   ],
   templateUrl: './actions-cell.component.html',

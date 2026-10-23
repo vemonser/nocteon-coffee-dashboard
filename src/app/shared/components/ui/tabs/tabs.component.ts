@@ -49,6 +49,15 @@ export class TabsComponent {
   readonly role = input<'tab' | 'radio'>('tab');
   /** The group's accessible name. */
   readonly label = input<string>('');
+  /**
+   * Keep the group on ONE line and let it scroll horizontally.
+   *
+   * The dashboard toolbar sits at the top of a 390px phone: four range
+   * labels wrapped to two rows and pushed the page down. A scrollable
+   * group keeps one row, and the selected item is scrolled into view on
+   * focus because the browser follows a focused button by itself.
+   */
+  readonly scrollable = input<boolean>(false);
   /** The tab that is selected, when the reader picks one. */
   readonly activeChange = output<string>();
 
@@ -59,6 +68,21 @@ export class TabsComponent {
 
   /** The role of each item. */
   readonly itemRole = computed(() => (this.role() === 'radio' ? 'radio' : 'tab'));
+
+  /**
+   * The ONE item in the tab order.
+   *
+   * A tablist is a single tab stop: Tab enters on the selected tab, and the
+   * arrows move from there. If the active id is not in the list (a URL with
+   * an unknown range), the first item is the stop so the group is never a
+   * keyboard dead end.
+   */
+  readonly focusableId = computed(() => {
+    const items = this.items();
+    return items.some((item) => item.id === this.active())
+      ? this.active()
+      : (items[0]?.id ?? '');
+  });
 
   /**
    * Move the selection with the arrow keys.

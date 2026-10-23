@@ -18,7 +18,7 @@ describe('DataTableComponent headers', () => {
 
   it('budgets the review columns', () => {
     expect(DataTableComponent.COLUMN_WIDTHS['reviewer']).toBe('125px');
-    expect(DataTableComponent.COLUMN_WIDTHS['rating']).toBe('85px');
+    expect(DataTableComponent.COLUMN_WIDTHS['rating']).toBe('150px');
     expect(DataTableComponent.COLUMN_WIDTHS['statusReview']).toBe('95px');
   });
 

@@ -50,7 +50,9 @@ import { TranslocoService } from '@jsverse/transloco';
           class="shrink-0 text-xs text-muted-foreground whitespace-nowrap"
           [title]="scopeLabel()"
         >
-          @if (rangeScoped()) {
+          @if (customScope()) {
+            {{ customScope() }}
+          } @else if (rangeScoped()) {
             {{ 'dashboard.last' | transloco }} {{ days() | plural: 'dashboard.countDays' }}
           } @else {
             {{ 'dashboard.allTime' | transloco }}
@@ -75,6 +77,11 @@ export class WidgetHeaderComponent {
    * Whether this widget respects the selected range. False renders "All time".
    */
   readonly rangeScoped = input<boolean>(true);
+  /**
+   * Optional custom scope label override (e.g., "Latest 5", "Current").
+   * When provided, this overrides the default scope label behavior.
+   */
+  readonly customScope = input<string | null>(null);
   /** Optional action link label. */
   readonly actionLabel = input<string | null>(null);
   /** Optional action link target. */
@@ -97,6 +104,9 @@ export class WidgetHeaderComponent {
    */
   readonly scopeLabel = computed(() => {
     this.language.language();
+    if (this.customScope()) {
+      return this.customScope()!;
+    }
     return this.rangeScoped()
       ? `${this.transloco.translate('dashboard.last')} ${this.days()} ${this.transloco.translate('dashboard.daysShort')}`
       : this.transloco.translate('dashboard.allTime');

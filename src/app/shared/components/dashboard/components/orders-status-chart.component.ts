@@ -1,5 +1,5 @@
 import { Component, Input, OnChanges, effect, inject, ViewChild } from '@angular/core';
-import { NgApexchartsModule, ChartComponent, ApexNonAxisChartSeries, ApexChart, ApexLegend } from 'ng-apexcharts';
+import { NgApexchartsModule, ChartComponent, ApexNonAxisChartSeries, ApexChart, ApexLegend, ApexPlotOptions } from 'ng-apexcharts';
 import { ThemeService } from '../../../../core/theme/theme.service';
 import { LanguageService } from '../../../../core/i18n/language.service';
 import { getCssVarColor } from '../../../../shared/utils/utils';
@@ -24,8 +24,35 @@ export class OrdersStatusChartComponent implements OnChanges {
   series: ApexNonAxisChartSeries = [];
   labels: string[] = [];
   colors: string[] = [];
-  chart: ApexChart = { type: 'donut', height: 300 };
-  legend: ApexLegend = { labels: { colors: getCssVarColor('--foreground') } };
+  chart: ApexChart = { type: 'donut', height: 300, fontFamily: 'inherit' };
+  legend: ApexLegend = { position: 'right' as const, labels: { colors: getCssVarColor('--foreground') } };
+  responsive = [
+    {
+      breakpoint: 768,
+      options: {
+        legend: { position: 'bottom' as const },
+      },
+    },
+  ];
+  plotOptions: ApexPlotOptions = {
+    pie: {
+      donut: {
+        size: '65%',
+        labels: {
+          show: true,
+          name: { color: 'var(--foreground)', fontSize: '12px' },
+          value: { color: 'var(--foreground)', fontSize: '14px', fontWeight: 600 },
+          total: {
+            show: true,
+            label: 'Orders',
+            color: 'var(--muted-foreground)',
+            fontSize: '11px',
+            formatter: () => '',
+          },
+        },
+      },
+    },
+  };
 
   /**
    * The status swatches, from the theme.

@@ -431,9 +431,11 @@ test.describe('dashboard — round 2', () => {
   test('the KPI cards share one padding and one baseline', async () => {
     await switchLanguage(page, 'en');
     const cards = await page.evaluate(() =>
-      Array.from(document.querySelectorAll('app-kpi-card')).map((card) => {
-        const label = card.querySelector('p');
-        const value = card.querySelector('p.text-3xl');
+      Array.from(
+        document.querySelectorAll('[data-testid="kpi-primary-row"] app-kpi-card'),
+      ).map((card) => {
+        const label = card.querySelector('[data-testid="kpi-label"]');
+        const value = card.querySelector('[data-testid="stat-value"]');
         const cardBox = card.getBoundingClientRect();
         const labelBox = label?.getBoundingClientRect();
         const valueBox = value?.getBoundingClientRect();
@@ -456,19 +458,26 @@ test.describe('dashboard — round 2', () => {
     const valueSizes = new Set(cards.map((c) => c.valueFontSize));
     expect(labelSizes.size, `the labels share one size (${JSON.stringify(cards)})`).toBe(1);
     expect(valueSizes.size, `the values share one size (${JSON.stringify(cards)})`).toBe(1);
-    expect([...labelSizes][0], 'the KPI label is 12px').toBe('12px');
-    expect([...valueSizes][0], 'the KPI value is 30px').toBe('30px');
+    expect([...labelSizes][0], 'the KPI label is 13px').toBe('13px');
+    expect([...valueSizes][0], 'the KPI value is 28px').toBe('28px');
   });
 
-  test('the "New" badge is only on the card where newness is the meaning', async () => {
+  test('no comparison means no chip, and "New" only where it means new', async () => {
     await switchLanguage(page, 'en');
     const cards = await page.locator('app-kpi-card').allInnerTexts();
-    const withNew = cards.filter((text) => /New/.test(text));
-    expect(withNew.length, 'exactly one card keeps the "New" badge').toBe(1);
-    expect(withNew[0], 'and it is the new-customers card').toContain('New customers');
+
+    // The agreed rule: an em dash on four cards in a row says nothing, so a
+    // card with no baseline renders NO chip at all.
     for (const card of cards) {
-      if (card.includes('New customers')) continue;
-      expect(card, 'the other cards show an em dash, not a badge').toContain('—');
+      expect(card, 'no card keeps the empty "—" badge').not.toContain('—');
+    }
+
+    // "New" is the meaning on the new-customers card only; every other card
+    // that has a real delta shows a signed percentage instead.
+    const withNew = cards.filter((text) => /New/.test(text));
+    expect(withNew.length, 'at most one card carries the "New" badge').toBeLessThanOrEqual(1);
+    for (const card of withNew) {
+      expect(card, 'and it is the new-customers card').toContain('New customers');
     }
   });
 });

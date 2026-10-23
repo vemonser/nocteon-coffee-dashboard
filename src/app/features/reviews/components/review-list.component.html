@@ -1,4 +1,4 @@
-<div class="mx-auto flex w-full max-w-7xl flex-col gap-6 p-6">
+<div class="page-shell">
   <!-- Header: the title and the count on the start, the view toggle on the
        end. The tabs and the filters sit in the toolbar row below, so the
        header is a header and not a toolbar. -->
@@ -15,7 +15,7 @@
 
     <div class="flex shrink-0 items-center gap-2">
       <!-- View toggle: the table is the default; the grid is optional. -->
-      <div class="flex items-center rounded-md border bg-card p-1">
+      <div class="flex items-center rounded-lg border bg-card p-1">
         <button
           hlmBtn
           [variant]="viewMode() === 'list' ? 'secondary' : 'ghost'"
@@ -156,19 +156,20 @@
 
   <!-- The statistics strip -->
   <div class="grid grid-cols-2 gap-4 md:grid-cols-4">
-    <div class="rounded-[var(--radius-card)] border bg-card p-4" data-testid="reviews-stat-average">
-      <p class="text-sm text-muted-foreground">{{ 'reviews.stats.averageRatingAll' | transloco }}</p>
-      <div class="mt-1 flex items-center gap-2">
+    <div class="card-surface p-4 text-start" data-testid="reviews-stat-average">
+      <p class="text-[13px] font-medium text-muted-foreground">{{ 'reviews.stats.averageRatingAll' | transloco }}</p>
+      <div class="mt-1 flex items-end gap-2">
         <app-rating-stars [rating]="stats().averageRatingAll ?? 0" />
-        <span class="text-2xl font-bold tabular-nums">
+        <span class="text-[clamp(1.625rem,3vw,1.75rem)] font-semibold leading-none tracking-tight tabular-nums">
           {{ stats().averageRatingAll === null ? '—' : (stats().averageRatingAll | number: '1.1-1') }} / 5
         </span>
       </div>
-      <p class="text-xs text-muted-foreground">{{ stats().total }} {{ 'reviews.stats.reviews' | transloco }} (all)</p>
+      <p class="mt-2 text-[12px] text-muted-foreground">{{ stats().total }} {{ 'reviews.stats.reviews' | transloco }} (all)</p>
+      <p class="text-[12px] text-muted-foreground">Approved only {{ stats().averageRating === null ? '—' : (stats().averageRating | number: '1.1-1') }}</p>
     </div>
 
-    <div class="rounded-[var(--radius-card)] border bg-card p-4" data-testid="reviews-stat-distribution">
-      <p class="text-sm text-muted-foreground">{{ 'reviews.stats.distribution' | transloco }}</p>
+    <div class="card-surface p-4 text-start" data-testid="reviews-stat-distribution">
+      <p class="text-[13px] font-medium text-muted-foreground">{{ 'reviews.stats.distribution' | transloco }}</p>
       <div class="mt-2 flex flex-col gap-1">
         @for (star of [5, 4, 3, 2, 1]; track star) {
           <button
@@ -193,24 +194,31 @@
     </div>
 
     <button
-      class="rounded-[var(--radius-card)] border bg-card p-4 text-start"
+      type="button"
+      class="block w-full text-start"
       data-testid="reviews-stat-pending"
       (click)="setStatus('pending')"
     >
-      <p class="text-sm text-muted-foreground">{{ 'reviews.stats.pending' | transloco }}</p>
-      <p class="mt-1 text-2xl font-bold tabular-nums">{{ stats().pending }}</p>
+      <app-kpi-card
+        icon="lucideClock"
+        [label]="'reviews.stats.pending' | transloco"
+        [value]="'' + stats().pending"
+      />
     </button>
 
-    <div class="rounded-[var(--radius-card)] border bg-card p-4" data-testid="reviews-stat-verified">
-      <p class="text-sm text-muted-foreground">{{ 'reviews.stats.verifiedShare' | transloco }}</p>
-      <p class="mt-1 text-2xl font-bold tabular-nums">{{ verifiedShare() }}%</p>
-    </div>
+    <app-kpi-card
+      icon="lucideBadgeCheck"
+      [label]="'reviews.stats.verifiedShare' | transloco"
+      [value]="verifiedShare() + '%'"
+      [caption]="('dashboard.of' | transloco) + ' ' + stats().total + ' ' + ('reviews.stats.reviews' | transloco)"
+      data-testid="reviews-stat-verified"
+    />
   </div>
 
   <!-- The bulk bar -->
   @if (selectedCount() > 0) {
     <div
-      class="flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-card)] border bg-card px-4 py-3"
+      class="flex flex-wrap items-center justify-between gap-3 card-surface px-4 py-3"
       role="region"
       data-testid="reviews-bulk-bar"
       [attr.aria-label]="'reviews.bulk.selected' | transloco: { count: selectedCount() }"
@@ -247,7 +255,7 @@
   } @else if (viewMode() === 'list') {
     <!-- The table: fifteen reviews in a table is a page; in cards it is a
          scroll. The table is the default for a reason. -->
-    <div class="rounded-[var(--radius-card)] border bg-card">
+    <div class="card-surface">
       <app-data-table
         [data]="items()"
         [columns]="columns()"
@@ -263,7 +271,7 @@
         [menuActionsFor]="menuActionsFor"
         [primaryActionFor]="primaryActionFor"
         [hideSlug]="true"
-        [minWidth]="'975px'"
+        [minWidth]="'900px'"
         (selectionChange)="onSelectionChange($event)"
         (toggleAllChange)="onToggleAll($event)"
         (menuAction)="onMenuAction($event)"
@@ -277,7 +285,7 @@
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       @for (item of items(); track item.id) {
         <hlm-card class="flex min-h-[12rem] flex-col overflow-hidden py-0">
-          <div hlmCardContent class="flex gap-3 p-4">
+          <div hlmCardContent class="flex gap-3">
             @if (item.primaryImageUrl) {
               <img
                 [src]="item.primaryImageUrl"
@@ -384,6 +392,7 @@
   [open]="viewing() !== null"
   [title]="'reviews.details' | transloco"
   [mobileSheet]="true"
+  [size]="'md'"
   [inert]="deleting() !== null"
   (closed)="closeView()"
 >
@@ -409,7 +418,7 @@
           <div class="mt-1 flex items-center gap-2">
             <app-user-avatar [src]="review.avatarUrl" [name]="review.username" size="sm" />
             <span class="text-sm"><bdi>{{ toDisplayName(review.username) }}</bdi></span>
-            <app-verified-badge [verified]="review.verified" />
+            <app-verified-badge [verified]="review.verified" [showLabel]="true" />
           </div>
           <p class="mt-1 text-xs text-muted-foreground">
             <app-localized-date [value]="review.createdAt" [showTime]="true" />
@@ -511,8 +520,9 @@
         </button>
         <button
           hlmBtn
-          variant="destructive"
+          variant="outline"
           type="button"
+          class="border-destructive text-destructive hover:bg-destructive/10"
           [disabled]="dialogBusy()"
           (click)="setRejectedFromDialog(review)"
         >
@@ -527,13 +537,6 @@
           hlmBtn
           variant="secondary"
           type="button"
-          [disabled]="true"
-        >
-          {{ 'reviews.approve' | transloco }}
-        </button>
-        <button
-          hlmBtn
-          type="button"
           [disabled]="dialogBusy()"
           (click)="setApprovalFromDialog(review, false)"
         >
@@ -543,14 +546,21 @@
               : ('reviews.withdrawApproval' | transloco)
           }}
         </button>
-      } @else if (review.status === 'REJECTED') {
         <button
           hlmBtn
+          variant="outline"
           type="button"
-          [disabled]="true"
+          class="border-destructive text-destructive hover:bg-destructive/10"
+          [disabled]="dialogBusy()"
+          (click)="setRejectedFromDialog(review)"
         >
-          {{ 'reviews.reject' | transloco }}
+          {{
+            dialogBusy()
+              ? ('reviews.action.rejecting' | transloco)
+              : ('reviews.reject' | transloco)
+          }}
         </button>
+      } @else if (review.status === 'REJECTED') {
         <button
           hlmBtn
           type="button"
@@ -577,6 +587,7 @@
 <app-dialog-shell
   [open]="deleting() !== null"
   [title]="'reviews.deleteTitle' | transloco"
+  [size]="'sm'"
   panelRole="alertdialog"
   testId="review-delete-confirm"
   describedBy="review-delete-confirm-description"

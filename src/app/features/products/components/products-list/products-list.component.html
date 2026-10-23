@@ -1,4 +1,4 @@
-<div class="flex flex-col gap-6 p-6 max-w-[1440px] mx-auto w-full">
+<div class="page-shell max-w-[1440px]">
   <!-- Header -->
   <div class="flex items-center justify-between">
     <div>
@@ -45,10 +45,29 @@
       />
     </div>
 
-    <hlm-select formControlName="status" class="w-40">
-      <hlm-select-trigger class="w-40">
-        <hlm-select-value [placeholder]="'products.filterByStatus' | transloco" />
-      </hlm-select-trigger>
+    <div class="flex flex-col gap-1">
+      <span class="text-xs text-muted-foreground font-medium">{{ 'products.filters.type' | transloco }}</span>
+      <hlm-select formControlName="type" class="w-40">
+        <hlm-select-trigger class="w-40">
+          <hlm-select-value [placeholder]="'products.filters.allTypes' | transloco" />
+        </hlm-select-trigger>
+        <hlm-select-content *hlmSelectPortal>
+          <hlm-select-group>
+            <hlm-select-label>{{ 'products.filters.type' | transloco }}</hlm-select-label>
+            <hlm-select-item value="all">{{ 'products.filters.all' | transloco }}</hlm-select-item>
+            <hlm-select-item value="COFFEE">Coffee</hlm-select-item>
+            <hlm-select-item value="EQUIPMENT">Equipment</hlm-select-item>
+          </hlm-select-group>
+        </hlm-select-content>
+      </hlm-select>
+    </div>
+
+    <div class="flex flex-col gap-1">
+      <span class="text-xs text-muted-foreground font-medium">{{ 'products.filters.status' | transloco }}</span>
+      <hlm-select formControlName="status" class="w-40">
+        <hlm-select-trigger class="w-40">
+          <hlm-select-value [placeholder]="'products.filters.allStatuses' | transloco" />
+        </hlm-select-trigger>
       <hlm-select-content *hlmSelectPortal>
         <hlm-select-group>
           <hlm-select-label>{{ 'products.status.all' | transloco }}</hlm-select-label>
@@ -58,10 +77,13 @@
         </hlm-select-group>
       </hlm-select-content>
     </hlm-select>
+    </div>
 
+    <div class="flex flex-col gap-1">
+      <span class="text-xs text-muted-foreground font-medium">{{ 'products.filters.featured' | transloco }}</span>
     <hlm-select formControlName="featured" class="w-44">
       <hlm-select-trigger class="w-44">
-        <hlm-select-value [placeholder]="'products.filterByFeatured' | transloco" />
+        <hlm-select-value [placeholder]="'products.filters.allFeatured' | transloco" />
       </hlm-select-trigger>
       <hlm-select-content *hlmSelectPortal>
         <hlm-select-group>
@@ -72,6 +94,7 @@
         </hlm-select-group>
       </hlm-select-content>
     </hlm-select>
+    </div>
   </form>
 
   <!-- Active category filter (from category detail "View all") -->
@@ -115,8 +138,20 @@
 
   <!-- Table -->
   @if (!loadError()) {
-  <div class="rounded-md border bg-card">
+  @if (!isTrash() && selectedIds().size > 0) {
+    <div class="flex items-center gap-3 rounded-md border bg-muted/40 px-4 py-2">
+      <span class="text-sm font-medium">{{ selectedIds().size }} selected</span>
+      <button hlmBtn size="sm" variant="outline" (click)="bulkEnable()">Enable</button>
+      <button hlmBtn size="sm" variant="outline" (click)="bulkDisable()">Disable</button>
+      <button hlmBtn size="sm" variant="destructive" (click)="bulkTrash()">Move to Trash</button>
+      <button hlmBtn size="sm" variant="ghost" (click)="clearSelection()">Clear</button>
+    </div>
+  }
+
+  <div class="card-surface">
     <app-data-table
+      [selectable]="!isTrash()"
+      [selectedIds]="selectedIds()"
       [data]="items()"
       [columns]="columns"
       [loading]="loading()"
@@ -134,12 +169,22 @@
       (restore)="restore($event)"
       (permanentDelete)="openPermanentDelete($event)"
       (rowClick)="goToEdit($event)"
+      (statusToggle)="onToggleStatus($event)"
+      (featuredToggle)="onFeaturedToggle($event)"
+      [menuActions]="menuActions"
+      [editLabel]="'common.edit' | transloco"
+      [deleteLabel]="'common.delete' | transloco"
+      [restoreLabel]="'common.restore' | transloco"
+      [permanentDeleteLabel]="'common.deletePermanently' | transloco"
+      (menuAction)="onMenuAction($event)"
+      (selectionChange)="onSelectionChange($event)"
+      (toggleAllChange)="onToggleAll($event)" 
       (hasView)="(false)"
     />
   </div>
 
   <!-- Pagination -->
-  @if (pageData() && !loading() && items().length > 0) {
+  @if (pageData() && !loading() && items().length > 0 && pageData()!.totalPages > 1) {
     <app-pager
       [page]="pageData()!.page"
       [size]="pageData()!.size"
@@ -147,7 +192,10 @@
       [totalPages]="pageData()!.totalPages"
       [first]="pageData()!.first"
       [last]="pageData()!.last"
+      [showPageSize]="true"
+      [size]="pageSize()"
       (pageChange)="goToPage($event)"
+      (sizeChange)="setPageSize($event)"
     />
   }
   }
@@ -156,7 +204,7 @@
 <!-- Delete Dialog -->
 @if (deleting()) {
   <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-    <div class="w-full max-w-sm rounded-xl bg-card shadow-2xl border p-6">
+    <div class="dialog-surface w-full max-w-sm p-6">
       <h2 class="text-lg font-medium mb-2">{{ 'products.deleteTitle' | transloco }}</h2>
       <p class="text-muted-foreground mb-6">
         {{ 'products.deleteConfirm' | transloco }} <strong>{{ deleting()!.slug }}</strong

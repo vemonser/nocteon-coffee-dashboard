@@ -1,4 +1,4 @@
-<div class="flex flex-col gap-6 p-6 max-w-[1440px] mx-auto w-full">
+<div class="page-shell">
   @if (loading()) {
     <div class="space-y-6">
       <div class="h-9 w-24 bg-muted animate-pulse rounded-md"></div>
@@ -172,7 +172,7 @@
       <div class="flex flex-col gap-4 lg:col-span-2">
         <hlm-card>
           <form [formGroup]="form">
-            <div hlmCardContent class="p-6">
+            <div hlmCardContent>
               <div class="grid gap-6 sm:grid-cols-2" formArrayName="translations">
                 @if ((translationsArray()?.controls?.length ?? 0) > 0) {
                   @for (group of translationsArray()!.controls; track $index) {
@@ -216,10 +216,10 @@
         </hlm-card>
 
         <hlm-card>
-          <div hlmCardHeader class="px-6 pb-0">
-            <h2 class="text-sm font-medium text-muted-foreground">{{ 'origins.detail.infoTitle' | transloco }}</h2>
+          <div hlmCardHeader>
+            <h2 hlmCardTitle>{{ 'origins.detail.infoTitle' | transloco }}</h2>
           </div>
-          <div hlmCardContent class="grid gap-4 p-6 pt-0 sm:grid-cols-3">
+          <div hlmCardContent class="grid gap-4 sm:grid-cols-3">
             <div>
               <p class="text-xs text-muted-foreground">{{ 'common.slug' | transloco }}</p>
               <p class="mt-1 text-sm"><bdi class="font-mono">{{ origin()!.slug }}</bdi></p>
@@ -350,7 +350,7 @@
   <!-- Delete Confirm Dialog -->
   @if (showDeleteConfirm()) {
     <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-      <div class="w-full max-w-sm rounded-xl border bg-card p-6 shadow-2xl" role="alertdialog" aria-modal="true" [attr.aria-label]="'origins.detail.moveToTrash' | transloco">
+      <div class="dialog-surface w-full max-w-sm p-6" role="alertdialog" aria-modal="true" [attr.aria-label]="'origins.detail.moveToTrash' | transloco">
         <h2 class="mb-2 text-lg font-medium">{{ 'origins.detail.moveToTrash' | transloco }}</h2>
         <p class="mb-6 text-muted-foreground">{{ 'origins.detail.deleteConfirm' | transloco: { name: displayName() } }}</p>
         <div class="flex gap-3">

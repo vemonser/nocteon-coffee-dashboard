@@ -1,3 +1,29 @@
+/* The single KPI card.
+   It paints NOTHING of its own: `hlm-card` inside already carries the one
+   card shape of the system (--card, --card-ring, --radius-card, shadow), the
+   same shape as every other card on the site. A per-page gradient here made
+   the "same" card look different on the dashboard, the orders list and the
+   carts list. */
 :host {
   display: block;
+  height: 100%;
+}
+
+/* Only the cards that are real links lift on hover. */
+:host hlm-card:has(a):hover {
+  box-shadow:
+    0 0 0 1px var(--card-ring),
+    0 4px 12px rgb(0 0 0 / 0.08);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  :host hlm-card:has(a) {
+    transition:
+      box-shadow 0.2s ease,
+      transform 0.2s ease;
+  }
+
+  :host hlm-card:has(a):hover {
+    transform: translateY(-1px);
+  }
 }

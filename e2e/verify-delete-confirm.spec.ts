@@ -62,10 +62,14 @@ test.describe('Delete confirmations', () => {
     await page.goto('/dashboard/categories');
     await expect(page.locator('table')).toBeVisible();
 
-    // Row carrying the referenced category.
+    // Row carrying the referenced category. The slug is what the API keys on,
+    // and "coffee" is a PREFIX of the clones the other specs create
+    // (coffee-2 … coffee-9), so a `/Coffee/` match picked a clone — which is
+    // unreferenced — and the delete returned 204 instead of the 409 this test
+    // is about. Match the slug exactly: "coffee" not followed by a number.
     const row = page
       .locator('tbody tr')
-      .filter({ hasText: /Coffee|القهوة/ })
+      .filter({ hasText: /coffee(?!-?\d)|القهوة/ })
       .first();
     await expect(row).toBeVisible();
 

@@ -1,4 +1,4 @@
-<div class="mx-auto flex w-full max-w-7xl flex-col gap-6 p-6">
+<div class="page-shell">
   @if (loading()) {
     <div class="flex flex-col gap-4" data-testid="order-detail-loading" aria-busy="true">
       <div class="flex items-start justify-between gap-4">
@@ -21,7 +21,7 @@
     </div>
   } @else if (notFound()) {
     <div
-      class="mx-auto flex max-w-md flex-col items-center gap-3 rounded-[var(--radius-card)] border bg-card p-8 text-center"
+      class="mx-auto flex max-w-md flex-col items-center gap-3 card-surface p-8 text-center"
       role="alert"
       data-testid="order-detail-notfound"
     >
@@ -36,7 +36,7 @@
     </div>
   } @else if (error()) {
     <div
-      class="rounded-[var(--radius-card)] border bg-card p-8 text-center"
+      class="card-surface p-8 text-center"
       role="alert"
       data-testid="order-detail-error"
     >
@@ -121,7 +121,7 @@
             size="icon"
             class="min-h-10 min-w-10"
             (click)="copyOrderNumber()"
-            [attr.aria-label]="'orders.actions.copyOrderNumber' | transloco"
+            [brnTooltip]="'orders.actions.copyOrderNumber' | transloco"
             data-testid="order-copy-number"
           >
             <ng-icon name="lucideClipboard" class="size-4" aria-hidden="true" />
@@ -211,11 +211,11 @@
       <div class="flex min-w-0 flex-col gap-6">
         <!-- Items -->
         <section
-          class="flex flex-col rounded-[var(--radius-card)] border bg-card"
+          class="flex flex-col overflow-hidden text-sm card-surface"
           data-testid="detail-card"
           data-card="items"
         >
-          <header class="flex items-center justify-between gap-3 px-4 pt-4">
+          <header class="flex items-center justify-between gap-3 px-6 pt-6">
             <h2 class="text-base font-medium leading-snug" data-testid="detail-card-title">
               {{ 'orders.detail.items' | transloco }}
             </h2>
@@ -223,7 +223,7 @@
               {{ o.items.length | plural: 'orders.countItems' }}
             </span>
           </header>
-          <div class="px-4 pb-4 pt-3" data-testid="detail-card-body">
+          <div class="px-6 pb-6 pt-4" data-testid="detail-card-body">
             @if (o.items.length === 0) {
               <div class="py-6 text-center" data-testid="order-no-items">
                 <ng-icon name="lucideTriangleAlert" class="mx-auto size-6 text-warning" aria-hidden="true" />
@@ -270,28 +270,15 @@
                         </p>
                       }
                       <p class="mt-0.5 flex flex-wrap items-center gap-1 text-xs text-muted-foreground">
-                        <span>{{ 'orders.detail.sku' | transloco }}</span>
+                        @if (!(view.item.sku ?? '').toLowerCase().startsWith('sku')) {
+                          <span>{{ 'orders.detail.sku' | transloco }}</span>
+                        }
                         <bdi class="font-mono" data-testid="order-item-sku">{{ view.item.sku }}</bdi>
                       </p>
                     </div>
                     <div class="shrink-0 text-end">
                       <div class="flex flex-wrap items-baseline justify-end gap-1.5 text-sm tabular-nums">
                         <span>{{ view.item.quantity }} × {{ view.item.unitPrice | money }}</span>
-                        @if (view.originalUnitPrice !== null) {
-                          <span
-                            class="inline-flex items-baseline gap-1 text-xs text-muted-foreground"
-                            data-testid="order-item-regular-price"
-                            [attr.title]="'orders.detail.regularPriceHint' | transloco"
-                          >
-                            <span>{{ 'orders.detail.regularPrice' | transloco }}:</span>
-                            <s
-                              class="text-xs"
-                              [attr.aria-label]="'orders.detail.regularPrice' | transloco"
-                            >
-                              {{ view.originalUnitPrice | money }}
-                            </s>
-                          </span>
-                        }
                       </div>
                       <p class="mt-0.5 text-xs font-medium tabular-nums" data-testid="order-item-total">
                         {{ view.item.totalPrice | money }}
@@ -306,16 +293,16 @@
 
         <!-- Totals -->
         <section
-          class="flex flex-col rounded-[var(--radius-card)] border bg-card"
+          class="flex flex-col overflow-hidden text-sm card-surface"
           data-testid="detail-card"
           data-card="totals"
         >
-          <header class="px-4 pt-4">
+          <header class="px-6 pt-6">
             <h2 class="text-base font-medium leading-snug" data-testid="detail-card-title">
               {{ 'orders.detail.totals' | transloco }}
             </h2>
           </header>
-          <div class="px-4 pb-4 pt-3" data-testid="detail-card-body">
+          <div class="px-6 pb-6 pt-4" data-testid="detail-card-body">
             <dl class="flex flex-col gap-2" data-testid="order-totals">
               <div class="flex items-center justify-between gap-4" data-total-row="subtotal">
                 <dt class="text-sm text-muted-foreground">{{ 'orders.detail.subtotal' | transloco }}</dt>
@@ -399,17 +386,17 @@
 
         <!-- The timeline: the progress, then what happened -->
         <section
-          class="flex flex-col rounded-[var(--radius-card)] border bg-card"
+          class="flex flex-col overflow-hidden text-sm card-surface"
           data-testid="detail-card"
           data-card="timeline"
         >
-          <header class="flex items-center gap-2 px-4 pt-4">
+          <header class="flex items-center gap-2 px-6 pt-6">
             <ng-icon name="lucideHistory" class="size-4 text-muted-foreground" aria-hidden="true" />
             <h2 class="text-base font-medium leading-snug" data-testid="detail-card-title">
               {{ 'orders.detail.timeline' | transloco }}
             </h2>
           </header>
-          <div class="px-4 pb-4 pt-3" data-testid="detail-card-body">
+          <div class="px-6 pb-6 pt-4" data-testid="detail-card-body">
             <app-order-progress
               [status]="o.status"
               [paymentStatus]="displayPaymentStatus()"
@@ -451,9 +438,12 @@
                       @if (event.actorLabel) {
                         <p class="mt-0.5 text-xs text-muted-foreground">
                           {{ event.actorLabel }}
-                          @if (event.notify) {
-                            · {{ 'orders.timeline.notify' | transloco }}
-                          }
+                        </p>
+                      }
+                      @if (event.notify) {
+                        <p class="mt-0.5 inline-flex items-center gap-1 text-xs text-muted-foreground">
+                          <ng-icon name="lucideMail" class="size-3" aria-hidden="true" />
+                          {{ 'orders.timeline.customerNotified' | transloco }}
                         </p>
                       }
                     </div>
@@ -477,17 +467,17 @@
 
         <!-- Internal notes -->
         <section
-          class="flex flex-col rounded-[var(--radius-card)] border bg-card"
+          class="flex flex-col overflow-hidden text-sm card-surface"
           data-testid="detail-card"
           data-card="notes"
         >
-          <header class="flex items-center gap-2 px-4 pt-4">
+          <header class="flex items-center gap-2 px-6 pt-6">
             <ng-icon name="lucideStickyNote" class="size-4 text-muted-foreground" aria-hidden="true" />
             <h2 class="text-base font-medium leading-snug" data-testid="detail-card-title">
               {{ 'orders.detail.internalNotes' | transloco }}
             </h2>
           </header>
-          <div class="px-4 pb-4 pt-3" data-testid="detail-card-body">
+          <div class="px-6 pb-6 pt-4" data-testid="detail-card-body">
             @if (notes().length > 0) {
               <ul class="flex flex-col divide-y divide-border" data-testid="order-notes">
                 @for (note of notes(); track note.id) {
@@ -550,16 +540,16 @@
       <aside class="flex min-w-0 flex-col gap-6" data-testid="order-detail-sidebar">
         <!-- Customer -->
         <section
-          class="flex flex-col rounded-[var(--radius-card)] border bg-card"
+          class="flex flex-col overflow-hidden text-sm card-surface"
           data-testid="detail-sidebar-section"
           data-card="customer"
         >
-          <header class="px-4 pt-4">
+          <header class="px-6 pt-6">
             <h2 class="text-base font-medium leading-snug" data-testid="detail-card-title">
               {{ 'orders.detail.customer' | transloco }}
             </h2>
           </header>
-          <div class="flex flex-col gap-2 px-4 pb-4 pt-3" data-testid="detail-card-body">
+          <div class="flex flex-col gap-2 px-6 pb-6 pt-4" data-testid="detail-card-body">
             @if (o.customer; as customer) {
               <p class="truncate font-medium" dir="auto">
                 <bdi>{{ customer.name }}</bdi>
@@ -618,7 +608,7 @@
                       data-testid="order-customer-lifetime"
                       [attr.title]="'orders.detail.lifetimeBasis' | transloco"
                     >
-                      {{ summary.lifetimePaid | money }}
+                      {{ summary.lifetimePaid | money }} (excl. cancelled)
                     </dd>
                   </div>
                 </dl>
@@ -638,7 +628,7 @@
                 data-testid="order-customer-orders-link"
               >
                 {{ 'orders.detail.viewCustomerOrders' | transloco }}
-                <ng-icon name="lucideLink" class="size-3.5" aria-hidden="true" />
+                <ng-icon name="lucideChevronRight" class="size-3.5 rtl:rotate-180" aria-hidden="true" />
               </a>
             } @else {
               <p class="text-sm text-muted-foreground">{{ 'orders.detail.notRecorded' | transloco }}</p>
@@ -648,11 +638,11 @@
 
         <!-- Shipping address -->
         <section
-          class="flex flex-col rounded-[var(--radius-card)] border bg-card"
+          class="flex flex-col overflow-hidden text-sm card-surface"
           data-testid="detail-sidebar-section"
           data-card="address"
         >
-          <header class="flex items-center justify-between gap-2 px-4 pt-4">
+          <header class="flex items-center justify-between gap-2 px-6 pt-6">
             <h2 class="text-base font-medium leading-snug" data-testid="detail-card-title">
               {{ 'orders.detail.shippingAddress' | transloco }}
             </h2>
@@ -670,7 +660,7 @@
               </button>
             }
           </header>
-          <div class="px-4 pb-4 pt-3" data-testid="detail-card-body">
+          <div class="px-6 pb-6 pt-4" data-testid="detail-card-body">
             @if (o.address; as address) {
               <address class="flex flex-col gap-0.5 text-sm not-italic" dir="auto" data-testid="order-address">
                 @if (addressName(); as name) {
@@ -691,16 +681,16 @@
 
         <!-- Payment -->
         <section
-          class="flex flex-col rounded-[var(--radius-card)] border bg-card"
+          class="flex flex-col overflow-hidden text-sm card-surface"
           data-testid="detail-sidebar-section"
           data-card="payment"
         >
-          <header class="px-4 pt-4">
+          <header class="px-6 pt-6">
             <h2 class="text-base font-medium leading-snug" data-testid="detail-card-title">
               {{ 'orders.detail.payment' | transloco }}
             </h2>
           </header>
-          <div class="flex flex-col gap-2 px-4 pb-4 pt-3" data-testid="detail-card-body">
+          <div class="flex flex-col gap-2 px-6 pb-6 pt-4" data-testid="detail-card-body">
             <div class="flex items-center justify-between gap-3">
               <span class="text-sm text-muted-foreground">{{ 'orders.paymentMethod' | transloco }}</span>
               <span class="text-sm">{{ paymentMethodLabel() }}</span>
@@ -857,17 +847,17 @@
 
         <!-- Shipment -->
         <section
-          class="flex flex-col rounded-[var(--radius-card)] border bg-card"
+          class="flex flex-col overflow-hidden text-sm card-surface"
           data-testid="detail-sidebar-section"
           data-card="shipment"
         >
-          <header class="flex items-center gap-2 px-4 pt-4">
+          <header class="flex items-center gap-2 px-6 pt-6">
             <ng-icon name="lucideTruck" class="size-4 text-muted-foreground" aria-hidden="true" />
             <h2 class="text-base font-medium leading-snug" data-testid="detail-card-title">
               {{ 'orders.detail.shipment' | transloco }}
             </h2>
           </header>
-          <div class="px-4 pb-4 pt-3" data-testid="detail-card-body">
+          <div class="px-6 pb-6 pt-4" data-testid="detail-card-body">
             @if (hasShipment()) {
               <div class="flex flex-col gap-1.5 text-sm" data-testid="order-shipment">
                 @if (shipment()?.carrier; as carrier) {

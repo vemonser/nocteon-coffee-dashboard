@@ -10,15 +10,17 @@ import {
   ReactiveFormsModule,
 } from '@angular/forms';
 import { ProductWizardStateService } from '../../product-wizard/product-wizard-state.service';
-import { ProductOption } from '../../../../product-options/models/product-option.model';
+import { ProductWizardComponent } from '../../product-wizard/product-wizard.component';
+import { ProductOption, ProductOptionValue } from '../../../../product-options/models/product-option.model';
 import { ProductOptionService } from '../../../../product-options/services/product-option.service';
 import { HlmSelectImports } from '@spartan-ng/helm/select';
 import { HlmInputImports } from '@spartan-ng/helm/input';
 import { HlmLabel } from '@spartan-ng/helm/label';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmCheckboxImports } from '@spartan-ng/helm/checkbox';
+import { HlmSwitchImports } from '@spartan-ng/helm/switch';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucidePlus, lucideX } from '@ng-icons/lucide';
+import { lucidePlus, lucideX, lucideChevronDown, lucideChevronUp, lucideMoreVertical, lucideTrash2, lucideCopy } from '@ng-icons/lucide';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { LanguageService } from '../../../../../core/i18n/language.service';
 import { NotifyService } from '../../../../../core/notify/notify.service';
@@ -34,11 +36,12 @@ import { NotifyService } from '../../../../../core/notify/notify.service';
     HlmLabel,
     HlmButtonImports,
     HlmCheckboxImports,
+    HlmSwitchImports,
     NgIcon,
     TranslocoPipe,
   ],
   providers: [
-    provideIcons({ lucidePlus, lucideX }),
+    provideIcons({ lucidePlus, lucideX, lucideChevronDown, lucideChevronUp, lucideMoreVertical, lucideTrash2, lucideCopy }),
   ],
   templateUrl: './variants-step.component.html',
   viewProviders: [
@@ -53,8 +56,80 @@ export class VariantsStepComponent implements OnInit {
   private optionService = inject(ProductOptionService);
   private language = inject(LanguageService);
   private notify = inject(NotifyService);
+  private wizard = inject(ProductWizardComponent);
 
   loadingOptions = signal(false);
+  collapsed = signal<Set<number>>(new Set());
+
+  isCollapsed(i: number): boolean {
+    if (this.collapsed().size === 0 && this.state.variantsArray.length > 1) {
+      return i !== 0;
+    }
+    return this.collapsed().has(i);
+  }
+
+  toggleCollapse(i: number): void {
+    const next = new Set(this.collapsed());
+    if (next.has(i)) next.delete(i);
+    else next.add(i);
+    this.collapsed.set(next);
+  }
+
+  variantLabel(group: AbstractControl): string {
+    const picks = group.get('optionPicks') as FormArray | null;
+    const parts: string[] = [];
+    
+    if (picks) {
+      picks.controls.forEach((c) => {
+        const optionId = Number(c.get('optionId')?.value);
+        const valueId = Number(c.get('valueId')?.value);
+        
+        const option = this.state.productOptions().find((o) => o.id === optionId);
+        if (!option) return;
+        
+        const value = option.values.find((v) => v.id === valueId);
+        if (!value) return;
+        
+        const lang = this.language.current();
+        const valueName = value.translations.find((t) => t.language?.toLowerCase() === lang?.toLowerCase())?.name;
+        const optionName = option.translations.find((t) => t.language?.toLowerCase() === lang?.toLowerCase())?.name;
+        
+        // Enhanced display with option context: "250g · Weight"
+        if (valueName && optionName) {
+          parts.push(`${valueName} · ${optionName}`);
+        } else if (valueName) {
+          parts.push(valueName);
+        } else if (value.slug) {
+          parts.push(value.slug);
+        }
+      });
+    }
+    
+    const sku = group.get('sku')?.value;
+    if (parts.length > 0) {
+      return parts.join(' • ');
+    }
+    
+    // Fallback to SKU if no options selected
+    return sku || 'Variant';
+  }
+
+  getEnhancedValueName(option: ProductOption, valueId: string | number | null): string {
+    if (valueId == null) return '';
+    
+    const value = option.values.find((v) => v.id === Number(valueId));
+    if (!value) return String(valueId);
+    
+    const lang = this.language.current();
+    const valueName = value.translations.find((t) => t.language?.toLowerCase() === lang?.toLowerCase())?.name;
+    const optionName = option.translations.find((t) => t.language?.toLowerCase() === lang?.toLowerCase())?.name;
+    
+    // Enhanced display with option context
+    if (valueName && optionName) {
+      return `${valueName} · ${optionName}`;
+    }
+    return valueName || value.slug || String(value.id);
+  }
 
   ngOnInit(): void {
     this.loadOptions();
@@ -79,13 +154,16 @@ export class VariantsStepComponent implements OnInit {
   }
 
   getOptionName(option: ProductOption): string {
-    return option.translations.find((t) => t.language === this.currentLang)?.name ?? option.slug;
+    const t = option.translations.find((t) => t.language?.toLowerCase() === this.currentLang?.toLowerCase());
+    return t?.name ?? option.slug ?? `Option ${option.id}`;
   }
 
   getValueName(option: ProductOption, valueId: string | number | null): string {
     if (valueId == null) return '';
     const value = option.values.find((v) => v.id === Number(valueId));
-    return value?.translations.find((t) => t.language === this.currentLang)?.name ?? '';
+    if (!value) return String(valueId);
+    const t = value.translations.find((t) => t.language?.toLowerCase() === this.currentLang?.toLowerCase());
+    return t?.name ?? value.slug ?? String(value.id);
   }
 
   /** Stringify a value id for hlm-select-item's string-based binding. */
@@ -110,7 +188,37 @@ export class VariantsStepComponent implements OnInit {
     this.state.addVariant();
   }
 
+  saveCurrentStep(): void {
+    this.wizard.saveCurrentStep();
+  }
+
+  onBack(): void {
+    this.wizard.onBack();
+  }
+
+  isCurrentStepDirty(): boolean {
+    return this.wizard.isCurrentStepDirty();
+  }
+
+  isCurrentStepValid(): boolean {
+    return this.state.isCurrentStepValid();
+  }
+
   removeVariant(index: number): void {
     this.state.removeVariant(index);
+  }
+
+  confirmRemoveVariant(index: number): void {
+    if (window.confirm('Remove this variant?')) {
+      this.removeVariant(index);
+    }
+  }
+
+  duplicateVariant(index: number): void {
+    // Clone the variant group by re-adding and patching from the source.
+    this.state.addVariant();
+    const src = this.state.variantsArray.at(index) as FormGroup;
+    const dst = this.state.variantsArray.at(this.state.variantsArray.length - 1) as FormGroup;
+    dst.patchValue(src.getRawValue());
   }
 }

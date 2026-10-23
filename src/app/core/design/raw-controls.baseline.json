@@ -63,7 +63,7 @@
   "src/app/features/orders/order-detail/order-detail.component.html": {
     "input": 0,
     "select": 0,
-    "button": 6
+    "button": 5
   },
   "src/app/features/origins/components/origins-list.component.html": {
     "input": 0,
@@ -90,11 +90,6 @@
     "select": 0,
     "button": 1
   },
-  "src/app/features/products/components/steps/basic-info-step/basic-info-step.component.html": {
-    "input": 2,
-    "select": 0,
-    "button": 0
-  },
   "src/app/features/products/components/steps/media-step/media-step.component.html": {
     "input": 1,
     "select": 0,
@@ -111,9 +106,9 @@
     "button": 1
   },
   "src/app/features/products/components/steps/variants-step/variants-step.component.html": {
-    "input": 1,
+    "input": 0,
     "select": 0,
-    "button": 0
+    "button": 1
   },
   "src/app/features/products/product-media/product-media.component.html": {
     "input": 1,
@@ -168,7 +163,7 @@
   "src/app/shared/components/data-table/data-table.component.html": {
     "input": 0,
     "select": 0,
-    "button": 1
+    "button": 2
   },
   "src/app/shared/components/delete-dialog/delete-dialog.component.html": {
     "input": 0,

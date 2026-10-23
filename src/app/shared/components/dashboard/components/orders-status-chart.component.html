@@ -1,9 +1,9 @@
-﻿<div class="bg-card rounded-md border p-4">
+﻿<div class="card-surface p-4">
   <div class="mb-2">
     <app-widget-header
       [title]="'dashboard.paidByStatus' | transloco"
       [infoTitle]="'dashboard.refundedIsFlag' | transloco"
     />
   </div>
-  <apx-chart #chartObj [series]="series" [chart]="chart" [labels]="labels" [colors]="colors" [legend]="legend" />
+  <apx-chart #chartObj [series]="series" [chart]="chart" [labels]="labels" [colors]="colors" [legend]="legend" [plotOptions]="plotOptions" [responsive]="responsive" />
 </div>

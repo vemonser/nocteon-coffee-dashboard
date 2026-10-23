@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { AbstractControl, FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { AbstractControl, FormArray, FormBuilder, FormGroup, ValidationErrors, Validators } from '@angular/forms';
 import { signal } from '@angular/core';
 import { ProductDetail, ProductVariant, StagedMedia } from '../../models/product.models';
 import { ProductOption, ProductOptionValueSummary } from '../../../product-options/models/product-option.model';
@@ -26,6 +26,7 @@ export class ProductWizardStateService {
   // ─── Mode ────────────────────────────────────────────────────────────────────
   isEditMode = signal(false);
   editingSlug = signal<string | null>(null);
+  editingName = signal<string | null>(null);
 
   // ─── Staged media files (not yet uploaded — sent together on final submit) ────
   stagedMedia = signal<StagedMedia[]>([]);
@@ -127,11 +128,20 @@ export class ProductWizardStateService {
     this.pendingEditPicks = [];
   }
 
+  static compareAtGreaterThanPrice(control: AbstractControl): ValidationErrors | null {
+    const group = control.parent as FormGroup | null;
+    if (!group) return null;
+    const price = group.get('price')?.value;
+    const compare = control.value;
+    if (compare == null || compare === '' || price == null) return null;
+    return Number(compare) > Number(price) ? null : { compareAtNotGreater: true };
+  }
+
   buildVariantGroup(v?: Partial<ProductVariant>): FormGroup {
     return this.fb.group({
       sku: [v?.sku ?? '', Validators.required],
-      price: [v?.price ?? null, [Validators.required, Validators.min(0)]],
-      compareAtPrice: [v?.compareAtPrice ?? null],
+      price: [v?.price ?? null, [Validators.required, Validators.min(0.01)]],
+      compareAtPrice: [v?.compareAtPrice ?? null, [ProductWizardStateService.compareAtGreaterThanPrice]],
       costPrice: [v?.costPrice ?? null],
       stockQuantity: [v?.stockQuantity ?? 0, [Validators.required, Validators.min(0)]],
       reorderThreshold: [v?.reorderThreshold ?? 5, [Validators.min(0)]],
@@ -243,6 +253,8 @@ export class ProductWizardStateService {
   loadFromDetail(detail: ProductDetail, buildTranslations: (existing: any[]) => FormArray): void {
     this.isEditMode.set(true);
     this.editingSlug.set(detail.slug);
+    const t = detail.translations.find((x) => x.language === 'en') ?? detail.translations[0];
+    this.editingName.set(t?.name ?? detail.slug);
 
     this.form.patchValue({
       categorySlug: detail.categorySlug,
@@ -352,6 +364,11 @@ export class ProductWizardStateService {
 
   updateAltText(index: number, altText: string): void {
     this.stagedMedia.update((media) =>
+      media.map((item, i) => (i === index ? { ...item, altText } : item)),
+    );
+  }
+  updateExistingAltText(index: number, altText: string): void {
+    this.existingMedia.update((media) =>
       media.map((item, i) => (i === index ? { ...item, altText } : item)),
     );
   }

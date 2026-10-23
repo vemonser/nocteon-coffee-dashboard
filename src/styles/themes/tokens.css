@@ -12,7 +12,7 @@
  *                                       when a focused control's text is < 16px
  *   --control-line-height-mobile  24px  the matching pair for the mobile size
  *   --radius-control           8px  controls (tracks --radius)
- *   --radius-card             12px  cards (matches the previous rounded-xl)
+ *   --radius-card             16px  cards — one radius for every surface
  *
  * There is no third height. If a surface needs a smaller control it uses the
  * compact token; if it needs more, the scale itself is wrong — change it here.
@@ -27,7 +27,56 @@
   --control-font-size-mobile: 1rem;
   --control-line-height-mobile: 1.5rem;
   --radius-control: var(--radius);
-  --radius-card: 0.75rem;
+  --radius-card: 1rem;
+
+  /**
+   * Surfaces and page rhythm. Every card and every page wrapper reads these,
+   * so a page cannot drift from the rest of the dashboard:
+   *
+   *   --card-pad          24px  a card's inner padding
+   *   --card-pad-sm       16px  compact cards only (the KPI strip's tail)
+   *   --card-ring          1px  the card's edge: a hairline, never a box
+   *   --card-shadow            one 1px lift in light; transparent in dark
+   *   --page-gutter       24px  the page's outer margin
+   *   --page-gap          24px  the gap between a page's sections
+   *   --page-max          90rem (1440px) every page's measure
+   */
+  --card-pad: 1.5rem;
+  --card-pad-sm: 1rem;
+  --card-ring: color-mix(in oklab, var(--border) 62%, transparent);
+  --card-shadow: 0 1px 2px rgb(35 26 20 / 0.045);
+
+  /**
+   * The overlays. A dialog shares the card's radius and edge — it sits next to
+   * cards and the same gesture should draw it — and differs only in elevation.
+   * A menu is attached to a control, so it takes the smaller radius and reads
+   * as an extension of its trigger rather than a floating panel.
+   *
+   *   --radius-menu      12px  dropdowns and popovers
+   *   --shadow-overlay         dialogs: the one real elevation in the app
+   *   --shadow-menu            menus: close to the surface, not above it
+   */
+  --radius-menu: 0.75rem;
+  --shadow-overlay: 0 24px 48px -12px rgb(35 26 20 / 0.22);
+  --shadow-menu: 0 8px 24px -8px rgb(35 26 20 / 0.2);
+  --page-gutter: 1.5rem;
+  --page-gap: 1.5rem;
+  --page-max: 90rem;
+}
+
+/**
+ * On a dark page the card edge is LIGHTER than its surface, so a translucent
+ * ink hairline disappears. A 6% white rule does the same job in the other
+ * direction, and the lift is dropped: elevation on near-black reads as a
+ * smudge, not a layer.
+ */
+:root.dark {
+  --card-ring: rgb(255 255 255 / 0.07);
+  /* A transparent shadow rather than `none`: --card-shadow is one item in a
+     comma-separated box-shadow list, and `none` is only valid on its own. */
+  --card-shadow: 0 0 0 0 transparent;
+  --shadow-overlay: 0 24px 48px -12px rgb(0 0 0 / 0.65);
+  --shadow-menu: 0 8px 24px -8px rgb(0 0 0 / 0.55);
 }
 
 /**
@@ -40,6 +89,11 @@
     --font-sans: "Inter", sans-serif;
     --font-heading: "Playfair Display", serif;
     --font-body: "Inter", sans-serif;
+
+    /* The editorial face. It is Playfair in English and the Arabic sans in
+       RTL (Playfair has no Arabic glyphs); index.css flips the var under
+       [dir='rtl'] so one utility is correct in both directions. */
+    --font-editorial: "Playfair Display", Georgia, serif;
 
     --font-sans-ar: "IBM Plex Sans Arabic", sans-serif;
     --font-heading-ar: "IBM Plex Sans Arabic", sans-serif;
@@ -67,6 +121,8 @@
     --color-destructive-soft: var(--destructive-soft);
     --color-overlay: var(--overlay);
     --color-search-highlight: var(--search-highlight);
+    --color-editorial: var(--editorial);
+    --color-editorial-strong: var(--editorial-strong);
     --color-chart-1: var(--chart-1);
     --color-chart-2: var(--chart-2);
     --color-chart-3: var(--chart-3);

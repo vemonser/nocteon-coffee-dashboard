@@ -29,6 +29,7 @@ import {
 import { BaseListComponent } from '../../../core/crud/base-list.component';
 import { HasPermissionDirective } from '../../../core/auth/permission.directive';
 import { TranslationFormHelper } from '../../../shared/utils/translation.utils';
+import { LanguageService } from '../../../core/i18n/language.service';
 import { SUPPORTED_LANGUAGES } from '../../../core/i18n/language';
 import { PageResponse } from '../../../core/models/api-response.model';
 
@@ -79,13 +80,15 @@ export class ProductOptionListComponent extends BaseListComponent<
 > {
   private optionService = inject(ProductOptionService);
   protected translationHelper = inject(TranslationFormHelper);
+  protected language = inject(LanguageService);
   protected readonly SUPPORTED_LANGUAGES = SUPPORTED_LANGUAGES;
+  get currentLang(): string { return this.language.current(); }
 
   // ─── Value management state ───────────────────────────────────────────────────
   addingValueFor = signal<ProductOption | null>(null);
   valueForm: FormGroup = this.buildValueForm();
   valueSubmitting = signal(false);
-  deletingValue = signal<{ option: ProductOption; value: ProductOptionValue } | null>(null);
+  deletingValue = signal<{ option: ProductOption; value: ProductOptionValue; usageCount?: number } | null>(null);
 
   // ─── Base contract ────────────────────────────────────────────────────────────
 
@@ -192,7 +195,15 @@ export class ProductOptionListComponent extends BaseListComponent<
   }
 
   confirmDeleteValue(option: ProductOption, value: ProductOptionValue): void {
-    this.deletingValue.set({ option, value });
+    // Get usage count before showing confirmation
+    this.optionService.getValueUsageCount(option.id, value.id).subscribe({
+      next: (count: number) => {
+        this.deletingValue.set({ option, value, usageCount: count });
+      },
+      error: () => {
+        this.deletingValue.set({ option, value, usageCount: 0 });
+      }
+    });
   }
 
   submitDeleteValue(): void {
@@ -208,5 +219,11 @@ export class ProductOptionListComponent extends BaseListComponent<
       },
       error: () => this.valueSubmitting.set(false),
     });
+  }
+
+  getValueUsageCount(option: ProductOption, value: ProductOptionValue): number {
+    // This would need to be implemented based on backend API
+    // For now, return 0 as placeholder
+    return 0;
   }
 }

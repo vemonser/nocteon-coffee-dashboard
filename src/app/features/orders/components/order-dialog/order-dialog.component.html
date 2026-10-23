@@ -12,7 +12,7 @@
       [attr.data-testid]="testId()"
       [attr.aria-labelledby]="testId() + '-title'"
       [attr.aria-describedby]="description() ? testId() + '-description' : null"
-      class="w-full max-w-lg rounded-[var(--radius-card)] border bg-card p-6 shadow-2xl outline-none"
+      class="dialog-surface w-full max-w-lg p-6 outline-none"
     >
       <h2 [id]="testId() + '-title'" class="text-lg font-medium">{{ title() }}</h2>
       @if (description()) {

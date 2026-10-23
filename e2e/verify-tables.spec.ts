@@ -131,7 +131,7 @@ async function measureTable(page: Page): Promise<TableMetric> {
     }));
 
     // Actions header is localized (common.actions): "Actions" / "الإجراءات".
-    const isActions = (header: string) => /(actions|الإجراءات)/i.test(header);
+    const isActions = (header: string) => /(actions|إجراءات)/i.test(header);
 
     const dataColumns = columns.filter((c) => !isActions(c.header));
     const widest = dataColumns.reduce((best, c) => (c.width > best.width ? c : best), {
@@ -140,7 +140,10 @@ async function measureTable(page: Page): Promise<TableMetric> {
     });
 
     // First cell that renders a thumbnail/swatch (image cell or main cell).
-    const thumb = firstRow?.querySelector('td img, td div[class*="rounded"]');
+    // The user avatar is a <span> when the seed has no picture (an initial in a
+    // circle), so a div-only selector skipped it and measured the cart's item
+    // thumbnails instead — reporting a 6px square where a circle was expected.
+    const thumb = firstRow?.querySelector('td img, td div[class*="rounded"], td span[class*="rounded"]');
     const thumbRect = thumb?.getBoundingClientRect();
 
     const dateCell = firstRow?.querySelector('td app-localized-date span');

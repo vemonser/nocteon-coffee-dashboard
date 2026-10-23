@@ -28,8 +28,8 @@
  * order twice. The payment status is the field the backend filters on, so
  * it is the field the sentence names.
  *
- * The refund rate uses the SAME denominator (`paid`): "2 of 10 orders" is
- * 2 refunded orders out of the 10 PAID orders, so its help text points at
+ * The refund rate uses a RELATED denominator: refunded orders out of every
+ * order that reached a paid state (paid + refunded). Its help text points at
  * this definition instead of repeating it.
  */
 

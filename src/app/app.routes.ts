@@ -450,6 +450,7 @@ export const routes: Routes = [
         path: 'products/new',
         data: { breadcrumb: 'newProduct' },
         canActivate: [permissionGuard('product:create')],
+        canDeactivate: [UnsavedChangesGuard],
         loadComponent: () =>
           import('./features/products/components/product-wizard/product-wizard.component').then(
             (m) => m.ProductWizardComponent,
@@ -459,6 +460,7 @@ export const routes: Routes = [
         path: 'products/:slug/edit',
         data: { breadcrumb: 'products' },
         canActivate: [permissionGuard('product:update')],
+        canDeactivate: [UnsavedChangesGuard],
         loadComponent: () =>
           import('./features/products/components/product-wizard/product-wizard.component').then(
             (m) => m.ProductWizardComponent,

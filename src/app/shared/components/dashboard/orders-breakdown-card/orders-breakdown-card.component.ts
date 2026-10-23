@@ -1,11 +1,12 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { TranslocoService } from '@jsverse/transloco';
+import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { DashboardStatsService } from '../../../../features/dashboard/services/dashboard-stats.service';
 import { LanguageService } from '../../../../core/i18n/language.service';
 import { formatCount } from '../../../utils/locale-format';
 import { LocalizedNameService } from '../../../../core/i18n/localized-name.service';
 import { WidgetHeaderComponent } from '../../widget-header/widget-header.component';
+import { WidgetStateComponent } from '../../widget-state/widget-state.component';
 import { ChartCardComponent } from '../../chart/chart-card.component';
 import { HlmCardImports } from '@spartan-ng/helm/card';
 import { TabsComponent } from '../../ui/tabs/tabs.component';
@@ -38,9 +39,11 @@ type OrdersTab = 'status' | 'paymentMethod';
   imports: [
     CommonModule,
     WidgetHeaderComponent,
+    WidgetStateComponent,
     ChartCardComponent,
     TabsComponent,
     HlmCardImports,
+    TranslocoPipe,
   ],
   templateUrl: './orders-breakdown-card.component.html',
 })
@@ -51,6 +54,15 @@ export class OrdersBreakdownCardComponent {
   private readonly transloco = inject(TranslocoService);
 
   readonly tab = signal<OrdersTab>('status');
+
+  /** The first load of the overview, before any slices exist. */
+  readonly loading = computed(() => this.stats.loading() && !this.stats.loaded());
+
+  /** The overview failed; the card shows the reason and a retry. */
+  readonly error = this.stats.overviewError;
+
+  /** Retry the overview after a failure. */
+  readonly retry = (): void => this.stats.retry();
 
   readonly tabs: Array<{ id: OrdersTab; labelKey: string; titleKey: string }> = [
     { id: 'status', labelKey: 'dashboard.tabs.status', titleKey: 'dashboard.ordersByStatus' },

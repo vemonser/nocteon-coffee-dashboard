@@ -24,7 +24,7 @@
  *   'none'    not computable   -> muted, NO arrow
  */
 
-export type DeltaTone = 'up' | 'down' | 'flat' | 'new' | 'none';
+export type DeltaTone = 'up' | 'down' | 'flat' | 'none';
 
 export interface DeltaResult {
   /** Raw percentage change, rounded to 1 decimal. `null` when not computable. */
@@ -39,6 +39,8 @@ export interface DeltaResult {
   isDown: boolean;
   /** Visual treatment. */
   tone: DeltaTone;
+  /** For which metric this delta applies - used for color inversion */
+  metric?: 'revenue' | 'orders' | 'customers' | 'coffee' | 'aov' | 'refundRate' | 'refunded' | 'repeat' | 'onlineUsers' | 'generic';
 }
 
 /** Below this magnitude a change is indistinguishable from no change. */
@@ -47,6 +49,7 @@ export const FLAT_THRESHOLD_PERCENT = 0.05;
 export function computeDelta(
   current: number,
   previous: number | undefined | null,
+  metric?: DeltaResult['metric'],
 ): DeltaResult {
   const none: DeltaResult = {
     percent: null,
@@ -55,19 +58,15 @@ export function computeDelta(
     isUp: false,
     isDown: false,
     tone: 'none',
+    metric,
   };
 
   if (previous === undefined || previous === null) return none;
   if (!Number.isFinite(current) || !Number.isFinite(previous)) return none;
 
-  // No baseline at all.
+  // T1: If previous is 0 -> "No prior data" (none, not new)
   if (previous === 0) {
-    if (current === 0) {
-      // Nothing before, nothing now.
-      return { percent: null, isNew: false, isFlat: true, isUp: false, isDown: false, tone: 'flat' };
-    }
-    // Something exists now where nothing existed before.
-    return { percent: null, isNew: true, isFlat: false, isUp: false, isDown: false, tone: 'new' };
+    return none;
   }
 
   const pct = ((current - previous) / previous) * 100;
@@ -77,13 +76,20 @@ export function computeDelta(
 
   if (Math.abs(rounded) < FLAT_THRESHOLD_PERCENT) {
     // Equal values (and anything that rounds to zero) — neutral, no arrow.
-    return { percent: 0, isNew: false, isFlat: true, isUp: false, isDown: false, tone: 'flat' };
+    return { percent: 0, isNew: false, isFlat: true, isUp: false, isDown: false, tone: 'flat', metric };
   }
 
+  // Determine if this metric should have inverted colors (refund/refunded are inverted)
+  const isInverted = metric === 'refundRate' || metric === 'refunded';
+  
   if (rounded > 0) {
-    return { percent: rounded, isNew: false, isFlat: false, isUp: true, isDown: false, tone: 'up' };
+    // Green for up, RED for up when inverted (refund/refunded)
+    const tone = isInverted ? 'down' : 'up';
+    return { percent: rounded, isNew: false, isFlat: false, isUp: !isInverted, isDown: isInverted, tone, metric };
   }
-  return { percent: rounded, isNew: false, isFlat: false, isUp: false, isDown: true, tone: 'down' };
+  // Red for down, GREEN for down when inverted (refund/refunded)
+  const tone = isInverted ? 'up' : 'down';
+  return { percent: rounded, isNew: false, isFlat: false, isUp: isInverted, isDown: !isInverted, tone, metric };
 }
 
 /**
@@ -113,8 +119,6 @@ export function deltaDisplay(
 ): DeltaDisplay {
   if (!result) return 'none';
   switch (result.tone) {
-    case 'new':
-      return newMeansNew ? 'new' : 'none';
     case 'flat':
       return 'flat';
     case 'up':

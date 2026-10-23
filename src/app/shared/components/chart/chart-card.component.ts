@@ -60,6 +60,8 @@ export class ChartCardComponent {
   readonly formatCompactValue = input<(value: number) => string>((v) => String(v));
   /** The label of the whole (for the centre). */
   readonly centerLabel = input<string>('Total');
+  /** The subtitle of the whole (for the centre). */
+  readonly centerSubtitle = input<string>('');
   /** Show the value and the percentage inside each slice. */
   readonly showDirectLabels = input<boolean>(false);
   /** Accessible summary of the whole chart. */
@@ -75,6 +77,9 @@ export class ChartCardComponent {
 
   /** The measured width of the card, in CSS pixels. */
   readonly width = signal(0);
+
+  /** The slice label currently hovered in the legend (for highlighting). */
+  readonly hovered = signal<string | null>(null);
 
   private readonly hostRef = viewChild<ElementRef<HTMLElement>>('chartHost');
 
@@ -157,7 +162,7 @@ export class ChartCardComponent {
   }
 
   /** The hole's radius as a fraction of the ring's outer radius. */
-  readonly holeRatio = 0.62;
+  readonly holeRatio = 0.68;
 
   /**
    * The SVG size: the ring is a FIXED size, so every donut on the page has
@@ -195,14 +200,15 @@ export class ChartCardComponent {
     const r = this.radius();
     const cx = this.center();
     const cy = this.center();
+    const gap = 2; // padAngle in degrees
     let angle = -90;
     return slices.map((slice) => {
       const fraction = total > 0 ? (slice.value || 0) / total : 0;
-      const sweep = fraction * 360;
-      const start = angle;
-      const end = angle + sweep;
-      angle = end;
-      const path = this.arcBetween(cx, cy, r, start, end, fraction);
+      const sweep = Math.max(0, fraction * 360 - gap);
+      const start = angle + gap / 2;
+      const end = start + sweep;
+      angle = angle + fraction * 360;
+      const path = this.arcBetween(cx, cy, r, start, end, sweep / 360);
       const mid = (start + end) / 2;
       const labelRadius = r * 0.82;
       return {
@@ -314,6 +320,5 @@ export class ChartCardComponent {
  */
 export const DONUT_DIAMETER_PX = 180;
 
-/** The font size of the centre value, in pixels (the `text-lg` utility). */
-const CENTER_VALUE_FX = 18;
-const CENTER_VALUE_FONT_PX = CENTER_VALUE_FX;
+/** The font size of the centre value, in pixels (the `text-[22px]` utility). */
+const CENTER_VALUE_FONT_PX = 22;

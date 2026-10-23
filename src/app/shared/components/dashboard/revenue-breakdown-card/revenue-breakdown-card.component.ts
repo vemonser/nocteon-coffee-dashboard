@@ -1,10 +1,11 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { TranslocoService } from '@jsverse/transloco';
+import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { DashboardStatsService } from '../../../../features/dashboard/services/dashboard-stats.service';
 import { formatCompactCurrency, formatCurrency } from '../../../utils/locale-format';
 import { LanguageService } from '../../../../core/i18n/language.service';
 import { WidgetHeaderComponent } from '../../widget-header/widget-header.component';
+import { WidgetStateComponent } from '../../widget-state/widget-state.component';
 import { ChartCardComponent } from '../../chart/chart-card.component';
 import { HlmCardImports } from '@spartan-ng/helm/card';
 import { TabsComponent } from '../../ui/tabs/tabs.component';
@@ -41,9 +42,11 @@ type BreakdownTab = 'origin' | 'roast' | 'category';
   imports: [
     CommonModule,
     WidgetHeaderComponent,
+    WidgetStateComponent,
     ChartCardComponent,
     HlmCardImports,
     TabsComponent,
+    TranslocoPipe,
   ],
   templateUrl: './revenue-breakdown-card.component.html',
 })
@@ -54,6 +57,15 @@ export class RevenueBreakdownCardComponent {
 
   /** The active tab. */
   readonly tab = signal<BreakdownTab>('origin');
+
+  /** The first load of the overview, before any slices exist. */
+  readonly loading = computed(() => this.stats.loading() && !this.stats.loaded());
+
+  /** The overview failed; the card shows the reason and a retry. */
+  readonly error = this.stats.overviewError;
+
+  /** Retry the overview after a failure. */
+  readonly retry = (): void => this.stats.retry();
 
   readonly tabs: Array<{ id: BreakdownTab; labelKey: string; titleKey: string }> = [
     {
@@ -161,10 +173,54 @@ export class RevenueBreakdownCardComponent {
    * ("Origin"): the centre of a revenue donut is the revenue, and the
    * title above the card already says which breakdown it is broken down
    * by.
+   *
+   * For origin breakdown, special text: "Product revenue" + "excl. shipping"
+   * with tooltip explaining difference from Total revenue.
    */
   readonly centerLabel = computed(() => {
     this.language.language();
+    const hasShipping = this.hasShipping();
+    if (this.tab() === 'origin' && hasShipping) {
+      return this.transloco.translate('dashboard.revenueByOriginProductRevenue');
+    }
     return this.transloco.translate('dashboard.donutRevenue');
+  });
+
+  /** Check if the segment contains shipping fees */
+  protected hasShipping(): boolean {
+    return this.originData().some(item => 
+      item.label.toLowerCase().includes('shipping') || 
+      item.label.toLowerCase().includes('shipping fee') ||
+      item.label.toLowerCase().includes('shipping costs')
+    );
+  }
+
+  /** The center subtitle for the donut */
+  protected readonly centerSubtitle = computed(() => {
+    if (this.tab() !== 'origin') return '';
+    
+    const hasShipping = this.hasShipping();
+    if (hasShipping) {
+      return this.transloco.translate('dashboard.revenueByOriginExclShipping');
+    }
+    return '';
+  });
+
+  /** Shipping exclusion verification status */
+  protected readonly shippingExclusionStatus = computed(() => {
+    if (!this.hasShipping()) return 'EXCLUDED';
+    
+    const originTotal = this.originData().reduce((sum, item) => sum + item.value, 0);
+    const totalRevenue = this.stats.statsCards()?.totalRevenue ?? 0;
+    const discrepancy = originTotal - totalRevenue;
+    
+    if (Math.abs(discrepancy) < 0.01) {
+      return 'CORRECT';
+    } else {
+      // Log mismatch
+      console.log(`Revenue mismatch: Origin total (${originTotal}) + Shipping (${discrepancy}) ≠ Total revenue (${totalRevenue})`);
+      return 'MISMATCH';
+    }
   });
 
   /** Money, in the store currency. */

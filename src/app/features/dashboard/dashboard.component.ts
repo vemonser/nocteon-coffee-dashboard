@@ -24,12 +24,20 @@ import {
   lucideSmartphone,
   lucideTablet,
   lucideCheckCircle,
+  lucideCheck,
   lucideDownload,
   lucideInfo,
+  lucideMinus,
+  lucidePlus,
+  lucidePercent,
+  lucideArchive,
+  lucideFileText,
+  lucideXCircle as lucideXCircle2,
 } from '@ng-icons/lucide';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmCardImports } from '@spartan-ng/helm/card';
 import { HlmBadgeImports } from '@spartan-ng/helm/badge';
+
 
 import { DashboardStatsService } from './services/dashboard-stats.service';
 import { StoreSettingsService } from '../../core/settings/store-settings.service';
@@ -79,8 +87,8 @@ import { WidgetStateComponent } from '../../shared/components/widget-state/widge
     OrdersBreakdownCardComponent,
     DeviceListComponent,
     DashboardToolbarComponent,
-    KpiCardComponent,
     WidgetStateComponent,
+    KpiCardComponent,
   ],
   providers: [
     provideIcons({
@@ -105,7 +113,14 @@ import { WidgetStateComponent } from '../../shared/components/widget-state/widge
       lucideTablet,
       lucideCheckCircle,
       lucideDownload,
-  lucideInfo,
+      lucideInfo,
+      lucideCheck,
+      lucideMinus,
+      lucidePlus,
+      lucidePercent,
+      lucideArchive,
+      lucideFileText,
+      lucideXCircle2,
     }),
   ],
   templateUrl: './dashboard.component.html',
@@ -154,6 +169,7 @@ export class DashboardComponent {
   readonly deviceBreakdown = computed(() => [...(this.statsService.deviceBreakdown() ?? [])].sort((a, b) => (b.count || 0) - (a.count || 0)));
   readonly lowStockProducts = computed(() => this.statsService.lowStockProducts() ?? []);
   readonly onlineUsersCount = computed(() => this.statsService.onlineUsers());
+  readonly paidOrders = computed(() => this.statsService.paidOrders());
 
   ngOnInit(): void {
     // The range lives in the URL, so it survives a refresh, a shared link
@@ -203,15 +219,6 @@ export class DashboardComponent {
 
 
   /** Delta result for a KPI card. */
-  /**
-   * The daily revenue series, for the revenue KPI's sparkline.
-   *
-   * It is the REAL series the API returned — the same one the revenue chart
-   * draws. A KPI card that faked its sparkline would be a decoration.
-   */
-  readonly revenueSparkline = computed(() =>
-    (this.statsService.revenueChartData() ?? []).map((d) => d.revenue || 0),
-  );
 
   /** A whole number, formatted for the current locale. */
   /** Retry the overview after a failure. */
@@ -227,11 +234,11 @@ export class DashboardComponent {
     const ug = this.statsService.userGrowth();
     if (!stats || !ug || !overview) return {};
     return {
-      revenue: computeDelta(stats.totalRevenue, overview.previousTotalRevenue),
-      orders: computeDelta(stats.totalOrders, overview.previousTotalOrders),
-      customers: computeDelta(ug.currentPeriodCount, ug.previousPeriodCount),
-      coffee: computeDelta(stats.coffeeSold, overview.previousCoffeeSoldKg),
-      aov: computeDelta(stats.averageOrderValue, overview.previousAverageOrderValue),
+      revenue: computeDelta(stats.totalRevenue, overview.previousTotalRevenue, 'revenue'),
+      orders: computeDelta(stats.totalOrders, overview.previousTotalOrders, 'orders'),
+      customers: computeDelta(ug.currentPeriodCount, ug.previousPeriodCount, 'customers'),
+      coffee: computeDelta(stats.coffeeSold, overview.previousCoffeeSoldKg, 'coffee'),
+      aov: computeDelta(stats.averageOrderValue, overview.previousAverageOrderValue, 'aov'),
     };
   });
 
@@ -239,12 +246,10 @@ export class DashboardComponent {
    * The delta chip's label.
    *
    * A zero change reads "No change", not "+0.0%" with a green arrow: there
-   * was no change, and a green up-arrow claims there was. "New" is used when
-   * there is no baseline to compare against.
+   * was no change. TONE 'new' is removed per T1 requirements.
    */
   protected deltaLabel(d: DeltaResult | null | undefined): string {
     if (!d) return '—';
-    if (d.tone === 'new') return this.t('dashboard.delta.new');
     if (d.tone === 'flat') return this.t('dashboard.delta.noChange');
     if (d.tone === 'none') return '—';
     const pct = formatSignedPercent(d.percent ?? 0, this.language.language());
@@ -259,8 +264,6 @@ export class DashboardComponent {
         return 'text-success';
       case 'down':
         return 'text-destructive';
-      case 'new':
-        return 'text-success';
       default:
         return 'text-muted-foreground';
     }

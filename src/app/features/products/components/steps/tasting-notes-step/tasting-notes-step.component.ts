@@ -2,10 +2,12 @@ import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormControl } from '@angular/forms';
 import { ProductWizardStateService } from '../../product-wizard/product-wizard-state.service';
+import { ProductWizardComponent } from '../../product-wizard/product-wizard.component';
 import { TastingNoteService } from '../../../../tasting-note/services/tasting-note.service';
 import { TastingNoteResponse } from '../../../../tasting-note/models/tasting-note.model';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { NotifyService } from '../../../../../core/notify/notify.service';
+import { LanguageService } from '../../../../../core/i18n/language.service';
 
 /**
  * Step 4 — Tasting Notes (multi-select from existing lookup entity).
@@ -23,6 +25,24 @@ export class TastingNotesStepComponent {
   protected state = inject(ProductWizardStateService);
   private tastingNoteService = inject(TastingNoteService);
   private notify = inject(NotifyService);
+  private language = inject(LanguageService);
+  private wizard = inject(ProductWizardComponent);
+
+  saveCurrentStep(): void {
+    this.wizard.saveCurrentStep();
+  }
+
+  onBack(): void {
+    this.wizard.onBack();
+  }
+
+  isCurrentStepDirty(): boolean {
+    return this.wizard.isCurrentStepDirty();
+  }
+
+  isCurrentStepValid(): boolean {
+    return this.state.isCurrentStepValid();
+  }
 
   allNotes = signal<TastingNoteResponse[]>([]);
 
@@ -38,6 +58,10 @@ export class TastingNotesStepComponent {
     return this.state.tastingNotesArray.value.includes(slug);
   }
 
+  selectedCount(): number {
+    return this.state.tastingNotesArray.value.length;
+  }
+
   toggle(slug: string): void {
     const index = this.state.tastingNotesArray.value.indexOf(slug);
     if (index === -1) {
@@ -48,7 +72,8 @@ export class TastingNotesStepComponent {
   }
 
 getNoteName(note: TastingNoteResponse): string {
-    const name = note.translations.find((t) => t.language === 'en')?.name;
-    return name ?? note.slug;
+    const lang = this.language.current();
+    const t = note.translations.find((x) => x.language?.toLowerCase() === lang?.toLowerCase());
+    return t?.name ?? note.translations[0]?.name ?? note.slug;
 }
 }

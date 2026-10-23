@@ -20,6 +20,9 @@
     @if (state.form.get('productType')?.invalid && state.form.get('productType')?.touched) {
       <p class="text-destructive text-xs">{{ 'products.form.productTypeRequired' | transloco }}</p>
     }
+    @if (state.isEditMode()) {
+      <p class="text-warning text-xs">{{ 'products.form.productTypeChangeWarning' | transloco }}</p>
+    }
   </div>
 
   <!-- Category -->
@@ -81,6 +84,13 @@
     </hlm-select>
   </div>
 
+  @if (state.isEditMode() && state.editingSlug()) {
+    <div class="space-y-1.5">
+      <label hlmLabel>Slug</label>
+      <input hlmInput type="text" [value]="state.editingSlug()" readonly class="w-full bg-muted" />
+    </div>
+  }
+
   <!-- Coffee Details -->
   @if (isCoffee) {
     <div class="border border-border rounded-md p-4 bg-muted/50 space-y-4">
@@ -88,24 +98,31 @@
 
       <div class="grid grid-cols-2 gap-3">
         <div class="space-y-1.5">
-          <label hlmLabel>{{ 'products.form.altitude' | transloco }}</label>
+          <label hlmLabel>{{ 'products.form.altitude' | transloco }} (m)</label>
           <input
             hlmInput
             formControlName="altitude"
             type="number"
+            min="0"
+            max="3000"
             class="w-full"
             [placeholder]="'products.form.altitudePlaceholder' | transloco"
           />
         </div>
         <div class="space-y-1.5">
           <label hlmLabel>{{ 'products.form.harvestYear' | transloco }}</label>
-          <input
-            hlmInput
-            formControlName="harvestYear"
-            type="text"
-            class="w-full"
-            [placeholder]="'products.form.harvestYearPlaceholder' | transloco"
-          />
+          <hlm-select formControlName="harvestYear" class="w-full">
+            <hlm-select-trigger class="w-full">
+              <hlm-select-value [placeholder]="'products.form.harvestYearPlaceholder' | transloco" />
+            </hlm-select-trigger>
+            <hlm-select-content *hlmSelectPortal>
+              <hlm-select-group>
+                @for (y of harvestYears; track y) {
+                  <hlm-select-item [value]="y">{{ y }}</hlm-select-item>
+                }
+              </hlm-select-group>
+            </hlm-select-content>
+          </hlm-select>
         </div>
       </div>
 
@@ -165,13 +182,13 @@
 
       <div class="space-y-1.5">
         <label hlmLabel>{{ 'products.form.story' | transloco }}</label>
-        <input
+        <textarea
           hlmInput
           formControlName="story"
-          type="text"
+          rows="4"
           class="w-full"
           [placeholder]="'products.form.storyPlaceholder' | transloco"
-        />
+        ></textarea>
       </div>
     </div>
   }
@@ -193,6 +210,7 @@
             formControlName="name"
             type="text"
             [dir]="translationHelper.getLangDir(group.get('language')?.value)"
+            [attr.lang]="group.get('language')?.value"
             class="w-full"
           />
           @if (group.get('name')?.invalid && group.get('name')?.touched) {
@@ -206,10 +224,15 @@
             hlmInput
             formControlName="shortDescription"
             type="text"
+            maxlength="160"
             [dir]="translationHelper.getLangDir(group.get('language')?.value)"
+            [attr.lang]="group.get('language')?.value"
             class="w-full"
             [placeholder]="'products.form.shortDescriptionPlaceholder' | transloco"
           />
+          <p class="text-xs text-muted-foreground text-end">
+            {{ (group.get('shortDescription')?.value?.length ?? 0) }}/160
+          </p>
         </div>
 
         <div class="space-y-1.5">
@@ -219,6 +242,7 @@
             formControlName="description"
             rows="3"
             [dir]="translationHelper.getLangDir(group.get('language')?.value)"
+            [attr.lang]="group.get('language')?.value"
             class="w-full"
           ></textarea>
         </div>
@@ -227,14 +251,35 @@
   </div>
 
   <!-- Status toggles -->
-  <div class="flex gap-6">
-    <label class="flex items-center gap-2 cursor-pointer">
-      <input type="checkbox" formControlName="isActive" hlmCheckbox />
-      <span class="text-sm font-medium">{{ 'products.form.active' | transloco }}</span>
-    </label>
-    <label class="flex items-center gap-2 cursor-pointer">
-      <input type="checkbox" formControlName="featured" hlmCheckbox />
-      <span class="text-sm font-medium">{{ 'products.form.featured' | transloco }}</span>
-    </label>
+  <div class="space-y-3">
+    <div class="flex items-center justify-between rounded-md border p-3">
+      <div>
+        <p class="text-sm font-medium">{{ 'products.form.active' | transloco }}</p>
+        <p class="text-xs text-muted-foreground">{{ 'products.form.activeHint' | transloco }}</p>
+      </div>
+      <hlm-switch formControlName="isActive" [attr.aria-label]="'products.form.active' | transloco" />
+    </div>
+    <div class="flex items-center justify-between rounded-md border p-3">
+      <div>
+        <p class="text-sm font-medium">{{ 'products.form.featured' | transloco }}</p>
+        <p class="text-xs text-muted-foreground">{{ 'products.form.featuredHint' | transloco }}</p>
+      </div>
+      <hlm-switch formControlName="featured" [attr.aria-label]="'products.form.featured' | transloco" />
+    </div>
+  </div>
+  @if (!state.form.get('isActive')?.value && state.form.get('featured')?.value) {
+    <p class="text-warning text-xs">Featured products that are disabled will not appear on the storefront.</p>
+  }
+
+  <!-- Sticky footer for navigation -->
+  <div class="sticky-footer">
+    <button hlmBtn variant="outline" (click)="onCancel()">
+      {{ 'common.cancel' | transloco }}
+    </button>
+    <button hlmBtn 
+            [disabled]="!isCurrentStepDirty() || !isCurrentStepValid()" 
+            (click)="saveCurrentStep()">
+      {{ 'common.saveChanges' | transloco }}
+    </button>
   </div>
 </div>

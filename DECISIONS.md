@@ -14,6 +14,15 @@ Running log of decisions taken while making the dashboard home look and behave
 like a polished commerce admin. Each entry records what was decided, why, and
 where the evidence lives.
 
+## Orders tabs count
+
+The status tabs sum to 16 while the "All" tab shows 17 because the `CONFIRMED`
+status is folded into the `All` count but has no dedicated tab of its own (the
+tabs list Pending, Processing, Shipped, Delivered, Cancelled, Refunded). This
+is intentional: `CONFIRMED` orders are surfaced through the "Needs attention"
+panel and the status filter, not as a top-level tab, to keep the tab row
+scannable.
+
 ---
 
 ## PHASE 0 — Harness

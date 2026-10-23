@@ -126,7 +126,17 @@ export function buildOrderEvents(sources: OrderActivitySources): OrderEvent[] {
     });
   }
 
-  if (sources.shipment?.shippedAt) {
+  // A shipment stamp that duplicates a status transition the history already
+  // records is folded into that transition's row instead of becoming a second
+  // line ("Shipped → Delivered" and "Shipment delivered" are the same event).
+  const hasShippedTransition = (sources.history ?? []).some(
+    (entry) => entry.toStatus === 'SHIPPED',
+  );
+  const hasDeliveredTransition = (sources.history ?? []).some(
+    (entry) => entry.toStatus === 'DELIVERED',
+  );
+
+  if (sources.shipment?.shippedAt && !hasShippedTransition) {
     events.push({
       id: 'shipment-shipped',
       kind: 'shipment',
@@ -135,7 +145,7 @@ export function buildOrderEvents(sources: OrderActivitySources): OrderEvent[] {
     });
   }
 
-  if (sources.shipment?.deliveredAt) {
+  if (sources.shipment?.deliveredAt && !hasDeliveredTransition) {
     events.push({
       id: 'shipment-delivered',
       kind: 'shipment',

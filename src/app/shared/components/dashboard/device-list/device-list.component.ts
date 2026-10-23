@@ -1,6 +1,13 @@
 import { Component, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslocoPipe } from '@jsverse/transloco';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import {
+  lucideGlobe,
+  lucideMonitor,
+  lucideSmartphone,
+  lucideTablet,
+} from '@ng-icons/lucide';
 import { DashboardStatsService } from '../../../../features/dashboard/services/dashboard-stats.service';
 import { LocalizedNameService } from '../../../../core/i18n/localized-name.service';
 import { PluralPipe } from '../../../pipes/plural.pipe';
@@ -32,7 +39,10 @@ import { PluralPipe } from '../../../pipes/plural.pipe';
 @Component({
   selector: 'app-device-list',
   standalone: true,
-  imports: [CommonModule, TranslocoPipe, PluralPipe],
+  imports: [CommonModule, TranslocoPipe, PluralPipe, NgIcon],
+  providers: [
+    provideIcons({ lucideGlobe, lucideMonitor, lucideSmartphone, lucideTablet }),
+  ],
   templateUrl: './device-list.component.html',
   styleUrl: './device-list.component.css',
 })
@@ -47,20 +57,49 @@ export class DeviceListComponent {
     ),
   );
 
-  /** The largest count — the bars are scaled to it. */
-  readonly max = computed(() =>
-    this.devices().reduce((max, d) => Math.max(max, d.count || 0), 0),
+  /** Total sessions count for percentage calculation. */
+  readonly total = computed(() =>
+    this.devices().reduce((sum, d) => sum + (d.count || 0), 0),
   );
 
-  /** The width of one bar, as a percentage of the full track. */
+  /** The width of one bar, as a percentage of the total. */
   width(count: number): number {
-    const max = this.max();
-    if (!max) return 0;
-    return Math.max(2, Math.round((count / max) * 1000) / 10);
+    const total = this.total();
+    if (!total) return 0;
+    const percent = (count / total) * 100;
+    return Math.max(2, Math.round(percent * 10) / 10);
+  }
+
+  /** Percent of total sessions for display. */
+  percent(count: number): number {
+    const total = this.total();
+    if (!total) return 0;
+    return Math.round((count / total) * 100);
   }
 
   /** The localized device name. */
   label(deviceType: string): string {
     return this.names.deviceType(deviceType);
+  }
+
+  /**
+   * The icon for a device type.
+   *
+   * The API's device names are not a closed enum (`Desktop`, `DESKTOP`,
+   * `Mobile`, `IOS` all occur), so the match is on the WORD, not on one
+   * spelling. An unknown type still gets a neutral icon rather than a blank.
+   */
+  icon(deviceType: string): string {
+    const type = (deviceType || '').toUpperCase();
+    // Check for specific OS types first
+    if (/WINDOWS/.test(type)) return 'lucideMonitor';
+    if (/MAC|IOS|IPHONE|IPAD|APPLE/.test(type)) return 'lucideMonitor';
+    if (/LINUX/.test(type)) return 'lucideMonitor';
+    if (/ANDROID/.test(type)) return 'lucideSmartphone';
+    // Then check for device types
+    if (/MOBILE|PHONE/.test(type)) return 'lucideSmartphone';
+    if (/TABLET/.test(type)) return 'lucideTablet';
+    if (/DESKTOP|LAPTOP|COMPUTER/.test(type)) return 'lucideMonitor';
+    return 'lucideGlobe';
   }
 }

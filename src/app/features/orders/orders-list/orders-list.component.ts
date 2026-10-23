@@ -1,4 +1,4 @@
-﻿import { Component, computed, inject, signal } from '@angular/core';
+﻿import { Component, computed, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -17,15 +17,23 @@ import {
   lucideUsers,
   lucideDollarSign,
   lucideXCircle,
+  lucideCheck,
+  lucideMinus,
+  lucidePlus,
+  lucidePercent,
+  lucideArchive,
+  lucideFileText,
 } from '@ng-icons/lucide';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmInputImports } from '@spartan-ng/helm/input';
 import { HlmNativeSelectImports } from '@spartan-ng/helm/native-select';
 import { HlmTooltipImports } from '@spartan-ng/helm/tooltip';
+
 import { BrnTooltip } from '@spartan-ng/brain/tooltip';
 
 import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
+import { KpiCardComponent } from '../../../shared/components/dashboard/kpi-card/kpi-card.component';
 import { PagerComponent } from '../../../shared/components/pager/pager.component';
 import { PluralPipe } from '../../../shared/pipes/plural.pipe';
 import { MoneyPipe } from '../../../shared/pipes/money.pipe';
@@ -91,6 +99,7 @@ import { formatOrderNumber } from '../utils/order-number';
     NgIcon,
     PagerComponent,
     PluralPipe,
+    KpiCardComponent,
     TranslocoPipe,
     MoneyPipe,
   ],
@@ -106,6 +115,12 @@ import { formatOrderNumber } from '../utils/order-number';
       lucideTrendingUp,
       lucideUsers,
       lucideDollarSign,
+      lucideCheck,
+      lucideMinus,
+      lucidePlus,
+      lucidePercent,
+      lucideArchive,
+      lucideFileText,
       lucideXCircle,
     }),
   ],
@@ -119,6 +134,7 @@ export class OrdersListComponent {
   protected readonly language = inject(LanguageService);
   protected readonly names = inject(LocalizedNameService);
   private readonly storeSettings = inject(StoreSettingsService);
+  protected readonly storeCurrency = computed(() => this.storeSettings.currency());
   private readonly transloco = inject(TranslocoService);
 
   /** The rows of the current page (the VIEW). */
@@ -254,7 +270,7 @@ export class OrdersListComponent {
     ),
     this.columnHelper.accessor(
       (row) => row.items ?? [],
-      { id: 'itemCount', header: 'orders.columns.items', enableSorting: false, meta: { width: '69px' } },
+      { id: 'itemCount', header: 'orders.columns.items', enableSorting: false, meta: { width: '95px' } },
     ),
     this.columnHelper.accessor(
       (row) => orderStatusKind(row.status),
@@ -532,6 +548,13 @@ export class OrdersListComponent {
         for (const entry of facets.data?.byStatus ?? []) {
           counts[entry.status] = entry.count;
         }
+        // "Refunded" is a PAYMENT status, not an order status: count it from
+        // the payment-status facets so the tab reflects orders whose payment
+        // was refunded (even when their fulfilment status is something else).
+        const refundedCount = (facets.data?.byPaymentStatus ?? []).find(
+          (entry: { paymentStatus: string; count: number }) => entry.paymentStatus === 'REFUNDED',
+        )?.count ?? 0;
+        counts['REFUNDED'] = refundedCount;
         this.statusCounts.set(counts);
 
         // KPIs from the card stats (with tab)

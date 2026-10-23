@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 import { signal } from '@angular/core';
 import { ProductWizardStateService } from '../../product-wizard/product-wizard-state.service';
+import { ProductWizardComponent } from '../../product-wizard/product-wizard.component';
 import { ProductType } from '../../../models/product.models';
 import { TranslationFormHelper } from '../../../../../shared/utils/translation.utils';
 import { CategoryService } from '../../../../categories/services/category.service';
@@ -22,6 +23,7 @@ import { HlmSelectImports } from '@spartan-ng/helm/select';
 import { HlmInputImports } from '@spartan-ng/helm/input';
 import { HlmLabel } from '@spartan-ng/helm/label';
 import { HlmCheckboxImports } from '@spartan-ng/helm/checkbox';
+import { HlmSwitchImports } from '@spartan-ng/helm/switch';
 import { TranslocoPipe } from '@jsverse/transloco';
 
 @Component({
@@ -34,6 +36,7 @@ import { TranslocoPipe } from '@jsverse/transloco';
     HlmInputImports,
     HlmLabel,
     HlmCheckboxImports,
+    HlmSwitchImports,
     TranslocoPipe,
   ],
   templateUrl: './basic-info-step.component.html',
@@ -41,6 +44,7 @@ import { TranslocoPipe } from '@jsverse/transloco';
 export class BasicInfoStepComponent {
   protected state = inject(ProductWizardStateService);
   protected translationHelper = inject(TranslationFormHelper);
+  private wizard = inject(ProductWizardComponent);
 
   private categoryService = inject(CategoryService);
   private originService = inject(OriginService);
@@ -56,6 +60,8 @@ export class BasicInfoStepComponent {
   roastLevels = signal<RoastLevelResponse[]>([]);
   processingMethods = signal<ProcessingMethodResponse[]>([]);
   coffeeVarieties = signal<CoffeeVarietyResponse[]>([]);
+
+  readonly harvestYears: number[] = Array.from({ length: 15 }, (_, i) => new Date().getFullYear() - i);
 
   readonly productTypes: { label: string; value: ProductType }[] = [
     { label: 'Coffee', value: 'COFFEE' },
@@ -100,6 +106,22 @@ export class BasicInfoStepComponent {
 
   get isCoffee(): boolean {
     return this.state.form.get('productType')?.value === 'COFFEE';
+  }
+
+  saveCurrentStep(): void {
+    this.wizard.saveCurrentStep();
+  }
+
+  onCancel(): void {
+    this.wizard.onCancel();
+  }
+
+  isCurrentStepDirty(): boolean {
+    return this.wizard.isCurrentStepDirty();
+  }
+
+  isCurrentStepValid(): boolean {
+    return this.state.isCurrentStepValid();
   }
 
   private enName(translations: { language: string; name: string }[], fallback: string): string {

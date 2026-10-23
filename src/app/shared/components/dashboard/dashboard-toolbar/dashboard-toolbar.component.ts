@@ -7,6 +7,8 @@ import {
   lucideCalendar,
   lucideDownload,
   lucideRepeat,
+  lucideRefreshCw,
+  lucideChevronDown,
 } from '@ng-icons/lucide';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { DashboardStatsService } from '../../../../features/dashboard/services/dashboard-stats.service';
@@ -38,7 +40,7 @@ import { TranslocoService } from '@jsverse/transloco';
     LocalizedDateComponent,
     TabsComponent,
   ],
-  providers: [provideIcons({ lucideCalendar, lucideDownload, lucideRepeat })],
+  providers: [provideIcons({ lucideCalendar, lucideDownload, lucideRepeat, lucideRefreshCw, lucideChevronDown })],
   templateUrl: './dashboard-toolbar.component.html',
   styleUrl: './dashboard-toolbar.component.css',
 })
@@ -50,6 +52,7 @@ export class DashboardToolbarComponent {
 
   /** The range options. */
   readonly options = [
+    { days: 1, key: 'dashboard.today' },
     { days: 7, key: 'dashboard.last7Days' },
     { days: 30, key: 'dashboard.last30Days' },
     { days: 90, key: 'dashboard.last90Days' },
@@ -68,11 +71,44 @@ export class DashboardToolbarComponent {
     }));
   });
 
+  /** Last updated timestamp. */
+  readonly lastUpdated = signal<Date>(new Date());
+
+  /** Relative time since last update. */
+  readonly relativeTime = computed(() => {
+    const now = new Date();
+    const diffMs = now.getTime() - this.lastUpdated().getTime();
+    const minutes = Math.round(diffMs / 60000);
+    
+    if (minutes < 1) {
+      return 'just now';
+    } else if (minutes < 60) {
+      return `${minutes} min ago`;
+    } else {
+      const hours = Math.round(minutes / 60);
+      return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+    }
+  });
+
+  /** Refresh all dashboard queries. */
+  refresh(): void {
+    this.stats.refresh();
+    this.lastUpdated.set(new Date());
+  }
+
   /** The active tab's id — the range in days, as a string. */
   readonly activeTabId = computed(() => String(this.stats.days()));
 
   /** The live announcement of the current selection. */
   readonly announcement = signal('');
+
+  /** Export menu open state. */
+  readonly exportMenuOpen = signal(false);
+
+  /** Toggle export menu. */
+  toggleExportMenu(): void {
+    this.exportMenuOpen.set(!this.exportMenuOpen());
+  }
 
   /**
    * Select a range.

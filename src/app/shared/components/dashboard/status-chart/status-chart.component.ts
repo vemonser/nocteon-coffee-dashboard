@@ -26,7 +26,7 @@ export class StatusChartComponent {
 
   chartOptions = {
     series: [] as ApexNonAxisChartSeries,
-    chart: { type: 'donut' as const, height: 280, fontFamily: 'inherit' },
+    chart: { type: 'donut' as const, height: 300, fontFamily: 'inherit' },
     labels: [] as string[],
     colors: [
       'var(--color-warning)',
@@ -36,17 +36,32 @@ export class StatusChartComponent {
       'var(--color-destructive)',
     ],
     legend: {
-      position: 'bottom' as const,
+      position: 'right' as const,
       labels: { colors: 'var(--foreground)' },
     },
+    responsive: [
+      {
+        breakpoint: 768,
+        options: {
+          legend: { position: 'bottom' as const },
+        },
+      },
+    ],
     plotOptions: {
       pie: {
         donut: {
-          size: '60%',
+          size: '65%',
           labels: {
             show: true,
-            name: { color: 'var(--foreground)' },
-            value: { color: 'var(--foreground)' },
+            name: { color: 'var(--foreground)', fontSize: '12px' },
+            value: { color: 'var(--foreground)', fontSize: '14px', fontWeight: 600 },
+            total: {
+              show: true,
+              label: 'Orders',
+              color: 'var(--muted-foreground)',
+              fontSize: '11px',
+              formatter: () => '',
+            },
           },
         },
       },

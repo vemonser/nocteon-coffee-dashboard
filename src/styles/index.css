@@ -55,6 +55,9 @@
   [dir='rtl'] * {
     --font-body: var(--font-sans-ar);
     --font-display: var(--font-sans-ar);
+    /* Playfair carries no Arabic glyphs, so the editorial face follows the
+       dashboard's Arabic heading face instead of falling back to a serif. */
+    --font-editorial: var(--font-sans-ar);
   }
 
   /* Override مباشر للـ font-family */
@@ -130,6 +133,64 @@ span:lang(ar),
     }
   }
 }
+@layer components {
+  /**
+   * The page rhythm, in one place. Every route wrapper used to spell out
+   * `flex flex-col gap-6 p-6 max-w-7xl mx-auto` by hand — and a third of them
+   * spelled it differently, so pages did not line up with each other. The
+   * gutter, the gap and the measure are tokens now (themes/tokens.css).
+   */
+  .page-shell {
+    display: flex;
+    flex-direction: column;
+    gap: var(--page-gap);
+    width: 100%;
+    max-width: var(--page-max);
+    margin-inline: auto;
+    padding: var(--page-gutter);
+  }
+
+  /**
+   * The card surface, for the surfaces that cannot be an <hlm-card>: a table
+   * wrapper, a themed panel, an empty state. It paints the SAME edge as
+   * hlm-card (one radius, one hairline ring, one 1px lift in light), so a
+   * hand-written panel and a component card are indistinguishable.
+   */
+  .card-surface {
+    background-color: var(--card);
+    color: var(--card-foreground);
+    border-radius: var(--radius-card);
+    box-shadow:
+      0 0 0 1px var(--card-ring),
+      var(--card-shadow);
+  }
+
+  /**
+   * The overlay surfaces. Three radii existed for the same object — a dialog
+   * was drawn at 12px in some features and 16px in others, and the shared
+   * delete dialog at 6px — so a user could see two different dialog shapes in
+   * one session. They share the card's radius now; only the elevation differs.
+   */
+  .dialog-surface {
+    background-color: var(--card);
+    color: var(--card-foreground);
+    border-radius: var(--radius-card);
+    box-shadow:
+      0 0 0 1px var(--card-ring),
+      var(--shadow-overlay);
+  }
+
+  /** A menu is attached to a control: the smaller radius, a nearer shadow. */
+  .menu-surface {
+    background-color: var(--card);
+    color: var(--card-foreground);
+    border-radius: var(--radius-menu);
+    box-shadow:
+      0 0 0 1px var(--card-ring),
+      var(--shadow-menu);
+  }
+}
+
 @layer utilities {
   .scrollbar-hide {
     /* Chrome, Safari, Edge */

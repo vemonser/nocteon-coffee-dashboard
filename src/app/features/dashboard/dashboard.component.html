@@ -1,9 +1,18 @@
-<div class="flex flex-col gap-6 p-6 max-w-7xl mx-auto">
-  <!-- Title and subtitle above the toolbar. -->
-  <div class="mb-1">
-    <h1 class="text-2xl font-medium tracking-tight">{{ 'dashboard.title' | transloco }}</h1>
-    <p class="text-sm leading-none text-muted-foreground">{{ 'dashboard.subtitle' | transloco }}</p>
-  </div>
+<div class="page-shell">
+  <!-- The editorial masthead: a small caps rule over the title, so the page
+       announces itself as a report rather than as a generic admin screen. -->
+  <header class="flex flex-col gap-1.5">
+    <p class="flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.18em] text-editorial">
+      <span class="h-px w-6 bg-editorial/50" aria-hidden="true"></span>
+      {{ 'dashboard.eyebrow' | transloco }}
+    </p>
+    <div class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
+      <h1 class="font-editorial text-[2rem] font-medium leading-tight tracking-tight">
+        {{ 'dashboard.title' | transloco }}
+      </h1>
+      <p class="max-w-prose text-sm text-muted-foreground">{{ 'dashboard.subtitle' | transloco }}</p>
+    </div>
+  </header>
 
   <!-- ONE toolbar: the range, the range it compares against, and the export. -->
   <app-dashboard-toolbar />
@@ -43,8 +52,9 @@
       </div>
     </hlm-card>
   } @else if (!statsService.loaded() && statsService.loading()) {
-    <!-- The first load: a skeleton with the shape of the KPI row. -->
-    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <!-- The first load: a skeleton with the shape of the KPI row. It uses the
+         same breakpoints as the real row so the page does not jump. -->
+    <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
       @for (i of [1, 2, 3, 4]; track i) {
         <hlm-card>
           <div hlmCardContent class="space-y-2">
@@ -56,107 +66,98 @@
       }
     </div>
   } @else if (statsService.statsCards(); as stats) {
-    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <!-- Four-up only where the 30px value fits: at 1024–1279 a four-column
+         row gives each card 166px, and a formatted amount needs ~234px — it
+         was cut off at the card edge before this row went two-up until xl. -->
+    <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4" data-testid="kpi-primary-row">
       <app-kpi-card
+        icon="lucideWallet"
         [label]="'dashboard.metrics.totalRevenue' | transloco"
         [value]="(stats.totalRevenue | money)"
         [delta]="delta().revenue"
-        [sparkline]="revenueSparkline()"
         [comparisonLabel]="'dashboard.metrics.totalRevenue' | transloco"
-        [scopeNote]="orderScopeHelp()"
-        link="/dashboard/orders"
+        [scopeNote]="'dashboard.totalRevenueHelp' | transloco"
+        [link]="'/dashboard/orders'"
+        [currency]="statsService.storeCurrency()"
       />
       <app-kpi-card
+        icon="lucideShoppingBag"
         [label]="'dashboard.orders' | transloco"
         [value]="fmtCount(stats.totalOrders)"
         [delta]="delta().orders"
         [comparisonLabel]="'dashboard.orders' | transloco"
-        [scopeNote]="orderScopeHelp()"
-        link="/dashboard/orders"
+        [scopeNote]="'dashboard.ordersHelp' | transloco"
+        [link]="'/dashboard/orders'"
       />
       <!-- "New" is the MEANING on this card: the customers are new. On the
            other three it is only the symptom of an empty previous period,
-           so they show an em dash and the reason. -->
+           so they show nothing and the toolbar carries the explanation. -->
       <app-kpi-card
+        icon="lucideUserPlus"
         [label]="'dashboard.newCustomers' | transloco"
         [value]="fmtCount(stats.newCustomers)"
         [delta]="delta().customers"
         [comparisonLabel]="'dashboard.newCustomers' | transloco"
-        [newMeansNew]="true"
-        link="/dashboard/users"
+        [link]="'/dashboard/users'"
       />
       <app-kpi-card
+        icon="lucideReceipt"
         [label]="'dashboard.averageOrderValue' | transloco"
         [value]="(stats.averageOrderValue | money)"
         [delta]="delta().aov"
         [comparisonLabel]="'dashboard.averageOrderValue' | transloco"
-        [scopeNote]="orderScopeHelp()"
-        link="/dashboard/orders"
+        [scopeNote]="'dashboard.aovHelp' | transloco"
+        [link]="'/dashboard/orders'"
+        [currency]="statsService.storeCurrency()"
       />
     </div>
 
-    <!-- The secondary strip: the rest, compact. The labels are the SAME
-         size and weight as the four cards above, so the strip reads as
-         part of the same set. Online users is a LIVE indicator, not a
-         period KPI, so it says so. -->
-    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      <hlm-card size="sm" class="h-full">
-        <div hlmCardContent class="flex h-full flex-col justify-center gap-1 px-4 py-4">
-          <p class="truncate text-xs text-muted-foreground">{{ 'dashboard.repeatPurchaseRate' | transloco }}</p>
-          @if (repeatPurchaseRate(); as r) {
-            <p class="text-xl font-medium tabular-nums">{{ r.repeatRate | number:'1.0-1' }}%</p>
-            <p class="text-xs text-muted-foreground">
-              {{ r.repeatCustomers }} {{ 'dashboard.of' | transloco }} {{ r.totalCustomers | plural: 'dashboard.countCustomers' }}
-            </p>
-          }
-        </div>
-      </hlm-card>
+    <!-- The secondary strip: FOUR separate cards, same as the primary row. -->
+    <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4" data-testid="kpi-secondary-strip">
+      @if (repeatPurchaseRate(); as r) {
+        <app-kpi-card
+          icon="lucideRepeat"
+          [label]="'dashboard.repeatPurchaseRate' | transloco"
+          [value]="(r.repeatRate | number:'1.0-1') + '%'"
+          [caption]="r.repeatCustomers + ' ' + ('dashboard.of' | transloco) + ' ' + (r.totalCustomers | plural: 'dashboard.countCustomers')"
+          [scopeNote]="'dashboard.repeatPurchaseRateHelp' | transloco"
+        />
+      } @else {
+        <app-kpi-card icon="lucideRepeat" [label]="'dashboard.repeatPurchaseRate' | transloco" value="—" />
+      }
 
-      <hlm-card size="sm" class="h-full">
-        <div hlmCardContent class="flex h-full flex-col justify-center gap-1 px-4 py-4">
-          <p class="flex items-center gap-1 truncate text-xs text-muted-foreground">
-            {{ 'dashboard.refundRate' | transloco }}
-            <span
-              class="cursor-help"
-              [title]="'dashboard.refundRateHelp' | transloco"
-              [attr.aria-label]="'dashboard.refundRateHelp' | transloco"
-            >
-              <ng-icon name="lucideInfo" class="size-3 text-muted-foreground" />
-            </span>
-          </p>
-          @if (refundRate(); as r) {
-            <p class="text-xl font-medium tabular-nums">{{ r.refundRate | number:'1.0-1' }}%</p>
-            <p class="text-xs text-muted-foreground">
-              {{ r.totalRefunded }} {{ 'dashboard.of' | transloco }} {{ r.totalPaid | plural: 'dashboard.countOrders' }}
-            </p>
-          }
-        </div>
-      </hlm-card>
+      @if (refundRate(); as r) {
+        <app-kpi-card
+          icon="lucideRefreshCw"
+          [label]="'dashboard.refundRate' | transloco"
+          [value]="(r.refundRate | number:'1.0-1') + '%'"
+          [caption]="r.totalRefunded + ' ' + ('dashboard.of' | transloco) + ' ' + (r.totalPaid | plural: 'dashboard.countOrders')"
+          [scopeNote]="'dashboard.refundRateHelp' | transloco"
+          [metric]="'refundRate'"
+        />
+      } @else {
+        <app-kpi-card icon="lucideRefreshCw" [label]="'dashboard.refundRate' | transloco" value="—" />
+      }
 
-      <hlm-card size="sm" class="h-full">
-        <div hlmCardContent class="flex h-full flex-col justify-center gap-1 px-4 py-4">
-          <p class="truncate text-xs text-muted-foreground">{{ 'dashboard.coffeeSold' | transloco }}</p>
-          <p class="text-xl font-medium tabular-nums">
-            {{ stats.coffeeSold | number:'1.2-2' }} {{ 'dashboard.kg' | transloco }}
-          </p>
-          <p class="text-xs text-muted-foreground">{{ 'dashboard.coffeeSoldHint' | transloco }}</p>
-        </div>
-      </hlm-card>
+      <app-kpi-card
+        icon="lucideCoffee"
+        [label]="'dashboard.coffeeSold' | transloco"
+        [value]="(stats.coffeeSold | number:'1.2-2') + ' ' + ('dashboard.kg' | transloco)"
+        [caption]="'dashboard.coffeeSoldHint' | transloco"
+        [scopeNote]="'dashboard.coffeeSoldHelp' | transloco"
+        [delta]="delta().coffee"
+      />
 
       <!-- Online users: a LIVE indicator, not a period KPI. -->
-      <hlm-card size="sm" class="h-full">
-        <div hlmCardContent class="flex h-full flex-col justify-center gap-1 px-4 py-4">
-          <p class="truncate text-xs text-muted-foreground">{{ 'dashboard.onlineUsers' | transloco }}</p>
-          <p class="flex items-center gap-1.5 text-xl font-medium tabular-nums">
-            <span class="relative flex size-2">
-              <span class="absolute inline-flex size-full animate-ping rounded-full bg-success opacity-60 motion-reduce:hidden"></span>
-              <span class="relative inline-flex size-2 rounded-full bg-success"></span>
-            </span>
-            {{ fmtCount(onlineUsersCount()) }}
-          </p>
-          <p class="text-xs text-muted-foreground">{{ 'dashboard.onlineUsersCaption' | transloco }}</p>
-        </div>
-      </hlm-card>
+      <app-kpi-card
+        icon="lucideGlobe"
+        [label]="'dashboard.onlineUsers' | transloco"
+        [value]="fmtCount(onlineUsersCount())"
+        [caption]="'dashboard.onlineUsersCaption' | transloco"
+        [scopeNote]="'dashboard.onlineUsersHelp' | transloco"
+        [live]="true"
+        [metric]="'onlineUsers'"
+      />
     </div>
   }
 
@@ -170,7 +171,9 @@
       <app-widget-header [title]="'dashboard.revenueOverview' | transloco" />
     </hlm-card-header>
     <div hlmCardContent class="grow shrink-0">
-      @if (statsService.revenueChartData().length > 0 && statsService.revenueChartData().some(d => d.revenue > 0)) {
+      @if (!statsService.loaded() && statsService.loading()) {
+        <app-widget-state [loading]="true" [skeletonRows]="4" />
+      } @else if (statsService.revenueChartData().length > 0 && statsService.revenueChartData().some(d => d.revenue > 0)) {
         <app-revenue-chart
           [data]="statsService.revenueChartData()"
           [previousPeriodData]="statsService.revenueChartPreviousPeriod()"
@@ -206,7 +209,9 @@
         />
       </hlm-card-header>
       <div hlmCardContent class="grow shrink-0">
-        @if (statsService.overviewError(); as error) {
+        @if (!statsService.loaded() && statsService.loading()) {
+          <app-widget-state [loading]="true" [skeletonRows]="5" />
+        } @else if (statsService.overviewError(); as error) {
           <app-widget-state [error]="error" [retry]="retryOverview" />
         } @else if (statsService.topProducts().length > 0) {
           <app-top-products [products]="statsService.topProducts()" />
@@ -225,6 +230,7 @@
         <app-widget-header
           [title]="'dashboard.recentOrders.title' | transloco"
           [rangeScoped]="false"
+          [customScope]="'Latest 5'"
           [actionLabel]="'dashboard.recentOrders.viewAll' | transloco"
           actionLink="/dashboard/orders"
         />
@@ -242,12 +248,19 @@
         <app-widget-header
           [title]="'dashboard.lowStockProducts' | transloco"
           [rangeScoped]="false"
+          [customScope]="'Current'"
           [actionLabel]="'dashboard.recentOrders.viewAll' | transloco"
           actionLink="/dashboard/products"
         />
       </hlm-card-header>
       <div hlmCardContent class="grow shrink-0">
-        <app-low-stock-products class="block h-full" [products]="lowStockProducts()" />
+        @if (!statsService.loaded() && statsService.loading()) {
+          <app-widget-state [loading]="true" [skeletonRows]="2" />
+        } @else if (statsService.overviewError(); as error) {
+          <app-widget-state [error]="error" [retry]="retryOverview" />
+        } @else {
+          <app-low-stock-products class="block h-full" [products]="lowStockProducts()" />
+        }
       </div>
     </hlm-card>
 
@@ -259,7 +272,13 @@
         />
       </hlm-card-header>
       <div hlmCardContent class="grow shrink-0">
-        <app-device-list class="block h-full" />
+        @if (!statsService.loaded() && statsService.loading()) {
+          <app-widget-state [loading]="true" [skeletonRows]="3" />
+        } @else if (statsService.overviewError(); as error) {
+          <app-widget-state [error]="error" [retry]="retryOverview" />
+        } @else {
+          <app-device-list class="block h-full" />
+        }
       </div>
     </hlm-card>
   </div>

@@ -1,0 +1,47 @@
+<div class="relative">
+  <!-- Trigger Button -->
+  <div 
+    class="flex items-center justify-between px-3 py-2 border rounded-md bg-white dark:bg-gray-800 
+           cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+    (click)="$event.stopPropagation(); toggleDropdown()"
+  >
+    <span class="truncate">
+      @if (selectedOptions().length === 0) {
+        <span class="text-gray-500 dark:text-gray-400">{{ placeholder() }}</span>
+      } @else {
+        <span class="text-gray-900 dark:text-gray-100">
+          {{ getDisplayText() }}
+        </span>
+      }
+    </span>
+    <ng-icon name="lucideChevronDown" 
+            class="w-4 h-4 text-gray-500 dark:text-gray-400 transition-transform"
+            [class.rotate-180]="dropdownOpen()" />
+  </div>
+  
+  @if (dropdownOpen()) {
+    <div 
+      class="absolute top-full left-0 right-0 mt-1 border rounded-md bg-white dark:bg-gray-800 
+            shadow-lg z-50 max-h-60 overflow-auto"
+      (click)="$event.stopPropagation()"
+    >
+      @for (option of allOptions(); track option.id) {
+        <div
+          class="flex items-center px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer
+                 {{ isOptionSelected(option.id) ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300' : '' }}"
+          (click)="$event.stopPropagation(); toggleOption(option.id)"
+        >
+          <div class="w-4 h-4 border border-gray-300 dark:border-gray-600 rounded mr-2
+                     {{ isOptionSelected(option.id) ? 'bg-blue-600 border-blue-600 dark:bg-blue-500 dark:border-blue-500' : '' }}">
+            @if (isOptionSelected(option.id)) {
+              <ng-icon name="lucideCheck" class="w-3 h-3 text-white" />
+            }
+          </div>
+          <span class="text-sm {{ isOptionSelected(option.id) ? 'font-medium' : '' }}">
+            {{ option.label }}
+          </span>
+        </div>
+      }
+    </div>
+  }
+</div>

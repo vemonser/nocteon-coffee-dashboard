@@ -1,8 +1,8 @@
-<div class="mx-auto flex w-full max-w-7xl flex-col gap-6 p-6">
+<div class="page-shell">
   <!-- Header -->
   <header class="flex flex-wrap items-start justify-between gap-4">
     <div>
-      <h1 class="text-2xl font-bold tracking-tight">{{ 'carts.title' | transloco }}</h1>
+      <h1 class="text-2xl font-medium tracking-tight">{{ 'carts.title' | transloco }}</h1>
       <p class="text-sm text-muted-foreground">
         {{ pageData()?.totalElements ?? 0 }} {{ 'common.total' | transloco }}
       </p>
@@ -24,56 +24,34 @@
     </div>
   </header>
 
-  <!-- KPI Strip: 4 cards -->
-  <div class="grid grid-cols-2 gap-3 md:grid-cols-4" role="region" aria-label="{{ 'carts.kpi.regionLabel' | transloco }}">
-    <div class="flex h-[72px] flex-col justify-center rounded-[var(--radius-card)] border bg-card px-4 py-2">
-      <p class="text-xs text-muted-foreground">{{ 'carts.kpi.activeCarts' | transloco }}</p>
-      <p class="mt-0.5 text-lg font-bold tabular-nums">{{ stats()?.activeCarts ?? 0 }}</p>
-      <span
-        hlmTooltip
-        position="top"
-        [brnTooltip]="'carts.kpi.activeCartsTooltip' | transloco"
-        class="inline-flex mt-1"
-      >
-        <ng-icon name="lucideActivity" class="size-3.5 text-muted-foreground" aria-hidden="true" />
-      </span>
-    </div>
-    <div class="flex h-[72px] flex-col justify-center rounded-[var(--radius-card)] border bg-card px-4 py-2">
-      <p class="text-xs text-muted-foreground">{{ 'carts.kpi.abandonedCarts' | transloco }}</p>
-      <p class="mt-0.5 text-lg font-bold tabular-nums">{{ stats()?.abandonedCarts ?? 0 }}</p>
-      <span
-        hlmTooltip
-        position="top"
-        [brnTooltip]="'carts.kpi.abandonedCartsTooltip' | transloco"
-        class="inline-flex mt-1"
-      >
-        <ng-icon name="lucideAlertCircle" class="size-3.5 text-muted-foreground" aria-hidden="true" />
-      </span>
-    </div>
-    <div class="flex h-[72px] flex-col justify-center rounded-[var(--radius-card)] border bg-card px-4 py-2">
-      <p class="text-xs text-muted-foreground">{{ 'carts.kpi.totalPotentialRevenue' | transloco }}</p>
-      <p class="mt-0.5 text-lg font-bold tabular-nums">{{ (stats()?.totalPotentialRevenue ?? 0) | money }}</p>
-      <span
-        hlmTooltip
-        position="top"
-        [brnTooltip]="'carts.kpi.totalPotentialRevenueTooltip' | transloco"
-        class="inline-flex mt-1"
-      >
-        <ng-icon name="lucideDollarSign" class="size-3.5 text-muted-foreground" aria-hidden="true" />
-      </span>
-    </div>
-    <div class="flex h-[72px] flex-col justify-center rounded-[var(--radius-card)] border bg-card px-4 py-2">
-      <p class="text-xs text-muted-foreground">{{ 'carts.kpi.averageCartValue' | transloco }}</p>
-      <p class="mt-0.5 text-lg font-bold tabular-nums">{{ (stats()?.averageCartValue ?? 0) | money }}</p>
-      <span
-        hlmTooltip
-        position="top"
-        [brnTooltip]="'carts.kpi.averageCartValueTooltip' | transloco"
-        class="inline-flex mt-1"
-      >
-        <ng-icon name="lucideTrendingUp" class="size-3.5 text-muted-foreground" aria-hidden="true" />
-      </span>
-    </div>
+  <!-- KPI Strip: the shared card (2 per row) -->
+  <div class="grid grid-cols-2 gap-4 md:grid-cols-4" role="region" aria-label="{{ 'carts.kpi.regionLabel' | transloco }}">
+    <app-kpi-card
+      icon="lucideShoppingCart"
+      [label]="'carts.kpi.activeCarts' | transloco"
+      [value]="'' + (stats()?.activeCarts ?? 0)"
+      [scopeNote]="'carts.kpi.activeCartsTooltip' | transloco"
+    />
+    <app-kpi-card
+      icon="lucideXCircle"
+      [label]="'carts.kpi.abandonedCarts' | transloco"
+      [value]="'' + (stats()?.abandonedCarts ?? 0)"
+      [scopeNote]="'carts.kpi.abandonedCartsTooltip' | transloco"
+    />
+    <app-kpi-card
+      icon="lucideWallet"
+      [label]="'carts.kpi.totalPotentialRevenue' | transloco"
+      [value]="(stats()?.totalPotentialRevenue ?? 0) | money"
+      [scopeNote]="'carts.kpi.totalPotentialRevenueTooltip' | transloco"
+      [currency]="storeCurrency()"
+    />
+    <app-kpi-card
+      icon="lucideReceipt"
+      [label]="'carts.kpi.averageCartValue' | transloco"
+      [value]="(stats()?.averageCartValue ?? 0) | money"
+      [scopeNote]="'carts.kpi.averageCartValueTooltip' | transloco"
+      [currency]="storeCurrency()"
+    />
   </div>
 
   <!-- Lifecycle Tabs + optional filters -->
@@ -123,7 +101,7 @@
 
   <!-- Error State -->
   @if (!loading() && error()) {
-    <div class="rounded-[var(--radius-card)] border bg-card p-6 text-center" role="alert">
+    <div class="card-surface p-6 text-center" role="alert">
       <ng-icon name="lucideAlertCircle" class="mx-auto size-12 text-destructive mb-3" />
       <p class="font-medium text-destructive">{{ 'carts.errorState.title' | transloco }}</p>
       <p class="mt-1 text-sm text-muted-foreground">{{ 'carts.errorState.hint' | transloco }}</p>
@@ -135,23 +113,27 @@
 
   <!-- Table -->
   @if (!loading() && !error()) {
-    <div class="rounded-[var(--radius-card)] border bg-card">
+    <div class="overflow-hidden card-surface">
       <app-data-table
         [data]="items()"
         [columns]="columns"
         [loading]="false"
+        [emptyMessage]="'carts.empty' | transloco"
         [initialSort]="{ column: currentSort, direction: currentDirection }"
         [showView]="true"
         [showEdit]="false"
         [showDelete]="false"
+        [menuActionsFor]="menuActionsFor"
+        [minWidth]="'1000px'"
         (sortChange)="onSortChange($event)"
         (rowClick)="openView($event)"
+        (menuAction)="onMenuAction($event)"
       />
     </div>
   }
 
   <!-- Pagination -->
-  @if (pageData() && !loading() && !error()) {
+  @if (pageData() && !loading() && !error() && (pageData()!.totalElements ?? 0) > 0) {
     <app-pager
       class="view-fade"
       [page]="pageData()!.page"
@@ -167,13 +149,7 @@
     />
   }
 
-  <!-- Empty State -->
-  @if (!loading() && !error() && items().length === 0 && pageData()?.totalElements === 0) {
-    <div class="rounded-[var(--radius-card)] border bg-card p-12 text-center">
-      <ng-icon name="lucideShoppingCart" class="mx-auto size-12 text-muted-foreground/50 mb-3" />
-      <p class="text-muted-foreground">{{ 'carts.empty' | transloco }}</p>
-    </div>
-  }
+  <!-- Empty State: handled by the data-table's emptyMessage (see above). -->
 </div>
 
 <!-- ══════════════════════════════════════════════════════════
@@ -184,44 +160,23 @@
   [title]="'carts.detail.title' | transloco: { id: viewing()?.id }"
   [subtitle]="viewing() ? (cartStatusLabel(viewing()!) + ' · ' + formatRelativeTime(viewing()!.lastActivityAt ?? viewing()!.updatedAt, language.current())) : ''"
   [mobileSheet]="true"
+  [size]="'lg'"
   [testId]="'cart-detail-dialog'"
   (closed)="closeView()"
 >
+  @if (viewing()) {
   <div class="space-y-5">
     <!-- Customer Info -->
     <div class="flex items-center gap-3 rounded-md border p-4">
       <app-user-avatar [src]="viewing()?.avatarUrl ?? null" [name]="viewing()?.userFullName ?? ''" size="md" />
       <div class="min-w-0 flex-1">
-        <p class="text-sm font-medium truncate">{{ viewing()?.userFullName ?? '' }}</p>
+        <a
+          [routerLink]="['/dashboard/users', viewing()!.userId]"
+          class="text-sm font-medium truncate hover:underline"
+        >{{ viewing()?.userFullName ?? '' }}</a>
         <p class="text-xs text-muted-foreground truncate" dir="ltr">{{ viewing()?.userEmail ?? '' }}</p>
       </div>
-      <app-status-badge [status]="cartStatusKind(viewing()!)" />
-    </div>
-
-    <!-- Summary Stats -->
-    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-      <div class="rounded-md border p-3">
-        <p class="text-xs text-muted-foreground">{{ 'carts.detail.items' | transloco }}</p>
-        <p class="text-lg font-bold">{{ viewing()?.itemCount }}</p>
-      </div>
-      <div class="rounded-md border p-3">
-        <p class="text-xs text-muted-foreground">{{ 'carts.detail.subtotal' | transloco }}</p>
-        <p class="text-lg font-bold">{{ viewing()?.total | money }}</p>
-      </div>
-      <div class="rounded-md border p-3">
-        <p class="text-xs text-muted-foreground">{{ 'carts.detail.estShipping' | transloco }}</p>
-        <p class="text-lg font-bold">
-          @if (viewing()?.qualifiesForFreeShipping) {
-            <span class="text-success">{{ 'carts.detail.free' | transloco }}</span>
-          } @else {
-            {{ viewing()?.estimatedShipping | money }}
-          }
-        </p>
-      </div>
-      <div class="rounded-md border p-3">
-        <p class="text-xs text-muted-foreground">{{ 'carts.detail.total' | transloco }}</p>
-        <p class="text-lg font-bold">{{ (viewing()!.total + (viewing()!.qualifiesForFreeShipping ? 0 : viewing()!.estimatedShipping)) | money }}</p>
-      </div>
+      <app-status-badge [status]="cartStatusKind(viewing())" />
     </div>
 
     <!-- Dates -->
@@ -249,7 +204,12 @@
 
     <!-- Cart Items Table -->
     <div>
-      <p class="text-sm font-medium text-muted-foreground mb-3">{{ 'carts.detail.itemsList' | transloco }}</p>
+      <p class="text-sm font-medium text-muted-foreground mb-3">
+        {{ 'carts.detail.itemsList' | transloco }}
+        @if (viewing()?.itemCount) {
+          <span class="text-xs">· {{ viewing()!.itemCount | plural: 'common.countItems' }}</span>
+        }
+      </p>
       @if (viewing()!.items.length === 0) {
         <div class="text-center py-6 text-muted-foreground">
           <ng-icon name="lucidePackage" class="mx-auto size-8 opacity-20 mb-2" />
@@ -261,7 +221,6 @@
             <thead class="bg-muted/50">
               <tr>
                 <th class="px-3 py-2 text-start font-medium text-muted-foreground">{{ 'carts.detail.col.product' | transloco }}</th>
-                <th class="px-3 py-2 text-start font-medium text-muted-foreground w-24">{{ 'carts.detail.col.sku' | transloco }}</th>
                 <th class="px-3 py-2 text-center font-medium text-muted-foreground w-16">{{ 'carts.detail.col.qty' | transloco }}</th>
                 <th class="px-3 py-2 text-end font-medium text-muted-foreground w-24">{{ 'carts.detail.col.price' | transloco }}</th>
                 <th class="px-3 py-2 text-end font-medium text-muted-foreground w-28">{{ 'carts.detail.col.subtotal' | transloco }}</th>
@@ -284,7 +243,10 @@
                         }
                       </div>
                       <div class="min-w-0">
-                        <p class="truncate font-medium">{{ item.productName }}</p>
+                        <a
+                          [routerLink]="['/dashboard/products', item.productSlug, 'edit']"
+                          class="block truncate font-medium hover:underline"
+                        >{{ item.productName }}</a>
                         @if (item.optionValues?.length) {
                           <p class="text-xs text-muted-foreground truncate">
                             {{ item.optionValues.map(o => o.value).join(' · ') }}
@@ -294,7 +256,6 @@
                       </div>
                     </div>
                   </td>
-                  <td class="px-3 py-2 text-start text-xs font-mono text-muted-foreground">{{ item.sku }}</td>
                   <td class="px-3 py-2 text-center">{{ item.quantity }}</td>
                   <td class="px-3 py-2 text-end font-medium">{{ item.price | money }}</td>
                   <td class="px-3 py-2 text-end font-medium">{{ item.subtotal | money }}</td>
@@ -332,8 +293,6 @@
       <div class="grid grid-cols-2 gap-2 text-sm">
         <span>{{ 'carts.detail.subtotal' | transloco }}</span>
         <span class="text-end font-medium">{{ viewing()?.total | money }}</span>
-        <span>{{ 'carts.detail.discount' | transloco }}</span>
-        <span class="text-end font-medium text-success">-0 {{ viewing()?.currency ?? 'EGP' }}</span>
         <span>{{ 'carts.detail.shipping' | transloco }}</span>
         <span class="text-end font-medium">
           @if (viewing()?.qualifiesForFreeShipping) {
@@ -347,6 +306,7 @@
       </div>
     </div>
   </div>
+  }
 
   <!-- Footer Actions -->
   <div dialog-footer-end class="flex items-center gap-2">

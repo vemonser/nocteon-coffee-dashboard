@@ -6,13 +6,20 @@
   <div>
     <label class="block text-sm font-medium text-foreground mb-2"> {{ 'products.media.imagesVideos' | transloco }} </label>
 
-    <input
-      type="file"
-      accept="image/*,video/*"
-      multiple
-      (change)="onFilesSelected($event)"
-      class="w-full text-sm text-muted-foreground"
-    />
+    <label
+      class="flex flex-col items-center justify-center gap-2 rounded-md border-2 border-dashed border-input p-8 text-center cursor-pointer hover:bg-muted/40 transition"
+    >
+      <ng-icon name="lucideUpload" class="size-8 text-muted-foreground" />
+      <span class="text-sm font-medium">{{ 'products.media.dropHint' | transloco }}</span>
+      <span class="text-xs text-muted-foreground">{{ 'products.media.fileTypes' | transloco }}</span>
+      <input
+        type="file"
+        accept="image/*,video/*"
+        multiple
+        (change)="onFilesSelected($event)"
+        class="sr-only"
+      />
+    </label>
   </div>
 
   <!-- Existing Media -->
@@ -58,6 +65,13 @@
               ✕
             </button>
           </div>
+          <input
+            type="text"
+            [value]="media.altText"
+            (change)="onExistingAltChange(i, $event)"
+            placeholder="Alt text"
+            class="mt-1 w-full text-xs rounded border px-2 py-1"
+          />
         }
       </div>
     </div>
@@ -109,6 +123,13 @@
               ✕
             </button>
           </div>
+          <input
+            type="text"
+            [value]="media.altText"
+            (change)="onStagedAltChange(i, $event)"
+            placeholder="Alt text"
+            class="mt-1 w-full text-xs rounded border px-2 py-1"
+          />
         }
       </div>
     </div>
@@ -119,4 +140,16 @@
       {{ 'products.media.noMedia' | transloco }}
     </div>
   }
+
+  <!-- Sticky footer for navigation -->
+  <div class="sticky-footer">
+    <button hlmBtn variant="outline" (click)="onBack()">
+      {{ 'common.back' | transloco }}
+    </button>
+    <button hlmBtn 
+            [disabled]="!isCurrentStepDirty() || !isCurrentStepValid()" 
+            (click)="saveCurrentStep()">
+      {{ 'common.saveChanges' | transloco }}
+    </button>
+  </div>
 </div>
