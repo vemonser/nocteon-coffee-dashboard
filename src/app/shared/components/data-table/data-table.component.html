@@ -395,6 +395,15 @@
                         [attr.title]="$any(cell.getValue())?.name"
                       >
                         {{ $any(cell.getValue())?.name || '—' }}
+                        @if ($any(cell.getValue())?.email) {
+                          @if ($any(cell.getValue())?.verified) {
+                            <ng-icon name="lucideBadgeCheck" class="ms-1 inline size-3.5 text-success" [attr.title]="'common.verified' | transloco" />
+                          } @else {
+                            <span class="ms-1 inline-flex items-center rounded-full bg-warning-soft px-1.5 py-0.5 text-[10px] font-medium text-warning">
+                              {{ 'users.unverified' | transloco }}
+                            </span>
+                          }
+                        }
                       </span>
                       @if ($any(cell.getValue())?.email) {
                         <span
@@ -403,13 +412,6 @@
                           dir="ltr"
                         >
                           {{ $any(cell.getValue()).email }}
-                          @if ($any(cell.getValue())?.verified) {
-                            <ng-icon name="lucideBadgeCheck" class="ms-1 inline size-3.5 text-success" [attr.title]="'common.verified' | transloco" />
-                          } @else {
-                            <span class="ms-1 inline-flex items-center rounded-full bg-warning-soft px-1.5 py-0.5 text-[10px] font-medium text-warning">
-                              {{ 'users.unverified' | transloco }}
-                            </span>
-                          }
                         </span>
                       }
                     </span>
@@ -431,6 +433,15 @@
                         [attr.title]="$any(cell.getValue())?.name"
                       >
                         {{ $any(cell.getValue())?.name || '—' }}
+                        @if ($any(cell.getValue())?.email) {
+                          @if ($any(cell.getValue())?.verified) {
+                            <ng-icon name="lucideBadgeCheck" class="ms-1 inline size-3.5 text-success" [attr.title]="'common.verified' | transloco" />
+                          } @else {
+                            <span class="ms-1 inline-flex items-center rounded-full bg-warning-soft px-1.5 py-0.5 text-[10px] font-medium text-warning">
+                              {{ 'users.unverified' | transloco }}
+                            </span>
+                          }
+                        }
                       </span>
                       @if ($any(cell.getValue())?.email) {
                         <span
@@ -439,13 +450,6 @@
                           dir="ltr"
                         >
                           {{ $any(cell.getValue()).email }}
-                          @if ($any(cell.getValue())?.verified) {
-                            <ng-icon name="lucideBadgeCheck" class="ms-1 inline size-3.5 text-success" [attr.title]="'common.verified' | transloco" />
-                          } @else {
-                            <span class="ms-1 inline-flex items-center rounded-full bg-warning-soft px-1.5 py-0.5 text-[10px] font-medium text-warning">
-                              {{ 'users.unverified' | transloco }}
-                            </span>
-                          }
                         </span>
                       }
                     </span>
@@ -508,13 +512,13 @@
                 }
 
                 @case ('total') {
-                  <span class="block text-start tabular-nums">
+                  <span class="block whitespace-nowrap text-start tabular-nums">
                     {{ $any(cell.getValue()) | money }}
                   </span>
                 }
                 @case ('totalAmount') {
                   <span
-                    class="block text-sm tabular-nums"
+                    class="block whitespace-nowrap text-sm tabular-nums"
                     [class.text-start]="!isEndAligned(cell.column.columnDef)"
                     [class.text-end]="isEndAligned(cell.column.columnDef)"
                   >

@@ -263,7 +263,7 @@ export class OrdersListComponent {
   protected readonly columns: ColumnDef<OrderResponse, any>[] = [
     this.columnHelper.accessor(
       (row) => formatOrderNumber(row.orderNumber, row.id),
-      { id: 'orderNumber', header: 'orders.columns.orderNumber', enableSorting: false, meta: { width: '152px' } },
+      { id: 'orderNumber', header: 'orders.columns.orderNumber', enableSorting: false, meta: { width: '170px' } },
     ),
     this.columnHelper.accessor(
       (row) => ({ name: row.customer?.name ?? null, email: row.customer?.email ?? null }),
@@ -271,7 +271,7 @@ export class OrdersListComponent {
     ),
     this.columnHelper.accessor(
       (row) => orderItemsCount(row),
-      { id: 'itemCount', header: 'orders.columns.items', enableSorting: false, meta: { width: '120px' } },
+      { id: 'itemCount', header: 'orders.columns.items', enableSorting: false, meta: { width: '90px' } },
     ),
     this.columnHelper.accessor(
       (row) => orderStatusKind(row.status),
