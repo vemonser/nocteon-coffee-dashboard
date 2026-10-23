@@ -24,7 +24,7 @@ import { OrderDialogComponent } from '../order-dialog/order-dialog.component';
 @Component({
   selector: 'app-order-refund-dialog',
   standalone: true,
-  imports: [FormsModule, HlmButtonImports, HlmInputImports, OrderDialogComponent, TranslocoPipe],
+  imports: [FormsModule, HlmButtonImports, HlmInputImports, OrderDialogComponent],
   templateUrl: './order-refund-dialog.component.html',
 })
 export class OrderRefundDialogComponent {

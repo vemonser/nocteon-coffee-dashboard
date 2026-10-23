@@ -397,6 +397,8 @@
         }
       </div>
     </div>
+  }
+  @if (selected()) {
     <div dialog-footer-end class="flex items-center gap-2">
       <button hlmBtn variant="default" size="sm" (click)="sendReply()" [disabled]="replying() || !replyText().trim()">
         <ng-icon name="lucideSend" class="mr-1 size-3.5" />

@@ -32,7 +32,6 @@ import { StoreSettingsService } from '../../../../core/settings/store-settings.s
 import { PagerComponent } from '../../../../shared/components/pager/pager.component';
 import { DataTableComponent } from '../../../../shared/components/data-table/data-table.component';
 import { HasPermissionDirective } from '../../../../core/auth/permission.directive';
-import { LocalizedDateComponent } from '../../../../shared/ui/localized-date/localized-date.component';
 import { createColumnHelper, ColumnDef } from '@tanstack/angular-table';
 import { formatCurrency, formatPercent } from '../../../../shared/utils/locale-format';
 
@@ -47,7 +46,7 @@ type EditMode = 'view' | 'edit';
     CommonModule, FormsModule, ReactiveFormsModule,
     HlmCardImports, HlmButtonImports, HlmBadgeImports,
     HlmSeparatorImports, HlmInputImports, HlmLabelImports, NgIcon,
-    TranslocoPipe, DataTableComponent, HasPermissionDirective, LocalizedDateComponent,
+    TranslocoPipe, DataTableComponent, HasPermissionDirective,
   ],
   providers: [
     provideIcons({

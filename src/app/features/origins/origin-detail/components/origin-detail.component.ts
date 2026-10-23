@@ -34,7 +34,6 @@ import { StoreSettingsService } from '../../../../core/settings/store-settings.s
 import { PagerComponent } from '../../../../shared/components/pager/pager.component';
 import { TrashBannerComponent } from '../../../../shared/components/trash-banner/trash-banner.component';
 import { DataTableComponent } from '../../../../shared/components/data-table/data-table.component';
-import { StatusCellComponent } from '../../../../shared/ui/status-cell/status-cell.component';
 import { HasPermissionDirective } from '../../../../core/auth/permission.directive';
 import { createColumnHelper, ColumnDef } from '@tanstack/angular-table';
 import { formatCurrency, formatPercent } from '../../../../shared/utils/locale-format';
@@ -52,7 +51,7 @@ type EditMode = 'view' | 'edit';
     HlmCardImports, HlmButtonImports, HlmBadgeImports,
     HlmSeparatorImports, HlmInputImports, HlmLabelImports, HlmDialogImports,
     HlmCheckboxImports, NgIcon, TranslocoPipe, TrashBannerComponent,
-    DataTableComponent, StatusCellComponent, HasPermissionDirective, LocalizedDateComponent,
+    DataTableComponent, HasPermissionDirective, LocalizedDateComponent,
   ],
   providers: [
     provideIcons({

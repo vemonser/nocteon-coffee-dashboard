@@ -24,7 +24,6 @@ import { NewsletterService } from '../services/newsletter.service';
 import { UserResponse } from '../../users/model/user.model';
 import { PageResponse } from '../../../core/models/api-response.model';
 import { TranslocoPipe } from '@jsverse/transloco';
-import { LocalizedDateComponent } from '../../../shared/ui/localized-date/localized-date.component';
 import { PluralPipe } from '../../../shared/pipes/plural.pipe';
 
 /**
@@ -58,8 +57,7 @@ import { PluralPipe } from '../../../shared/pipes/plural.pipe';
     BrnTooltip,
     NgIcon,
     TranslocoPipe,
-    LocalizedDateComponent,
-    PluralPipe,
+        PluralPipe,
   ],
   providers: [
     provideIcons({ lucideDownload, lucideLoader2, lucideMail, lucideSearch, lucideUsers }),

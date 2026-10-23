@@ -30,7 +30,6 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { map } from 'rxjs';
 
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
-import { PagerComponent } from '../../../shared/components/pager/pager.component';
 import { NotifyService } from '../../../core/notify/notify.service';
 type StatusFilter = 'all' | 'unread';
 
@@ -38,7 +37,6 @@ type StatusFilter = 'all' | 'unread';
   selector: 'app-notification-list',
   standalone: true,
   imports: [
-    PagerComponent,
     CommonModule,
     FormsModule,
     HlmCardImports,

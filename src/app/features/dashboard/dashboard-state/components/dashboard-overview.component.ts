@@ -1,6 +1,5 @@
 ﻿import { Component, inject } from '@angular/core';
 import { DashboardStatsService } from '../../services/dashboard-stats.service';
-import { DecimalPipe } from '@angular/common';
 import { RevenueChartComponent } from '../../../../shared/components/dashboard/revenue-chart/revenue-chart.component';
 import { OrdersStatusChartComponent } from '../../../../shared/components/dashboard/components/orders-status-chart.component';
 
@@ -10,7 +9,7 @@ import { MoneyPipe } from '../../../../shared/pipes/money.pipe';
   selector: 'app-dashboard-overview',
   standalone: true,
   templateUrl: './dashboard-overview.component.html',
-  imports: [RevenueChartComponent, DecimalPipe, OrdersStatusChartComponent, TranslocoPipe, MoneyPipe,
+  imports: [RevenueChartComponent, OrdersStatusChartComponent, TranslocoPipe, MoneyPipe,
   ],
 })
 export class DashboardOverviewComponent {
