@@ -1,7 +1,7 @@
 import { Component, computed, inject, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { TranslocoService } from '@jsverse/transloco';
+import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
   lucideActivity,
@@ -59,7 +59,7 @@ import { sparklineGeometry } from '../../../../core/dashboard/sparkline';
 @Component({
   selector: 'app-kpi-card',
   standalone: true,
-  imports: [CommonModule, RouterLink, NgIcon, HlmCardImports],
+  imports: [CommonModule, RouterLink, NgIcon, HlmCardImports, TranslocoPipe],
   providers: [
     provideIcons({
       lucideActivity,
