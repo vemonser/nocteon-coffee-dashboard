@@ -112,23 +112,14 @@ export class UsersListComponent extends BaseListComponent<UserResponse, UserRequ
   // Columns
   private columnHelper = createColumnHelper<UserResponse>();
   columns: ColumnDef<UserResponse, any>[] = [
-    this.columnHelper.accessor((row) => row.avatarUrl, {
-      id: 'avatar',
-      header: 'Avatar',
-      enableSorting: false,
-    }),
-    this.columnHelper.accessor('username', {
-      header: 'Username',
+    this.columnHelper.accessor((row) => ({
+      avatar: row.avatarUrl,
+      name: this.getFullName(row) || row.username,
+      email: row.email,
+    }), {
+      id: 'userFullName',
+      header: 'users.columns.user',
       enableSorting: true,
-    }),
-    this.columnHelper.accessor('email', {
-      header: 'Email',
-      enableSorting: true,
-    }),
-    this.columnHelper.accessor((row) => this.getFullName(row), {
-      id: 'fullName',
-      header: 'Full Name',
-      enableSorting: false,
     }),
     this.columnHelper.accessor('role', {
       header: 'Role',
