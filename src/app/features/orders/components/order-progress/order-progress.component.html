@@ -36,18 +36,32 @@
   }
 
   <ol
-    class="flex flex-col gap-3 sm:flex-row sm:items-start"
+    class="relative flex w-full items-start gap-0"
     data-testid="order-progress"
     [attr.aria-label]="'orders.detail.timeline' | transloco"
   >
-    @for (step of chain; track step; let last = $last) {
-      <li
-        class="flex min-w-0 flex-1 items-start gap-2 sm:flex-col sm:items-start sm:gap-1.5"
-        [attr.aria-current]="isCurrent(step) ? 'step' : null"
-      >
-        <div class="flex w-full items-center gap-2">
+    @for (step of chain; track step; let last = $last; let i = $index) {
+      @if (isFuture(step) && !isCurrent(step)) {
+        <!-- Skip future steps for cancelled orders -->
+      } @else {
+        <li
+          class="relative flex flex-1 flex-col items-center text-center gap-2"
+          [attr.aria-current]="isCurrent(step) ? 'step' : null"
+        >
+          <!-- Connector line (not on last step) -->
+          @if (!last) {
+            <span
+              class="absolute z-0"
+              style="top: 14px; inset-inline-start: 50%; width: 100%; height: 2px;"
+              [class.bg-success]="isDone(step)"
+              [class.bg-border]="!isDone(step)"
+              aria-hidden="true"
+            ></span>
+          }
+
+          <!-- Circle -->
           <span
-            class="flex size-6 shrink-0 items-center justify-center rounded-full border text-xs font-medium ring-primary/30"
+            class="relative z-10 flex size-7 shrink-0 items-center justify-center rounded-full border text-xs font-medium ring-primary/30"
             [class.border-success]="isDone(step)"
             [class.bg-success-soft]="isDone(step)"
             [class.text-success]="isDone(step)"
@@ -67,21 +81,13 @@
             @if (isDone(step) || (isCurrent(step) && step === 'DELIVERED')) {
               <ng-icon name="lucideCheck" class="size-3.5" aria-hidden="true" />
             } @else {
-              {{ $index + 1 }}
+              {{ i + 1 }}
             }
           </span>
-          @if (!last) {
-            <span
-              class="hidden h-px flex-1 sm:block"
-              [class.bg-success]="isDone(step)"
-              [class.bg-border]="!isDone(step)"
-              aria-hidden="true"
-            ></span>
-          }
-        </div>
-        <div class="min-w-0">
+
+          <!-- Label -->
           <span
-            class="block text-sm"
+            class="max-w-[110px] text-[13px] leading-tight"
             [class.font-medium]="isCurrent(step)"
             [class.text-foreground]="!isFuture(step)"
             [class.text-muted-foreground]="isFuture(step)"
@@ -89,13 +95,20 @@
             {{ 'orders.statuses.' + step | transloco }}
           </span>
 
+          <!-- Event date if available -->
+          @if (stepDate(step)) {
+            <span class="text-[11px] text-muted-foreground">
+              {{ stepDate(step) }}
+            </span>
+          }
+
           @if (isCurrent(step)) {
             <span class="sr-only">{{ 'orders.detail.stepCurrent' | transloco }}</span>
           } @else if (isDone(step)) {
             <span class="sr-only">{{ 'orders.detail.stepDone' | transloco }}</span>
           }
-        </div>
-      </li>
+        </li>
+      }
     }
   </ol>
 
