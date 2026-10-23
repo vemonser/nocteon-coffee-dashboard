@@ -267,7 +267,7 @@ export class OrdersListComponent {
     ),
     this.columnHelper.accessor(
       (row) => ({ name: row.customer?.name ?? null, email: row.customer?.email ?? null }),
-      { id: 'customer', header: 'orders.columns.customer', enableSorting: false, meta: { width: '172px' } },
+      { id: 'customer', header: 'orders.columns.customer', enableSorting: false, meta: { width: '24%' } },
     ),
     this.columnHelper.accessor(
       (row) => orderItemsCount(row),

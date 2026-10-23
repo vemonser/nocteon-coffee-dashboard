@@ -1,5 +1,6 @@
 import type { OrderStatsResponse } from '../models/order.model';
 import type { OrderStatus, PaymentStatus } from '../models/order.model';
+import { OPEN_STATUSES } from './order-filters';
 
 /**
  * The KPI values shown in the four cards on the orders list.
@@ -30,10 +31,10 @@ export function computeKpi(
   const revenue = stats.revenue ?? 0;
   const revenueCount = stats.revenueOrderCount ?? 0;
 
-  const openCount =
-    (statusCounts['PENDING'] ?? 0) +
-    (statusCounts['PROCESSING'] ?? 0) +
-    (statusCounts['SHIPPED'] ?? 0);
+  const openCount = OPEN_STATUSES.reduce(
+    (sum, status) => sum + (statusCounts[status] ?? 0),
+    0,
+  );
 
   const avgOrderValue = revenueCount > 0 ? revenue / revenueCount : 0;
 
