@@ -127,81 +127,21 @@
             <ng-icon name="lucideClipboard" class="size-4" aria-hidden="true" />
           </button>
 
-          <!-- More actions kebab -->
-          <button
-            hlmBtn
-            variant="outline"
-            size="icon"
-            class="min-h-10 min-w-10"
-            [hlmDropdownMenuTrigger]="moreMenu"
-            [brnTooltip]="'orders.detail.moreActions' | transloco"
-            [attr.aria-label]="'orders.detail.moreActions' | transloco"
-            data-testid="order-more-actions"
-          >
-            <ng-icon name="lucideMoreVertical" class="size-4" aria-hidden="true" />
-          </button>
-
-          <ng-template #moreMenu>
-            <hlm-dropdown-menu class="min-w-56 rounded-md">
-              <!-- Cancel (only when allowed) -->
-              @if (canCancel()) {
-                <button
-                  hlmDropdownMenuItem
-                  class="flex items-center gap-2"
-                  data-testid="order-cancel"
-                  (click)="openCancelDialog()"
-                >
-                  <ng-icon name="lucideCircleSlash" class="size-4" aria-hidden="true" />
-                  <span>{{ 'orders.actions.cancel' | transloco }}</span>
-                </button>
-              }
-
-              <!-- Refund (only when allowed) -->
-              @if (canRefund()) {
-                <button
-                  hlmDropdownMenuItem
-                  class="flex items-center gap-2"
-                  data-testid="order-refund"
-                  (click)="openRefundDialog()"
-                >
-                  <ng-icon name="lucideRotateCcw" class="size-4" aria-hidden="true" />
-                  <span>{{ 'orders.actions.refund' | transloco }}</span>
-                </button>
-              }
-
-              <hlm-dropdown-menu-separator />
-
-              <button
-                hlmDropdownMenuItem
-                class="flex items-center gap-2"
-                data-testid="order-copy-link"
-                (click)="copyLink()"
-              >
-                <ng-icon name="lucideLink" class="size-4" aria-hidden="true" />
-                <span>{{ 'orders.detail.copyLink' | transloco }}</span>
-              </button>
-
-              <button
-                hlmDropdownMenuItem
-                class="flex items-center gap-2"
-                data-testid="order-copy-number"
-                (click)="copyOrderNumber()"
-              >
-                <ng-icon name="lucideClipboard" class="size-4" aria-hidden="true" />
-                <span>{{ 'orders.actions.copyOrderNumber' | transloco }}</span>
-              </button>
-
-              <button
-                hlmDropdownMenuItem
-                class="flex items-center gap-2"
-                data-testid="order-view-customer"
-                (click)="goBack()"
-              >
-                <ng-icon name="lucideUser" class="size-4" aria-hidden="true" />
-                <span>{{ 'orders.detail.viewCustomer' | transloco }}</span>
-              </button>
-            </hlm-dropdown-menu>
-          </ng-template>
+          <!-- Refund (replaces the old "more actions" kebab) -->
+          @if (canRefund()) {
+            <button
+              hlmBtn
+              variant="outline"
+              size="icon"
+              class="min-h-10 min-w-10"
+              (click)="openRefundDialog()"
+              [brnTooltip]="'orders.actions.refund' | transloco"
+              [attr.aria-label]="'orders.actions.refund' | transloco"
+              data-testid="order-more-actions"
+            >
+              <ng-icon name="lucideRotateCcw" class="size-4" aria-hidden="true" />
+            </button>
+          }
         </div>
       </div>
     </header>

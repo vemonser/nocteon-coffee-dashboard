@@ -112,9 +112,7 @@
                         </span>
                       }
                       @if (b.shipped > 0) {
-                        @if (b.pending > 0 || b.processing > 0) {
-                          <span class="mx-1" aria-hidden="true">·</span>
-                        }
+                   
                         <span class="mt-0.5 flex items-center gap-1 text-[10.5px] text-muted-foreground">
                           <span class="whitespace-nowrap tabular-nums">{{ b.shipped }}</span>
                           <span>{{ 'orders.statuses.SHIPPED' | transloco }}</span>
