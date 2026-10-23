@@ -30,7 +30,7 @@ export class LocalizedDateComponent {
   /** Put the time on its OWN line (a table cell that must stay one line wide). */
   stackTime = input<boolean>(false);
 
-  private readonly language = inject(LanguageService);
+  protected readonly language = inject(LanguageService);
 
   protected readonly parts = computed(() =>
     dateParts(this.value(), this.language.language(), this.variant()),
