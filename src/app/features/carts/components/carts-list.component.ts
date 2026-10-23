@@ -157,7 +157,7 @@ export class CartsListComponent {
       { id: 'userFullName', header: 'carts.columns.customer', enableSorting: true },
     ),
     this.columnHelper.accessor('items', { id: 'items', header: 'carts.columns.items', enableSorting: false }),
-    this.columnHelper.accessor('itemCount', { header: 'carts.columns.itemCount', enableSorting: false, meta: { width: '70px' } }),
+    this.columnHelper.accessor('itemCount', { header: 'carts.columns.itemCount', enableSorting: false, meta: { width: '110px' } }),
     this.columnHelper.accessor('total', { header: 'carts.columns.total', enableSorting: true, meta: { width: '140px' } }),
     this.columnHelper.accessor(
       (row) => ({

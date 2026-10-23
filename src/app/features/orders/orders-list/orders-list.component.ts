@@ -271,7 +271,7 @@ export class OrdersListComponent {
     ),
     this.columnHelper.accessor(
       (row) => orderItemsCount(row),
-      { id: 'itemCount', header: 'orders.columns.items', enableSorting: false, meta: { width: '95px' } },
+      { id: 'itemCount', header: 'orders.columns.items', enableSorting: false, meta: { width: '120px' } },
     ),
     this.columnHelper.accessor(
       (row) => orderStatusKind(row.status),
