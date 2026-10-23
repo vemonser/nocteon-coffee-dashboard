@@ -56,7 +56,7 @@
             hlmBtn
             variant="ghost"
             size="icon"
-            class="mt-0.5 min-h-11 min-w-11 shrink-0 print-hidden"
+            class="size-9 shrink-0 print-hidden"
             (click)="goBack()"
             [attr.aria-label]="'orders.detail.back' | transloco"
             data-testid="order-back"
@@ -73,9 +73,8 @@
               <app-status-badge [status]="paymentKind(displayPaymentStatus())" data-testid="order-payment-badge" />
             </div>
             <div class="mt-1 text-sm text-muted-foreground">
-              <span>{{ 'orders.detail.createdAt' | transloco }}:</span>
               <time [attr.datetime]="o.createdAt" [attr.title]="createdAtTitle()">
-                {{ dates.formatDateAndTime(o.createdAt) }}
+                {{ 'orders.detail.created' | transloco }} {{ dates.formatDateAndTime(o.createdAt) }}
               </time>
             </div>
           </div>

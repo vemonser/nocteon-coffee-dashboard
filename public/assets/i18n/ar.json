@@ -1677,7 +1677,8 @@
       "collectedHelp": "مجموع مجاميع الطلبات المدفوعة فقط",
       "noItemsWarning": "هذا الطلب لا يحتوي على بنود — الإجمالي هو الشحن ناقص الخصم.",
       "estimatedDeliveryAt": "التوصيل المتوقع",
-      "viewCustomerOrders": "عرض طلبات العميل"
+      "viewCustomerOrders": "عرض طلبات العميل",
+      "created": "تم الإنشاء"
     },
     "dialogs": {
       "status": {
