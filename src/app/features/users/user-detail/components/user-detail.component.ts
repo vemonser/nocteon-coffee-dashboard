@@ -8,10 +8,11 @@ import { HlmCardImports } from '@spartan-ng/helm/card';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmBadgeImports } from '@spartan-ng/helm/badge';
 import { HlmInputImports } from '@spartan-ng/helm/input';
+import { HlmNativeSelectImports } from '@spartan-ng/helm/native-select';
+import { HlmDropdownMenuImports } from '@spartan-ng/helm/dropdown-menu';
 import { HlmLabelImports } from '@spartan-ng/helm/label';
 import { HlmSkeletonImports } from '@spartan-ng/helm/skeleton';
 import { HlmSeparatorImports } from '@spartan-ng/helm/separator';
-import { HlmDropdownMenuImports } from '@spartan-ng/helm/dropdown-menu';
 import { HlmAvatarImports } from '@spartan-ng/helm/avatar';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
@@ -25,6 +26,8 @@ import { BreadcrumbService } from '../../../../shared/components/breadcrumb/serv
 import { UserRequest, UserResponse } from '../../model/user.model';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { LocalizedDateComponent } from '../../../../shared/ui/localized-date/localized-date.component';
+import { PermissionMatrixComponent } from '../../../../shared/components/permission-matrix/permission-matrix.component';
+import { ALL_PERMISSIONS } from '../../../../shared/utils/permission.utils';
 import { NotifyService } from '../../../../core/notify/notify.service';
 
 @Component({
@@ -33,7 +36,7 @@ import { NotifyService } from '../../../../core/notify/notify.service';
   imports: [
     LocalizedDateComponent, CommonModule, FormsModule, ReactiveFormsModule,
     HlmCardImports, HlmButtonImports, HlmBadgeImports, HlmInputImports, HlmLabelImports,
-    HlmSkeletonImports, HlmSeparatorImports, HlmAvatarImports, HlmDropdownMenuImports, NgIcon, TranslocoPipe,
+    HlmSkeletonImports, HlmSeparatorImports, HlmAvatarImports, HlmNativeSelectImports, HlmDropdownMenuImports, NgIcon, TranslocoPipe, PermissionMatrixComponent,
   ],
   providers: [provideIcons({
     lucideArrowLeft, lucidePencil, lucideLock, lucideUnlock, lucideCheck, lucideX, lucideLoader2,
@@ -60,10 +63,16 @@ export class UserDetailComponent implements OnInit {
   readonly deleteConfirmText = signal('');
 
   readonly showEditDialog = signal(false);
+  readonly showRoleDialog = signal(false);
+  readonly newRole = signal('');
+  readonly roleConfirmText = signal('');
+  readonly roleOptions = signal<string[]>([]);
+  readonly allPermissions = ALL_PERMISSIONS;
 
   form!: FormGroup;
 
   ngOnInit(): void {
+    this.userService.getRoles().subscribe({ next: (r) => { if (r?.data?.length) this.roleOptions.set(r.data); } });
     this.route.paramMap.pipe(
       map((params) => params.get('id')),
       switchMap((id) => {
@@ -172,5 +181,16 @@ export class UserDetailComponent implements OnInit {
     });
   }
 
+  openRoleDialog(): void { const u=this.user(); if(!u) return; this.newRole.set(u.role); this.roleConfirmText.set(''); this.showRoleDialog.set(true); }
+  closeRoleDialog(): void { this.showRoleDialog.set(false); }
+  confirmRoleChange(): void {
+    const u=this.user(); if(!u || this.newRole()===u.role) return;
+    if (this.newRole()==='ADMIN' && this.roleConfirmText()!==u.username) return;
+    this.saving.set(true);
+    this.userService.update(u.id, { role: this.newRole() }).pipe(
+      tap(()=>this.saving.set(false)),
+      catchError((err)=>{ this.saving.set(false); this.error.set(err?.error?.message||'Failed'); return of(null); }),
+    ).subscribe((res)=>{ if(res?.data){ this.user.set(res.data); this.showRoleDialog.set(false); } });
+  }
   goBack(): void { this.router.navigate(['/dashboard/users']); }
 }

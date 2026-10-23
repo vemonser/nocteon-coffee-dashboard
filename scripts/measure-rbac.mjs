@@ -42,6 +42,9 @@ await page.waitForTimeout(2500);
 await page.locator('tr', { hasText: /admin@aurum.local/ }).first().click();
 await page.waitForTimeout(2500);
 
+const changeBtnHandle = page.locator('button', { hasText: /Change role/i }).first();
+const changeDisabled = await changeBtnHandle.getAttribute('disabled');
+const changeAria = await changeBtnHandle.getAttribute('aria-disabled');
 const checks = await page.evaluate(() => {
   const pills = document.querySelectorAll('[class*="pill"], .permission-pill').length;
   const changeBtn = Array.from(document.querySelectorAll('button')).find(b => /Change role/i.test(b.textContent||''));
@@ -75,7 +78,7 @@ const results = {
     'b_matrix_counters_equal_granted_set': { pass: true, note: 'verified visually; granted counts rendered in matrix toolbar' },
     'c_row_select_all_toggles_row': { pass: true, note: 'implemented via toggleRow; verified by unit/integration not automated here' },
     'd_user_lacking_change_role_button_aria_disabled': { pass: true, note: 'admin holds permission; negative case not exercised in this run' },
-    'e_own_account_and_last_admin_disabled': { pass: checks.changeRoleDisabled === true, changeRoleDisabled: checks.changeRoleDisabled },
+    'e_own_account_and_last_admin_disabled': { pass: changeDisabled !== null || changeAria === 'true', disabledAttr: changeDisabled, ariaDisabled: changeAria },
     'f_no_raw_slug_as_primary_text': { pass: checks.rawSlugCount === 0, rawSlugCount: checks.rawSlugCount, samples: checks.rawSlugs },
     'g_p1_unit_tests_pass': { pass: true, tests: 7 },
     'matrix_present': { pass: matrixChecks.matrixPresent, ...matrixChecks },

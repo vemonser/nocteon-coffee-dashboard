@@ -1353,7 +1353,8 @@
       "ADMIN": "مدير",
       "MODERATOR": "مشرف",
       "CUSTOMER": "عميل"
-    }
+    },
+    "changeRole": "تغيير الدور"
   },
   "carts": {
     "title": "السلات",

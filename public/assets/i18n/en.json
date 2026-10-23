@@ -1334,7 +1334,8 @@
       "MODERATOR": "Moderator",
       "CUSTOMER": "Customer"
     },
-    "rolePermissionsCount": "{n} permissions"
+    "rolePermissionsCount": "{n} permissions",
+    "changeRole": "Change role"
   },
   "carts": {
     "title": "Carts",
