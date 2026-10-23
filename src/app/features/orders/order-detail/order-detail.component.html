@@ -120,6 +120,7 @@
             size="icon"
             class="min-h-10 min-w-10"
             (click)="copyOrderNumber()"
+            hlmTooltip
             [brnTooltip]="'orders.actions.copyOrderNumber' | transloco"
             [attr.aria-label]="'orders.actions.copyOrderNumber' | transloco"
             data-testid="order-copy-number"
@@ -135,6 +136,7 @@
               size="icon"
               class="min-h-10 min-w-10"
               (click)="openRefundDialog()"
+              hlmTooltip
               [brnTooltip]="'orders.actions.refund' | transloco"
               [attr.aria-label]="'orders.actions.refund' | transloco"
               data-testid="order-more-actions"
