@@ -1329,7 +1329,10 @@
     "blockUser": "حظر المستخدم",
     "unblockUser": "إلغاء حظر المستخدم",
     "confirmAction": "تأكيد هذا الإجراء",
-    "processing": "جارٍ التنفيذ…"
+    "processing": "جارٍ التنفيذ…",
+    "columns": {
+      "user": "المستخدم"
+    }
   },
   "carts": {
     "title": "السلات",

@@ -1309,7 +1309,10 @@
     "blockUser": "Block user",
     "unblockUser": "Unblock user",
     "confirmAction": "Confirm this action",
-    "processing": "Processing…"
+    "processing": "Processing…",
+    "columns": {
+      "user": "User"
+    }
   },
   "carts": {
     "title": "Carts",
