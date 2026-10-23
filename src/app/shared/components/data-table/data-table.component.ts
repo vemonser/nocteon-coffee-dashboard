@@ -509,13 +509,13 @@ export class DataTableComponent {
     freeShippingThreshold: '120px',
     totalAmount: '110px',
     total: '100px',
-    itemCount: '120px',
+    itemCount: '90px',
     paymentStatus: '120px',
     paymentMethod: '130px',
     // The orders list needs a WIDER method column: "Cash on delivery" /
     // "الدفع عند الاستلام" must never be truncated, so the column is budgeted
     // for the longest label in both languages.
-    orderNumber: '130px',
+    orderNumber: '170px',
     customer: '24%',
     createdAtTime: '150px',
     scopeType: '110px',
