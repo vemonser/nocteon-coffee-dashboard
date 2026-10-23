@@ -2029,7 +2029,9 @@
     "exportCsv": "تصدير CSV",
     "exportPdf": "تصدير PDF",
     "exportPdfSoon": "تصدير PDF قريباً",
-    "soon": "قريباً"
+    "soon": "قريباً",
+    "custom": "مخصص",
+    "customRange": "نطاق تاريخ مخصص"
   },
   "imageCell": {
     "noImage": "لا توجد صورة"

@@ -1,5 +1,6 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { NgIcon, provideIcons } from '@ng-icons/core';
@@ -34,6 +35,7 @@ import { TranslocoService } from '@jsverse/transloco';
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     TranslocoPipe,
     NgIcon,
     HlmButtonImports,
@@ -57,6 +59,7 @@ export class DashboardToolbarComponent {
     { days: 30, key: 'dashboard.last30Days' },
     { days: 90, key: 'dashboard.last90Days' },
     { days: 365, key: 'dashboard.last365Days' },
+    { days: -1, key: 'dashboard.custom' },
   ];
 
   /** The selected range, in days. */
@@ -121,7 +124,30 @@ export class DashboardToolbarComponent {
     if (!Number.isFinite(days)) return;
     const option = this.options.find((o) => o.days === days);
     if (!option) return;
+    if (days === -1) {
+      this.customRangeOpen.set(true);
+      return;
+    }
     this.select(days, option.key);
+  }
+
+  /** Custom date range popover state. */
+  readonly customRangeOpen = signal(false);
+  /** Custom start date. */
+  readonly customStart = signal('');
+  /** Custom end date. */
+  readonly customEnd = signal('');
+
+  /** Apply custom date range. */
+  applyCustomRange(): void {
+    // Custom date range requires backend support
+    // For now, just close the popover
+    this.customRangeOpen.set(false);
+  }
+
+  /** Close custom range popover. */
+  closeCustomRange(): void {
+    this.customRangeOpen.set(false);
   }
 
   select(days: number, key: string): void {

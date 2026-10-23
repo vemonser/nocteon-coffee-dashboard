@@ -175,69 +175,31 @@ export class RevenueChartComponent {
     return out;
   });
 
-  /** The x-axis ticks, adapted to the width. */
+  /** The x-axis ticks, built from the END backwards. */
   readonly xTicks = computed(() => {
     const n = this.data().length;
     if (!n) return [];
     
-    // Determine step size based on available data points
     const step = this.getAxisStep();
     
     const out: { index: number; label: string }[] = [];
-    for (let i = 0; i < n; i += step) {
-      out.push({ index: i, label: this.dates.formatDayMonth(this.data()[i].date) });
+    // Build from the end backwards
+    let i = n - 1;
+    while (i >= 0) {
+      out.unshift({ index: i, label: this.dates.formatDayMonth(this.data()[i].date) });
+      i -= step;
     }
     
-    // The last day is the one a reader looks for, but it must not collide
-    // with the tick before it: "19 Oct" and "20 Oct" printed next to each
-    // other are unreadable. When they would touch, the earlier tick is
-    // dropped instead.
-    const last = n - 1;
-    if (out.length === 0) {
-      out.push({ index: last, label: this.dates.formatDayMonth(this.data()[last].date) });
-    } else if (out[out.length - 1].index !== last) {
-      if (last - out[out.length - 1].index < step / 2) {
-        out.pop();
-      }
-      out.push({ index: last, label: this.dates.formatDayMonth(this.data()[last].date) });
-    }
     return out;
   });
 
   /** Calculate the axis step based on available data days */
   readonly getAxisStep = computed(() => {
     const n = this.data().length;
-    if (n <= 7) return 1; // 7 days or less: daily
-    if (n <= 14) return 2; // 14 days or less: every 2 days
-    if (n <= 21) return 3; // 21 days or less: every 3 days
-    if (n <= 28) return 4; // 28 days or less: every 4 days
-    if (n <= 35) return 5; // 35 days or less: every 5 days
-    if (n <= 42) return 6; // 42 days or less: every 6 days
-    if (n <= 49) return 7; // 49 days or less: every 7 days
-    if (n <= 56) return 8; // 56 days or less: every 8 days
-    if (n <= 63) return 9; // 63 days or less: every 9 days
-    if (n <= 70) return 10; // 70 days or less: every 10 days
-    if (n <= 77) return 11; // 77 days or less: every 11 days
-    if (n <= 84) return 12; // 84 days or less: every 12 days
-    if (n <= 91) return 13; // 91 days or less: every 13 days
-    if (n <= 98) return 14; // 98 days or less: every 14 days
-    if (n <= 105) return 15; // 105 days or less: every 15 days
-    if (n <= 112) return 16; // 112 days or less: every 16 days
-    if (n <= 119) return 17; // 119 days or less: every 17 days
-    if (n <= 126) return 18; // 126 days or less: every 18 days
-    if (n <= 133) return 19; // 133 days or less: every 19 days
-    if (n <= 140) return 20; // 140 days or less: every 20 days
-    if (n <= 147) return 21; // 147 days or less: every 21 days
-    if (n <= 154) return 22; // 154 days or less: every 22 days
-    if (n <= 161) return 23; // 161 days or less: every 23 days
-    if (n <= 168) return 24; // 168 days or less: every 24 days
-    if (n <= 175) return 25; // 175 days or less: every 25 days
-    if (n <= 182) return 26; // 182 days or less: every 26 days
-    if (n <= 189) return 27; // 189 days or less: every 27 days
-    if (n <= 196) return 28; // 196 days or less: every 28 days
-    if (n <= 203) return 29; // 203 days or less: every 29 days
-    if (n <= 210) return 30; // 210 days or less: every 30 days
-    return 7; // Default: every 7 days
+    if (n <= 7) return 1; // Daily for 7 days or less
+    if (n <= 30) return 7; // 7-day steps for 30 days
+    if (n <= 90) return 14; // 14-day steps for 90 days
+    return 30; // 30-day steps for 365 days
   });
 
   /**

@@ -6,7 +6,7 @@
 -->
 <div class="mb-2 flex items-baseline justify-between gap-2 text-xs text-muted-foreground">
   <span>{{ 'dashboard.topProducts.product' | transloco }}</span>
-  <span class="w-16 shrink-0 text-end sm:w-32">{{ 'dashboard.topProducts.units' | transloco }}</span>
+  <span class="w-[160px] shrink-0 text-end">{{ 'dashboard.topProducts.units' | transloco }}</span>
 </div>
 
 <ul class="flex flex-col gap-2">
@@ -44,7 +44,7 @@
       <!-- The bar AND the number are the same measure: units sold. The bar
            is hidden on a phone (there is no room for it and the name), so
            the number is never pushed out of the card. -->
-      <span class="flex w-16 shrink-0 items-center justify-end gap-2 sm:w-32">
+      <span class="flex w-[160px] shrink-0 items-center justify-end gap-2">
         <span class="hidden h-2 flex-1 overflow-hidden rounded-full bg-muted sm:block">
           <span
             class="block h-full rounded-full bg-chart-1"

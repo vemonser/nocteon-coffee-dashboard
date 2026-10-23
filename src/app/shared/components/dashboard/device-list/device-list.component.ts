@@ -7,6 +7,9 @@ import {
   lucideMonitor,
   lucideSmartphone,
   lucideTablet,
+  lucideTerminal,
+  lucideLaptop,
+  lucideApple,
 } from '@ng-icons/lucide';
 import { DashboardStatsService } from '../../../../features/dashboard/services/dashboard-stats.service';
 import { LocalizedNameService } from '../../../../core/i18n/localized-name.service';
@@ -41,7 +44,7 @@ import { PluralPipe } from '../../../pipes/plural.pipe';
   standalone: true,
   imports: [CommonModule, TranslocoPipe, PluralPipe, NgIcon],
   providers: [
-    provideIcons({ lucideGlobe, lucideMonitor, lucideSmartphone, lucideTablet }),
+    provideIcons({ lucideGlobe, lucideMonitor, lucideSmartphone, lucideTablet, lucideTerminal, lucideLaptop, lucideApple }),
   ],
   templateUrl: './device-list.component.html',
   styleUrl: './device-list.component.css',
@@ -93,8 +96,8 @@ export class DeviceListComponent {
     const type = (deviceType || '').toUpperCase();
     // Check for specific OS types first
     if (/WINDOWS/.test(type)) return 'lucideMonitor';
-    if (/MAC|IOS|IPHONE|IPAD|APPLE/.test(type)) return 'lucideMonitor';
-    if (/LINUX/.test(type)) return 'lucideMonitor';
+    if (/MAC|IOS|IPHONE|IPAD|APPLE/.test(type)) return 'lucideApple';
+    if (/LINUX/.test(type)) return 'lucideTerminal';
     if (/ANDROID/.test(type)) return 'lucideSmartphone';
     // Then check for device types
     if (/MOBILE|PHONE/.test(type)) return 'lucideSmartphone';
