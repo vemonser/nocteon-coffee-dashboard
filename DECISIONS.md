@@ -1803,3 +1803,11 @@ cancelled cash-on-delivery orders, so "Not collected" exists on a fresh
 database instead of waiting for the sweep. The seventeen orders also have
 their own hours, so "created at, newest first" is a real order and page 1
 and page 2 do not show the same rows.
+
+## Needs backend
+
+### Custom date range picker (G5)
+- The "Custom" option in the dashboard toolbar uses two native date inputs in a popover as a temporary solution.
+- The existing Spartan date-range-picker component exists in `libs/ui/date-picker/` but requires complex integration.
+- A proper implementation would need backend support for custom date range queries.
+- Current implementation: native date inputs with apply/cancel buttons.

@@ -7,7 +7,7 @@ import type { OrderStatus, PaymentStatus } from '../models/order.model';
 export interface KpiValues {
   /** Revenue net of refunds (from backend stats). */
   revenue: number;
-  /** Open orders = Pending + Confirmed + Processing + Shipped (from status counts). */
+  /** Open orders = Pending + Processing + Shipped (from status counts). Excludes cancelled. */
   openCount: number;
   /** Average order value = revenue / revenueOrderCount. */
   avgOrderValue: number;
@@ -32,7 +32,6 @@ export function computeKpi(
 
   const openCount =
     (statusCounts['PENDING'] ?? 0) +
-    (statusCounts['CONFIRMED'] ?? 0) +
     (statusCounts['PROCESSING'] ?? 0) +
     (statusCounts['SHIPPED'] ?? 0);
 

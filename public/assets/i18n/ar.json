@@ -1677,7 +1677,8 @@
       "collectedHelp": "مجموع مجاميع الطلبات المدفوعة فقط",
       "noItemsWarning": "هذا الطلب لا يحتوي على بنود — الإجمالي هو الشحن ناقص الخصم.",
       "estimatedDeliveryAt": "التوصيل المتوقع",
-      "viewCustomerOrders": "عرض طلبات العميل"
+      "viewCustomerOrders": "عرض طلبات العميل",
+      "created": "تم الإنشاء"
     },
     "dialogs": {
       "status": {
@@ -2029,7 +2030,9 @@
     "exportCsv": "تصدير CSV",
     "exportPdf": "تصدير PDF",
     "exportPdfSoon": "تصدير PDF قريباً",
-    "soon": "قريباً"
+    "soon": "قريباً",
+    "custom": "مخصص",
+    "customRange": "نطاق تاريخ مخصص"
   },
   "imageCell": {
     "noImage": "لا توجد صورة"

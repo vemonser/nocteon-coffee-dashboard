@@ -1645,7 +1645,8 @@
       "collectedHelp": "Sum of totals of PAID orders only",
       "noItemsWarning": "This order has no line items — the total is shipping minus discount.",
       "estimatedDeliveryAt": "Estimated delivery",
-      "viewCustomerOrders": "View customer orders"
+      "viewCustomerOrders": "View customer orders",
+      "created": "Created"
     },
     "dialogs": {
       "status": {
@@ -1961,7 +1962,9 @@
     "exportCsv": "Export CSV",
     "exportPdf": "Export PDF",
     "exportPdfSoon": "PDF export coming soon",
-    "soon": "Soon"
+    "soon": "Soon",
+    "custom": "Custom",
+    "customRange": "Custom date range"
   },
   "imageCell": {
     "noImage": "No img"

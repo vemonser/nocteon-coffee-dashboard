@@ -56,7 +56,7 @@
             hlmBtn
             variant="ghost"
             size="icon"
-            class="mt-0.5 min-h-11 min-w-11 shrink-0 print-hidden"
+            class="size-9 shrink-0 print-hidden"
             (click)="goBack()"
             [attr.aria-label]="'orders.detail.back' | transloco"
             data-testid="order-back"
@@ -73,9 +73,8 @@
               <app-status-badge [status]="paymentKind(displayPaymentStatus())" data-testid="order-payment-badge" />
             </div>
             <div class="mt-1 text-sm text-muted-foreground">
-              <span>{{ 'orders.detail.createdAt' | transloco }}:</span>
               <time [attr.datetime]="o.createdAt" [attr.title]="createdAtTitle()">
-                {{ dates.formatDateAndTime(o.createdAt) }}
+                {{ 'orders.detail.created' | transloco }} {{ dates.formatDateAndTime(o.createdAt) }}
               </time>
             </div>
           </div>
@@ -650,13 +649,13 @@
               <button
                 hlmBtn
                 variant="ghost"
-                size="sm"
-                class="print-hidden"
+                size="icon"
+                class="size-8 print-hidden"
                 data-testid="order-copy-address"
                 (click)="copyAddress()"
+                [attr.aria-label]="'orders.detail.copyAddress' | transloco"
               >
                 <ng-icon name="lucideCopy" class="size-3.5" aria-hidden="true" />
-                {{ 'orders.detail.copyAddress' | transloco }}
               </button>
             }
           </header>
@@ -670,7 +669,9 @@
                 <bdi data-address-city>{{ cityLine() }}</bdi>
                 <bdi>{{ countryLine() }}</bdi>
                 @if (addressPhone(); as phone) {
-                  <bdi class="text-muted-foreground" dir="ltr" data-address-phone>{{ phone }}</bdi>
+                  <bdi dir="ltr" data-address-phone>
+                    <a [href]="telHref()" class="text-foreground hover:underline">{{ phone }}</a>
+                  </bdi>
                 }
               </address>
             } @else {
@@ -860,12 +861,10 @@
           <div class="px-6 pb-6 pt-4" data-testid="detail-card-body">
             @if (hasShipment()) {
               <div class="flex flex-col gap-1.5 text-sm" data-testid="order-shipment">
-                @if (shipment()?.carrier; as carrier) {
-                  <div class="flex items-center justify-between gap-3">
-                    <span class="text-muted-foreground">{{ 'orders.detail.carrier' | transloco }}</span>
-                    <span class="truncate" data-testid="order-carrier">{{ carrier }}</span>
-                  </div>
-                }
+                <div class="flex items-center justify-between gap-3">
+                  <span class="text-muted-foreground">{{ 'orders.detail.carrier' | transloco }}</span>
+                  <span class="truncate" data-testid="order-carrier">{{ shipment()?.carrier || '—' }}</span>
+                </div>
                 @if (shipment()?.trackingNumber; as tracking) {
                   <div class="flex items-center justify-between gap-3">
                     <span class="text-muted-foreground">
@@ -902,22 +901,26 @@
                     <ng-icon name="lucideExternalLink" class="size-3.5" aria-hidden="true" />
                   </a>
                 }
-                @if (shipment()?.shippedAt; as shippedAt) {
-                  <div class="flex items-center justify-between gap-3">
-                    <span class="text-muted-foreground">{{ 'orders.detail.shippedAt' | transloco }}</span>
-                    <span class="text-sm">
+                <div class="flex items-center justify-between gap-3">
+                  <span class="text-muted-foreground">{{ 'orders.detail.shippedAt' | transloco }}</span>
+                  <span class="text-sm">
+                    @if (shipment()?.shippedAt; as shippedAt) {
                       {{ dates.formatDateAndTime(shippedAt) }}
-                    </span>
-                  </div>
-                }
-                @if (shipment()?.deliveredAt; as deliveredAt) {
-                  <div class="flex items-center justify-between gap-3">
-                    <span class="text-muted-foreground">{{ 'orders.detail.deliveredAt' | transloco }}</span>
-                    <span class="text-sm">
+                    } @else {
+                      —
+                    }
+                  </span>
+                </div>
+                <div class="flex items-center justify-between gap-3">
+                  <span class="text-muted-foreground">{{ 'orders.detail.deliveredAt' | transloco }}</span>
+                  <span class="text-sm">
+                    @if (shipment()?.deliveredAt; as deliveredAt) {
                       {{ dates.formatDateAndTime(deliveredAt) }}
-                    </span>
-                  </div>
-                }
+                    } @else {
+                      —
+                    }
+                  </span>
+                </div>
                 @if (shipment()?.estimatedDeliveryAt; as estimatedDeliveryAt) {
                   <div class="flex items-center justify-between gap-3">
                     <span class="text-muted-foreground">{{ 'orders.detail.estimatedDeliveryAt' | transloco }}</span>

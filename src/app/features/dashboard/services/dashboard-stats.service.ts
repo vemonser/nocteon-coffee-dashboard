@@ -7,6 +7,7 @@ import { StoreSettingsService } from '../../../core/settings/store-settings.serv
 import { LanguageService } from '../../../core/i18n/language.service';
 import { fetchPlan, previousValue, type FetchPlan } from '../../../core/dashboard/period-fetch';
 import { currentPeriod, previousPeriod } from '../../../core/dashboard/period';
+import { openOrdersCount as openOrdersCountShared } from '../../../core/dashboard/open-orders';
 import { computeDelta } from '../../../core/dashboard/delta';
 
 interface ApiResponse<T> {
@@ -129,6 +130,17 @@ export class DashboardStatsService {
     const data = this._overview();
     if (!data) return 0;
     return data.ordersByStatus?.find((s) => s.status === 'PENDING')?.count ?? 0;
+  });
+
+  /** Open orders count (PENDING + PROCESSING + SHIPPED). */
+  readonly openOrdersCount = computed(() => {
+    const data = this._overview();
+    if (!data) return 0;
+    const statusCounts: Record<string, number> = {};
+    for (const s of data.ordersByStatus ?? []) {
+      statusCounts[s.status] = s.count;
+    }
+    return openOrdersCountShared(statusCounts);
   });
 
   /**

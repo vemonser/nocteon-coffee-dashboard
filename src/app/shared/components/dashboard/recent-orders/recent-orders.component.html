@@ -44,31 +44,27 @@
             </span>
 
             <span class="min-w-0 flex-1">
-              <!-- The name and the amount share the first line, so the name
-                   keeps its width on a phone; the status moves under them. -->
+              <!-- The name and order id on the left -->
               <span class="flex items-baseline justify-between gap-2">
-                <!-- The customer's name is DATA: a name is not translated,
-                     so it is not an untranslated string. -->
-                <span class="min-w-0 truncate text-sm font-medium" data-allow-latin [title]="order.customer?.name || unknownCustomer()">
-                  {{ order.customer?.name || unknownCustomer() }}
-                </span>
-                <span class="shrink-0 whitespace-nowrap text-end text-sm font-medium tabular-nums">
-                  {{ order.totalAmount | money }}
-                </span>
+                <div class="min-w-0 flex-1">
+                  <span class="min-w-0 truncate text-sm font-medium" data-allow-latin [title]="order.customer?.name || unknownCustomer()">
+                    {{ order.customer?.name || unknownCustomer() }}
+                  </span>
+                  <bdi class="min-w-0 truncate text-xs text-muted-foreground">{{ orderNumber(order) }}</bdi>
+                </div>
               </span>
 
               <span class="mt-0.5 flex min-w-0 items-center gap-2 text-xs text-muted-foreground">
-                <!-- The order number, through the SHARED helper. -->
-                <bdi class="min-w-0 truncate">{{ orderNumber(order) }}</bdi>
-                <span class="hidden shrink-0 sm:inline" [title]="dateTitle(order.createdAt)">
-                  <span aria-hidden="true">·</span>
-                  {{ relativeDate(order.createdAt) }}
-                </span>
+                <app-status-badge class="shrink-0" [status]="getStatusKind(order.status)" />
                 <span class="shrink-0 text-xs text-muted-foreground">
-                  <span aria-hidden="true">·</span>
                   {{ order.items?.length || 0 }} {{ 'dashboard.recentOrders.items' | transloco }}
                 </span>
-                <app-status-badge class="ms-auto shrink-0 sm:ms-0" [status]="getStatusKind(order.status)" />
+                <span class="hidden shrink-0 sm:inline" [title]="dateTitle(order.createdAt)">
+                  {{ relativeDate(order.createdAt) }}
+                </span>
+                <span class="shrink-0 whitespace-nowrap text-end text-sm font-medium tabular-nums ms-auto">
+                  {{ order.totalAmount | money }}
+                </span>
               </span>
             </span>
           </a>
