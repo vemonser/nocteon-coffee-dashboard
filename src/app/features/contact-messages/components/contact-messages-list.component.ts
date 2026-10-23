@@ -6,6 +6,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmInputImports } from '@spartan-ng/helm/input';
 import { HlmNativeSelectImports } from '@spartan-ng/helm/native-select';
+import { HlmTooltipImports } from '@spartan-ng/helm/tooltip';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
   lucideArchive,
@@ -47,6 +48,7 @@ type MessageTab = 'all' | 'unread' | 'replied' | 'archived';
     HlmButtonImports,
     HlmInputImports,
     HlmNativeSelectImports,
+    HlmTooltipImports,
     PluralPipe,
     LocalizedDateComponent,
     PagerComponent,

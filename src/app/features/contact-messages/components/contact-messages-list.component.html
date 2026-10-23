@@ -57,6 +57,8 @@
           variant="ghost"
           size="icon"
           (click)="direction.set(direction() === 'asc' ? 'desc' : 'asc'); onSortChange({ column: sort(), direction: direction() === 'asc' ? 'desc' : 'asc' })"
+          hlmTooltip
+          [hlmTooltip]="direction() === 'asc' ? ('contactMessages.sort.desc' | transloco) : ('contactMessages.sort.asc' | transloco)"
           [attr.aria-label]="direction() === 'asc' ? ('contactMessages.sort.desc' | transloco) : ('contactMessages.sort.asc' | transloco)"
         >
           <ng-icon name="lucideArrowUpDown" class="size-4" aria-hidden="true" />
@@ -87,7 +89,7 @@
         <input
           hlmInput
           type="search"
-          class="w-full ps-9"
+          class="!h-8 w-full ps-9"
           [ngModel]="search()"
           (ngModelChange)="onSearch($event)"
           [placeholder]="'contactMessages.search' | transloco"
@@ -198,7 +200,7 @@
               </span>
 
               <span
-                class="shrink-0 text-xs text-muted-foreground"
+                class="ms-auto shrink-0 text-end text-xs text-muted-foreground"
                 [attr.title]="absoluteTime(message.createdAt)"
                 >{{ relativeTime(message.createdAt) }}</span
               >
