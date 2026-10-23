@@ -152,6 +152,9 @@
             hlmDropdownMenuItem
             class="flex items-center gap-2"
             [class.text-destructive-text]="action.danger"
+            [disabled]="action.disabled"
+            [attr.aria-disabled]="action.disabled"
+            [attr.title]="action.tooltip"
             (click)="onMenuAction(action)"
           >
             @if (action.icon) {

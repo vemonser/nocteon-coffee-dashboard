@@ -35,6 +35,8 @@ export interface RowMenuAction {
   icon?: string;
   /** Rendered in the destructive colour (a cancel, a delete). */
   danger?: boolean;
+  disabled?: boolean;
+  tooltip?: string;
 }
 
 @Component({

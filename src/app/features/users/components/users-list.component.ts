@@ -1,175 +1,125 @@
-﻿import { Component, computed, inject } from '@angular/core';
+﻿import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormGroup, Validators } from '@angular/forms';
 import { Observable, throwError } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { Router } from '@angular/router';
-// Icons
+
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
-  lucidePlus,
-  lucideSearch,
-  lucidePencil,
-  lucideLock,
-  lucideUnlock,
-  lucideX,
-  lucideCheck,
-  lucideChevronLeft,
-  lucideChevronRight,
-  lucideUser,
-  lucideShield,
-  lucideMail,
-  lucideLoader2,
+  lucidePlus, lucideSearch, lucidePencil, lucideLock, lucideUnlock, lucideX, lucideCheck,
+  lucideChevronLeft, lucideChevronRight, lucideUser, lucideShield, lucideMail, lucideLoader2,
+  lucideMoreVertical, lucideTrash2, lucideEye, lucideBadgeCheck,
 } from '@ng-icons/lucide';
 
-// Spartan UI
 import { HlmCardImports } from '@spartan-ng/helm/card';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmBadgeImports } from '@spartan-ng/helm/badge';
 import { HlmInputImports } from '@spartan-ng/helm/input';
-import { HlmSelectImports } from '@spartan-ng/helm/select';
+import { HlmNativeSelectImports } from '@spartan-ng/helm/native-select';
 import { HlmDialogImports } from '@spartan-ng/helm/dialog';
 import { HlmTableImports } from '@spartan-ng/helm/table';
 import { HlmAvatarImports } from '@spartan-ng/helm/avatar';
 import { HlmSkeletonImports } from '@spartan-ng/helm/skeleton';
 import { HlmLabelImports } from '@spartan-ng/helm/label';
+import { HlmTooltipImports } from '@spartan-ng/helm/tooltip';
 
-// App imports
 import { BaseListComponent } from '../../../core/crud/base-list.component';
-import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
+import { DataTableComponent, type TableSortEvent } from '../../../shared/components/data-table/data-table.component';
+import { ActionsCellComponent, type RowMenuAction } from '../../../shared/ui/actions-cell/actions-cell.component';
 import { HasPermissionDirective } from '../../../core/auth/permission.directive';
+import { AuthService } from '../../../core/auth/auth.service';
 import { UserService } from '../services/user.service';
 import { UserListParams, UserRequest, UserResponse } from '../model/user.model';
 import { ApiResponse, PageResponse } from '../../../core/models/api-response.model';
 import { createColumnHelper, ColumnDef } from '@tanstack/angular-table';
-import { HlmField, HlmFieldImports, HlmFieldLabel } from '@spartan-ng/helm/field';
+import { HlmFieldImports } from '@spartan-ng/helm/field';
 
 import { TranslocoPipe } from '@jsverse/transloco';
 import { PagerComponent } from '../../../shared/components/pager/pager.component';
 import { NotifyService } from '../../../core/notify/notify.service';
-type RoleFilter = 'ALL' | 'ADMIN' | 'CUSTOMER';
+
+type QuickFilter = 'ALL' | 'ADMIN' | 'CUSTOMER' | 'BLOCKED' | 'UNVERIFIED';
 
 @Component({
   selector: 'app-users-list',
   standalone: true,
   imports: [
-    PagerComponent,
-    CommonModule,
-    FormsModule,
-    ReactiveFormsModule,
-    HasPermissionDirective,
-    DataTableComponent,
-    HlmCardImports,
-    HlmButtonImports,
-    HlmBadgeImports,
-    HlmInputImports,
-    HlmSelectImports,
-    HlmDialogImports,
-    HlmFieldImports,
-    HlmTableImports,
-    HlmAvatarImports,
-    HlmSkeletonImports,
-    HlmLabelImports,
-    NgIcon,
-    TranslocoPipe,
+    PagerComponent, CommonModule, FormsModule, ReactiveFormsModule, HasPermissionDirective,
+    DataTableComponent, HlmCardImports, HlmButtonImports, HlmBadgeImports, HlmInputImports,
+    HlmNativeSelectImports, HlmDialogImports, HlmFieldImports, HlmTableImports, HlmAvatarImports,
+    HlmSkeletonImports, HlmLabelImports, HlmTooltipImports, NgIcon, TranslocoPipe,
   ],
-  providers: [
-    provideIcons({ lucideLoader2, lucidePlus,
-      lucideSearch,
-      lucidePencil,
-      lucideLock,
-      lucideUnlock,
-      lucideX,
-      lucideCheck,
-      lucideChevronLeft,
-      lucideChevronRight,
-      lucideUser,
-      lucideShield,
-      lucideMail,
-    }),
-  ],
+  providers: [provideIcons({
+    lucideLoader2, lucidePlus, lucideSearch, lucidePencil, lucideLock, lucideUnlock, lucideX,
+    lucideCheck, lucideChevronLeft, lucideChevronRight, lucideUser, lucideShield, lucideMail,
+    lucideMoreVertical, lucideTrash2, lucideEye, lucideBadgeCheck,
+  })],
   templateUrl: './users-list.component.html',
+  styles: [':host ::ng-deep app-data-table tbody tr { height: 72px !important; }'],
 })
 export class UsersListComponent extends BaseListComponent<UserResponse, UserRequest, string> {
   private userService = inject(UserService);
-  private router = inject(Router); // ← جديد
-  permission = [
-    { label: 'Customer', value: 'CUSTOMER' },
-    { label: 'Admin', value: 'ADMIN' },
-  ];
+  private router = inject(Router);
+  private auth = inject(AuthService);
 
-  itemToString = (value: string) =>
-    this.permission.find((item) => item.value === value)?.label || '';
+  roleOptions = signal<string[]>([]);
+  roleFilter = 'ALL';
+  statusFilter = 'all';
+  verificationFilter = 'all';
+  quickFilter = signal<QuickFilter>('ALL');
 
-  // Filters
-  roleFilter: RoleFilter = 'ALL';
-  isActiveFilter: boolean | undefined = undefined;
-  enabledFilter: boolean | undefined = undefined;
-  
-  override goToDetail(user: UserResponse): void {
-    this.router.navigate(['/dashboard/users', user.id]);
+  blocking = signal<UserResponse | null>(null);
+  override deleting = signal<UserResponse | null>(null);
+  deleteConfirmText = signal('');
+
+  showPassword = signal(false);
+
+  override ngOnInit(): void {
+    super.ngOnInit();
+    this.loadRoleOptions();
   }
+
+  private loadRoleOptions(): void {
+    this.userService.getRoles().subscribe({
+      next: (res) => {
+        if (res?.data?.length) this.roleOptions.set(res.data);
+        else this.roleOptions.set(Array.from(new Set(this.items().map((u) => u.role))));
+      },
+      error: () => this.roleOptions.set(Array.from(new Set(this.items().map((u) => u.role)))),
+    });
+  }
+
   // Columns
   private columnHelper = createColumnHelper<UserResponse>();
   columns: ColumnDef<UserResponse, any>[] = [
     this.columnHelper.accessor((row) => ({
-      avatar: row.avatarUrl,
-      name: this.getFullName(row) || row.username,
-      email: row.email,
-    }), {
-      id: 'userFullName',
-      header: 'users.columns.user',
-      enableSorting: true,
-    }),
-    this.columnHelper.accessor('role', {
-      header: 'Role',
-      enableSorting: true,
-    }),
-    this.columnHelper.accessor(
-      (row) => {
-        return this.getStatus(row);
-      },
-      {
-        id: 'status',
-        header: 'Status',
-        enableSorting: false,
-      },
-    ),
-    this.columnHelper.accessor((row) => row.createdAt, {
-      id: 'joined',
-      header: 'Joined',
-      enableSorting: true,
-    }),
-    this.columnHelper.display({
-      id: 'actions',
-      header: 'Actions',
-      enableSorting: false,
-    }),
+      avatar: row.avatarUrl, name: this.getFullName(row) || row.username, email: row.email, verified: row.enabled,
+    }), { id: 'userFullName', header: 'User', enableSorting: true, meta: { width: '32%' } }),
+    this.columnHelper.accessor('role', { id: 'role', header: 'Role', enableSorting: true, meta: { width: '14%' } }),
+    this.columnHelper.accessor((row) => this.getStatus(row), { id: 'status', header: 'Status', enableSorting: false, meta: { width: '12%' } }),
+    this.columnHelper.accessor((row) => row.createdAt, { id: 'joined', header: 'Joined', enableSorting: true, meta: { width: '14%' } }),
+    this.columnHelper.accessor((row) => row.lastActiveAt, { id: 'lastActive', header: 'Last active', enableSorting: true, meta: { width: '16%' } }),
+    this.columnHelper.display({ id: 'actions', header: 'Actions', enableSorting: false, meta: { width: '6%' } }),
   ];
 
-  readonly totalUsers = computed(() => this.items().length);
-  readonly activeUsers = computed(() => this.items().filter((u) => u.enabled && u.active).length);
-  readonly blockedUsers = computed(() => this.items().filter((u) => u.enabled && !u.active).length);
-  readonly unverifiedUsers = computed(() => this.items().filter((u) => !u.enabled).length);
+  readonly totalUsers = computed(() => this.pageData()?.totalElements ?? this.items().length);
+  readonly adminCount = computed(() => this.items().filter((u) => u.role === 'ADMIN').length);
+  readonly customerCount = computed(() => this.items().filter((u) => u.role === 'CUSTOMER').length);
+  readonly blockedCount = computed(() => this.items().filter((u) => u.enabled && !u.active).length);
+  readonly unverifiedCount = computed(() => this.items().filter((u) => !u.enabled).length);
 
   protected override readonly Math = Math;
 
-  // ─── Base contract ─────────────────────────────────────────────────────────
-
-  protected override getId(user: UserResponse): string {
-    return user.id;
-  }
+  protected override getId(user: UserResponse): string { return user.id; }
 
   protected override loadPage(): Observable<PageResponse<UserResponse>> {
     const params: UserListParams = {
-      page: this.currentPage(),
-        size: this.pageSize(),
-      search: this.searchQuery || undefined,
-      sort: this.currentSort,
-      direction: this.currentDirection,
+      page: this.currentPage(), size: this.pageSize(), search: this.searchQuery || undefined,
+      sort: this.currentSort, direction: this.currentDirection,
       role: this.roleFilter === 'ALL' ? undefined : this.roleFilter,
-      isActive: this.isActiveFilter,
-      enabled: this.enabledFilter,
+      isActive: this.statusFilter === 'all' ? undefined : this.statusFilter === 'active',
+      enabled: this.verificationFilter === 'all' ? undefined : this.verificationFilter === 'verified',
     };
     return this.userService.getAll(params).pipe(map((res) => res.data));
   }
@@ -178,123 +128,146 @@ export class UsersListComponent extends BaseListComponent<UserResponse, UserRequ
     return this.fb.group({
       username: ['', [Validators.required, Validators.minLength(3)]],
       email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(6)]],
+      password: ['', [Validators.required, Validators.minLength(8)]],
       confirmPassword: ['', [Validators.required]],
       role: ['CUSTOMER', Validators.required],
-      phone: [''],
-      firstName: [''],
-      lastName: [''],
-      isActive: [true],
+      phone: [''], firstName: [''], lastName: [''],
     });
   }
 
   override openCreateDialog(): void {
     super.openCreateDialog();
-    this.form.get('password')?.setValidators([Validators.required, Validators.minLength(6)]);
+    this.form.get('password')?.setValidators([Validators.required, Validators.minLength(8)]);
     this.form.get('password')?.updateValueAndValidity();
     this.form.get('confirmPassword')?.setValidators([Validators.required]);
     this.form.get('confirmPassword')?.updateValueAndValidity();
+    this.showPassword.set(false);
+    this.updatePhoneValidators();
+    this.form.get('role')?.valueChanges.subscribe(() => this.updatePhoneValidators());
   }
 
   protected override onEditOpen(user: UserResponse): void {
     this.form.patchValue({
-      username: user.username,
-      email: user.email,
-      role: user.role,
-      firstName: user.firstName || '',
-      lastName: user.lastName || '',
-      isActive: user.active,
+      username: user.username, email: user.email, role: user.role,
+      firstName: user.firstName || '', lastName: user.lastName || '', phone: user.phone || '',
     });
     this.form.get('password')?.clearValidators();
     this.form.get('password')?.updateValueAndValidity();
     this.form.get('confirmPassword')?.clearValidators();
     this.form.get('confirmPassword')?.updateValueAndValidity();
+    this.updatePhoneValidators();
+  }
+
+  updatePhoneValidators(): void {
+    const role = this.form.get('role')?.value;
+    const phone = this.form.get('phone');
+    if (!phone) return;
+    if (role === 'CUSTOMER') phone.setValidators([Validators.required, Validators.pattern(/^[0-9]{10,15}$/)]);
+    else phone.clearValidators();
+    phone.updateValueAndValidity({ emitEvent: false });
   }
 
   protected override toRequest(): UserRequest {
-    const val = this.form.value;
+    const val = this.form.getRawValue();
     const req: UserRequest = {
-      username: val.username,
-      email: val.email,
-      phone: val.phone,
-      role: val.role,
-      firstName: val.firstName || undefined,
-      lastName: val.lastName || undefined,
+      username: val.username, email: val.email, phone: val.phone, role: val.role,
+      firstName: val.firstName || undefined, lastName: val.lastName || undefined,
     };
-    if (!this.editing() && val.password) {
-      req.password = val.password;
-    }
+    if (!this.editing() && val.password) req.password = val.password;
     return req;
   }
 
-  protected override callCreate(req: UserRequest): Observable<ApiResponse<UserResponse>> {
-    return this.userService.create(req);
-  }
+  protected override callCreate(req: UserRequest): Observable<ApiResponse<UserResponse>> { return this.userService.create(req); }
+  protected override callUpdate(id: string, req: UserRequest): Observable<ApiResponse<UserResponse>> { return this.userService.update(id, req); }
+  protected override callDelete(id: string): Observable<any> { return throwError(() => new Error('Use delete dialog')); }
+  override submitDelete(): void {}
 
-  protected override callUpdate(
-    id: string,
-    req: UserRequest,
-  ): Observable<ApiResponse<UserResponse>> {
-    return this.userService.update(id, req);
-  }
-
-  protected override callDelete(id: string): Observable<any> {
-    return throwError(() => new Error('Delete not supported for users'));
-  }
-
-  // Override delete to be block/unblock toggle
-  override submitDelete(): void {
-    const user = this.deleting();
-    if (!user) return;
-    this.submitting.set(true);
-    const willBlock = user.active;
-    this.userService.toggleActive(user.id).subscribe({
-      next: () => {
-        this.submitting.set(false);
-        this.deleting.set(null);
-        this.load();
-        this.notify.success('notify.statusUpdated', 'Status updated');
-      },
-      error: (err) => {
-        this.submitting.set(false);
-        this.notify.apiError(
-          err,
-          'notify.errorFallback',
-          willBlock ? 'Could not block user' : 'Could not unblock user',
-        );
-      },
-    });
-  }
-
-  // ─── UI helpers ────────────────────────────────────────────────────────────
+  override goToDetail(user: UserResponse): void { this.router.navigate(['/dashboard/users', user.id]); }
 
   getFullName(user: UserResponse): string {
-    const first = user.firstName || '';
-    const last = user.lastName || '';
-    return (first + ' ' + last).trim() || '—';
+    const first = user.firstName || ''; const last = user.lastName || '';
+    return (first + ' ' + last).trim() || user.username;
   }
 
-  getStatus(user: UserResponse): {
-    label: string;
-    variant: 'default' | 'secondary' | 'destructive' | 'outline' | 'warning';
-  } {
+  getStatus(user: UserResponse): { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' | 'warning' } {
     if (!user.enabled) return { label: 'Unverified', variant: 'warning' };
     if (!user.active) return { label: 'Blocked', variant: 'destructive' };
     return { label: 'Active', variant: 'default' };
   }
 
-  getRoleVariant(role: string): 'default' | 'secondary' | 'destructive' | 'outline' {
-    return role === 'ADMIN' ? 'destructive' : 'secondary';
-  }
-
   getInitials(user: UserResponse): string {
-    const first = user.firstName?.[0] || '';
-    const last = user.lastName?.[0] || '';
-    const username = user.username?.[0] || '';
+    const first = user.firstName?.[0] || ''; const last = user.lastName?.[0] || ''; const username = user.username?.[0] || '';
     return (first + last || username).toUpperCase();
   }
 
+  isSelf(user: UserResponse): boolean { return String(this.auth.currentUser()?.id) === String(user.id); }
+  isLastAdmin(user: UserResponse): boolean { return user.role === 'ADMIN' && this.adminCount() <= 1; }
+  safeguardsDisabled(user: UserResponse): boolean { return this.isSelf(user) || this.isLastAdmin(user); }
+  safeguardTooltip(user: UserResponse): string {
+    if (this.isSelf(user)) return "You can't do this on your own account";
+    if (this.isLastAdmin(user)) return 'At least one admin is required';
+    return '';
+  }
+
+  menuActionsFor = (row: UserResponse): RowMenuAction[] => {
+    const disabled = this.safeguardsDisabled(row);
+    const tooltip = this.safeguardTooltip(row);
+    const items: RowMenuAction[] = [
+      { id: 'view', label: 'common.view', icon: 'lucideEye' },
+      { id: 'edit', label: 'common.edit', icon: 'lucidePencil' },
+      { id: 'changeRole', label: 'users.changeRoleSoon', icon: 'lucideShield', disabled: true },
+    ];
+    items.push({ id: row.active ? 'block' : 'unblock', label: row.active ? 'users.block' : 'users.unblock', icon: row.active ? 'lucideLock' : 'lucideUnlock', disabled, tooltip: disabled ? tooltip : undefined });
+    items.push({ id: 'separator', label: '', disabled: true });
+    items.push({ id: 'delete', label: 'common.delete', icon: 'lucideTrash2', danger: true, disabled, tooltip: disabled ? tooltip : undefined });
+    return items;
+  };
+
+  onMenuAction(event: { id: string; item: UserResponse }): void {
+    switch (event.id) {
+      case 'view': this.goToDetail(event.item); break;
+      case 'edit': this.openEditDialog(event.item); break;
+      case 'block':
+      case 'unblock': this.blocking.set(event.item); break;
+      case 'delete': this.deleting.set(event.item); this.deleteConfirmText.set(''); break;
+    }
+  }
+
+  confirmBlock(): void {
+    const user = this.blocking();
+    if (!user) return;
+    this.submitting.set(true);
+    this.userService.toggleActive(user.id).subscribe({
+      next: () => { this.submitting.set(false); this.blocking.set(null); this.load(); this.notify.success('notify.statusUpdated', 'Status updated'); },
+      error: (err) => { this.submitting.set(false); this.notify.apiError(err, 'notify.errorFallback', 'Could not update status'); },
+    });
+  }
+
+  confirmDeleteUser(): void {
+    const user = this.deleting();
+    if (!user || this.deleteConfirmText() !== user.username) return;
+    this.submitting.set(true);
+    this.userService.delete(user.id).subscribe({
+      next: () => { this.submitting.set(false); this.deleting.set(null); this.deleteConfirmText.set(''); this.load(); this.notify.success('users.deleted', 'User deleted'); },
+      error: (err) => { this.submitting.set(false); this.notify.apiError(err, 'notify.errorFallback', 'Could not delete user'); },
+    });
+  }
+
   onFilterChange(): void {
+    this.quickFilter.set('ALL');
+    this.currentPage.set(0);
+    this.load();
+  }
+
+  setQuickFilter(filter: QuickFilter): void {
+    this.quickFilter.set(filter);
+    switch (filter) {
+      case 'ALL': this.roleFilter = 'ALL'; this.statusFilter = 'all'; this.verificationFilter = 'all'; break;
+      case 'ADMIN': this.roleFilter = 'ADMIN'; this.statusFilter = 'all'; this.verificationFilter = 'all'; break;
+      case 'CUSTOMER': this.roleFilter = 'CUSTOMER'; this.statusFilter = 'all'; this.verificationFilter = 'all'; break;
+      case 'BLOCKED': this.roleFilter = 'ALL'; this.statusFilter = 'blocked'; this.verificationFilter = 'verified'; break;
+      case 'UNVERIFIED': this.roleFilter = 'ALL'; this.statusFilter = 'all'; this.verificationFilter = 'unverified'; break;
+    }
     this.currentPage.set(0);
     this.load();
   }

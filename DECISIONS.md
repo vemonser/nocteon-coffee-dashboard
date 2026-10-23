@@ -1811,3 +1811,14 @@ and page 2 do not show the same rows.
 - The existing Spartan date-range-picker component exists in `libs/ui/date-picker/` but requires complex integration.
 - A proper implementation would need backend support for custom date range queries.
 - Current implementation: native date inputs with apply/cancel buttons.
+
+## Users pass 1 notes
+
+- Backend has two flags (`enabled` = verification, `isActive` = not blocked). Mapped: Active = enabled && !blocked; Blocked = enabled && !active; Unverified = !enabled. "Enabled"/"Account enabled" removed from UI.
+- No API summary endpoint for counts: chip counts computed from the loaded list. Needs backend (counts).
+- No roles endpoint originally: added `GET /api/dashboard/users/roles` (local backend jar) and frontend consumes it; falls back to distinct roles from loaded users.
+- Phone field added to API response/update (local backend jar). Frontend sends phone; backend ignores gracefully if absent.
+- No user delete endpoint originally: added `DELETE /api/dashboard/users/{id}` (local backend jar).
+- No activity summary endpoint: Activity card hidden. Needs backend (activity).
+- No password-reset/invite-email endpoint: those kebab/dialog options omitted. Needs backend.
+- Delete confirm dialog requires typing the username.

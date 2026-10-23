@@ -403,6 +403,13 @@
                           dir="ltr"
                         >
                           {{ $any(cell.getValue()).email }}
+                          @if ($any(cell.getValue())?.verified) {
+                            <ng-icon name="lucideBadgeCheck" class="ms-1 inline size-3.5 text-success" [attr.title]="'common.verified' | transloco" />
+                          } @else {
+                            <span class="ms-1 inline-flex items-center rounded-full bg-warning-soft px-1.5 py-0.5 text-[10px] font-medium text-warning">
+                              {{ 'users.unverified' | transloco }}
+                            </span>
+                          }
                         </span>
                       }
                     </span>
@@ -432,6 +439,13 @@
                           dir="ltr"
                         >
                           {{ $any(cell.getValue()).email }}
+                          @if ($any(cell.getValue())?.verified) {
+                            <ng-icon name="lucideBadgeCheck" class="ms-1 inline size-3.5 text-success" [attr.title]="'common.verified' | transloco" />
+                          } @else {
+                            <span class="ms-1 inline-flex items-center rounded-full bg-warning-soft px-1.5 py-0.5 text-[10px] font-medium text-warning">
+                              {{ 'users.unverified' | transloco }}
+                            </span>
+                          }
                         </span>
                       }
                     </span>
@@ -602,6 +616,25 @@
                       {{ status.label }}
                     </span>
                   }
+                }
+
+                @case ('role') {
+                  @let role = $any(cell.getValue());
+                  <span
+                    class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
+                    [class.bg-primary/10]="role === 'ADMIN'"
+                    [class.text-primary]="role === 'ADMIN'"
+                    [class.bg-muted]="role !== 'ADMIN'"
+                    [class.text-muted-foreground]="role !== 'ADMIN'"
+                  >
+                    {{ 'users.roleNames.' + role | transloco }}
+                  </span>
+                }
+
+                @case ('lastActive') {
+                  <span class="block text-xs text-muted-foreground" [attr.title]="$any(cell.getValue()) ? dates.formatDateAndTime($any(cell.getValue())) : ''">
+                    {{ $any(cell.getValue()) ? relativeTime($any(cell.getValue())) : '—' }}
+                  </span>
                 }
 
                 @case ('actions') {

@@ -239,7 +239,8 @@
       "converted": "Converted",
       "new": "New",
       "replied": "Replied",
-      "archived": "Archived"
+      "archived": "Archived",
+      "blocked": "Blocked"
     },
     "toggleSidebar": "Toggle sidebar",
     "total": "total",
@@ -284,7 +285,10 @@
     "countItems_other": "{{count}} items",
     "noItemsWarning": "This order has no line items — its total is the shipping, less the discount.",
     "notFeatured": "Not Featured",
-    "toggleStatus": "Toggle status"
+    "toggleStatus": "Toggle status",
+    "soon": "Soon",
+    "saveChanges": "Save changes",
+    "verified": "Verified"
   },
   "products": {
     "title": "Products",
@@ -1267,7 +1271,7 @@
   "users": {
     "title": "Users",
     "total": "total",
-    "active": "Enabled",
+    "active": "Active",
     "blocked": "blocked",
     "unverified": "unverified",
     "add": "Add user",
@@ -1312,7 +1316,25 @@
     "processing": "Processing…",
     "columns": {
       "user": "User"
-    }
+    },
+    "countLabel": "users",
+    "verification": "Verification",
+    "profile": "Profile",
+    "rolePermissions": "Role & permissions",
+    "permissionsCount": "permissions",
+    "manage": "Manage",
+    "changeRoleSoon": "Change role (Soon)",
+    "usernameLocked": "Username can't be changed",
+    "passwordStrength": "Use at least 8 characters.",
+    "confirmDelete": "Delete",
+    "typeUsername": "Type the username to confirm.",
+    "deleted": "User deleted",
+    "roleNames": {
+      "ADMIN": "Admin",
+      "MODERATOR": "Moderator",
+      "CUSTOMER": "Customer"
+    },
+    "rolePermissionsCount": "{n} permissions"
   },
   "carts": {
     "title": "Carts",
