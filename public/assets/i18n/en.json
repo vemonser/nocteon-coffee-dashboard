@@ -1646,7 +1646,11 @@
       "noItemsWarning": "This order has no line items — the total is shipping minus discount.",
       "estimatedDeliveryAt": "Estimated delivery",
       "viewCustomerOrders": "View customer orders",
-      "created": "Created"
+      "created": "Created",
+      "productsCount_one": "{{count}} product",
+      "productsCount_other": "{{count}} products",
+      "itemsCount_one": "{{count}} item",
+      "itemsCount_other": "{{count}} items"
     },
     "dialogs": {
       "status": {

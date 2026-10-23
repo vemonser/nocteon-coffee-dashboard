@@ -128,3 +128,32 @@ HAVING COUNT(*) > 1;
 ---
 
 **Note**: This proposal is for the backend development team to implement. The frontend has been updated to handle the improved data structure.
+---
+
+## P1 snapshot — ORD-2026-000001 (before fix)
+
+Captured against the live dev DB (server time `2026-10-23 19:11:55 UTC`).
+
+| Field | Value |
+|---|---|
+| createdAt | 2026-10-23 06:04:18 UTC |
+| paidAt | 2026-10-23 02:04:18 UTC (BEFORE createdAt — broken) |
+| confirmedAt | 2026-10-23 07:04:18 UTC |
+| processingAt | 2026-10-23 08:04:18 UTC |
+| shippedAt | 2026-10-24 06:04:18 UTC (FUTURE — broken) |
+| deliveredAt | 2026-10-26 06:04:18 UTC (FUTURE — broken) |
+| server now | 2026-10-23 19:11:55 UTC |
+
+Violations: paidAt < createdAt; shippedAt/deliveredAt > now. Order number 000001 is the newest, not the oldest.
+
+## P1 re-run instructions (dev profile only)
+
+- Do NOT run against production data. This seed targets the dev database
+  (`nocteon_db` on localhost:5432) only.
+- To re-run: execute `V117__reseed_order_timestamps.sql` against the dev DB:
+  `PGPASSWORD=postgres psql -h localhost -p 5432 -U postgres -d nocteon_db -f backend/src/main/resources/db/migration/V117__reseed_order_timestamps.sql`
+- The migration is idempotent-ish: it re-spreads the existing 17 orders and
+  re-stamps derived timestamps; re-numbering is by createdAt ASC.
+- Startup assertion prints `Seed check passed: N orders verified` and throws
+  if any order violates createdAt <= paidAt <= shippedAt <= deliveredAt <= now.
+- Fixed seed offsets: [74,70,66,62,57,53,48,44,39,35,30,26,21,16,11,6,2] days ago.

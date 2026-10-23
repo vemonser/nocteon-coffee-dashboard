@@ -54,6 +54,7 @@ import { computeOrderTotals } from '../utils/order-totals';
 import { computeSettlement } from '../utils/order-settlement';
 import { summarizeCustomerOrders, type CustomerSummary } from '../utils/customer-summary';
 import { formatOrderNumber, isolatedOrderNumber } from '../utils/order-number';
+import { orderItemsCount, orderLinesCount } from '../utils/order-items-count';
 import { buildOrderEvents, type OrderEvent } from '../adapters/order-activity.adapter';
 import {
   buildOrderItemViews,
@@ -216,6 +217,9 @@ export class OrderDetailComponent {
     buildOrderItemViews(this.order()?.items ?? [], this.variants()),
   );
 
+  protected readonly itemsCount = computed(() => orderItemsCount(this.order()));
+  protected readonly linesCount = computed(() => orderLinesCount(this.order()));
+
   /** Can this order still change status? */
   protected readonly canChangeStatus = computed(() => {
     const order = this.order();
@@ -279,9 +283,39 @@ export class OrderDetailComponent {
       ...event,
       icon: this.eventIcon(event),
       title: this.eventTitle(event),
-      actorLabel: event.actor ? this.t('orders.timeline.by', 'by {{actor}}', { actor: this.actorName(event.actor) }) : null,
+      actorLabel: event.actor && !this.isSystemActor(event.actor)
+        ? this.t('orders.timeline.by', 'by {{actor}}', { actor: this.actorName(event.actor) })
+        : null,
     }));
   });
+
+  /** Whether an event is in the future. */
+  protected isFutureEvent(event: OrderEventView): boolean {
+    const ms = Date.parse(event.at);
+    if (Number.isNaN(ms)) return false;
+    return ms > Date.now();
+  }
+
+  /** Whether the events list is expanded. */
+  protected readonly eventsExpanded = signal(false);
+
+  /** The visible events (first 4 or all if expanded). */
+  protected readonly visibleEvents = computed(() => {
+    const all = this.events();
+    if (this.eventsExpanded() || all.length <= 4) return all;
+    return all.slice(0, 4);
+  });
+
+  /** Toggle events expanded state. */
+  protected toggleEventsExpanded(): void {
+    this.eventsExpanded.set(!this.eventsExpanded());
+  }
+
+  /** Check if actor is a system actor. */
+  private isSystemActor(actor: string): boolean {
+    const value = actor.trim().toLowerCase();
+    return value === 'seed' || value.startsWith('system');
+  }
 
   /** The reason "Update status" cannot be used, translated, or null. */
   protected readonly statusDisabledReason = computed(() => {
@@ -955,19 +989,16 @@ export class OrderDetailComponent {
       (part, index) =>
         parts.findIndex((other) => other.trim().toLowerCase() === part.trim().toLowerCase()) === index,
     );
-    return unique.join(', ');
+    const base = unique.join(', ');
+    const postal = address.postalCode?.trim();
+    return postal ? `${base} ${postal}`.trim() : base;
   }
 
-  /** "Egypt 12577" — the parts that exist, joined, without duplicates. */
+  /** Country only — postal code now travels with the city line. */
   protected countryLine(): string {
     const address = this.order()?.address;
     if (!address) return '';
-    const parts = [address.country, address.postalCode].filter((part): part is string => !!part?.trim());
-    const unique = parts.filter(
-      (part, index) =>
-        parts.findIndex((other) => other.trim().toLowerCase() === part.trim().toLowerCase()) === index,
-    );
-    return unique.join(' ');
+    return address.country?.trim() ?? '';
   }
 
   /** The recipient's name on the address card. */

@@ -77,10 +77,41 @@ export class OrderProgressComponent {
     return index >= 0 && this.chain.indexOf(step) > index;
   }
 
-  /** The recorded date of a step, or null. */
+  /** The recorded date of a step, formatted "23 Oct, 9:04 AM" (year only if not current year). */
   protected stepDate(step: OrderStatus): string | null {
     const record = this.stepRecords()[step];
-    return record ? this.dates.formatDateAndTime(record.at) : null;
+    if (!record?.at) return null;
+    const parts = this.dates.parts(record.at, 'short');
+    if (!parts) return null;
+    const time = this.dates.formatTime(record.at);
+    const d = new Date(record.at);
+    const showYear = d.getFullYear() !== new Date().getFullYear();
+    const datePart = showYear ? `${parts.day} ${parts.month} ${parts.year}` : `${parts.day} ${parts.month}`;
+    return `${datePart}, ${time}`;
+  }
+
+  /** Full date+time with year, for the tooltip. */
+  protected stepDateTitle(step: OrderStatus): string | null {
+    const record = this.stepRecords()[step];
+    return record?.at ? this.dates.formatDateAndTime(record.at) : null;
+  }
+
+  /** Date part only (year only if not current year). */
+  protected stepDateOnly(step: OrderStatus): string | null {
+    const record = this.stepRecords()[step];
+    if (!record?.at) return null;
+    const parts = this.dates.parts(record.at, 'short');
+    if (!parts) return null;
+    const d = new Date(record.at);
+    const showYear = d.getFullYear() !== new Date().getFullYear();
+    return showYear ? `${parts.day} ${parts.month} ${parts.year}` : `${parts.day} ${parts.month}`;
+  }
+
+  /** Time part only. */
+  protected stepTime(step: OrderStatus): string | null {
+    const record = this.stepRecords()[step];
+    if (!record?.at) return null;
+    return this.dates.formatTime(record.at);
   }
 
   /** The recorded actor of a step, or null. */

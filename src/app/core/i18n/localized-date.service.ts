@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { LanguageService } from './language.service';
-import { dateParts, formatDateAndTime, type DateParts } from '../../shared/utils/locale-format';
+import { dateParts, formatDateAndTime, formatTime as formatTimeUtil, type DateParts } from '../../shared/utils/locale-format';
 
 /**
  * THE shared helper for a localized date.
@@ -51,5 +51,9 @@ export class LocalizedDateService {
    */
   formatDateAndTime(value: unknown): string {
     return formatDateAndTime(value, this.language.current());
+  }
+  /** The time of day, on its own. */
+  formatTime(value: unknown): string {
+    return formatTimeUtil(value, this.language.current()).replace(/[\u2066\u2069]/g, '');
   }
 }

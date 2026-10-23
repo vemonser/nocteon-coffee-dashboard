@@ -66,6 +66,7 @@ import { ORDER_COUNT_SCOPES } from '../../../core/dashboard/order-scope';
 import type { RowMenuAction } from '../../../shared/ui/actions-cell/actions-cell.component';
 import { formatCurrencyPlain } from '../../../shared/utils/locale-format';
 import { formatOrderNumber } from '../utils/order-number';
+import { orderItemsCount } from '../utils/order-items-count';
 
 /**
  * The orders list — v4.
@@ -269,7 +270,7 @@ export class OrdersListComponent {
       { id: 'customer', header: 'orders.columns.customer', enableSorting: false, meta: { width: '172px' } },
     ),
     this.columnHelper.accessor(
-      (row) => row.items ?? [],
+      (row) => orderItemsCount(row),
       { id: 'itemCount', header: 'orders.columns.items', enableSorting: false, meta: { width: '95px' } },
     ),
     this.columnHelper.accessor(

@@ -1678,7 +1678,19 @@
       "noItemsWarning": "هذا الطلب لا يحتوي على بنود — الإجمالي هو الشحن ناقص الخصم.",
       "estimatedDeliveryAt": "التوصيل المتوقع",
       "viewCustomerOrders": "عرض طلبات العميل",
-      "created": "تم الإنشاء"
+      "created": "تم الإنشاء",
+      "productsCount_one": "منتج واحد",
+      "productsCount_other": "{{count}} منتج",
+      "itemsCount_one": "منتج واحد",
+      "itemsCount_other": "{{count}} منتج",
+      "productsCount_zero": "لا منتجات",
+      "productsCount_two": "منتجان",
+      "productsCount_few": "{{count}} منتجات",
+      "productsCount_many": "{{count}} منتجًا",
+      "itemsCount_zero": "لا منتجات",
+      "itemsCount_two": "منتجان",
+      "itemsCount_few": "{{count}} منتجات",
+      "itemsCount_many": "{{count}} منتجًا"
     },
     "dialogs": {
       "status": {
