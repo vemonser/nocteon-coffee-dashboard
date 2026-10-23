@@ -1,0 +1,36 @@
+<div class="page-shell">
+  <header class="flex items-center justify-between">
+    <h1 class="text-2xl font-medium tracking-tight">Roles & permissions</h1>
+    <button hlmBtn disabled title="Needs backend">
+      <ng-icon name="lucidePlus" class="me-2 size-4" />
+      New role
+    </button>
+  </header>
+
+  <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+    @for (role of roles(); track role) {
+      <button class="card-surface p-4 text-start" (click)="select(role)">
+        <div class="flex items-center gap-2">
+          <ng-icon name="lucideShield" class="size-4" />
+          <span class="font-medium">{{ 'users.roleNames.' + role | transloco }}</span>
+          @if (isSystem(role)) { <span class="inline-flex rounded-full bg-muted px-2 py-0.5 text-xs">System</span> }
+        </div>
+        <p class="mt-2 text-xs text-muted-foreground">
+          {{ userCount(role) }} users
+        </p>
+      </button>
+    }
+  </div>
+
+  @if (selectedRole()) {
+    <section class="card-surface mt-6">
+      <header class="px-6 pt-6">
+        <h2 class="text-base font-medium">{{ 'users.roleNames.' + selectedRole() | transloco }}</h2>
+      </header>
+      <div class="px-6 pb-6 pt-4">
+        <p class="mb-3 text-sm text-muted-foreground">Editing is disabled — Needs backend.</p>
+        <app-permission-matrix [permissions]="allPermissions" [grantedInput]="[]" mode="edit" [locked]="allPermissions" />
+      </div>
+    </section>
+  }
+</div>

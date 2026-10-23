@@ -1,0 +1,16 @@
+import { chromium } from 'playwright';
+import { config as loadEnv } from 'dotenv';
+import { resolve } from 'node:path';
+import { existsSync } from 'node:fs';
+loadEnv({ path: resolve(process.cwd(), '.env.local') });
+const BASE = process.env.E2E_BASE_URL ?? 'http://localhost:4200';
+const AUTH_STATE = resolve(process.cwd(), 'e2e/.auth/dashboard-admin.json');
+const browser = await chromium.launch({ channel: 'chromium' });
+const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, ...(existsSync(AUTH_STATE) ? { storageState: AUTH_STATE } : {}) });
+const page = await context.newPage();
+await page.goto(`${BASE}/dashboard/users`, { waitUntil: 'domcontentloaded' });
+await page.waitForTimeout(6000);
+console.log('url', page.url());
+console.log('body text', (await page.locator('body').innerText()).slice(0,500));
+await page.screenshot({ path: '/tmp/opencode/debug.png' });
+await browser.close();
