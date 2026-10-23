@@ -143,18 +143,21 @@ export class RevenueChartComponent {
    */
   readonly axisStep = computed(() => {
     const max = this.maxValue();
-    const mag = Math.pow(10, Math.floor(Math.log10(max)));
-    const candidates = new Set<number>();
-    for (const e of [mag / 10, mag, mag * 10]) {
-      for (const m of [1, 2, 5]) candidates.add(m * e);
+    const steps = [500, 1000, 2000, 2500, 5000, 10000, 20000];
+    // Find the step that gives 4-5 ticks and max >= data max
+    for (const step of steps) {
+      const numTicks = Math.ceil(max / step) + 1;
+      if (numTicks >= 4 && numTicks <= 5 && max <= Math.ceil(max / step) * step) {
+        return step;
+      }
     }
-    const sorted = [...candidates].filter((s) => s > 0).sort((a, b) => a - b);
-    let chosen = sorted[0];
-    for (const s of sorted) {
-      if (max / s >= 2) chosen = s;
-      else break;
+    // Fallback to the smallest step that covers the max
+    for (const step of steps) {
+      if (max <= Math.ceil(max / step) * step) {
+        return step;
+      }
     }
-    return chosen;
+    return steps[steps.length - 1];
   });
 
   /** A "nice" y-axis maximum, on a round step. */
@@ -370,8 +373,12 @@ export class RevenueChartComponent {
    * to the number, in the wrong order, and with the dot of "ج.م." already
    * stripped. The compact formatter is the one rule for both languages.
    */
-  readonly axisLabel = (value: number): string =>
-    formatCompactCurrency(value, this.language.language(), this.currency());
+  readonly axisLabel = (value: number): string => {
+    // Format as compact number without currency prefix
+    const compact = formatCompactCurrency(value, this.language.language(), this.currency());
+    // Remove currency prefix/suffix
+    return compact.replace(/EGP\s*/g, '').replace(/\s*ج\.م/g, '').trim();
+  };
 
   /** The accessible summary of the whole chart. */
   readonly ariaLabel = computed(() => {
