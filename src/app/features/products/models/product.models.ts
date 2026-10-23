@@ -10,6 +10,7 @@ export interface ProductListItem {
   id: number;
   slug: string;
   categorySlug: string;
+  categoryName?: string;  // Added for display purposes
   productType: ProductType;
   featured: boolean;
   isActive: boolean;
@@ -19,6 +20,9 @@ export interface ProductListItem {
   minPrice: number;
   maxPrice: number;
   discountPercentage?: number | null;
+  variantsCount?: number;  // Added for display purposes
+  stockStatus?: 'in-stock' | 'low' | 'out';  // Added for display purposes
+  updatedAt?: string;  // Added for display purposes
 }
 
 // export type ProductType = 'WHOLE_BEAN' | 'GROUND' | 'CAPSULE' | 'INSTANT'; // adjust to your enum

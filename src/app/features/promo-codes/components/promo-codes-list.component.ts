@@ -28,6 +28,7 @@ import {
 import { CategoryService } from '../../categories/services/category.service';
 import { PromoCodeService } from '../services/promo-code.service';
 import { CategoryResponse } from '../../categories/models/category.model';
+import { StoreSettingsService } from '../../../core/settings/store-settings.service';
 import { map, Observable } from 'rxjs';
 import { PageResponse } from '../../../core/models/api-response.model';
 import { ColumnDef, createColumnHelper } from '@tanstack/table-core';
@@ -36,6 +37,7 @@ import { PromoCodeAnalyticsResponse } from '../models/promo-code.model';
 
 import { TranslocoPipe } from '@jsverse/transloco';
 import { MoneyPipe } from '../../../shared/pipes/money.pipe';
+import { KpiCardComponent } from '../../../shared/components/dashboard/kpi-card/kpi-card.component';
 @Component({
   selector: 'app-promo-codes-list',
   standalone: true,
@@ -59,6 +61,7 @@ import { MoneyPipe } from '../../../shared/pipes/money.pipe';
     NgIcon,
     TranslocoPipe,
     MoneyPipe,
+    KpiCardComponent,
   ],
   providers: [provideIcons({ lucidePlus, lucidePencil, lucideTrash2, lucideX, lucideSearch })],
   templateUrl: './promo-codes-list.component.html',
@@ -75,7 +78,9 @@ export class PromoCodesListComponent extends BaseListComponent<
   protected override softDeleteEnabled = true;
   protected override canManageTrash = this.auth.hasPermission('promo:delete');
   protected readonly isTrashAllowed = computed(() => this.auth.hasPermission('promo:delete'));
+  protected readonly storeCurrency = computed(() => this.storeSettings.currency());
   protected readonly language = inject(LanguageService);
+  private readonly storeSettings = inject(StoreSettingsService);
   private categoryService = inject(CategoryService); // for the category picker
 
   // Category options for the scope picker

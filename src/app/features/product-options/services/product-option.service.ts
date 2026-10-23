@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { ApiResponse, PageResponse } from '../../../core/models/api-response.model';
 import { BaseCrudService, BaseListParams } from '../../../core/crud/base-crud.service';
 import { environment } from '../../../../environments/environment';
@@ -42,6 +43,12 @@ export class ProductOptionService extends BaseCrudService<
 
   deleteValue(optionId: number, valueId: number): Observable<ApiResponse<void>> {
     return this.http.delete<ApiResponse<void>>(`${this.fullUrl}/${optionId}/values/${valueId}`);
+  }
+
+  getValueUsageCount(optionId: number, valueId: number): Observable<number> {
+    return this.http.get<ApiResponse<{ count: number }>>(`${this.fullUrl}/${optionId}/values/${valueId}/usage`).pipe(
+      map((res) => res.data?.count ?? 0)
+    );
   }
 
   attachToProduct(productId: number, optionId: number): Observable<ApiResponse<void>> {

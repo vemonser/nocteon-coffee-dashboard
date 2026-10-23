@@ -1,4 +1,4 @@
-<div class="relative overflow-x-auto">
+<div class="relative overflow-hidden rounded-[var(--radius-card)] overflow-x-auto">
   <!-- Loading overlay — REFRESH feedback only (rows already on screen). A
        first load shows the in-tbody skeleton rows instead; a spinner on top
        of them would be a double indicator. -->
@@ -74,6 +74,8 @@
                   <button
                     (click)="header.column.toggleSorting()"
                     class="flex max-w-full items-center gap-1 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+                    [class.justify-end]="isEndAligned(header.column.columnDef)"
+                    [class.w-full]="isEndAligned(header.column.columnDef)"
                     [attr.aria-label]="
                       headerNameLang(header.column.columnDef.header)
                         ? ('common.name' | transloco) + ' (' + headerNameLang(header.column.columnDef.header) + ')'
@@ -336,7 +338,11 @@
                   flagged — a silent "0 items" would read as a fact.
                 -->
                 @case ('itemCount') {
-                  @if ($any(cell.getValue()).length === 0) {
+                  @if (typeof cell.getValue() === 'number') {
+                    <span class="block truncate text-start text-xs tabular-nums">
+                      {{ $any(cell.getValue()) | plural: 'common.countItems' }}
+                    </span>
+                  } @else if ($any(cell.getValue()).length === 0) {
                     <span class="flex items-center gap-1.5 text-xs text-warning" [attr.title]="'common.noItemsWarning' | transloco">
                       <ng-icon name="lucideTriangleAlert" class="size-3.5 shrink-0" aria-hidden="true" />
                       <span class="tabular-nums">{{ 0 | plural: 'common.countItems' }}</span>
@@ -346,6 +352,22 @@
                       {{ $any(cell.getValue()).length | plural: 'common.countItems' }}
                     </span>
                   }
+                }
+
+                <!--
+                  The cart's status: a badge plus, for an abandoned cart, how long
+                  ago it was last touched. The relative time reuses the shared
+                  formatter so it stays in sync with the Last activity column.
+                -->
+                @case ('cartStatus') {
+                  <span class="flex min-w-0 flex-col items-start gap-1">
+                    <app-status-badge [status]="$any(cell.getValue()).kind" />
+                    @if ($any(cell.getValue()).since) {
+                      <span class="block truncate text-[11px] text-muted-foreground">
+                        {{ $any(cell.getValue()).since }}
+                      </span>
+                    }
+                  </span>
                 }
 
                 <!-- The order number: the row's identifier, and its link. -->
@@ -358,25 +380,33 @@
                   </span>
                 }
 
-                <!-- The customer: the name, with the address of that name under it. -->
+                <!-- The customer: avatar, name, and email under it. -->
                 @case ('customer') {
-                  <span class="flex min-w-0 flex-col items-start">
-                    <span
-                      class="block max-w-full truncate text-start text-sm font-medium"
-                      [attr.title]="$any(cell.getValue())?.name"
-                    >
-                      {{ $any(cell.getValue())?.name || '—' }}
-                    </span>
-                    @if ($any(cell.getValue())?.email) {
+                  <div class="flex min-w-0 items-center gap-2">
+                    <app-user-avatar
+                      [src]="$any(cell.getValue())?.avatar ?? null"
+                      [name]="$any(cell.getValue())?.name"
+                      size="md"
+                      class="shrink-0"
+                    />
+                    <span class="flex min-w-0 flex-col items-start">
                       <span
-                        class="block max-w-full truncate text-start text-xs text-muted-foreground"
-                        [attr.title]="$any(cell.getValue()).email"
-                        dir="ltr"
+                        class="block max-w-full truncate text-start text-sm font-medium"
+                        [attr.title]="$any(cell.getValue())?.name"
                       >
-                        {{ $any(cell.getValue()).email }}
+                        {{ $any(cell.getValue())?.name || '—' }}
                       </span>
-                    }
-                  </span>
+                      @if ($any(cell.getValue())?.email) {
+                        <span
+                          class="block max-w-full truncate text-start text-xs text-muted-foreground"
+                          [attr.title]="$any(cell.getValue()).email"
+                          dir="ltr"
+                        >
+                          {{ $any(cell.getValue()).email }}
+                        </span>
+                      }
+                    </span>
+                  </div>
                 }
 
                 <!-- The cart owner: avatar, name, and email under it. -->
@@ -484,6 +514,17 @@
                 }
 
                 <!--
+                  Carts sort by `lastActivityAt` but display it under its own
+                  column id, so it needs the same renderer as every other date
+                  column — without this case the raw ISO string leaks.
+                -->
+                @case ('lastActivity') {
+                  <span class="block text-xs text-muted-foreground">
+                    <app-localized-date [value]="$any(cell.getValue())" />
+                  </span>
+                }
+
+                <!--
                   The date AND the time, with the relative time in the tooltip.
                   The absolute value stays in the `datetime` attribute, so
                   nothing depends on reading the flattened tooltip string.
@@ -532,7 +573,14 @@
                 }
 
                 @case ('isActive') {
-                  <app-status-cell [value]="$any(cell.getValue())" />
+                  <button
+                    type="button"
+                    class="inline-flex"
+                    (click)="$event.stopPropagation(); statusToggle.emit(row.original)"
+                    [attr.aria-label]="'common.toggleStatus' | transloco"
+                  >
+                    <app-status-cell [value]="$any(cell.getValue())" />
+                  </button>
                 }
                 @case ('active') {
                   <app-status-cell [value]="$any(cell.getValue())" />
@@ -586,18 +634,19 @@
                 }
 
                 @case ('featured') {
-                  @if (cell.getValue()) {
-                    <span
-                      class="inline-flex items-center justify-center"
-                      title="{{ 'common.featured' | transloco }}"
-                      role="img"
-                      [attr.aria-label]="'common.featured' | transloco"
-                    >
-                      <ng-icon name="lucideStar" class="size-4 text-warning" aria-hidden="true" />
-                    </span>
-                  } @else {
-                    <span class="text-muted-foreground" aria-hidden="true">—</span>
-                  }
+                  <button
+                    type="button"
+                    class="inline-flex items-center justify-center cursor-pointer hover:opacity-80 transition-opacity"
+                    (click)="$event.stopPropagation(); featuredToggle.emit(row.original)"
+                    [attr.aria-label]="cell.getValue() ? ('common.featured' | transloco) : ('common.notFeatured' | transloco)"
+                    [title]="cell.getValue() ? ('common.featured' | transloco) : ('common.notFeatured' | transloco)"
+                  >
+                    @if (cell.getValue()) {
+                      <ng-icon name="lucideStar" class="size-4 text-primary fill-primary" aria-hidden="true" />
+                    } @else {
+                      <ng-icon name="lucideStar" class="size-4 text-muted-foreground/40" aria-hidden="true" />
+                    }
+                  </button>
                 }
 
                 @case ('reviewer') {
@@ -616,7 +665,7 @@
                         size="sm"
                         class="shrink-0"
                       />
-                      <span class="truncate text-start">
+                      <span class="truncate text-start" [attr.title]="reviewer.name">
                         <bdi>{{ reviewer.name }}</bdi>
                       </span>
                       @if (reviewer.verified) {
@@ -633,7 +682,9 @@
                 }
                 @case ('rating') {
                   @if (cell.getValue() !== null && cell.getValue() !== undefined) {
-                    <app-rating-stars [rating]="$any(cell.getValue())" [showText]="true" />
+                    <div class="flex max-w-full items-center overflow-hidden">
+                      <app-rating-stars [rating]="$any(cell.getValue())" [showText]="true" />
+                    </div>
                   }
                 }
                 @case ('comment') {
@@ -665,7 +716,7 @@
                   -->
                   @if ($any(cell.getValue()); as reviewStatus) {
                     <app-status-badge
-                      [status]="reviewStatus.approved ? 'approved' : 'pending'"
+                      [status]="reviewStatus.status === 'APPROVED' ? 'approved' : reviewStatus.status === 'REJECTED' ? 'rejected' : 'pending'"
                       [customLabel]="reviewStatus.label"
                     />
                   }

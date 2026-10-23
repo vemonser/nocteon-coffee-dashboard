@@ -154,6 +154,8 @@ export class CategoryChartComponent implements OnChanges {
                   return formatCurrency(total, this.language.current(), this.currency);
                 },
               },
+              name: { color: 'var(--foreground)', fontSize: '12px' },
+              value: { color: 'var(--foreground)', fontSize: '14px', fontWeight: 600 },
             },
           },
         },
@@ -255,6 +257,8 @@ export class CategoryChartComponent implements OnChanges {
                     return formatCurrency(total, this.language.current(), this.currency);
                   },
                 },
+                name: { color: 'var(--foreground)', fontSize: '12px' },
+                value: { color: 'var(--foreground)', fontSize: '14px', fontWeight: 600 },
               },
             },
           },

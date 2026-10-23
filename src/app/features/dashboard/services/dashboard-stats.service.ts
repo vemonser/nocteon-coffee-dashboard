@@ -7,6 +7,7 @@ import { StoreSettingsService } from '../../../core/settings/store-settings.serv
 import { LanguageService } from '../../../core/i18n/language.service';
 import { fetchPlan, previousValue, type FetchPlan } from '../../../core/dashboard/period-fetch';
 import { currentPeriod, previousPeriod } from '../../../core/dashboard/period';
+import { computeDelta } from '../../../core/dashboard/delta';
 
 interface ApiResponse<T> {
   data: T;
@@ -109,6 +110,14 @@ export class DashboardStatsService {
   readonly lowStockProducts = computed(() => this._overview()?.lowStockProducts ?? []);
   readonly ordersByPaymentMethod = computed(() => this._overview()?.ordersByPaymentMethod ?? []);
   readonly repeatPurchaseRate = computed(() => this._overview()?.repeatPurchaseRate ?? null);
+  readonly paidOrders = computed(() => {
+    const data = this._overview();
+    if (!data) return { paid: 0, refunded: 0 };
+    return {
+      paid: data.totalOrders,
+      refunded: data.refundRate?.totalRefunded ?? 0
+    };
+  });
 
   /** Attention counts for the Needs Attention panel. */
   readonly pendingReviewsCount = computed(() => this._overview()?.pendingReviewsCount ?? 0);
@@ -364,7 +373,9 @@ export class DashboardStatsService {
         { roastLevelName: 'Medium', revenue: 5200.0, percentage: 41.7 },
         { roastLevelName: 'Dark', revenue: 4180.5, percentage: 33.5 },
       ],
-      refundRate: { totalPaid: 11800.0, totalRefunded: 320.0, refundRate: 2.7 },
+      // Counts, not money: the card reads "<refunded> of <paid> orders",
+      // so 320/11,800 printed "320 of 11800 orders".
+      refundRate: { totalPaid: 142, totalRefunded: 4, refundRate: 2.8 },
       lowStockProducts: [
         { id: 10, slug: 'kenyan-aa', name: 'Kenyan AA', imageUrl: 'https://images.unsplash.com/photo-1442512595331-e89e73853f31?w=800', stockQuantity: 3, reorderThreshold: 5 },
         { id: 11, slug: 'pour-over-kit', name: 'Pour Over Kit', imageUrl: 'https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=800', stockQuantity: 1, reorderThreshold: 5 },
@@ -391,7 +402,13 @@ export class DashboardStatsService {
       const d = new Date();
       d.setDate(d.getDate() - i);
       const iso = d.toISOString().split('T')[0];
-      const rev = Math.round((base + Math.sin(i / 3) * 80 + Math.random() * 60) * 100) / 100;
+      // A deterministic jitter per DATE (not Math.random): the mock is for
+      // visual QA, and a screenshot that changes on every reload cannot be
+      // compared with the last one.
+      let hash = 0;
+      for (const ch of iso) hash = (hash * 31 + ch.charCodeAt(0)) >>> 0;
+      const jitter = (hash % 60) + (hash % 7);
+      const rev = Math.round((base + Math.sin(i / 3) * 80 + jitter) * 100) / 100;
       out.push({ date: iso, revenue: Math.max(0, rev) });
     }
     return out;

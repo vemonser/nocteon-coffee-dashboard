@@ -294,7 +294,7 @@ describe('glossary (docs/glossary.md)', () => {
       ['users.active', 'ar', 'مفعّل'],
       ['users.accountActive', 'en', 'Account enabled'],
       ['users.accountActive', 'ar', 'الحساب مفعّل'],
-      ['carts.status.active', 'en', 'Enabled'],
+      ['carts.status.active', 'en', 'Active'],
       ['carts.status.active', 'ar', 'مفعّلة'],
       ['dashboard.metrics.activeSubscriptions', 'en', 'Enabled Subscriptions'],
       ['dashboard.metrics.activeSubscriptions', 'ar', 'الاشتراكات المفعّلة'],

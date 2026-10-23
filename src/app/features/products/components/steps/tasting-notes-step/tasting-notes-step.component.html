@@ -8,16 +8,33 @@
       {{ 'products.tastingNotes.noNotes' | transloco }}
     </div>
   } @else {
+    <div class="flex items-center justify-between mb-2">
+      <span class="text-sm text-muted-foreground">{{ selectedCount() }} {{ 'products.tastingNotes.selected' | transloco }}</span>
+    </div>
     <div class="flex flex-wrap gap-2">
       @for (note of allNotes(); track note.slug) {
         <button type="button" (click)="toggle(note.slug)"
-          class="px-3 py-1.5 rounded-full text-sm border transition-colors"
+          [attr.aria-pressed]="isSelected(note.slug)"
+          class="px-3 py-1.5 rounded-full text-sm border transition-colors inline-flex items-center gap-1.5"
           [class]="isSelected(note.slug)
-            ? 'bg-accent text-accent-foreground border-transparent'
+            ? 'bg-primary/10 text-primary border-primary'
             : 'bg-card text-muted-foreground border-border hover:border-input'">
+          @if (isSelected(note.slug)) { <span aria-hidden="true">✓</span> }
           {{ getNoteName(note) }}
         </button>
       }
     </div>
   }
+
+  <!-- Sticky footer for navigation -->
+  <div class="sticky-footer">
+    <button hlmBtn variant="outline" (click)="onBack()">
+      {{ 'common.back' | transloco }}
+    </button>
+    <button hlmBtn 
+            [disabled]="!isCurrentStepDirty() || !isCurrentStepValid()" 
+            (click)="saveCurrentStep()">
+      {{ 'common.saveChanges' | transloco }}
+    </button>
+  </div>
 </div>

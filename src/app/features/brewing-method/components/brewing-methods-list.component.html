@@ -1,5 +1,5 @@
 <div
-  class="flex flex-col gap-4 p-6 max-w-[1440px] mx-auto w-full"
+  class="page-shell"
   id="lifecycle-panel"
   role="tabpanel"
   [attr.aria-labelledby]="'lifecycle-tab-' + listView()"
@@ -43,7 +43,7 @@
         {{ 'common.columns' | transloco }}
       </button>
       @if (columnsOpen()) {
-        <div role="menu" class="absolute end-0 top-full z-20 mt-2 w-52 rounded-md border bg-card p-2 shadow-lg" (keydown.escape)="columnsOpen.set(false)">
+        <div role="menu" class="menu-surface absolute end-0 top-full z-20 mt-2 w-52 p-2" (keydown.escape)="columnsOpen.set(false)">
           <label class="flex cursor-pointer items-center gap-2 rounded px-2 py-1.5 text-sm hover:bg-accent">
             <input type="checkbox" class="table-check size-4 rounded" [checked]="showId()" (change)="toggleShowId($any($event.target).checked)" />
             {{ 'common.id' | transloco }}
@@ -94,7 +94,7 @@
     </div>
   } @else {
     @if (loading() || items().length > 0) {
-      <div class="view-fade rounded-md border bg-card overflow-hidden">
+      <div class="view-fade card-surface overflow-hidden">
         <app-data-table
           [data]="items()"
           [columns]="columns()"
@@ -129,7 +129,7 @@
 
     <!-- Empty state -->
     @if (!loading() && items().length === 0) {
-      <div class="view-fade rounded-md border bg-card px-4 py-12 text-center">
+      <div class="view-fade card-surface px-4 py-12 text-center">
         <ng-icon name="lucideSearch" class="mx-auto mb-3 size-10 text-muted-foreground/40" aria-hidden="true" />
         <p class="font-medium">{{ 'common.noData' | transloco }}</p>
         <p class="mt-1 text-sm text-muted-foreground">{{ 'common.tryAdjusting' | transloco }}</p>
@@ -159,9 +159,9 @@
      ══════════════════════════════════════════════════════════ -->
 @if (showDialog()) {
   <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-    <div class="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl bg-card shadow-2xl border">
+    <div class="dialog-surface w-full max-w-2xl max-h-[90vh] overflow-y-auto">
       <!-- Dialog Header -->
-      <div class="flex items-center justify-between p-6 border-b sticky top-0 bg-card">
+      <div class="flex items-center justify-between p-6 border-b sticky top-0 rounded-t-[var(--radius-card)] bg-card">
         <h2 class="text-lg font-bold">
           {{ (editing() ? 'brewingMethods.editTitle' : 'brewingMethods.addTitle') | transloco }}
         </h2>
@@ -233,7 +233,7 @@
      ══════════════════════════════════════════════════════════ -->
 @if (deleting()) {
   <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-    <div class="w-full max-w-sm rounded-2xl bg-card shadow-2xl border p-6">
+    <div class="dialog-surface w-full max-w-sm p-6">
       <h2 class="text-lg font-bold mb-2">{{ 'brewingMethods.deleteTitle' | transloco }}</h2>
       <p class="text-muted-foreground mb-6">
         {{ 'brewingMethods.deleteConfirm' | transloco }}
@@ -261,7 +261,7 @@
 }
 @if (permanentDeleteTarget()) {
   <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-    <div class="w-full max-w-sm rounded-2xl bg-card shadow-2xl border p-6">
+    <div class="dialog-surface w-full max-w-sm p-6">
       <h2 class="text-lg font-bold mb-2">{{ 'brewingMethods.trash.deletePermanently' | transloco }}</h2>
       <p class="text-muted-foreground mb-6">
         {{ 'brewingMethods.trash.permanentConfirm' | transloco }}
@@ -290,7 +290,7 @@
 
 @if (bulkConfirm()) {
   <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-    <div class="w-full max-w-sm rounded-2xl bg-card shadow-2xl border p-6">
+    <div class="dialog-surface w-full max-w-sm p-6">
       <h2 class="text-lg font-bold mb-2">
         {{ bulkConfirm() === 'trash' ? ('brewingMethods.trash.bulkMoveToTrash' | transloco) : ('brewingMethods.trash.deletePermanently' | transloco) }}
       </h2>

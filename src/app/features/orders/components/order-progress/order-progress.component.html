@@ -88,20 +88,7 @@
           >
             {{ 'orders.statuses.' + step | transloco }}
           </span>
-          @if (stepDate(step); as when) {
-            <time
-              class="mt-0.5 block text-xs text-muted-foreground"
-              data-step-date
-              [attr.datetime]="stepRecords()[step]?.at"
-            >
-              {{ when }}
-            </time>
-            @if (stepActor(step); as who) {
-              <span class="block truncate text-xs text-muted-foreground" data-step-actor [title]="who">
-                {{ 'orders.timeline.by' | transloco: { actor: who } }}
-              </span>
-            }
-          }
+
           @if (isCurrent(step)) {
             <span class="sr-only">{{ 'orders.detail.stepCurrent' | transloco }}</span>
           } @else if (isDone(step)) {

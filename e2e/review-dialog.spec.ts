@@ -55,7 +55,8 @@ async function openFirstReview(page: Page, status: 'approved' | 'pending'): Prom
  * loses the button exactly when the test wants to look at it.
  */
 function actionButton(page: Page) {
-  return page.locator(`${panel} footer > div`).last().locator('button').last();
+  // The Approve button: the primary action of a pending review.
+  return page.locator(`${panel} footer button`).filter({ hasText: /Approv/i }).first();
 }
 
 /**
@@ -254,7 +255,7 @@ test.describe('the review details dialog', () => {
 
       await held.release();
       await expect(page.getByText('Review approved').first()).toBeVisible();
-      await expect(actionButton(page)).toHaveText(/Withdraw approval/);
+      await expect(page.locator(`${panel} footer button`).filter({ hasText: /Withdraw approval/i }).first()).toHaveText(/Withdraw approval/);
     } finally {
       await held.release();
       // The seed is the backend's: the review goes back to pending.

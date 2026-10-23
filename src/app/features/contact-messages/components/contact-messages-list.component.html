@@ -1,4 +1,4 @@
-<div class="mx-auto flex w-full max-w-7xl flex-col gap-6 p-6">
+<div class="page-shell">
   <!-- Header: the title and the count on the start, the view toggle on the
        end. The tabs and the filters sit in the toolbar row below, so the
        header is a header and not a toolbar. -->
@@ -7,40 +7,13 @@
       <h1 class="text-2xl font-medium tracking-tight">{{ 'contactMessages.title' | transloco }}</h1>
       <p class="text-sm text-muted-foreground" data-testid="contact-messages-count">
         {{ stats().total | plural: 'contactMessages.countMessages' }} ·
-        {{ stats().newCount | plural: 'contactMessages.countNew' }} ·
+        {{ stats().unreadCount | plural: 'contactMessages.countUnread' }} ·
         {{ stats().repliedCount | plural: 'contactMessages.countReplied' }} ·
-        {{ stats().archivedCount | plural: 'contactMessages.countArchived' }} ·
-        {{ stats().unreadCount | plural: 'contactMessages.countUnread' }}
+        {{ stats().archivedCount | plural: 'contactMessages.countArchived' }}
       </p>
     </div>
 
-    <div class="flex shrink-0 items-center gap-2">
-      <!-- View toggle: the list is the default; the grid is optional. -->
-      <div class="flex items-center rounded-md border bg-card p-1">
-        <button
-          hlmBtn
-          [variant]="viewMode() === 'list' ? 'secondary' : 'ghost'"
-          size="icon"
-          (click)="toggleView('list')"
-          [attr.aria-label]="'common.listView' | transloco"
-          [attr.aria-pressed]="viewMode() === 'list'"
-          [title]="'common.listView' | transloco"
-        >
-          <ng-icon name="lucideList" class="size-4" />
-        </button>
-        <button
-          hlmBtn
-          [variant]="viewMode() === 'grid' ? 'secondary' : 'ghost'"
-          size="icon"
-          (click)="toggleView('grid')"
-          [attr.aria-label]="'common.gridView' | transloco"
-          [attr.aria-pressed]="viewMode() === 'grid'"
-          [title]="'common.gridView' | transloco"
-        >
-          <ng-icon name="lucideInbox" class="size-4" />
-        </button>
-      </div>
-    </div>
+    <!-- (no view toggle: this page has a single list view) -->
   </header>
 
   <!-- Tabs + filters, in one toolbar row -->
@@ -132,7 +105,7 @@
   <!-- The bulk bar -->
   @if (selectedIds().size > 0) {
     <div
-      class="flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-card)] border bg-card px-4 py-3"
+      class="flex flex-wrap items-center justify-between gap-3 card-surface px-4 py-3"
       role="region"
     >
       <p class="text-sm">
@@ -166,7 +139,7 @@
     </div>
   }
 
-  <div class="rounded-[var(--radius-card)] border bg-card">
+  <div class="overflow-hidden card-surface">
     @if (loading()) {
       <div class="space-y-0">
         <div class="h-16 animate-pulse border-b bg-muted/30"></div>
@@ -210,15 +183,11 @@
               <span class="min-w-0 flex-1">
                 <span class="flex items-center gap-2">
                   <span class="truncate text-sm" [class.font-semibold]="!message.read">{{ message.subject }}</span>
-                  @if (message.status === 'REPLIED') {
-                    <span class="shrink-0 rounded-full bg-success-soft px-2 py-0.5 text-xs font-medium text-success">
-                      {{ 'contactMessages.replied' | transloco }}
-                    </span>
-                  } @else if (message.status === 'ARCHIVED') {
-                    <span class="shrink-0 rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
-                      {{ 'contactMessages.archived' | transloco }}
-                    </span>
-                  }
+                  <app-status-badge
+                    class="shrink-0"
+                    [status]="message.status === 'NEW' ? 'new' : message.status === 'REPLIED' ? 'replied' : 'archived'"
+                    [customLabel]="message.status === 'NEW' ? 'contactMessages.status.new' : message.status === 'REPLIED' ? 'contactMessages.status.replied' : 'contactMessages.status.archived'"
+                  />
                 </span>
                 <span class="mt-1 block truncate text-xs text-muted-foreground">
                   <bdi>{{ message.message }}</bdi>
@@ -238,6 +207,17 @@
             <div
               class="flex shrink-0 items-center gap-1 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:focus-within:opacity-100"
             >
+              <button
+                type="button"
+                hlmBtn
+                variant="ghost"
+                size="icon"
+                (click)="openMessage(message)"
+                [attr.aria-label]="'contactMessages.reply' | transloco"
+                [title]="'contactMessages.reply' | transloco"
+              >
+                <ng-icon name="lucideReply" class="size-4" aria-hidden="true" />
+              </button>
               <button
                 type="button"
                 hlmBtn
@@ -327,6 +307,7 @@
   [open]="selected() !== null"
   [title]="selected()?.subject ?? ''"
   [subtitle]="selected() ? (selected()!.name + ' · ' + selected()!.email) : ''"
+  [size]="'md'"
   (closed)="closeMessage()"
 >
   @if (selected(); as message) {
@@ -354,8 +335,7 @@
         }
       </div>
 
-      <div class="flex items-center justify-between gap-2">
-        <p class="text-sm text-muted-foreground">{{ message.name }} · {{ message.email }}</p>
+      <div class="flex items-center justify-end gap-2">
         <button hlmBtn variant="ghost" size="sm" (click)="copyEmail(message.email)">
           <ng-icon name="lucideCopy" class="size-4" aria-hidden="true" />
           {{ 'contactMessages.copyEmail' | transloco }}
@@ -390,7 +370,7 @@
         <textarea
           #replyBox
           hlmTextarea
-          rows="4"
+          rows="6"
           maxlength="2000"
           class="w-full resize-none"
           [placeholder]="'contactMessages.replyPlaceholder' | transloco: { email: message.email }"
@@ -401,7 +381,11 @@
         ></textarea>
         <div class="flex items-center justify-between">
           <p class="text-xs text-muted-foreground">
-            {{ 'contactMessages.replyNotice' | transloco: { email: message.email } }}
+            @if (message.emailStatus === 'SENT') {
+              {{ 'contactMessages.replyNotice' | transloco: { email: message.email } }}
+            } @else {
+              {{ 'contactMessages.replySaved' | transloco }}
+            }
           </p>
           <span class="text-xs text-muted-foreground tabular-nums">{{ replyText().length }}/2000</span>
         </div>
@@ -412,6 +396,19 @@
           </button>
         }
       </div>
+    </div>
+    <div dialog-footer-end class="flex items-center gap-2">
+      <button hlmBtn variant="default" size="sm" (click)="sendReply()" [disabled]="replying() || !replyText().trim()">
+        <ng-icon name="lucideSend" class="mr-1 size-3.5" />
+        {{ replying() ? ('contactMessages.sending' | transloco) : ('contactMessages.sendReply' | transloco) }}
+      </button>
+      <button hlmBtn variant="outline" size="sm" (click)="archive(selected()!)" [disabled]="selected()?.status === 'ARCHIVED'">
+        <ng-icon name="lucideArchive" class="mr-1 size-3.5" />
+        {{ 'contactMessages.archive' | transloco }}
+      </button>
+      <button hlmBtn variant="secondary" size="sm" (click)="closeMessage()">
+        {{ 'common.close' | transloco }}
+      </button>
     </div>
   }
 </app-dialog-shell>

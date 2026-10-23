@@ -1,6 +1,7 @@
 ﻿import { Component, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
 import { HlmCardImports } from '@spartan-ng/helm/card';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
@@ -9,14 +10,11 @@ import { HlmInputImports } from '@spartan-ng/helm/input';
 import { HlmTableImports } from '@spartan-ng/helm/table';
 import { HlmSkeletonImports } from '@spartan-ng/helm/skeleton';
 import { HlmNativeSelectImports } from '@spartan-ng/helm/native-select';
-import { HlmTooltipImports } from '@spartan-ng/helm/tooltip';
-import { BrnTooltip } from '@spartan-ng/brain/tooltip';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
   lucideSearch,
   lucideChevronLeft,
   lucideChevronRight,
-  lucideShoppingCart,
   lucidePackage,
   lucideX,
   lucideActivity,
@@ -28,6 +26,14 @@ import {
   lucideMail,
   lucideAlertCircle,
   lucideCheckCircle,
+  lucideCheck,
+  lucideMinus,
+  lucidePlus,
+  lucidePercent,
+  lucideClock,
+  lucideArchive,
+  lucideFileText,
+  lucideXCircle as lucideXCircle2,
 } from '@ng-icons/lucide';
 import { PageResponse } from '../../../core/models/api-response.model';
 import { CartItemResponse, CartResponse, CartStatsResponse, CartListParams } from '../models/cart.model';
@@ -35,18 +41,22 @@ import { StatusKind } from '../../../shared/ui/status-badge/status-badge.compone
 import { CartService } from '../services/cart.service';
 import { LanguageService } from '../../../core/i18n/language.service';
 import { TranslocoService } from '@jsverse/transloco';
+import { StoreSettingsService } from '../../../core/settings/store-settings.service';
 import { ColumnDef, createColumnHelper } from '@tanstack/table-core';
+import type { RowMenuAction } from '../../../shared/ui/actions-cell/actions-cell.component';
 import { NotifyService } from '../../../core/notify/notify.service';
 import { formatRelativeTime } from '../../../core/i18n/relative-time';
 
 import { TranslocoPipe } from '@jsverse/transloco';
 import { MoneyPipe } from '../../../shared/pipes/money.pipe';
+import { PluralPipe } from '../../../shared/pipes/plural.pipe';
 import { PagerComponent } from '../../../shared/components/pager/pager.component';
 import { LocalizedDateComponent } from '../../../shared/ui/localized-date/localized-date.component';
 import { StatusBadgeComponent } from '../../../shared/ui/status-badge/status-badge.component';
 import { CartStatusTabsComponent } from '../../../shared/components/cart-status-tabs/cart-status-tabs.component';
 import { DialogShellComponent } from '../../../shared/ui/dialog-shell/dialog-shell.component';
 import { UserAvatarComponent } from '../../../shared/ui/user-avatar/user-avatar.component';
+import { KpiCardComponent } from '../../../shared/components/dashboard/kpi-card/kpi-card.component';
 
 @Component({
   selector: 'app-carts-list',
@@ -56,6 +66,7 @@ import { UserAvatarComponent } from '../../../shared/ui/user-avatar/user-avatar.
     PagerComponent,
     CommonModule,
     FormsModule,
+    RouterModule,
     DataTableComponent,
     HlmCardImports,
     HlmButtonImports,
@@ -64,22 +75,21 @@ import { UserAvatarComponent } from '../../../shared/ui/user-avatar/user-avatar.
     HlmTableImports,
     HlmSkeletonImports,
     HlmNativeSelectImports,
-    HlmTooltipImports,
-    BrnTooltip,
     NgIcon,
     TranslocoPipe,
     MoneyPipe,
+    PluralPipe,
     StatusBadgeComponent,
     CartStatusTabsComponent,
     DialogShellComponent,
     UserAvatarComponent,
+    KpiCardComponent,
   ],
   providers: [
     provideIcons({
       lucideSearch,
       lucideChevronLeft,
       lucideChevronRight,
-      lucideShoppingCart,
       lucidePackage,
       lucideX,
       lucideActivity,
@@ -91,6 +101,14 @@ import { UserAvatarComponent } from '../../../shared/ui/user-avatar/user-avatar.
       lucideMail,
       lucideAlertCircle,
       lucideCheckCircle,
+      lucideCheck,
+      lucideMinus,
+      lucidePlus,
+      lucidePercent,
+      lucideClock,
+      lucideArchive,
+      lucideFileText,
+      lucideXCircle2,
     }),
   ],
   templateUrl: './carts-list.component.html',
@@ -98,8 +116,11 @@ import { UserAvatarComponent } from '../../../shared/ui/user-avatar/user-avatar.
 export class CartsListComponent {
   private notify = inject(NotifyService);
   private cartService = inject(CartService);
+  private readonly storeSettings = inject(StoreSettingsService);
   protected readonly language = inject(LanguageService);
   private readonly transloco = inject(TranslocoService);
+
+  protected readonly storeCurrency = computed(() => this.storeSettings.currency());
 
   protected readonly Math = Math;
   protected readonly formatRelativeTime = formatRelativeTime;
@@ -139,11 +160,33 @@ export class CartsListComponent {
     this.columnHelper.accessor('itemCount', { header: 'carts.columns.itemCount', enableSorting: false, meta: { width: '70px' } }),
     this.columnHelper.accessor('total', { header: 'carts.columns.total', enableSorting: true, meta: { width: '140px' } }),
     this.columnHelper.accessor(
+      (row) => ({
+        kind: this.cartStatusKind(row),
+        since: row.status === 'ABANDONED'
+          ? formatRelativeTime(row.lastActivityAt ?? row.updatedAt, this.language.language())
+          : '',
+      }),
+      { id: 'cartStatus', header: 'carts.columns.status', enableSorting: false, meta: { width: '128px' } },
+    ),
+    this.columnHelper.accessor(
       (row) => row.lastActivityAt ?? row.updatedAt,
       { id: 'lastActivity', header: 'carts.columns.lastActivity', enableSorting: true, meta: { width: '160px' } },
     ),
     this.columnHelper.display({ id: 'actions', header: 'carts.columns.actions', meta: { width: '100px' } }),
   ];
+
+  /** Kebab menu actions for a cart row: copy link always, send reminder when abandoned. */
+  readonly menuActionsFor = (row: CartResponse): RowMenuAction[] => [
+    { id: 'copyLink', label: 'carts.copyLink', icon: 'lucideCopy' },
+    ...(row.status === 'ABANDONED'
+      ? [{ id: 'sendReminder', label: 'carts.sendReminder', icon: 'lucideMail' }]
+      : []),
+  ];
+
+  onMenuAction(event: { id: string; item: CartResponse }): void {
+    if (event.id === 'copyLink') this.copyCartLink(event.item);
+    if (event.id === 'sendReminder') this.sendReminder(event.item);
+  }
 
   constructor() {
     effect(() => {
@@ -232,7 +275,8 @@ export class CartsListComponent {
   }
 
   /** Map backend status to StatusKind for the badge component. */
-  cartStatusKind(cart: CartResponse): StatusKind {
+  cartStatusKind(cart: CartResponse | null): StatusKind {
+    if (!cart) return 'active';
     switch (cart.status) {
       case 'ACTIVE': return 'active';
       case 'ABANDONED': return 'abandoned';

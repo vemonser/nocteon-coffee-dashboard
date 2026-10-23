@@ -3,11 +3,22 @@
 
   The same component draws the range in the toolbar and the tabs inside
   the cards, so the two can never drift apart.
+
+  `scrollable` keeps the group on one line: the range control on a phone
+  used to wrap onto two rows. The group is still ONE tab stop — the active
+  item carries tabindex="0" and the rest are "-1", so the arrow keys (not
+  Tab) move through the options.
 -->
 <div
   [attr.role]="groupRole()"
   [attr.aria-label]="label() || null"
-  class="inline-flex flex-wrap items-center gap-1 rounded-lg border bg-card p-1"
+  class="inline-flex items-center gap-1 rounded-lg border bg-card p-1"
+  [class.max-w-full]="scrollable()"
+  [class.flex-nowrap]="scrollable()"
+  [class.flex-wrap]="!scrollable()"
+  [class.overflow-x-auto]="scrollable()"
+  [class.scrollbar-hide]="scrollable()"
+  [class.overscroll-x-contain]="scrollable()"
   (keydown)="onKeydown($event)"
 >
   @for (item of items(); track item.id) {
@@ -17,10 +28,12 @@
       [attr.role]="itemRole()"
       [attr.aria-selected]="itemRole() === 'tab' ? active() === item.id : null"
       [attr.aria-checked]="itemRole() === 'radio' ? active() === item.id : null"
+      [attr.tabindex]="focusableId() === item.id ? 0 : -1"
       [attr.data-tab-id]="item.id"
       [variant]="active() === item.id ? 'secondary' : 'ghost'"
       size="sm"
       class="rounded-md"
+      [class.shrink-0]="scrollable()"
       (click)="select(item.id)"
     >
       {{ item.label }}

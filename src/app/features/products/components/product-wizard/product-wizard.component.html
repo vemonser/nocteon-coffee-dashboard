@@ -1,4 +1,4 @@
-﻿<div class="p-6 max-w-4xl mx-auto">
+﻿<div class="page-shell">
 
   @if (loadingDetail()) {
     <div class="text-center py-20 text-muted-foreground">{{ 'products.wizard.loading' | transloco }}</div>
@@ -8,21 +8,53 @@
 
     <!-- Header -->
     <div class="flex items-center justify-between mb-6">
-      <h1 class="text-2xl font-medium tracking-tight">
-        {{ state.isEditMode() ? ('products.wizard.editTitle' | transloco) : ('products.wizard.addTitle' | transloco) }}
-      </h1>
+      <div>
+        <h1 class="text-2xl font-medium tracking-tight">
+          {{ state.isEditMode() ? (state.editingName() ?? ('products.wizard.editTitle' | transloco)) : ('products.wizard.addTitle' | transloco) }}
+          @if (state.isEditMode()) {
+            <span class="text-muted-foreground"> - {{ state.editingName() }}</span>
+          }
+        </h1>
+        @if (state.isEditMode()) {
+          <p class="text-sm text-muted-foreground">
+            {{ 'products.wizard.editTitle' | transloco }} - {{ state.editingName() }}
+            @if (state.form.get('isActive')?.value) {
+              <span class="ml-2 px-2 py-0.5 text-xs bg-success-soft text-success rounded-full">Active</span>
+            } @else {
+              <span class="ml-2 px-2 py-0.5 text-xs bg-muted text-muted-foreground rounded-full">Inactive</span>
+            }
+          </p>
+        }
+      </div>
+      <div class="flex gap-2">
+        @if (state.isEditMode() && state.editingSlug()) {
+          <button hlmBtn variant="outline" (click)="viewOnStorefront()">
+            <ng-icon name="lucideExternalLink" class="mr-2 size-4" />
+            {{ 'products.viewOnStorefront' | transloco }}
+          </button>
+        }
+      </div>
     </div>
 
     <form [formGroup]="state.form">
       <hlm-tabs [tab]="activeTab()" class="w-full">
-        <hlm-tabs-list class="w-full grid grid-cols-5" [attr.aria-label]="'products.wizard.stepsAriaLabel' | transloco">
+        <hlm-tabs-list class="w-full grid" [style.grid-template-columns]="'repeat(' + stepTabs.length + ', minmax(0, 1fr))'" [attr.aria-label]="'products.wizard.stepsAriaLabel' | transloco">
           @for (step of stepTabs; track step.id; let i = $index) {
             <button
               hlmTabsTrigger
               [hlmTabsTrigger]="step.id"
               (click)="onTabChange(step.id)"
+              class="relative"
             >
               {{ 'products.wizard.steps.' + step.id | transloco }}
+              @if (step.count > 0) {
+                <span class="ml-1 px-1.5 py-0.5 text-xs bg-primary/20 text-primary rounded-full">
+                  {{ step.count }}
+                </span>
+              }
+              @if (hasTabError(step.id)) {
+                <span class="absolute -top-1 -right-1 w-2 h-2 bg-destructive rounded-full"></span>
+              }
             </button>
           }
         </hlm-tabs-list>
@@ -54,8 +86,8 @@
       </hlm-tabs>
     </form>
 
-    <!-- Navigation -->
-    <div class="flex justify-between mt-6">
+    <!-- Sticky footer -->
+    <div class="sticky bottom-0 z-10 flex justify-between mt-6 py-4 bg-background/80 backdrop-blur border-t -mx-6 px-6">
       <div>
         @if (state.currentStep() > 0) {
           <button hlmBtn variant="outline" type="button" (click)="onBack()">
@@ -70,22 +102,31 @@
         }
       </div>
 
-      <div>
-        @if (state.currentStep() < state.steps.length - 1) {
-          <button hlmBtn type="button" (click)="onNext()">
+      <div class="flex items-center gap-2">
+        @if (!state.isEditMode() && state.currentStep() < state.steps.length - 1) {
+          <button hlmBtn type="button" (click)="onNext()" [disabled]="!state.isCurrentStepValid()">
             {{ 'products.wizard.next' | transloco }}
             <ng-icon name="lucideArrowRight" class="ms-2 size-4 rtl:rotate-180" />
           </button>
-        } @else {
-          <button hlmBtn type="button" (click)="onSubmit()" [disabled]="submitting()">
+        }
+        @if (state.isEditMode() && isCurrentStepDirty()) {
+          <button hlmBtn type="button" (click)="saveCurrentStep()" [disabled]="submitting() || !state.isCurrentStepValid()">
             @if (submitting()) {
               <ng-icon name="lucideLoader2" class="mr-2 size-4 animate-spin" />
             } @else {
-              <ng-icon name="lucideCheck" class="mr-2 size-4" />
+              <ng-icon name="lucideSave" class="mr-2 size-4" />
             }
-            {{ submitting() ? ('products.wizard.saving' | transloco) : (state.isEditMode() ? ('products.wizard.saveChanges' | transloco) : ('products.wizard.createProduct' | transloco)) }}
+            {{ 'products.wizard.saveChanges' | transloco }}
           </button>
         }
+        <button hlmBtn type="button" (click)="onSubmit()" [disabled]="submitting() || !state.isCurrentStepValid()">
+          @if (submitting()) {
+            <ng-icon name="lucideLoader2" class="mr-2 size-4 animate-spin" />
+          } @else {
+            <ng-icon name="lucideCheck" class="mr-2 size-4" />
+          }
+          {{ submitting() ? ('products.wizard.saving' | transloco) : (state.isEditMode() ? ('products.wizard.saveAll' | transloco) : ('products.wizard.createProduct' | transloco)) }}
+        </button>
       </div>
     </div>
   }

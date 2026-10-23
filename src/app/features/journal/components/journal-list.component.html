@@ -1,4 +1,4 @@
-<div class="flex flex-col gap-6 p-6">
+<div class="page-shell">
   <!-- Header -->
   <div class="flex items-center justify-between">
     <div>
@@ -50,7 +50,7 @@
   @if (!loading() && items().length > 0) {
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       @for (item of items(); track item.slug) {
-        <div class="rounded-md border bg-card overflow-hidden flex flex-col">
+        <div class="card-surface overflow-hidden flex flex-col">
           <a
             [routerLink]="['/dashboard/journal', item.slug, 'edit']"
             class="block relative h-32 bg-muted"
@@ -135,7 +135,7 @@
 <!-- Delete Confirm Dialog -->
 @if (deleting()) {
   <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-    <div class="w-full max-w-sm rounded-2xl bg-card shadow-2xl border p-6">
+    <div class="dialog-surface w-full max-w-sm p-6">
       <h2 class="text-lg font-bold mb-2">{{ 'journal.deleteTitle' | transloco }}</h2>
       <p class="text-muted-foreground mb-6">
         {{ 'journal.deleteConfirm' | transloco }}

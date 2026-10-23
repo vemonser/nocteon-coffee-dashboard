@@ -233,7 +233,13 @@
       "confirmed": "Confirmed",
       "unknown": "Unknown",
       "approved": "Approved",
-      "notCollected": "Not collected"
+      "notCollected": "Not collected",
+      "active": "Active",
+      "abandoned": "Abandoned",
+      "converted": "Converted",
+      "new": "New",
+      "replied": "Replied",
+      "archived": "Archived"
     },
     "toggleSidebar": "Toggle sidebar",
     "total": "total",
@@ -276,7 +282,9 @@
     "refresh": "Refresh",
     "countItems_one": "{{count}} item",
     "countItems_other": "{{count}} items",
-    "noItemsWarning": "This order has no line items — its total is the shipping, less the discount."
+    "noItemsWarning": "This order has no line items — its total is the shipping, less the discount.",
+    "notFeatured": "Not Featured",
+    "toggleStatus": "Toggle status"
   },
   "products": {
     "title": "Products",
@@ -342,7 +350,10 @@
       "shortDescriptionPlaceholder": "One-line summary shown in product cards",
       "description": "Description",
       "active": "Enabled",
-      "featured": "Featured"
+      "featured": "Featured",
+      "activeHint": "Disabled products are hidden from the storefront",
+      "featuredHint": "Featured products appear on the storefront homepage",
+      "productTypeChangeWarning": "Changing the product type may affect coffee details and variants."
     },
     "variants": {
       "title": "Variants",
@@ -380,17 +391,21 @@
       "noMedia": "No media uploaded yet.",
       "loading": "Loading media…",
       "upload": "Upload",
-      "uploading": "Uploading…"
+      "uploading": "Uploading…",
+      "dropHint": "Drag & drop files here or click to browse",
+      "fileTypes": "Images or videos · max 10 MB each"
     },
     "tastingNotes": {
       "title": "Tasting Notes",
       "description": "Select all flavor notes that apply to this coffee.",
-      "noNotes": "No tasting notes available yet. Add some in the Tasting Notes management page first."
+      "noNotes": "No tasting notes available yet. Add some in the Tasting Notes management page first.",
+      "selected": "selected"
     },
     "pairings": {
       "title": "Pairings",
       "description": "Suggest foods or treats that pair well with this coffee.",
-      "noPairings": "No pairings available yet. Add some in the Pairings management page first."
+      "noPairings": "No pairings available yet. Add some in the Pairings management page first.",
+      "selected": "selected"
     },
     "wizard": {
       "loading": "Loading product...",
@@ -430,7 +445,18 @@
       "pairing": "No products for this pairing"
     },
     "categoryFilter": "Category: {{slug}}",
-    "clearCategoryFilter": "Clear category filter"
+    "clearCategoryFilter": "Clear category filter",
+    "filters": {
+      "status": "Status",
+      "featured": "Featured",
+      "type": "Type",
+      "all": "All"
+    },
+    "actions": {
+      "duplicate": "Duplicate",
+      "viewOnStorefront": "View on storefront",
+      "moveToTrash": "Move to Trash"
+    }
   },
   "categories": {
     "title": "Categories",
@@ -1228,7 +1254,7 @@
       "pending": "Pending",
       "total": "Total",
       "reviews": "reviews",
-      "verifiedShare": "verified"
+      "verifiedShare": "Verified"
     },
     "dateRange": {
       "all": "All time",
@@ -1288,7 +1314,7 @@
   "carts": {
     "title": "Carts",
     "total": "total",
-    "search": "Search by email...",
+    "search": "Search by name, email or product...",
     "cart": "Cart",
     "items": "Items",
     "totalLabel": "Total",
@@ -1304,7 +1330,7 @@
     "noItems": "No items in this cart",
     "stock": "Stock",
     "status": {
-      "active": "Enabled",
+      "active": "Active",
       "abandoned": "Abandoned",
       "converted": "Converted"
     },
@@ -1670,6 +1696,8 @@
       "reason": "Reason",
       "by": "by {{actor}}",
       "notify": "the customer is to be told",
+      "system": "System",
+      "customerNotified": "Customer notified",
       "statusChangedFrom": "{{from}} → {{to}}",
       "shipmentShipped": "Shipment handed to the carrier",
       "shipmentDelivered": "Shipment delivered",
@@ -1769,7 +1797,10 @@
       "hoursAgo_one": "{{count}} hour ago",
       "hoursAgo_other": "{{count}} hours ago",
       "daysAgo_one": "{{count}} day ago",
-      "daysAgo_other": "{{count}} days ago"
+      "daysAgo_other": "{{count}} days ago",
+      "items": "items",
+      "items_one": "item",
+      "items_other": "items"
     },
     "onlineUsersCount": "{{count}} user online",
     "periods": {
@@ -1778,7 +1809,7 @@
       "90d": "90d"
     },
     "metrics": {
-      "totalRevenue": "Total revenue",
+      "totalRevenue": "Total revenue (incl. shipping)",
       "totalOrders": "Total orders",
       "avgOrderValue": "Avg order value",
       "totalCustomers": "Total customers",
@@ -1800,7 +1831,9 @@
       "stock": "Stock",
       "noAlerts": "No low stock alerts",
       "reserved": "reserved",
-      "openProduct": "Open the product"
+      "openProduct": "Open the product",
+      "reorderAt": "Reorder at",
+      "allAboveThreshold": "All products are above the stock threshold"
     },
     "revenue": {
       "last7days": "Last 7 days",
@@ -1808,7 +1841,9 @@
       "last90days": "Last 90 days",
       "noData": "No revenue data",
       "date": "Date",
-      "value": "Value"
+      "value": "Value",
+      "currentPeriod": "Current period",
+      "previousPeriod": "Previous period"
     },
     "topProducts": {
       "sold": "sold",
@@ -1837,7 +1872,7 @@
     "onlineUsersCaption": "currently online",
     "revenueByOrigin": "Revenue by origin",
     "revenueByRoastLevel": "Revenue by roast level",
-    "deviceBreakdown": "Device breakdown",
+    "deviceBreakdown": "Operating system",
     "lowStockProducts": "Low stock products",
     "customerHealth": "Customer health",
     "ordersByPayment": "Orders by payment method",
@@ -1847,10 +1882,11 @@
     "delta": {
       "noChange": "No change",
       "new": "New",
-      "noBaseline": "No data in the previous period"
+      "noBaseline": "No data in the previous period",
+      "noPriorData": "No prior data"
     },
     "selectedPeriod": "Selected period",
-    "refundRateHelp": "Refunded orders as a share of paid orders in the selected period.",
+    "refundRateHelp": "Refunded orders as a share of orders that reached a paid state (paid + refunded) in the selected period.",
     "refundedIsFlag": "Refunded is a payment status, not an order status, so it is not part of the status chart.",
     "listPrice": "List price",
     "listPriceHelp": "The lowest price of any variant of this product. It is not the price paid, so it does not multiply out to the revenue on the revenue chart.",
@@ -1865,7 +1901,7 @@
     "countOrders_other": "{{count}} orders",
     "countCustomers_one": "{{count}} customer",
     "countCustomers_other": "{{count}} customers",
-    "orders": "Orders",
+    "orders": "Paid orders",
     "revenueBy": "Revenue by",
     "ordersBy": "Orders by",
     "tabs": {
@@ -1912,10 +1948,20 @@
     "donutRevenue": "Revenue",
     "donutOrders": "Orders",
     "breakdownNote": "This chart adds up the line items (price × quantity). It does not include shipping or discounts, so it does not add up to the Total revenue card.",
-    "devicesNote": "The store records one row per observed device session. The count is not a count of people.",
+    "devicesNote": "The store records one row per observed customer session. Dashboard and automation traffic is excluded.",
     "recentOrdersNote": "The four most recent orders, whatever their date.",
     "daysShort": "days",
-    "deviceUnit": "sessions"
+    "deviceUnit": "sessions",
+    "eyebrow": "Commerce overview",
+    "currentRange": "Current range",
+    "comparisonRange": "Compared with",
+    "today": "Today",
+    "updated": "Updated",
+    "refresh": "Refresh",
+    "exportCsv": "Export CSV",
+    "exportPdf": "Export PDF",
+    "exportPdfSoon": "PDF export coming soon",
+    "soon": "Soon"
   },
   "imageCell": {
     "noImage": "No img"
@@ -2047,6 +2093,7 @@
     "sendAgain": "Send again",
     "replyPlaceholder": "Reply to {{email}}",
     "replyNotice": "The reply is emailed to {{email}} and saved here.",
+    "replySaved": "The reply was saved.",
     "replySent": "Reply sent",
     "replySavedNotSent": "Reply saved, but the email could not be sent",
     "sending": "Sending...",
@@ -2061,7 +2108,7 @@
     "tabs": {
       "label": "Message state",
       "all": "All",
-      "new": "New",
+      "unread": "Unread",
       "replied": "Replied",
       "archived": "Archived"
     },
@@ -2128,7 +2175,17 @@
     "lowStock": "Low stock products",
     "viewDetails": "View details",
     "pendingReviews": "Reviews awaiting moderation",
-    "unreadMessages": "Unread messages"
+    "unreadMessages": "Unread messages",
+    "confirmedOrders": "Confirmed orders awaiting processing",
+    "abandonedCarts": "Abandoned carts",
+    "openOrders": "Open orders",
+    "loadFailed": "The attention queue could not be loaded.",
+    "partial": "One of the queues could not be refreshed. The counts shown are from the last successful read.",
+    "openOrdersHint": "Paid, not delivered yet",
+    "unreadMessagesHint": "A customer is waiting for an answer",
+    "pendingReviewsHint": "Waiting before they go live",
+    "lowStockHint": "At or below the reorder point",
+    "abandonedCartsHint": "Recoverable revenue"
   },
   "newsletter": {
     "title": "Newsletter",

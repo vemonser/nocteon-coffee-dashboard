@@ -1,7 +1,10 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ProductWizardStateService } from '../../product-wizard/product-wizard-state.service';
+import { ProductWizardComponent } from '../../product-wizard/product-wizard.component';
 import { TranslocoPipe } from '@jsverse/transloco';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { lucideUpload } from '@ng-icons/lucide';
 
 /**
  * Step 3 — Media gallery.
@@ -12,11 +15,30 @@ import { TranslocoPipe } from '@jsverse/transloco';
 @Component({
   selector: 'app-media-step',
   standalone: true,
-  imports: [CommonModule, TranslocoPipe],
+  imports: [CommonModule, TranslocoPipe, NgIcon],
+  providers: [provideIcons({ lucideUpload })],
   templateUrl: './media-step.component.html',
 })
 export class MediaStepComponent {
   protected state = inject(ProductWizardStateService);
+  private wizard = inject(ProductWizardComponent);
+
+  saveCurrentStep(): void {
+    this.wizard.saveCurrentStep();
+  }
+
+  onBack(): void {
+    this.wizard.onBack();
+  }
+
+  isCurrentStepDirty(): boolean {
+    return this.wizard.isCurrentStepDirty();
+  }
+
+  isCurrentStepValid(): boolean {
+    return this.state.isCurrentStepValid();
+  }
+
   setPrimary(source: 'existing' | 'staged', index: number): void {
     this.state.setPrimaryMedia(source, index);
   }
@@ -36,11 +58,25 @@ export class MediaStepComponent {
     });
   }
   removeStaged(index: number): void {
-    this.state.removeStagedMedia(index);
+    if (window.confirm('Remove this media?')) {
+      this.state.removeStagedMedia(index);
+    }
   }
 
   removeExisting(index: number): void {
-    this.state.removeExistingMedia(index);
+    if (window.confirm('Remove this media?')) {
+      this.state.removeExistingMedia(index);
+    }
+  }
+
+  onStagedAltChange(index: number, event: Event): void {
+    const value = (event.target as HTMLInputElement).value;
+    this.state.updateAltText(index, value);
+  }
+
+  onExistingAltChange(index: number, event: Event): void {
+    const value = (event.target as HTMLInputElement).value;
+    this.state.updateExistingAltText(index, value);
   }
 
   previewUrl(file: File): string {

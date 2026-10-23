@@ -1,7 +1,7 @@
 <!-- Page root — same container the other pages use (origins/users/products-list:
      flex flex-col gap-6 p-6; no max-width in this layout). Detail content sits
      flush against the sidebar edge without it. -->
-<div class="flex flex-col gap-6 p-6 max-w-[1440px] mx-auto w-full">
+<div class="page-shell">
 @if (category() && !loading() && form) {
   <!-- Header: back link, h1 + status badge, actions -->
   <div class="flex flex-wrap items-center gap-3">
@@ -191,7 +191,7 @@
       <!-- Form: fields are always editable, Arabic fields dir="rtl" -->
       <hlm-card>
         <form [formGroup]="form">
-          <div hlmCardContent class="p-6">
+          <div hlmCardContent>
             <app-category-form [translations]="translationsArray" />
 
             <hlm-separator class="my-6" />
@@ -211,10 +211,10 @@
       <!-- Details panel: slug, ID, dates. The card gap (16px) is the whole
            distance between the Details title and its values. -->
       <hlm-card>
-        <div hlmCardHeader class="px-6 pb-0">
-          <h2 class="text-sm font-medium text-muted-foreground">{{ 'categories.detail.infoTitle' | transloco }}</h2>
+        <div hlmCardHeader>
+          <h2 hlmCardTitle>{{ 'categories.detail.infoTitle' | transloco }}</h2>
         </div>
-        <div hlmCardContent class="grid gap-4 p-6 pt-0 sm:grid-cols-3">
+        <div hlmCardContent class="grid gap-4 sm:grid-cols-3">
           <div>
             <p class="text-xs text-muted-foreground">{{ 'common.slug' | transloco }}</p>
             <p class="mt-1 text-sm"><bdi class="font-mono">{{ category()!.slug }}</bdi></p>
@@ -357,7 +357,7 @@
 @if (showDeleteConfirm()) {
   <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
     <div
-      class="w-full max-w-sm rounded-xl border bg-card p-6 shadow-2xl"
+      class="dialog-surface w-full max-w-sm p-6"
       role="alertdialog"
       aria-modal="true"
       [attr.aria-label]="'categories.detail.moveToTrash' | transloco"
@@ -397,7 +397,7 @@
 @if (showLeaveModal()) {
   <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
     <div
-      class="w-full max-w-sm rounded-xl border bg-card p-6 shadow-2xl"
+      class="dialog-surface w-full max-w-sm p-6"
       role="alertdialog"
       aria-modal="true"
       [attr.aria-label]="'categories.detail.unsavedChanges' | transloco"

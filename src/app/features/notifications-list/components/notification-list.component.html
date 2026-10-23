@@ -1,4 +1,4 @@
-<div class="flex flex-col gap-6 p-6">
+<div class="page-shell">
   <!-- Header -->
   <div class="flex items-center justify-between">
     <div>
@@ -38,7 +38,7 @@
   </div>
 
   <!-- List -->
-  <div class="rounded-md border bg-card divide-y">
+  <div class="card-surface divide-y">
     @if (loading()) {
       <div class="p-4 text-center text-muted-foreground" *ngFor="let _ of [1, 2, 3, 4, 5]">
         <div class="h-12 bg-muted animate-pulse rounded-md"></div>
@@ -130,8 +130,8 @@
 <!-- ══════ View Notification Dialog ══════ -->
 @if (viewing()) {
   <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
-      <div class="flex justify-between items-center p-6 border-b sticky top-0 bg-white">
+    <div class="dialog-surface w-full max-w-md max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center p-6 border-b sticky top-0 rounded-t-[var(--radius-card)] bg-card">
         <h2 class="text-lg font-bold">{{ 'notifications.detail' | transloco }}</h2>
         <button (click)="closeView()" class="text-gray-400 hover:text-gray-600 text-xl">✕</button>
       </div>

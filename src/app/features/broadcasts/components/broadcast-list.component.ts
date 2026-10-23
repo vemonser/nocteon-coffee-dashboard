@@ -30,6 +30,7 @@ import { map, Observable } from 'rxjs';
 import { ApiResponse, PageResponse } from '../../../core/models/api-response.model';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { PagerComponent } from '../../../shared/components/pager/pager.component';
+import { MultiSelect, MultiSelectOption } from '../../../shared/components/multi-select/multi-select.component';
 import { LocalizedDateComponent } from '../../../shared/ui/localized-date/localized-date.component';
 import { PluralPipe } from '../../../shared/pipes/plural.pipe';
 
@@ -38,7 +39,7 @@ import { PluralPipe } from '../../../shared/pipes/plural.pipe';
  *
  * A broadcast reaches EVERY customer of the store: the backend picks the
  * recipients with `findByRoleAndSubscribedTrue(CUSTOMER)` plus the
- * newsletter subscribers, so there is no audience to choose in the UI —
+ * newsletter subscribers, so there is no audience to choose in the UI ->
  * one message, everybody. The page says so in the create dialog, and
  * every row carries the number of recipients the backend counted, so
  * "who did this go to" is never a guess.
@@ -59,6 +60,7 @@ import { PluralPipe } from '../../../shared/pipes/plural.pipe';
     LocalizedDateComponent,
     PluralPipe,
     PagerComponent,
+    MultiSelect,
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
@@ -106,6 +108,14 @@ export class BroadcastListComponent extends BaseListComponent<BroadcastResponse,
   protected readonly selectedRecipientIds = signal<number[]>([]);
   /** Excluded recipient IDs (for 'exclude' audience). */
   protected readonly excludedIds = signal<number[]>([]);
+
+  /** Customers mapped to MultiSelect options. */
+  protected readonly customerOptions = computed<MultiSelectOption[]>(() =>
+    this.customers().map((c) => ({
+      id: Number(c.id),
+      label: c.email + (c.firstName ? ` — ${c.firstName} ${c.lastName ?? ''}`.trim() : ''),
+    })),
+  );
 
   protected override getId(item: BroadcastResponse): string {
     return item.id;
@@ -249,6 +259,16 @@ export class BroadcastListComponent extends BaseListComponent<BroadcastResponse,
     this.excludedIds.update((ids) =>
       checked ? [...ids, numId] : ids.filter((i) => i !== numId),
     );
+  }
+
+  /** Sync MultiSelect output into the recipient signal. */
+  protected onRecipientsChange(ids: number[]): void {
+    this.selectedRecipientIds.set(ids);
+  }
+
+  /** Sync MultiSelect output into the excluded signal. */
+  protected onExcludedChange(ids: number[]): void {
+    this.excludedIds.set(ids);
   }
 
   protected override deleteToastKey(): string {

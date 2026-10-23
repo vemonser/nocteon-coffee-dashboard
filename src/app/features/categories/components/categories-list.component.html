@@ -1,5 +1,5 @@
 <div
-  class="flex flex-col gap-4 p-6 max-w-[1440px] mx-auto w-full"
+  class="page-shell"
   id="lifecycle-panel"
   role="tabpanel"
   [attr.aria-labelledby]="'lifecycle-tab-' + listView()"
@@ -95,7 +95,7 @@
         @if (columnsOpen()) {
           <div
             role="menu"
-            class="absolute end-0 top-full z-20 mt-2 w-52 rounded-md border bg-card p-2 shadow-lg"
+            class="menu-surface absolute end-0 top-full z-20 mt-2 w-52 p-2"
             (keydown.escape)="columnsOpen.set(false)"
           >
             <!--
@@ -180,7 +180,7 @@
       the empty state repeats underneath it.
     -->
     @if (loading() || items().length > 0) {
-      <div class="view-fade rounded-md border bg-card overflow-hidden">
+      <div class="view-fade card-surface overflow-hidden">
         <!--
           `navigableColumn` is what makes a row's slug open that entity's detail
           page. It stays empty in the Trash tab on purpose: `Category` extends
@@ -228,7 +228,7 @@
 
     <!-- Empty state -->
     @if (!loading() && items().length === 0) {
-      <div class="view-fade rounded-md border bg-card px-4 py-12 text-center">
+      <div class="view-fade card-surface px-4 py-12 text-center">
         @if (searchQuery.trim().length > 0) {
           <!--
             A search that matches nothing is not an empty list. "No categories
@@ -313,7 +313,7 @@
 @if (deleting()) {
   <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
     <div
-      class="w-full max-w-sm rounded-xl border bg-card p-6 shadow-2xl"
+      class="dialog-surface w-full max-w-sm p-6"
       role="alertdialog"
       aria-modal="true"
       [attr.aria-label]="'categories.trash.moveToTrash' | transloco"
@@ -342,7 +342,7 @@
 @if (permanentDeleteTarget()) {
   <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
     <div
-      class="w-full max-w-sm rounded-xl border bg-card p-6 shadow-2xl"
+      class="dialog-surface w-full max-w-sm p-6"
       role="alertdialog"
       aria-modal="true"
       [attr.aria-label]="'categories.trash.deletePermanently' | transloco"
@@ -383,7 +383,7 @@
 @if (bulkConfirm()) {
   <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
     <div
-      class="w-full max-w-sm rounded-xl border bg-card p-6 shadow-2xl"
+      class="dialog-surface w-full max-w-sm p-6"
       role="alertdialog"
       aria-modal="true"
       [attr.aria-label]="
@@ -442,9 +442,9 @@
       role="dialog"
       aria-modal="true"
       aria-labelledby="category-dialog-title"
-      class="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-xl bg-card shadow-2xl border"
+      class="dialog-surface w-full max-w-2xl max-h-[90vh] overflow-y-auto"
     >
-      <div class="flex items-center justify-between p-6 border-b sticky top-0 bg-card">
+      <div class="flex items-center justify-between p-6 border-b sticky top-0 rounded-t-[var(--radius-card)] bg-card">
         <h2 id="category-dialog-title" class="text-lg font-medium">
           {{ 'categories.addDialogTitle' | transloco }}
         </h2>

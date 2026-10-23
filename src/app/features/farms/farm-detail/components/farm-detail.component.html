@@ -1,4 +1,4 @@
-<div class="flex flex-col gap-6 p-6 max-w-[1440px] mx-auto w-full">
+<div class="page-shell">
   @if (loading()) {
     <div class="space-y-6">
       <div class="h-9 w-24 bg-muted animate-pulse rounded-md"></div>
@@ -75,7 +75,7 @@
       <div class="flex flex-col gap-4 lg:col-span-2">
         <hlm-card>
           <form [formGroup]="form">
-            <div hlmCardContent class="p-6">
+            <div hlmCardContent>
               <div class="grid gap-6 sm:grid-cols-2" formArrayName="translations">
                 @if ((translationsArray()?.controls?.length ?? 0) > 0) {
                   @for (group of translationsArray()!.controls; track $index) {
@@ -133,10 +133,10 @@
         </hlm-card>
 
         <hlm-card>
-          <div hlmCardHeader class="px-6 pb-0">
-            <h2 class="text-sm font-medium text-muted-foreground">{{ 'farms.detail.infoTitle' | transloco }}</h2>
+          <div hlmCardHeader>
+            <h2 hlmCardTitle>{{ 'farms.detail.infoTitle' | transloco }}</h2>
           </div>
-          <div hlmCardContent class="grid gap-4 p-6 pt-0 sm:grid-cols-3">
+          <div hlmCardContent class="grid gap-4 sm:grid-cols-3">
             <div>
               <p class="text-xs text-muted-foreground">{{ 'common.slug' | transloco }}</p>
               <p class="mt-1 text-sm"><bdi class="font-mono">{{ farm()!.slug }}</bdi></p>

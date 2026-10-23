@@ -51,7 +51,9 @@
       </ul>
     }
     @default {
-      <!-- Donut: 3-5 slices, one diameter for every donut on the page. -->
+      <!-- Donut: 3-5 slices, one diameter for every donut on the page.
+           The ring sits centred and the legend is BELOW it in one column,
+           so the card reads as chart, then key. -->
       <div class="flex justify-center">
         <svg
           [attr.width]="size()"
@@ -66,7 +68,11 @@
               [attr.stroke]="arc.slice.color"
               [attr.stroke-width]="ringWidth()"
               stroke-linecap="butt"
-            />
+              [style.opacity]="hovered() === null || hovered() === arc.slice.label ? 1 : 0.35"
+              class="transition-opacity duration-150"
+            >
+              <title>{{ arc.slice.label }}: {{ formatValue()(arc.slice.value) }} ({{ arc.slice.percent }}%)</title>
+            </path>
             @if (showDirectLabels() && arc.fitsDirectLabel) {
               <text
                 [attr.x]="arc.labelX"
@@ -83,19 +89,30 @@
           <text
             data-testid="donut-center-label"
             [attr.x]="center()"
-            [attr.y]="center() - 8"
+            [attr.y]="center() - 10"
             text-anchor="middle"
             dominant-baseline="middle"
-            class="text-sm font-medium"
-            [attr.fill]="centerColor()"
+            class="text-[12px] font-medium"
+            [attr.fill]="'var(--muted-foreground)'"
           >{{ centerLabel() }}</text>
+          @if (centerSubtitle()) {
+            <text
+              data-testid="donut-center-subtitle"
+              [attr.x]="center()"
+              [attr.y]="center() + 4"
+              text-anchor="middle"
+              dominant-baseline="middle"
+              class="text-[10px] font-medium"
+              [attr.fill]="'var(--muted-foreground)'"
+            >{{ centerSubtitle() }}</text>
+          }
           <text
             data-testid="donut-center-value"
             [attr.x]="center()"
             [attr.y]="center() + 12"
             text-anchor="middle"
             dominant-baseline="middle"
-            class="text-lg font-medium tabular-nums"
+            class="text-[22px] font-semibold tabular-nums"
             [attr.fill]="centerColor()"
           >{{ centerValue() }}</text>
         </svg>
@@ -115,7 +132,11 @@
   @if (prepared().length > 0) {
     <ul class="mt-4 flex flex-col gap-1.5" data-testid="chart-legend">
       @for (row of prepared(); track row.label) {
-        <li class="flex items-center gap-2 text-sm">
+        <li
+          class="flex items-center gap-2 text-sm"
+          (mouseenter)="hovered.set(row.label)"
+          (mouseleave)="hovered.set(null)"
+        >
           <span
             class="size-2.5 shrink-0 rounded-[3px]"
             [style.background]="row.color"

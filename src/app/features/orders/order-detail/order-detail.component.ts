@@ -16,6 +16,7 @@ import {
   lucidePhone,
   lucideMessageCircle,
   lucideExternalLink,
+  lucideChevronRight,
   lucideTruck,
   lucideStickyNote,
   lucideHistory,
@@ -132,6 +133,7 @@ interface OrderEventView extends OrderEvent {
       lucidePhone,
       lucideMessageCircle,
       lucideExternalLink,
+      lucideChevronRight,
       lucideTruck,
       lucideStickyNote,
       lucideHistory,
@@ -277,7 +279,7 @@ export class OrderDetailComponent {
       ...event,
       icon: this.eventIcon(event),
       title: this.eventTitle(event),
-      actorLabel: event.actor ? this.t('orders.timeline.by', 'by {{actor}}', { actor: event.actor }) : null,
+      actorLabel: event.actor ? this.t('orders.timeline.by', 'by {{actor}}', { actor: this.actorName(event.actor) }) : null,
     }));
   });
 
@@ -968,21 +970,23 @@ export class OrderDetailComponent {
     return unique.join(' ');
   }
 
-  /** The address name, only when it is NOT the customer's name already shown. */
+  /** The recipient's name on the address card. */
   protected addressName(): string | null {
-    const order = this.order();
-    const name = order?.address?.fullName?.trim();
-    if (!name) return null;
-    const customer = order?.customer?.name?.trim();
-    return customer && customer.toLowerCase() === name.toLowerCase() ? null : name;
+    const name = this.order()?.address?.fullName?.trim();
+    return name ? name : null;
   }
 
-  /** The address phone, only when the customer card does not already show it. */
+  /** Map a raw actor id (e.g. "seed") to a human label. */
+  protected actorName(actor: string): string {
+    const value = actor.trim().toLowerCase();
+    if (value === 'seed' || value.startsWith('system')) return this.t('orders.timeline.system', 'System');
+    return actor;
+  }
+
+  /** The phone on the address card. */
   protected addressPhone(): string | null {
-    const order = this.order();
-    const phone = order?.address?.phone?.trim();
-    if (!phone) return null;
-    return order?.customer ? null : phone;
+    const phone = this.order()?.address?.phone?.trim();
+    return phone ? phone : null;
   }
 
   /** "Cash on delivery" and whether the cash was collected. */

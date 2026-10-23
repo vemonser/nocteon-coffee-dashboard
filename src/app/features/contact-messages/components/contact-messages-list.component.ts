@@ -10,6 +10,7 @@ import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
   lucideArchive,
   lucideCopy,
+  lucideReply,
   lucideInbox,
   lucideMail,
   lucideSearch,
@@ -35,7 +36,7 @@ import { StatusBadgeComponent } from '../../../shared/ui/status-badge/status-bad
 import { ContactResponse, ContactStats } from '../models/contact-message.model';
 import { ContactMessageService } from '../services/contact-message.service';
 
-type MessageTab = 'all' | 'new' | 'replied' | 'archived';
+type MessageTab = 'all' | 'unread' | 'replied' | 'archived';
 
 @Component({
   selector: 'app-contact-messages-list',
@@ -61,6 +62,7 @@ type MessageTab = 'all' | 'new' | 'replied' | 'archived';
       lucideArchive,
       lucideCopy,
       lucideInbox,
+  lucideReply,
       lucideMail,
       lucideSearch,
       lucideSend,
@@ -113,7 +115,7 @@ export class ContactMessagesListComponent {
 
   constructor() {
     const status = this.route.snapshot.queryParamMap.get('status');
-    if (status === 'new' || status === 'replied' || status === 'archived' || status === 'all') this.tab.set(status as MessageTab);
+    if (status === 'unread' || status === 'replied' || status === 'archived' || status === 'all') this.tab.set(status as MessageTab);
     const q = this.route.snapshot.queryParamMap.get('q');
     if (q) this.search.set(q);
     const range = this.route.snapshot.queryParamMap.get('range');
@@ -162,8 +164,10 @@ export class ContactMessagesListComponent {
     let request;
     if (tab === 'all') {
       request = this.service.getAll({ page: this.page(), size: this.size(), sort: this.sort(), direction: this.direction() });
+    } else if (tab === 'unread') {
+      request = this.service.getAllUnread({ page: this.page(), size: this.size(), sort: this.sort(), direction: this.direction() });
     } else {
-      request = this.service.getByStatus(tab as 'NEW' | 'REPLIED' | 'ARCHIVED', { page: this.page(), size: this.size(), sort: this.sort(), direction: this.direction() });
+      request = this.service.getByStatus(tab.toUpperCase() as 'REPLIED' | 'ARCHIVED', { page: this.page(), size: this.size(), sort: this.sort(), direction: this.direction() });
     }
 
     request.subscribe({
@@ -193,7 +197,7 @@ export class ContactMessagesListComponent {
 
   protected readonly tabs = computed(() => [
     { id: 'all' as MessageTab, label: 'contactMessages.tabs.all', count: this.stats().total },
-    { id: 'new' as MessageTab, label: 'contactMessages.tabs.new', count: this.stats().newCount },
+    { id: 'unread' as MessageTab, label: 'contactMessages.tabs.unread', count: this.stats().unreadCount },
     { id: 'replied' as MessageTab, label: 'contactMessages.tabs.replied', count: this.stats().repliedCount },
     { id: 'archived' as MessageTab, label: 'contactMessages.tabs.archived', count: this.stats().archivedCount },
   ]);
@@ -251,6 +255,7 @@ export class ContactMessagesListComponent {
             this.selected.set(res.data);
             this.items.update((list) => list.map((m) => (m.id === item.id ? res.data! : m)));
           }
+          this.loadStats();
         },
       });
     }

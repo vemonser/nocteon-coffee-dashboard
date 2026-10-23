@@ -233,7 +233,13 @@
       "confirmed": "مؤكد",
       "unknown": "غير معروف",
       "approved": "معتمد",
-      "notCollected": "لم يُحصَّل"
+      "notCollected": "لم يُحصَّل",
+      "active": "مفعّلة",
+      "abandoned": "مهجورة",
+      "converted": "محوّلة",
+      "new": "جديد",
+      "replied": "تم الرد",
+      "archived": "أرشف"
     },
     "toggleSidebar": "إظهار/إخفاء القائمة",
     "total": "إجمالي",
@@ -280,7 +286,9 @@
     "countItems_few": "{{count}} منتجات",
     "countItems_many": "{{count}} منتجًا",
     "countItems_other": "{{count}} منتج",
-    "noItemsWarning": "هذا الطلب لا يحتوي على بنود — إجماله هو الشحن ناقص الخصم."
+    "noItemsWarning": "هذا الطلب لا يحتوي على بنود — إجماله هو الشحن ناقص الخصم.",
+    "notFeatured": "غير مميز",
+    "toggleStatus": "تبديل الحالة"
   },
   "products": {
     "title": "المنتجات",
@@ -346,7 +354,10 @@
       "shortDescriptionPlaceholder": "ملخص سطر واحد يظهر في بطاقات المنتج",
       "description": "الوصف",
       "active": "مُفعّل",
-      "featured": "مميز"
+      "featured": "مميز",
+      "activeHint": "المنتجات المعطلة مخفية عن الواجهة",
+      "featuredHint": "المنتجات المميزة تظهر في الصفحة الرئيسية",
+      "productTypeChangeWarning": "تغيير نوع المنتج قد يؤثر على تفاصيل القهوة والمتغيرات."
     },
     "variants": {
       "title": "المتغيرات",
@@ -384,17 +395,21 @@
       "noMedia": "لم يتم رفع أي وسائط بعد.",
       "loading": "جارٍ تحميل الوسائط…",
       "upload": "رفع",
-      "uploading": "جارٍ الرفع…"
+      "uploading": "جارٍ الرفع…",
+      "dropHint": "اسحب وأفلت الملفات هنا أو انقر للتصفح",
+      "fileTypes": "صور أو فيديو · حد أقصى 10 ميجابايت"
     },
     "tastingNotes": {
       "title": "ملاحظات التذوق",
       "description": "اختر جميع النكهات التي تنطبق على هذا القهوة.",
-      "noNotes": "لا توجد ملاحظات تذوق متاحة بعد. أضف بعضها في صفحة إدارة ملاحظات التذوق أولاً."
+      "noNotes": "لا توجد ملاحظات تذوق متاحة بعد. أضف بعضها في صفحة إدارة ملاحظات التذوق أولاً.",
+      "selected": "محدد"
     },
     "pairings": {
       "title": "التوائم",
       "description": "اقترح أطعمة أو حلوى تتناسب جيداً مع هذا القهوة.",
-      "noPairings": "لا توجد توائم متاحة بعد. أضف بعضها في صفحة إدارة التوائم أولاً."
+      "noPairings": "لا توجد توائم متاحة بعد. أضف بعضها في صفحة إدارة التوائم أولاً.",
+      "selected": "محدد"
     },
     "wizard": {
       "loading": "جارٍ تحميل المنتج...",
@@ -434,7 +449,18 @@
       "pairing": "لا توجد منتجات لهذه الصحبة"
     },
     "categoryFilter": "الفئة: {{slug}}",
-    "clearCategoryFilter": "مسح فلتر الفئة"
+    "clearCategoryFilter": "مسح فلتر الفئة",
+    "filters": {
+      "status": "مميز",
+      "featured": "مميز",
+      "type": "النوع",
+      "all": "الكل"
+    },
+    "actions": {
+      "duplicate": "نسخ",
+      "viewOnStorefront": "عرض في المتجر",
+      "moveToTrash": "نقل إلى سلة المحذوفات"
+    }
   },
   "categories": {
     "title": "الفئات",
@@ -1308,7 +1334,7 @@
   "carts": {
     "title": "السلات",
     "total": "إجمالي",
-    "search": "بحث بالبريد...",
+    "search": "ابحث بالاسم أو البريد أو المنتج...",
     "cart": " السلة",
     "items": "العناصر",
     "totalLabel": "الإجمالي",
@@ -1702,6 +1728,8 @@
       "reason": "السبب",
       "by": "بواسطة {{actor}}",
       "notify": "سيتم إشعار العميل",
+      "system": "النظام",
+      "customerNotified": "تم إشعار العميل",
       "statusChangedFrom": "{{from}} → {{to}}",
       "shipmentShipped": "تم تسليم الشحنة لشركة الشحن",
       "shipmentDelivered": "تم توصيل الشحنة",
@@ -1813,7 +1841,14 @@
       "daysAgo_two": "منذ يومين",
       "daysAgo_few": "منذ {{count}} أيام",
       "daysAgo_many": "منذ {{count}} يومًا",
-      "daysAgo_other": "منذ {{count}} يوم"
+      "daysAgo_other": "منذ {{count}} يوم",
+      "items": "عناصر",
+      "items_zero": "عناصر",
+      "items_one": "عنصر",
+      "items_two": "عنصران",
+      "items_few": "عناصر",
+      "items_many": "عنصرًا",
+      "items_other": "عنصر"
     },
     "onlineUsersCount": "{{count}} مستخدم متصل",
     "periods": {
@@ -1822,7 +1857,7 @@
       "90d": "90 يوم"
     },
     "metrics": {
-      "totalRevenue": "إجمالي الإيرادات",
+      "totalRevenue": "إجمالي الإيرادات (شاملاً الشحن)",
       "totalOrders": "إجمالي الطلبات",
       "avgOrderValue": "متوسط قيمة الطلب",
       "totalCustomers": "إجمالي العملاء",
@@ -1844,7 +1879,9 @@
       "stock": "المخزون",
       "noAlerts": "لا توجد تنبيهات مخزون منخفض",
       "reserved": "محجوز",
-      "openProduct": "فتح المنتج"
+      "openProduct": "فتح المنتج",
+      "reorderAt": "حد إعادة الطلب",
+      "allAboveThreshold": "جميع المنتجات فوق حد المخزون"
     },
     "revenue": {
       "last7days": "آخر 7 أيام",
@@ -1852,7 +1889,9 @@
       "last90days": "آخر 90 يوم",
       "noData": "لا توجد بيانات إيرادات",
       "date": "التاريخ",
-      "value": "القيمة"
+      "value": "القيمة",
+      "currentPeriod": "الفترة الحالية",
+      "previousPeriod": "الفترة السابقة"
     },
     "topProducts": {
       "sold": "مبيعاً",
@@ -1881,7 +1920,7 @@
     "onlineUsersCaption": "متصل حالياً",
     "revenueByOrigin": "الإيرادات حسب المنشأ",
     "revenueByRoastLevel": "الإيرادات حسب مستوى التحميص",
-    "deviceBreakdown": "الأجهزة",
+    "deviceBreakdown": "نظام التشغيل",
     "lowStockProducts": "منتجات منخفضة المخزون",
     "customerHealth": "صحة العملاء",
     "ordersByPayment": "الطلبات حسب طريقة الدفع",
@@ -1891,10 +1930,11 @@
     "delta": {
       "noChange": "لا تغيير",
       "new": "جديد",
-      "noBaseline": "لا توجد بيانات في الفترة السابقة"
+      "noBaseline": "لا توجد بيانات في الفترة السابقة",
+      "noPriorData": "لا توجد بيانات سابقة"
     },
     "selectedPeriod": "الفترة المحددة",
-    "refundRateHelp": "الطلبات المستردة كنسبة من الطلبات المدفوعة في الفترة المحددة.",
+    "refundRateHelp": "الطلبات المستردة كنسبة من الطلبات التي وصلت إلى حالة دفع (مدفوعة + مستردة) في الفترة المحددة.",
     "refundedIsFlag": "الاسترداد حالة دفع وليس حالة طلب، لذلك لا يظهر في رسم حالات الطلبات.",
     "listPrice": "سعر القائمة",
     "listPriceHelp": "أقل سعر بين متغيرات هذا المنتج. ليس السعر المدفوع، لذا لا يساوي إيراد مخطط الإيرادات.",
@@ -1925,7 +1965,7 @@
     "countCustomers_few": "{{count}} عملاء",
     "countCustomers_many": "{{count}} عميلًا",
     "countCustomers_other": "{{count}} عميل",
-    "orders": "الطلبات",
+    "orders": "الطلبات المدفوعة",
     "revenueBy": "الإيرادات حسب",
     "ordersBy": "الطلبات حسب",
     "tabs": {
@@ -1976,10 +2016,20 @@
     "donutRevenue": "الإيرادات",
     "donutOrders": "الطلبات",
     "breakdownNote": "يجمع هذا الرسم عناصر الطلب (السعر × الكمية). لا يشمل الشحن ولا الخصومات، لذلك لا يطابق بطاقة إجمالي الإيرادات.",
-    "devicesNote": "يسجّل المتجر صفًا لكل جلسة جهاز تمت ملاحظتها. الرقم ليس عددًا للأشخاص.",
+    "devicesNote": "يسجّل المتجر صفًا لكل جلسة عميل تمت ملاحظتها. تم استبعاد حركة لوحة التحكم والأتمتة.",
     "recentOrdersNote": "أحدث أربعة طلبات، أيًّا كانت تواريخها.",
     "daysShort": "يوم",
-    "deviceUnit": "جلسة"
+    "deviceUnit": "جلسة",
+    "eyebrow": "نظرة عامة على المتجر",
+    "currentRange": "الفترة الحالية",
+    "comparisonRange": "مقارنة بـ",
+    "today": "اليوم",
+    "updated": "محدث",
+    "refresh": "تحديث",
+    "exportCsv": "تصدير CSV",
+    "exportPdf": "تصدير PDF",
+    "exportPdfSoon": "تصدير PDF قريباً",
+    "soon": "قريباً"
   },
   "imageCell": {
     "noImage": "لا توجد صورة"
@@ -2135,6 +2185,7 @@
     "sendAgain": "إعادة الإرسال",
     "replyPlaceholder": "رد على {{email}}",
     "replyNotice": "الرد بيتبعت إيميل على {{email}} وبيتحفظ هنا.",
+    "replySaved": "تم حفظ الرد.",
     "replySent": "تم إرسال الرد",
     "replySavedNotSent": "تم حفظ الرد، بس الإيميل ما اتبعتش",
     "sending": "جاري الإرسال...",
@@ -2146,7 +2197,7 @@
     "tabs": {
       "label": "حالة الرسالة",
       "all": "الكل",
-      "new": "جديدة",
+      "unread": "غير مقروءة",
       "replied": "تم الرد عليها",
       "archived": "مؤرشفة"
     },
@@ -2216,7 +2267,17 @@
     "lowStock": "منتجات منخفضة المخزون",
     "viewDetails": "عرض التفاصيل",
     "pendingReviews": "مراجعات بانتظار الموافقة",
-    "unreadMessages": "رسائل غير مقروءة"
+    "unreadMessages": "رسائل غير مقروءة",
+    "confirmedOrders": "طلبات مؤكدة بانتظار المعالجة",
+    "abandonedCarts": "سلال مهجورة",
+    "openOrders": "طلبات مفتوحة",
+    "loadFailed": "تعذّر تحميل قائمة المتابعة.",
+    "partial": "تعذّر تحديث إحدى القوائم. الأرقام المعروضة من آخر قراءة ناجحة.",
+    "openOrdersHint": "مدفوعة ولم تُسلَّم بعد",
+    "unreadMessagesHint": "عميل ينتظر ردًا",
+    "pendingReviewsHint": "بانتظار النشر",
+    "lowStockHint": "عند حد إعادة الطلب أو دونه",
+    "abandonedCartsHint": "إيرادات قابلة للاستعادة"
   },
   "newsletter": {
     "title": "النشرة البريدية",

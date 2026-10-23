@@ -35,6 +35,7 @@ import { RatingStarsComponent } from '../../../shared/ui/rating-stars/rating-sta
 import { VerifiedBadgeComponent } from '../../../shared/ui/verified-badge/verified-badge.component';
 import { StatusBadgeComponent } from '../../../shared/ui/status-badge/status-badge.component';
 import { UserAvatarComponent } from '../../../shared/ui/user-avatar/user-avatar.component';
+import { KpiCardComponent } from '../../../shared/components/dashboard/kpi-card/kpi-card.component';
 import { RowMenuAction } from '../../../shared/ui/actions-cell/actions-cell.component';
 import { ProductService } from '../../products/services/product.service';
 import { ReviewResponse, ReviewStats } from '../models/review.model';
@@ -73,6 +74,7 @@ type ReviewTab = 'pending' | 'approved' | 'rejected' | 'all';
     RatingStarsComponent,
     VerifiedBadgeComponent,
     UserAvatarComponent,
+    KpiCardComponent,
     NgIcon,
     TranslocoPipe,
   ],
@@ -278,7 +280,14 @@ export class ReviewListComponent {
   protected loadPage(): void {
     this.loading.set(true);
     this.error.set(false);
-    const status = this.status() === 'all' ? undefined : this.status().toUpperCase() as 'PENDING' | 'APPROVED' | 'REJECTED' | undefined;
+    // The backend honours `isApproved` but ignores `status`. Sending both
+    // makes it return nothing, so send `isApproved` for the pending/approved
+    // tabs and `status` only for the rejected tab (filtered client-side).
+    const tab = this.status();
+    const status =
+      tab === 'rejected' ? ('REJECTED' as const) : undefined;
+    const isApproved =
+      tab === 'approved' ? true : tab === 'pending' ? false : undefined;
     this.reviewService
       .getAll({
         page: this.page(),
@@ -288,7 +297,7 @@ export class ReviewListComponent {
         productSlug: this.productSlug() || undefined,
         search: this.search() || undefined,
         status: status,
-        isApproved: undefined,
+        isApproved: isApproved,
         isVerified:
           this.verification() === 'verified'
             ? true
@@ -301,9 +310,18 @@ export class ReviewListComponent {
       })
       .subscribe({
         next: (res) => {
-          this.items.set(res.data?.content ?? []);
-          this.totalElements.set(res.data?.totalElements ?? 0);
-          this.totalPages.set(res.data?.totalPages ?? 1);
+          let content = res.data?.content ?? [];
+          // The backend ignores `status`, so a tab can come back with rows of
+          // every status. Keep only the ones this tab is about.
+          if (status) {
+            content = content.filter((r) => r.status === status);
+          }
+          this.items.set(content);
+          const reportedTotal = status === 'REJECTED'
+            ? this.stats().rejected
+            : (res.data?.totalElements ?? 0);
+          this.totalElements.set(reportedTotal);
+          this.totalPages.set(Math.max(1, Math.ceil(reportedTotal / this.size())));
           this.loading.set(false);
         },
         error: (err) => {
@@ -439,7 +457,7 @@ export class ReviewListComponent {
           id: `main_${langCode}`,
           header: 'Product',
           enableSorting: true,
-          meta: { width: '220px' },
+          meta: { width: '190px' },
         },
       ),
       this.columnHelper.accessor(
@@ -450,20 +468,20 @@ export class ReviewListComponent {
           orderId: row.orderId,
           orderNumber: row.orderNumber,
         }),
-        { id: 'reviewer', header: 'Reviewer', enableSorting: false },
+        { id: 'reviewer', header: 'Reviewer', enableSorting: false, meta: { width: '160px' } },
       ),
       this.columnHelper.accessor((row) => row.rating, {
         id: 'rating',
         header: 'Rating',
         enableSorting: true,
-        meta: { width: '150px' },
+        meta: { width: '130px' },
       }),
       this.columnHelper.accessor((row) => row.comment, {
         id: 'comment',
         header: 'Comment',
         enableSorting: false,
         // The comment is what a moderator reads, so it gets the width.
-        meta: { width: '225px' },
+        meta: { width: '160px' },
       }),
       this.columnHelper.accessor(
         (row) => ({
@@ -478,14 +496,14 @@ export class ReviewListComponent {
         enableSorting: true,
         // The date and the time stack, so it needs room for both: a
         // truncated "Cre" header is a bug, not a layout.
-        meta: { width: '125px' },
+        meta: { width: '105px' },
       }),
       this.columnHelper.display({
         id: 'actions',
         header: 'Actions',
         // The Approve button plus the menu: the shared 116px budget fits an
         // icon row, not a labelled button.
-        meta: { width: '135px' },
+        meta: { width: '120px' },
       }),
     ]);
   }

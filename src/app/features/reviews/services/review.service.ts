@@ -20,7 +20,7 @@ export class ReviewService {
     if (params.productSlug) httpParams = httpParams.set('productSlug', params.productSlug);
     if (params.search) httpParams = httpParams.set('search', params.search);
     if (params.status) httpParams = httpParams.set('status', params.status);
-    else if (params.isApproved !== undefined) httpParams = httpParams.set('isApproved', params.isApproved);
+    if (params.isApproved !== undefined) httpParams = httpParams.set('isApproved', params.isApproved);
     if (params.isVerified !== undefined) httpParams = httpParams.set('isVerified', params.isVerified);
     if (params.minRating !== undefined) httpParams = httpParams.set('minRating', params.minRating);
     if (params.createdFrom) httpParams = httpParams.set('createdFrom', params.createdFrom);

@@ -1,4 +1,4 @@
-<div class="flex flex-col gap-6 p-6">
+<div class="page-shell">
   <!-- Header -->
   <div class="flex items-center justify-between">
     <div>
@@ -57,7 +57,7 @@
 
   <!-- The table, like every other list -->
   @if (!loading()) {
-    <div class="rounded-md border bg-card">
+    <div class="card-surface">
       <app-data-table
         [data]="items()"
         [columns]="columns"

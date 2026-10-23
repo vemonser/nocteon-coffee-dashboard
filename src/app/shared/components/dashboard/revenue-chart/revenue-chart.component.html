@@ -1,4 +1,22 @@
 <div #chartHost class="w-full" role="img" [attr.aria-label]="ariaLabel()">
+  <!-- Current vs previous: the dashed outline is the comparison. Naming
+       them here means the outline is never a mystery. -->
+  @if (previousPeriodData().length > 0) {
+    <div class="mb-1.5 flex items-center justify-end gap-4 text-[11px] text-muted-foreground">
+      <span class="flex items-center gap-1.5">
+        <span class="h-2 w-2 rounded-[2px] bg-chart-1" aria-hidden="true"></span>
+        {{ 'dashboard.revenue.currentPeriod' | transloco }}
+      </span>
+      <span class="flex items-center gap-1.5">
+        <span
+          class="h-2 w-2 rounded-[2px] border border-dashed border-chart-2"
+          aria-hidden="true"
+        ></span>
+        {{ 'dashboard.revenue.previousPeriod' | transloco }}
+      </span>
+    </div>
+  }
+
   <div class="relative">
     <svg
       [attr.width]="width()"
@@ -27,6 +45,17 @@
         >{{ g.label }}</text>
       }
 
+      <!-- The baseline: solid, so the zero line is the floor of the chart
+           rather than one more dashed grid line. -->
+      <line
+        [attr.x1]="pad().left"
+        [attr.x2]="pad().left + plot().w"
+        [attr.y1]="pad().top + plot().h"
+        [attr.y2]="pad().top + plot().h"
+        [attr.stroke]="axisText()"
+        stroke-width="1"
+      />
+
       <!-- The previous period: a DASHED outline behind the current bars.
            It is only drawn when the API returns a previous window. -->
       @for (p of previousBars(); track $index) {
@@ -36,6 +65,7 @@
             [attr.y]="p.y"
             [attr.width]="p.width"
             [attr.height]="p.height"
+            [attr.rx]="p.radius"
             fill="none"
             [attr.stroke]="previousStroke()"
             stroke-width="1.5"
@@ -52,8 +82,8 @@
           [attr.y]="b.y"
           [attr.width]="b.width"
           [attr.height]="b.height"
+          [attr.rx]="b.radius"
           [attr.fill]="barFill()"
-          rx="2"
           class="transition-opacity"
           [attr.opacity]="hovered() && hovered()!.date !== b.date ? 0.55 : 1"
           (mouseenter)="hovered.set({ date: b.date, value: b.value, x: b.x, y: b.y })"
@@ -74,15 +104,16 @@
       }
     </svg>
 
-    <!-- The tooltip: date AND value. -->
-    @if (hovered(); as h) {
+    <!-- The tooltip: date AND value, clamped inside the card. -->
+    @if (tooltip(); as h) {
       <div
-        class="pointer-events-none absolute z-10 -translate-x-1/2 rounded-md border bg-popover px-2 py-1 text-xs shadow-sm"
-        [style.left.px]="h.x + (bars()[$any(0)] ? 0 : 0) + 10"
-        [style.top.px]="h.y - 44"
+        role="status"
+        class="pointer-events-none absolute z-10 w-max max-w-[11rem] -translate-x-1/2 rounded-md border bg-popover px-2 py-1 text-xs shadow-sm"
+        [style.left.px]="h.left"
+        [style.top.px]="h.top"
       >
         <div class="font-medium">{{ dateLabel(h.date) }}</div>
-        <div class="tabular-nums text-muted-foreground">{{ formatMoney(h.value) }}</div>
+        <div class="whitespace-nowrap tabular-nums text-muted-foreground">{{ formatMoney(h.value) }}</div>
       </div>
     }
   </div>

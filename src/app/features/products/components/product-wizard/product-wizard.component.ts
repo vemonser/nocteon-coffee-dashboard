@@ -16,6 +16,7 @@ import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { NotifyService } from '../../../../core/notify/notify.service';
+import { CanComponentDeactivate } from '../../../../core/guards/unsaved-changes.guard';
 import {
   lucideArrowLeft,
   lucideArrowRight,
@@ -25,6 +26,7 @@ import {
   lucideSearch,
   lucideX,
   lucideLoader2,
+  lucideSave,
 } from '@ng-icons/lucide';
 
 @Component({
@@ -53,12 +55,13 @@ import {
       lucideArrowLeft,
       lucideX,
       lucideCheck,
-      lucideLoader2
+      lucideLoader2,
+      lucideSave
     }),
   ],
   templateUrl: './product-wizard.component.html',
 })
-export class ProductWizardComponent {
+export class ProductWizardComponent implements CanComponentDeactivate {
   protected state = inject(ProductWizardStateService);
   private productService = inject(ProductService);
   private translationHelper = inject(TranslationFormHelper);
@@ -70,15 +73,39 @@ export class ProductWizardComponent {
   submitting = signal(false);
   loadError = signal<string | null>(null);
 
-  readonly stepTabs = [
-    { id: 'basic', label: 'Basic Info' },
-    { id: 'variants', label: 'Variants' },
-    { id: 'media', label: 'Media' },
-    { id: 'tasting-notes', label: 'Tasting Notes' },
-    { id: 'pairings', label: 'Pairings' },
-  ] as const;
+  get stepTabs() {
+    const isCoffee = this.state.form.get('productType')?.value === 'COFFEE';
+    const tabs = [
+      { id: 'basic', label: 'Basic Info', count: 0, hasError: false },
+      { id: 'variants', label: 'Variants', count: this.state.variantsArray.length, hasError: this.state.variantsArray.invalid },
+      { id: 'media', label: 'Media', count: this.state.existingMedia().length + this.state.stagedMedia().length, hasError: false },
+    ];
+    if (isCoffee) {
+      tabs.push({ id: 'tasting-notes', label: 'Tasting Notes', count: this.state.tastingNotesArray.length, hasError: false });
+      tabs.push({ id: 'pairings', label: 'Pairings', count: this.state.pairingsArray.length, hasError: false });
+    }
+    return tabs;
+  }
+
+  hasTabError(tabId: string): boolean {
+    switch (tabId) {
+      case 'basic':
+        return this.state.form.get('categorySlug')?.invalid || this.state.form.get('productType')?.invalid || this.state.translationsArray.invalid;
+      case 'variants':
+        return this.state.variantsArray.invalid;
+      default:
+        return false;
+    }
+  }
 
   readonly activeTab = signal<string>('basic');
+
+  canDeactivate(): boolean {
+    if (this.state.form.dirty && !this.submitting()) {
+      return window.confirm('You have unsaved changes. Leave anyway?');
+    }
+    return true;
+  }
 
   ngOnInit(): void {
     const slug = this.route.snapshot.paramMap.get('slug');
@@ -103,6 +130,21 @@ export class ProductWizardComponent {
         this.translationHelper.buildArray([], ['description', 'shortDescription']),
       );
     }
+    
+    // Subscribe to form changes to track dirty state
+    this.state.form.valueChanges.subscribe(() => {
+      this.state.form.markAsDirty();
+    });
+  }
+
+  saveCurrentStep(): void {
+    if (this.state.isCurrentStepValid()) {
+      this.onSubmit();
+    }
+  }
+
+  isCurrentStepDirty(): boolean {
+    return this.state.form.dirty && !this.state.form.pristine;
   }
 
   onTabChange(tabId: string): void {
@@ -255,5 +297,11 @@ export class ProductWizardComponent {
 
   onCancel(): void {
     this.router.navigate(['/dashboard/products']);
+  }
+
+  viewOnStorefront(): void {
+    if (this.state.editingSlug()) {
+      window.open(`/products/${this.state.editingSlug()}`, '_blank');
+    }
   }
 }

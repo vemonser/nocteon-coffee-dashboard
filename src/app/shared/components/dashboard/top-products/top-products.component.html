@@ -6,46 +6,52 @@
 -->
 <div class="mb-2 flex items-baseline justify-between gap-2 text-xs text-muted-foreground">
   <span>{{ 'dashboard.topProducts.product' | transloco }}</span>
-  <span class="w-32 shrink-0 text-end">{{ 'dashboard.topProducts.units' | transloco }}</span>
+  <span class="w-16 shrink-0 text-end sm:w-32">{{ 'dashboard.topProducts.units' | transloco }}</span>
 </div>
 
 <ul class="flex flex-col gap-2">
   @for (product of products; track product.name; let i = $index) {
-    <li class="flex items-center gap-3">
-      <span class="w-4 shrink-0 text-xs text-muted-foreground tabular-nums">{{ i + 1 }}</span>
+    <li class="flex items-start gap-2.5 sm:items-center sm:gap-3">
+      <span class="mt-2 w-3 shrink-0 text-xs text-muted-foreground tabular-nums sm:mt-0 sm:w-4">{{ i + 1 }}</span>
 
       @if (product.imageUrl) {
         <img
           [src]="product.imageUrl"
           [alt]="product.name"
-          class="size-9 shrink-0 rounded-md object-cover"
+          class="size-8 shrink-0 rounded-md object-cover sm:size-9"
         />
       } @else {
         <span
-          class="flex size-9 shrink-0 items-center justify-center rounded-md bg-primary/10 text-xs font-medium text-primary"
+          class="flex size-8 shrink-0 items-center justify-center rounded-md bg-primary/10 text-xs font-medium text-primary sm:size-9"
         >
           {{ product.name.charAt(0) }}
         </span>
       }
 
       <a
-        class="min-w-0 flex-1"
+        class="min-w-0 flex-1 py-0.5"
         [routerLink]="['/dashboard/products', product.slug]"
       >
-        <span class="block truncate text-sm font-medium" data-allow-latin>{{ product.name }}</span>
+        <!-- On a phone the name gets two lines instead of being cut to
+             "Ethiopian Yir…"; the desktop row keeps one line. -->
+        <span
+          class="line-clamp-2 text-sm font-medium leading-tight sm:line-clamp-1 sm:truncate"
+          data-allow-latin
+          [title]="product.name"
+        >{{ product.name }}</span>
       </a>
 
       <!-- The bar AND the number are the same measure: units sold. The bar
-           is scaled to the best seller, so the top product's bar is the
-           full track. -->
-      <span class="flex w-32 shrink-0 items-center gap-2">
-        <span class="h-1.5 w-12 shrink-0 overflow-hidden rounded-full bg-muted">
+           is hidden on a phone (there is no room for it and the name), so
+           the number is never pushed out of the card. -->
+      <span class="flex w-16 shrink-0 items-center justify-end gap-2 sm:w-32">
+        <span class="hidden h-2 flex-1 overflow-hidden rounded-full bg-muted sm:block">
           <span
             class="block h-full rounded-full bg-chart-1"
             [style.width.%]="share(product.quantitySold)"
           ></span>
         </span>
-        <span class="text-end text-sm tabular-nums text-muted-foreground">
+        <span class="shrink-0 whitespace-nowrap text-end text-sm tabular-nums text-muted-foreground">
           {{ product.quantitySold | plural: 'dashboard.countSold' }}
         </span>
       </span>

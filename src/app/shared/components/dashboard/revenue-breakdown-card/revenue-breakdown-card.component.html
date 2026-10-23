@@ -16,13 +16,36 @@
     />
 
     <div class="mt-4">
-      <app-chart-card
-        [slices]="slices()"
-        [formatValue]="formatValue"
-        [formatCompactValue]="formatCompactValue"
-        [centerLabel]="centerLabel()"
-        [ariaLabel]="ariaLabel()"
-      />
+      @if (loading()) {
+        <!-- The shape of a donut and its legend, so the card does not jump
+             when the slices arrive. -->
+        <div class="flex flex-col items-center gap-4" aria-hidden="true">
+          <div class="size-[180px] shrink-0 rounded-full border-[26px] border-muted skeleton"></div>
+          <div class="w-full space-y-2">
+            @for (row of [1, 2, 3]; track row) {
+              <div class="flex items-center gap-2">
+                <div class="size-2.5 rounded-[3px] bg-muted skeleton"></div>
+                <div class="h-3 flex-1 rounded bg-muted skeleton"></div>
+                <div class="h-3 w-16 rounded bg-muted skeleton"></div>
+              </div>
+            }
+          </div>
+        </div>
+        <span class="sr-only" role="status" aria-live="polite">{{ 'common.loading' | transloco }}</span>
+      } @else if (error(); as message) {
+        <app-widget-state [error]="message" [retry]="retry" />
+      } @else if (slices().length === 0) {
+        <app-widget-state [empty]="true" [emptyLabel]="'common.noData' | transloco" />
+      } @else {
+        <app-chart-card
+          [slices]="slices()"
+          [formatValue]="formatValue"
+          [formatCompactValue]="formatCompactValue"
+          [centerLabel]="centerLabel()"
+          [centerSubtitle]="centerSubtitle()"
+          [ariaLabel]="ariaLabel()"
+        />
+      }
     </div>
   </div>
 </hlm-card>

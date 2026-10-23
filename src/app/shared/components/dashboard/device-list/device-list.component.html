@@ -10,9 +10,16 @@
 -->
 <ul class="mt-2 flex flex-col gap-1.5 pb-1">
   @for (d of devices(); track d.deviceType) {
-    <li class="flex items-center gap-3">
-      <span class="w-24 shrink-0 truncate text-sm">{{ label(d.deviceType) }}</span>
-      <!-- The bar uses the FULL track: the largest device is 100 %. -->
+    <li class="flex items-center gap-2.5">
+      <span
+        class="flex size-6 shrink-0 items-center justify-center rounded-[0.35rem] bg-muted text-muted-foreground"
+        aria-hidden="true"
+        [attr.aria-label]="label(d.deviceType)"
+      >
+        <ng-icon [name]="icon(d.deviceType)" class="size-3.5" />
+      </span>
+      <span class="w-20 shrink-0 truncate text-sm" [title]="label(d.deviceType)">{{ label(d.deviceType) }}</span>
+      <!-- The bar uses percent of TOTAL sessions. -->
       <span class="h-2 flex-1 rounded-full bg-muted overflow-hidden">
         <span
           class="block h-full rounded-full bg-chart-1"
@@ -22,10 +29,10 @@
       <!-- The count AND its unit, in the reader's language and in the right
            plural form. The unit follows the number in both languages. -->
       <span
-        class="w-28 shrink-0 whitespace-nowrap text-end text-sm tabular-nums text-muted-foreground"
+        class="w-24 shrink-0 whitespace-nowrap text-end text-sm tabular-nums text-muted-foreground"
         [title]="d.count + ' ' + label(d.deviceType)"
       >
-        {{ d.count | plural: 'dashboard.countSessions' }}
+        {{ d.count | plural: 'dashboard.countSessions' }} ({{ percent(d.count) }}%)
       </span>
     </li>
   } @empty {

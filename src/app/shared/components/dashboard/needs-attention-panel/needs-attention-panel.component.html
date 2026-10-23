@@ -1,29 +1,150 @@
-@if (hasItems()) {
-  <!-- Something needs attention: actionable rows with counts and links. -->
-  <div class="rounded-xl border bg-card p-3">
-    <p class="mb-2 text-sm font-medium">{{ 'needsAttention.title' | transloco }}</p>
-    <ul class="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
-      @for (item of items(); track item.key) {
-        <li>
-          <a
-            [routerLink]="item.link"
-            [queryParams]="item.queryParams"
-            class="flex items-center gap-2 rounded-lg border px-3 py-2 transition-colors hover:bg-accent"
-          >
-            <ng-icon [name]="item.icon" class="size-4 shrink-0 text-warning" aria-hidden="true" />
-            <span class="min-w-0 flex-1 truncate text-sm">{{ item.key | transloco }}</span>
-            <span class="shrink-0 rounded-full bg-warning-soft px-1.5 text-xs font-medium text-warning tabular-nums">
-              {{ item.count }}
-            </span>
-            <ng-icon name="lucideChevronRight" class="size-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
-          </a>
-        </li>
-      }
-    </ul>
+@if (loading()) {
+  <!-- First load: one skeleton line with the panel's shape, so the page
+       does not jump when the queue arrives. -->
+  <div class="card-surface flex items-center gap-3 p-4" aria-hidden="true">
+    <div class="size-8 shrink-0 rounded-[0.5rem] bg-muted skeleton"></div>
+    <div class="min-w-0 flex-1 space-y-2">
+      <div class="h-3 w-40 max-w-full rounded bg-muted skeleton"></div>
+      <div class="h-3 w-2/3 rounded bg-muted skeleton"></div>
+    </div>
   </div>
+  <span class="sr-only" role="status" aria-live="polite">{{ 'common.loading' | transloco }}</span>
+} @else if (error()) {
+  <!-- The overview failed: say so, and retry every read behind the panel. -->
+  <div
+    role="alert"
+    class="card-surface flex flex-wrap items-center gap-x-3 gap-y-2 p-3 text-sm"
+  >
+    <ng-icon name="lucideAlertTriangle" class="size-4 shrink-0 text-warning" aria-hidden="true" />
+    <p class="min-w-0 flex-1">{{ 'needsAttention.loadFailed' | transloco }}</p>
+    <button hlmBtn variant="outline" size="sm" (click)="retry()">
+      {{ 'common.retry' | transloco }}
+    </button>
+  </div>
+} @else if (hasItems()) {
+  <!-- Something needs attention: ONE queue per row, with compact items. -->
+  <section class="card-surface p-3 sm:p-4" aria-labelledby="needs-attention-title">
+    <div class="mb-2.5 flex items-center gap-2">
+      <span class="size-1.5 shrink-0 rounded-full bg-editorial" aria-hidden="true"></span>
+      <h2 id="needs-attention-title" class="text-[13px] font-semibold tracking-tight">
+        {{ 'needsAttention.title' | transloco }}
+      </h2>
+      @if (partial()) {
+        <span
+          class="ms-auto flex cursor-help items-center"
+          [title]="'needsAttention.partial' | transloco"
+          [attr.aria-label]="'needsAttention.partial' | transloco"
+        >
+          <ng-icon name="lucideInfo" class="size-3.5 text-muted-foreground" aria-hidden="true" />
+        </span>
+      }
+    </div>
+
+    <!-- Compact row with flex-wrap, each item max-w 320px -->
+    @if (items().length > 0) {
+      <div class="flex flex-wrap gap-2">
+        @for (item of items(); track item.key) {
+          @if (item.count > 0) {
+            <a
+              [routerLink]="item.link"
+              [queryParams]="item.queryParams"
+              class="group relative flex h-full w-72 min-w-0 max-w-80 flex-shrink-0 items-start gap-2 rounded-[var(--radius-control)] border border-border/60 bg-background/40 p-3 transition-colors hover:border-editorial/35 hover:bg-accent/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background overflow-hidden"
+              tabindex="0"
+            >
+              <!-- Focus ring for keyboard navigation -->
+              <div class="absolute inset-0 rounded-[var(--radius-control)] ring-offset-background ring-0 ring-inset focus-visible:ring-2 focus-visible:ring-ring transition-all pointer-events-none"></div>
+
+              <span
+                class="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-[0.4rem] bg-warning-soft text-warning"
+                aria-hidden="true"
+              >
+                <ng-icon [name]="item.icon" class="size-3.5" />
+              </span>
+
+              <span class="min-w-0 flex-1">
+                <span class="flex items-start justify-between gap-1.5">
+                  <span
+                    class="line-clamp-2 text-[12px] font-medium leading-4"
+                    [title]="item.key | transloco"
+                  >{{ item.key | transloco }}</span>
+                  <span class="shrink-0 text-base font-semibold leading-5 tabular-nums">
+                    {{ item.count }}
+                  </span>
+                </span>
+
+                @if (!item.breakdown) {
+                  <span
+                    class="mt-0.5 block truncate text-[11px] leading-4 text-muted-foreground"
+                    [title]="item.hintKey | transloco"
+                  >{{ item.hintKey | transloco }}</span>
+                } @else {
+                  @if (item.breakdown; as b) {
+                    <!-- Orders item: compact subline with only non-zero parts -->
+                    @if (b.pending > 0 && b.processing > 0 && b.shipped > 0) {
+                      <span class="mt-0.5 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[10.5px] text-muted-foreground max-w-full">
+                        <span class="whitespace-nowrap tabular-nums">
+                          {{ b.pending }} {{ 'orders.statuses.PENDING' | transloco }}
+                        </span>
+                        <span aria-hidden="true">·</span>
+                        <span class="whitespace-nowrap tabular-nums">
+                          {{ b.processing }} {{ 'orders.statuses.PROCESSING' | transloco }}
+                        </span>
+                        <span aria-hidden="true">·</span>
+                        <span class="whitespace-nowrap tabular-nums">
+                          {{ b.shipped }} {{ 'orders.statuses.SHIPPED' | transloco }}
+                        </span>
+                      </span>
+                    } @else {
+                      <!-- Simplified: only pending, only processing, only shipped, or two parts -->
+                      @if (b.pending > 0) {
+                        <span class="mt-0.5 flex items-center gap-1 text-[10.5px] text-muted-foreground">
+                          <span class="whitespace-nowrap tabular-nums">{{ b.pending }}</span>
+                          <span>{{ 'orders.statuses.PENDING' | transloco }}</span>
+                        </span>
+                      }
+                      @if (b.processing > 0) {
+                        @if (b.pending > 0) {
+                          <span class="mx-1" aria-hidden="true">·</span>
+                        }
+                        <span class="mt-0.5 flex items-center gap-1 text-[10.5px] text-muted-foreground">
+                          <span class="whitespace-nowrap tabular-nums">{{ b.processing }}</span>
+                          <span>{{ 'orders.statuses.PROCESSING' | transloco }}</span>
+                        </span>
+                      }
+                      @if (b.shipped > 0) {
+                        @if (b.pending > 0 || b.processing > 0) {
+                          <span class="mx-1" aria-hidden="true">·</span>
+                        }
+                        <span class="mt-0.5 flex items-center gap-1 text-[10.5px] text-muted-foreground">
+                          <span class="whitespace-nowrap tabular-nums">{{ b.shipped }}</span>
+                          <span>{{ 'orders.statuses.SHIPPED' | transloco }}</span>
+                        </span>
+                      }
+                    }
+                  }
+                }
+              </span>
+
+              <ng-icon
+                name="lucideChevronRight"
+                class="mt-1 size-3.5 shrink-0 text-muted-foreground/60 transition-transform group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5 motion-reduce:transition-none"
+                aria-hidden="true"
+              />
+            </a>
+          }
+        }
+      </div>
+    } @else {
+      <!-- All items hidden (all counts are 0): show "Nothing needs your attention" -->
+      <div class="flex min-h-12 items-center gap-2 px-4 py-2 text-sm text-muted-foreground">
+        <ng-icon name="lucideCheckCircle" class="size-4 shrink-0 text-success" aria-hidden="true" />
+        <span>{{ 'needsAttention.allClear' | transloco }}</span>
+      </div>
+    }
+  </section>
 } @else {
   <!-- All clear: ONE slim line, not a card that shouts about nothing. -->
-  <div class="flex h-12 items-center gap-2 rounded-xl border bg-card px-4 text-sm text-muted-foreground">
+  <div class="card-surface flex min-h-12 items-center gap-2 px-4 py-2 text-sm text-muted-foreground">
     <ng-icon name="lucideCheckCircle" class="size-4 shrink-0 text-success" aria-hidden="true" />
     <span>{{ 'needsAttention.allClear' | transloco }}</span>
   </div>

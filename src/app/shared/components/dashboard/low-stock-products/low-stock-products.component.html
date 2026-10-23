@@ -5,9 +5,9 @@
     height, so a short line at the top of a tall card left the card mostly
     empty. The empty state is centred in the card's area instead.
   -->
-  <div class="flex h-full min-h-[136px] flex-col items-center justify-center gap-2 py-2 text-center">
-    <ng-icon name="lucideCheckCircle" class="size-5 shrink-0 text-success" />
-    <span class="text-sm text-muted-foreground">{{ 'dashboard.lowStock.noAlerts' | transloco }}</span>
+  <div class="flex min-h-[24px] items-center justify-center gap-2 py-1 text-center">
+    <ng-icon name="lucideCheckCircle" class="size-4 shrink-0 text-success" />
+    <span class="text-sm text-muted-foreground">{{ 'dashboard.lowStock.allAboveThreshold' | transloco }}</span>
   </div>
 } @else {
   <ul class="divide-y divide-border">
@@ -21,8 +21,27 @@
           </div>
         }
         <div class="flex-1 min-w-0">
-          <p class="text-sm font-medium truncate">{{ p.name }}</p>
-          <p class="text-xs text-muted-foreground">{{ 'dashboard.lowStock.stock' | transloco }}: {{ p.stockQuantity }} ({{ 'dashboard.lowStock.reserved' | transloco }}: {{ p.reservedQuantity ?? 0 }})</p>
+          <p class="truncate text-sm font-medium" [title]="p.name">{{ p.name }}</p>
+          <p class="mt-0.5 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-xs text-muted-foreground">
+            <span>
+              {{ 'dashboard.lowStock.stock' | transloco }}:
+              <bdi class="font-medium tabular-nums text-foreground">{{ p.stockQuantity }}</bdi>
+            </span>
+            @if (p.reorderThreshold != null) {
+              <span aria-hidden="true">·</span>
+              <span>
+                {{ 'dashboard.lowStock.reorderAt' | transloco }}:
+                <bdi class="tabular-nums">{{ p.reorderThreshold }}</bdi>
+              </span>
+            }
+            @if ((p.reservedQuantity ?? 0) > 0) {
+              <span aria-hidden="true">·</span>
+              <span>
+                {{ 'dashboard.lowStock.reserved' | transloco }}:
+                <bdi class="tabular-nums">{{ p.reservedQuantity }}</bdi>
+              </span>
+            }
+          </p>
         </div>
         <a
           [routerLink]="['/dashboard/products', p.slug]"

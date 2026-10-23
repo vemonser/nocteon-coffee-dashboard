@@ -1,51 +1,97 @@
 <div
-  class="sticky top-0 z-20 -mx-2 flex flex-wrap items-center gap-x-4 gap-y-2 border-b bg-background/95 px-2 py-1.5 backdrop-blur"
+  class="flex flex-wrap items-center gap-x-3 gap-y-2 border-b pb-2 lg:sticky lg:top-0 lg:z-20 lg:bg-background/95 lg:px-2 lg:py-1.5 lg:backdrop-blur"
 >
   <!-- The range: the SAME tab group the cards use (a radiogroup here,
-       because the range is one option out of a set, not a view). -->
+       because the range is one option out of a set, not a view). It stays
+       on ONE row on a phone and scrolls sideways instead of wrapping. -->
   <app-tabs
+    class="min-w-0 max-w-full"
     role="radio"
+    [scrollable]="true"
     [label]="'dashboard.rangeLabel' | transloco"
     [items]="tabItems()"
     [active]="activeTabId()"
     (activeChange)="selectDays($event)"
   />
 
-  <!-- The range in effect, and the range it is compared against. -->
-  <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
-    <span class="flex items-center gap-1.5">
+  <!-- The range in effect, and the range it is compared against. On a
+       phone the comparison is hidden: the current window is the fact the
+       reader needs, and the card chips already say what they compare to. -->
+  <div class="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
+    <span class="flex items-center gap-1.5 whitespace-nowrap">
       <ng-icon name="lucideCalendar" class="size-3.5 shrink-0" aria-hidden="true" />
-      <span dir="ltr" class="inline-flex items-center gap-1">
+      <span class="sr-only">{{ 'dashboard.currentRange' | transloco }}:</span>
+      <span dir="ltr" class="inline-flex items-center gap-1 tabular-nums">
         <app-localized-date [value]="current().start" />
-        <span>-</span>
+        <span aria-hidden="true">–</span>
         <app-localized-date [value]="lastDayOf(current())" />
       </span>
     </span>
-    <span class="flex items-center gap-1.5">
+    <span class="hidden items-center gap-1.5 whitespace-nowrap sm:flex">
       <ng-icon name="lucideRepeat" class="size-3.5 shrink-0" aria-hidden="true" />
       <span>{{ 'dashboard.vs' | transloco }}</span>
-      <span dir="ltr" class="inline-flex items-center gap-1">
+      <span class="sr-only">{{ 'dashboard.comparisonRange' | transloco }}:</span>
+      <span dir="ltr" class="inline-flex items-center gap-1 tabular-nums">
         <app-localized-date [value]="previous().start" />
-        <span>-</span>
+        <span aria-hidden="true">–</span>
         <app-localized-date [value]="lastDayOf(previous())" />
       </span>
     </span>
   </div>
 
-  <!-- The export: what it contains, and for which range. -->
-  <button
-    hlmBtn
-    type="button"
-    variant="outline"
-    size="sm"
-    class="ms-auto"
-    [title]="exportTooltip()"
-    [attr.aria-label]="exportTooltip()"
-    (click)="exportCsv()"
-  >
-    <ng-icon name="lucideDownload" class="size-4" aria-hidden="true" />
-    {{ 'dashboard.exportReport' | transloco }}
-  </button>
+  <!-- Updated time and refresh button -->
+  <div class="flex items-center gap-2 text-xs text-muted-foreground">
+    <span>{{ 'dashboard.updated' | transloco }} {{ relativeTime() }}</span>
+    <button
+      hlmBtn
+      type="button"
+      variant="ghost"
+      size="sm"
+      class="shrink-0"
+      [title]="'dashboard.refresh' | transloco"
+      [attr.aria-label]="'dashboard.refresh' | transloco"
+      (click)="refresh()"
+    >
+      <ng-icon name="lucideRefreshCw" class="size-3.5" aria-hidden="true" />
+    </button>
+  </div>
+
+  <!-- The export: dropdown with CSV and PDF options -->
+  <div class="relative shrink-0">
+    <button
+      hlmBtn
+      type="button"
+      variant="outline"
+      size="sm"
+      class="gap-1"
+      [title]="exportTooltip()"
+      [attr.aria-label]="exportTooltip()"
+      (click)="toggleExportMenu()"
+    >
+      <ng-icon name="lucideDownload" class="size-4" aria-hidden="true" />
+      <span class="hidden sm:inline">{{ 'dashboard.exportReport' | transloco }}</span>
+      <ng-icon name="lucideChevronDown" class="size-3.5" aria-hidden="true" />
+    </button>
+    
+    @if (exportMenuOpen()) {
+      <div class="absolute end-0 mt-1 w-40 rounded-md border bg-popover p-1 shadow-md z-50">
+        <button
+          class="w-full text-start px-3 py-2 text-sm rounded-md hover:bg-accent"
+          (click)="exportCsv()"
+        >
+          {{ 'dashboard.exportCsv' | transloco }}
+        </button>
+        <button
+          class="w-full text-start px-3 py-2 text-sm rounded-md hover:bg-accent disabled:opacity-50"
+          [disabled]="true"
+          [title]="'dashboard.exportPdfSoon' | transloco"
+        >
+          {{ 'dashboard.exportPdf' | transloco }}
+          <span class="ms-1 text-xs text-muted-foreground">({{ 'dashboard.soon' | transloco }})</span>
+        </button>
+      </div>
+    }
+  </div>
 
   <!-- The selection is announced, not just drawn. -->
   <span class="sr-only" role="status" aria-live="polite">{{ announcement() }}</span>

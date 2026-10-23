@@ -1,24 +1,31 @@
 :root {
   color-scheme: light;
 
-  --background: #faf8f5;
-  --foreground: #231a14;
+  /* The canvas is ivory, not white: a printed page, not a SaaS surface. */
+  --background: #faf8f4;
+  --foreground: #241f1b;
 
   --card: #ffffff;
-  --card-foreground: #231a14;
+  --card-foreground: #241f1b;
   --popover: #ffffff;
-  --popover-foreground: #231a14;
+  --popover-foreground: #241f1b;
+
+  /* The editorial accent: the restrained burgundy the print side uses.
+     It is NOT the brand action colour (--primary); it only marks editorial
+     emphasis, so a link or a button never competes with it. */
+  --editorial: #6e2636;
+  --editorial-strong: #511b28;
 
   /* Brand: roasted copper. White text: 6.75:1 */
   --primary: #8a4b22;
   --primary-foreground: #ffffff;
 
   --secondary: #f1ece5;
-  --secondary-foreground: #231a14;
+  --secondary-foreground: #241f1b;
   --muted: #f6f2ed;
   --muted-foreground: #6b5d52;
   --accent: #f1ece5;
-  --accent-foreground: #231a14;
+  --accent-foreground: #241f1b;
 
   /* Semantic states: never the brand color */
   --destructive: #b83232;
@@ -40,11 +47,11 @@
   --ring: #8a4b22;
 
   --sidebar: #fcfaf7;
-  --sidebar-foreground: #231a14;
+  --sidebar-foreground: #241f1b;
   --sidebar-primary: #8a4b22;
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: #f1ece5;
-  --sidebar-accent-foreground: #231a14;
+  --sidebar-accent-foreground: #241f1b;
   --sidebar-border: #e7dfd5;
   --sidebar-ring: #8a4b22;
 
@@ -99,6 +106,11 @@
 
   --background: #14100d;
   --foreground: #f5efe8;
+
+  /* The same burgundy, lifted for a near-black page: the light value would
+     disappear, and the brand action colour is already a lifted copper. */
+  --editorial: #d8a6b3;
+  --editorial-strong: #c88f9e;
 
   --card: #1e1813;
   --card-foreground: #f5efe8;

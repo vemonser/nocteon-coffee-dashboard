@@ -212,6 +212,8 @@ export class DataTableComponent {
   cellPadding = input<string>('px-4');
   sortChange = output<TableSortEvent | null>();
   edit = output<any>();
+  statusToggle = output<any>();
+  featuredToggle = output<any>();
   delete = output<any>();
   restore = output<any>();
   permanentDelete = output<any>();
@@ -472,7 +474,8 @@ export class DataTableComponent {
     isActive: '96px',
     active: '96px',
     featured: '96px',
-    slug: '132px',
+    slug: '200px',
+    name: '220px',
     // The other language's name is an entity name, not a slug: at a slug-sized
     // box (132px) a real Arabic name was cut to ~17 characters while the
     // same-language name column absorbed hundreds of px of empty space. Nine
@@ -506,7 +509,7 @@ export class DataTableComponent {
     freeShippingThreshold: '120px',
     totalAmount: '110px',
     total: '100px',
-    itemCount: '80px',
+    itemCount: '95px',
     paymentStatus: '120px',
     paymentMethod: '130px',
     // The orders list needs a WIDER method column: "Cash on delivery" /
@@ -523,7 +526,7 @@ export class DataTableComponent {
     // UNSIZED — it is the table's one flex column and takes the remainder,
     // so the comment and the dates stay compact.
     reviewer: '125px',
-    rating: '85px',
+    rating: '150px',
     statusReview: '95px',
   };
 

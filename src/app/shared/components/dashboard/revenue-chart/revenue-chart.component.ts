@@ -13,8 +13,9 @@ import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { ThemeService } from '../../../../core/theme/theme.service';
 import { LanguageService } from '../../../../core/i18n/language.service';
 import { LocalizedDateService } from '../../../../core/i18n/localized-date.service';
-import { formatCurrency, formatCompactCurrency } from '../../../utils/locale-format';
+import { formatCurrency, formatCompactCurrency, formatSignedPercent } from '../../../utils/locale-format';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
+import { computeDelta } from '../../../../core/dashboard/delta';
 
 /** The font size of the axis labels, in pixels. */
 const AXIS_FONT_PX = 11;
@@ -70,7 +71,7 @@ export class RevenueChartComponent {
   private readonly hostRef = viewChild<ElementRef<HTMLElement>>('chartHost');
 
   /** The chart height. */
-  readonly height = 270;
+  readonly height = 240;
 
   /**
    * The padding around the plot area.
@@ -123,34 +124,67 @@ export class RevenueChartComponent {
     return Math.max(1, ...all);
   });
 
-  /** A "nice" y-axis maximum (1, 2, 5 × 10^n). */
-  readonly axisMax = computed(() => {
-    const max = this.maxValue();
-    const mag = Math.pow(10, Math.floor(Math.log10(max)));
-    for (const m of [1, 1.2, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10]) {
-      if (m * mag >= max) return m * mag;
-    }
-    return 10 * mag;
+  /** The delta result for the previous period comparison */
+  readonly previousPeriodDelta = computed(() => {
+    if (!this.previousPeriodData().length) return null;
+    const currentTotal = this.data().reduce((sum, d) => sum + (d.revenue || 0), 0);
+    const previousTotal = this.previousPeriodData().reduce((sum, d) => sum + (d.revenue || 0), 0);
+    return computeDelta(currentTotal, previousTotal);
   });
 
-  /** The y-axis ticks. */
+  /**
+   * The step between two y-axis ticks.
+   *
+   * The previous "nice" ladder (1, 1.2, 1.5, 2, …) produced ticks such as
+   * 3.8K / 7.5K / 11.3K — four slices of an arbitrary maximum, which
+   * read as noise. The reader wants round numbers, so the step is the
+   * largest value from {1, 2, 5} × 10^n that still leaves at least three
+   * intervals below the maximum.
+   */
+  readonly axisStep = computed(() => {
+    const max = this.maxValue();
+    const mag = Math.pow(10, Math.floor(Math.log10(max)));
+    const candidates = new Set<number>();
+    for (const e of [mag / 10, mag, mag * 10]) {
+      for (const m of [1, 2, 5]) candidates.add(m * e);
+    }
+    const sorted = [...candidates].filter((s) => s > 0).sort((a, b) => a - b);
+    let chosen = sorted[0];
+    for (const s of sorted) {
+      if (max / s >= 2) chosen = s;
+      else break;
+    }
+    return chosen;
+  });
+
+  /** A "nice" y-axis maximum, on a round step. */
+  readonly axisMax = computed(() => {
+    const step = this.axisStep();
+    return Math.ceil(this.maxValue() / step) * step;
+  });
+
+  /** The y-axis ticks, on the round step. */
   readonly yTicks = computed(() => {
     const max = this.axisMax();
-    const count = 4;
-    return Array.from({ length: count + 1 }, (_, i) => (max / count) * i);
+    const step = this.axisStep();
+    const out: number[] = [];
+    for (let v = 0; v <= max + step / 2; v += step) out.push(v);
+    return out;
   });
 
   /** The x-axis ticks, adapted to the width. */
   readonly xTicks = computed(() => {
     const n = this.data().length;
     if (!n) return [];
-    // Roughly one label per 90 px, and never fewer than 3.
-    const wanted = Math.max(3, Math.min(8, Math.floor(this.plot().w / 90)));
-    const step = Math.max(1, Math.ceil(n / wanted));
+    
+    // Determine step size based on available data points
+    const step = this.getAxisStep();
+    
     const out: { index: number; label: string }[] = [];
     for (let i = 0; i < n; i += step) {
       out.push({ index: i, label: this.dates.formatDayMonth(this.data()[i].date) });
     }
+    
     // The last day is the one a reader looks for, but it must not collide
     // with the tick before it: "19 Oct" and "20 Oct" printed next to each
     // other are unreadable. When they would touch, the earlier tick is
@@ -167,6 +201,58 @@ export class RevenueChartComponent {
     return out;
   });
 
+  /** Calculate the axis step based on available data days */
+  readonly getAxisStep = computed(() => {
+    const n = this.data().length;
+    if (n <= 7) return 1; // 7 days or less: daily
+    if (n <= 14) return 2; // 14 days or less: every 2 days
+    if (n <= 21) return 3; // 21 days or less: every 3 days
+    if (n <= 28) return 4; // 28 days or less: every 4 days
+    if (n <= 35) return 5; // 35 days or less: every 5 days
+    if (n <= 42) return 6; // 42 days or less: every 6 days
+    if (n <= 49) return 7; // 49 days or less: every 7 days
+    if (n <= 56) return 8; // 56 days or less: every 8 days
+    if (n <= 63) return 9; // 63 days or less: every 9 days
+    if (n <= 70) return 10; // 70 days or less: every 10 days
+    if (n <= 77) return 11; // 77 days or less: every 11 days
+    if (n <= 84) return 12; // 84 days or less: every 12 days
+    if (n <= 91) return 13; // 91 days or less: every 13 days
+    if (n <= 98) return 14; // 98 days or less: every 14 days
+    if (n <= 105) return 15; // 105 days or less: every 15 days
+    if (n <= 112) return 16; // 112 days or less: every 16 days
+    if (n <= 119) return 17; // 119 days or less: every 17 days
+    if (n <= 126) return 18; // 126 days or less: every 18 days
+    if (n <= 133) return 19; // 133 days or less: every 19 days
+    if (n <= 140) return 20; // 140 days or less: every 20 days
+    if (n <= 147) return 21; // 147 days or less: every 21 days
+    if (n <= 154) return 22; // 154 days or less: every 22 days
+    if (n <= 161) return 23; // 161 days or less: every 23 days
+    if (n <= 168) return 24; // 168 days or less: every 24 days
+    if (n <= 175) return 25; // 175 days or less: every 25 days
+    if (n <= 182) return 26; // 182 days or less: every 26 days
+    if (n <= 189) return 27; // 189 days or less: every 27 days
+    if (n <= 196) return 28; // 196 days or less: every 28 days
+    if (n <= 203) return 29; // 203 days or less: every 29 days
+    if (n <= 210) return 30; // 210 days or less: every 30 days
+    return 7; // Default: every 7 days
+  });
+
+  /**
+   * The gap between two bars, adapted to how many bars there are.
+   *
+   * A 7-day chart can afford a 4px gap; a 365-day chart cannot — a fixed gap
+   * ate the bar itself and the year read as a solid block.
+   */
+  readonly barGap = computed(() => {
+    const n = this.data().length;
+    if (!n) return 0;
+    const slot = this.plot().w / n;
+    if (slot >= 18) return 4;
+    if (slot >= 10) return 2;
+    if (slot >= 5) return 1;
+    return 0;
+  });
+
   /** The bar geometry. */
   readonly bars = computed(() => {
     const n = this.data().length;
@@ -175,8 +261,7 @@ export class RevenueChartComponent {
     const h = this.plot().h;
     const max = this.axisMax();
     const slot = w / n;
-    // A gap of 2 px keeps a single-day chart readable.
-    const barWidth = Math.max(1, Math.min(28, slot - 2));
+    const barWidth = Math.max(1, Math.min(28, slot - this.barGap()));
     return this.data().map((d, i) => {
       const value = d.revenue || 0;
       const barHeight = max > 0 ? (value / max) * h : 0;
@@ -187,6 +272,7 @@ export class RevenueChartComponent {
         y: this.pad().top + h - barHeight,
         width: barWidth,
         height: barHeight,
+        radius: barWidth >= 4 ? 2 : 1,
         previous: this.previousPeriodData()[i]?.revenue ?? null,
       };
     });
@@ -201,7 +287,7 @@ export class RevenueChartComponent {
     const h = this.plot().h;
     const max = this.axisMax();
     const slot = w / n;
-    const barWidth = Math.max(1, Math.min(28, slot - 2));
+    const barWidth = Math.max(1, Math.min(28, slot - this.barGap()));
     return this.previousPeriodData().slice(0, n).map((d, i) => {
       const value = d.revenue || 0;
       const barHeight = max > 0 ? (value / max) * h : 0;
@@ -210,8 +296,30 @@ export class RevenueChartComponent {
         y: this.pad().top + h - barHeight,
         width: barWidth,
         height: barHeight,
+        radius: barWidth >= 4 ? 2 : 1,
       };
     });
+  });
+
+  /**
+   * The hovered bar's tooltip, CLAMPED to the chart.
+   *
+   * The old tooltip was positioned at `bar.x + 10` and translated -50 %,
+   * so the last few days of the month put half of it outside the card.
+   * The centre is clamped to a half-width inset, and the top is kept under
+   * the card's top edge.
+   */
+  readonly tooltip = computed(() => {
+    const h = this.hovered();
+    if (!h) return null;
+    const half = 72;
+    const width = this.width();
+    const center = Math.min(Math.max(h.x + 8, half), Math.max(half, width - half));
+    return {
+      ...h,
+      left: Math.round(center),
+      top: Math.round(Math.max(4, h.y - 48)),
+    };
   });
 
   /** The summary line. */
@@ -228,6 +336,25 @@ export class RevenueChartComponent {
       best,
       bestDate: this.data()[bestIndex].date,
     };
+  });
+
+  /** Get the previous period delta text */
+  readonly previousPeriodDeltaText = computed(() => {
+    const delta = this.previousPeriodDelta();
+    if (!delta) return 'No prior data';
+    if (delta.tone === 'flat') return 'No change';
+    if (delta.tone === 'none') return 'No prior data';
+    const pct = formatSignedPercent(delta.percent ?? 0, this.language.language());
+    return pct;
+  });
+
+  /** Get the previous period delta sign for icon */
+  readonly previousPeriodDeltaSign = computed(() => {
+    const delta = this.previousPeriodDelta();
+    if (!delta) return null;
+    if (delta.tone === 'up') return 'up';
+    if (delta.tone === 'down') return 'down';
+    return null;
   });
 
   /** The money formatter. */
@@ -252,6 +379,14 @@ export class RevenueChartComponent {
     if (!s) return this.transloco.translate('dashboard.revenue.noData');
     return `${this.transloco.translate('dashboard.revenueOverview')}: ${this.formatMoney(s.total)}`;
   });
+
+  /** The formatted previous period delta percentage */
+  readonly formatPreviousPeriodDelta = (delta: any): string => {
+    if (!delta) return 'No prior data';
+    if (delta.tone === 'flat') return 'No change';
+    if (delta.tone === 'none') return 'No prior data';
+    return formatSignedPercent(delta.percent ?? 0, this.language.language());
+  };
 
   /** The text of the summary line, for the accessible name. */
   readonly summaryLabel = computed(() => {
