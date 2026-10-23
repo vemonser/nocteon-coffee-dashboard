@@ -416,7 +416,7 @@
 
             @if (events().length > 0) {
               <ol class="mt-4 flex flex-col" data-testid="order-activity">
-                @for (event of events(); track event.id) {
+                @for (event of visibleEvents(); track event.id) {
                   <li class="flex items-start gap-3 border-t border-border py-2.5 first:border-t-0">
                     <span
                       class="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground"
@@ -425,7 +425,14 @@
                       <ng-icon [name]="event.icon" class="size-3.5" />
                     </span>
                     <div class="min-w-0 flex-1">
-                      <p class="text-sm font-medium" data-event-title>{{ event.title }}</p>
+                      <div class="flex items-center gap-2">
+                        <p class="text-sm font-medium" data-event-title>{{ event.title }}</p>
+                        @if (isFutureEvent(event)) {
+                          <span class="inline-flex items-center rounded-full bg-muted px-1.5 py-0.5 text-xs font-medium text-muted-foreground">
+                            Scheduled
+                          </span>
+                        }
+                      </div>
                       @if (event.detail) {
                         <p class="mt-0.5 text-sm text-muted-foreground" dir="auto">
                           <bdi>{{ event.detail }}</bdi>
@@ -456,6 +463,19 @@
                   </li>
                 }
               </ol>
+              @if (events().length > 4) {
+                <button
+                  class="mt-2 text-xs text-primary hover:underline"
+                  (click)="toggleEventsExpanded()"
+                  [attr.aria-expanded]="eventsExpanded()"
+                >
+                  @if (eventsExpanded()) {
+                    Show less
+                  } @else {
+                    Show all ({{ events().length }})
+                  }
+                </button>
+              }
             } @else {
               <p class="mt-4 text-xs text-muted-foreground" data-testid="order-no-activity">
                 {{ 'orders.detail.noActivity' | transloco }}

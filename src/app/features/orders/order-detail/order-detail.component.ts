@@ -279,9 +279,39 @@ export class OrderDetailComponent {
       ...event,
       icon: this.eventIcon(event),
       title: this.eventTitle(event),
-      actorLabel: event.actor ? this.t('orders.timeline.by', 'by {{actor}}', { actor: this.actorName(event.actor) }) : null,
+      actorLabel: event.actor && !this.isSystemActor(event.actor)
+        ? this.t('orders.timeline.by', 'by {{actor}}', { actor: this.actorName(event.actor) })
+        : null,
     }));
   });
+
+  /** Whether an event is in the future. */
+  protected isFutureEvent(event: OrderEventView): boolean {
+    const ms = Date.parse(event.at);
+    if (Number.isNaN(ms)) return false;
+    return ms > Date.now();
+  }
+
+  /** Whether the events list is expanded. */
+  protected readonly eventsExpanded = signal(false);
+
+  /** The visible events (first 4 or all if expanded). */
+  protected readonly visibleEvents = computed(() => {
+    const all = this.events();
+    if (this.eventsExpanded() || all.length <= 4) return all;
+    return all.slice(0, 4);
+  });
+
+  /** Toggle events expanded state. */
+  protected toggleEventsExpanded(): void {
+    this.eventsExpanded.set(!this.eventsExpanded());
+  }
+
+  /** Check if actor is a system actor. */
+  private isSystemActor(actor: string): boolean {
+    const value = actor.trim().toLowerCase();
+    return value === 'seed' || value.startsWith('system');
+  }
 
   /** The reason "Update status" cannot be used, translated, or null. */
   protected readonly statusDisabledReason = computed(() => {
