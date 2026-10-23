@@ -203,3 +203,29 @@ Or, with the container: rebuild image and `docker compose up`.
 | 17 | DELIVERED | 2026-10-23 | 2026-10-23 +1h | +8h | +30h |
 
 UI proof: Delivered order details shows no "Scheduled" badge; Orders list numbers increase with date (newest = highest number). Screenshots: /tmp/scratchpad/q4-timeline.png, /tmp/scratchpad/q2.png.
+
+---
+
+## S1 — All orders after re-seed (dev DB)
+
+| # | status | lines | subtotal | shipping | total |
+|---|--------|-------|----------|----------|-------|
+| ORD-2026-000001 | DELIVERED | 2 | 1825.00 | 0.00 | 1825.00 |
+| ORD-2026-000002 | DELIVERED | 2 | 1889.00 | 0.00 | 1889.00 |
+| ORD-2026-000003 | DELIVERED | 2 | 2278.00 | 0.00 | 2278.00 |
+| ORD-2026-000004 | DELIVERED | 2 | 1749.00 | 0.00 | 1749.00 |
+| ORD-2026-000005 | DELIVERED | 2 | 3657.00 | 0.00 | 3657.00 |
+| ORD-2026-000006 | CANCELLED | 1 | 1300.00 | 0.00 | 1300.00 |
+| ORD-2026-000007 | CANCELLED | 1 | 2067.00 | 0.00 | 2067.00 |
+| ORD-2026-000008 | SHIPPED | 2 | 1604.00 | 0.00 | 1604.00 |
+| ORD-2026-000009 | DELIVERED | 2 | 1339.00 | 0.00 | 1339.00 |
+| ORD-2026-000010 | CANCELLED | 1 | 1669.50 | 0.00 | 1669.50 |
+| ORD-2026-000011 | DELIVERED | 2 | 2004.00 | 0.00 | 2004.00 |
+| ORD-2026-000012 | CANCELLED | 1 | 1378.00 | 0.00 | 1378.00 |
+| ORD-2026-000013 | PROCESSING | 2 | 1236.00 | 0.00 | 1236.00 |
+| ORD-2026-000014 | CANCELLED | 1 | 525.00 | 0.00 | 525.00 |
+| ORD-2026-000015 | CONFIRMED | 1 | 1113.00 | 0.00 | 1113.00 |
+| ORD-2026-000016 | DELIVERED | 2 | 1934.50 | 0.00 | 1934.50 |
+| ORD-2026-000017 | DELIVERED | 2 | 2650.00 | 0.00 | 2650.00 |
+
+All orders: >=1 line, total == subtotal + shipping (shipping 0, all subtotals >= 500 free-shipping threshold). Assertion passed.

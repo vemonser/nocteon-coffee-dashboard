@@ -156,4 +156,4 @@ export function countByPaymentMethod(orders: OrderResponse[]): Record<string, nu
 }
 
 /** The statuses that count as "still open" (not shipped, not finished). */
-export const OPEN_STATUSES: readonly OrderStatus[] = ['PENDING', 'CONFIRMED', 'PROCESSING'];
+export const OPEN_STATUSES: readonly OrderStatus[] = ['PENDING', 'CONFIRMED', 'PROCESSING', 'SHIPPED'];

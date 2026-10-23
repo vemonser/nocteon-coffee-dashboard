@@ -516,7 +516,7 @@ export class DataTableComponent {
     // "الدفع عند الاستلام" must never be truncated, so the column is budgeted
     // for the longest label in both languages.
     orderNumber: '130px',
-    customer: '150px',
+    customer: '24%',
     createdAtTime: '150px',
     scopeType: '110px',
     discountType: '110px',

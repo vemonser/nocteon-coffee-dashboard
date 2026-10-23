@@ -2191,7 +2191,7 @@
     "openOrders": "Open orders",
     "loadFailed": "The attention queue could not be loaded.",
     "partial": "One of the queues could not be refreshed. The counts shown are from the last successful read.",
-    "openOrdersHint": "Paid, not delivered yet",
+    "openOrdersHint": "Pending, confirmed, processing, or shipped",
     "unreadMessagesHint": "A customer is waiting for an answer",
     "pendingReviewsHint": "Waiting before they go live",
     "lowStockHint": "At or below the reorder point",
