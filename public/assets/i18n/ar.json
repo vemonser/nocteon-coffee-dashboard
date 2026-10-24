@@ -2131,7 +2131,10 @@
     "exportPdfSoon": "تصدير PDF قريباً",
     "soon": "قريباً",
     "custom": "مخصص",
-    "customRange": "نطاق تاريخ مخصص"
+    "customRange": "نطاق تاريخ مخصص",
+    "welcomeTitle": "مرحبا",
+    "welcomeMessage": "استكشف لوحة التحكم",
+    "welcomeLink": "انتقل إلى صفحتك الأولى"
   },
   "imageCell": {
     "noImage": "لا توجد صورة"
@@ -2436,7 +2439,8 @@
       "dashboard": "لوحة تحكم",
       "audit": "تدقيق",
       "ai": "ذكاء اصطناعي"
-    }
+    },
+    "actionDenied": "لا يوجد لديك إذن ({{slug}})"
   },
   "permissionMatrix": {
     "fullAccess": "صلاحية كاملة — {{count}} صلاحية",

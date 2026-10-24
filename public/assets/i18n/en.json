@@ -2051,7 +2051,10 @@
     "exportPdfSoon": "PDF export coming soon",
     "soon": "Soon",
     "custom": "Custom",
-    "customRange": "Custom date range"
+    "customRange": "Custom date range",
+    "welcomeTitle": "Welcome",
+    "welcomeMessage": "Explore your dashboard",
+    "welcomeLink": "Go to your first page"
   },
   "imageCell": {
     "noImage": "No img"
@@ -2328,7 +2331,8 @@
       "dashboard": "Dashboard",
       "audit": "Audit",
       "ai": "AI"
-    }
+    },
+    "actionDenied": "You don't have permission ({{slug}})"
   },
   "permissionMatrix": {
     "fullAccess": "Full access — {{count}} permissions",

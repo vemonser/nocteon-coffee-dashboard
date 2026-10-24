@@ -3,6 +3,8 @@ import {
 } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { AuthService } from '../auth/auth.service';
+import { NotifyService } from '../notify/notify.service';
+import { TranslocoService } from '@jsverse/transloco';
 import {
   BehaviorSubject,
   catchError,
@@ -20,118 +22,98 @@ const refreshSubject =
     null,
   );
 
-export const authInterceptor:
-  HttpInterceptorFn = (
-    req,
-    next,
-  ) => {
-    const auth =
-      inject(AuthService);
+export const authInterceptor: HttpInterceptorFn = (
+  req,
+  next,
+) => {
+  const auth = inject(AuthService);
+  const notify = inject(NotifyService);
+  const transloco = inject(TranslocoService);
 
-    if (
-      !req.url.startsWith(
-        environment.apiUrl,
-      ) &&
-      !req.url.startsWith('/api')
-    ) {
-      return next(req);
-    }
+  if (
+    !req.url.startsWith(environment.apiUrl) &&
+    !req.url.startsWith('/api')
+  ) {
+    return next(req);
+  }
 
-    const token =
-      auth.accessToken();
+  const token = auth.accessToken();
 
-    const authReq = token
-      ? req.clone({
-          setHeaders: {
-            Authorization: `Bearer ${token}`,
-          },
-          withCredentials: true,
-        })
-      : req.clone({
-          withCredentials: true,
-        });
+  const authReq = token
+    ? req.clone({
+        setHeaders: {
+          Authorization: `Bearer ${token}`,
+        },
+        withCredentials: true,
+      })
+    : req.clone({
+        withCredentials: true,
+      });
 
-    return next(authReq).pipe(
-      catchError((err) => {
-        if (
-          err.status !== 401 ||
-          req.url.includes(
-            '/auth/',
-          )
-        ) {
-          return throwError(
-            () => err,
-          );
-        }
-
-        if (refreshInProgress) {
-          return refreshSubject.pipe(
-            filter(
-              (
-                token,
-              ): token is string =>
-                token !== null,
-            ),
-            take(1),
-            switchMap((token) => {
-              const retry =
-                req.clone({
-                  setHeaders: {
-                    Authorization: `Bearer ${token}`,
-                  },
-                  withCredentials: true,
-                });
-
-              return next(retry);
-            }),
-          );
-        }
-
-        refreshInProgress =
-          true;
-
-        refreshSubject.next(
-          null,
+  return next(authReq).pipe(
+    catchError((err) => {
+      if (err.status === 403) {
+        // Global 403: show one toast and reject the request
+        const slug = err.error?.slug ?? 'unknown';
+        notify.apiError(
+          err,
+          'permissions.actionDenied',
+          `You don't have permission (${slug})`,
         );
+        return throwError(() => err);
+      }
 
-        return auth.refresh().pipe(
-          switchMap((res) => {
-            refreshInProgress =
-              false;
+      if (err.status !== 401 || req.url.includes('/auth/')) {
+        return throwError(() => err);
+      }
 
-            const token =
-              res.data.accessToken;
-
-            refreshSubject.next(
-              token,
-            );
-
-            const retry =
-              req.clone({
-                setHeaders: {
-                  Authorization: `Bearer ${token}`,
-                },
-                withCredentials: true,
-              });
+      if (refreshInProgress) {
+        return refreshSubject.pipe(
+          filter(
+            (token): token is string => token !== null,
+          ),
+          take(1),
+          switchMap((token) => {
+            const retry = req.clone({
+              setHeaders: {
+                Authorization: `Bearer ${token}`,
+              },
+              withCredentials: true,
+            });
 
             return next(retry);
           }),
-          catchError(
-            (
-              refreshError,
-            ) => {
-              refreshInProgress =
-                false;
-
-              auth.clearSession();
-
-              return throwError(
-                () =>
-                  refreshError,
-              );
-            },
-          ),
         );
-      }),
-    );
-  };
+      }
+
+      refreshInProgress = true;
+      refreshSubject.next(null);
+
+      return auth.refresh().pipe(
+        switchMap((res) => {
+          refreshInProgress = false;
+
+          const token = res.data.accessToken;
+
+          refreshSubject.next(token);
+
+          const retry = req.clone({
+            setHeaders: {
+              Authorization: `Bearer ${token}`,
+            },
+            withCredentials: true,
+          });
+
+          return next(retry);
+        }),
+        catchError((refreshError) => {
+          refreshInProgress = false;
+
+          auth.clearSession();
+
+          return throwError(() => refreshError);
+        }),
+      );
+    }),
+  );
+};

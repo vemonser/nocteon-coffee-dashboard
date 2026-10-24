@@ -1,6 +1,4 @@
 <div class="page-shell">
-  <!-- The editorial masthead: a small caps rule over the title, so the page
-       announces itself as a report rather than as a generic admin screen. -->
   <header class="flex flex-col gap-1.5">
     <p class="flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.18em] text-editorial">
       <span class="h-px w-6 bg-editorial/50" aria-hidden="true"></span>
@@ -14,33 +12,19 @@
     </div>
   </header>
 
-  <!-- ONE toolbar: the range, the range it compares against, and the export. -->
   <app-dashboard-toolbar />
 
   @if (statsService.storeCurrencyError()) {
-    <!-- The store settings could not be read, so every amount falls back to
-         USD. The reader has to be told, and the read has to be retryable. -->
-    <div
-      role="alert"
-      class="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-[var(--radius-control)] border border-warning/40 bg-warning-soft px-4 py-3 text-sm text-warning"
-    >
+    <div role="alert" class="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-[var(--radius-control)] border border-warning/40 bg-warning-soft px-4 py-3 text-sm text-warning">
       <ng-icon name="lucideAlertTriangle" class="size-4 shrink-0" aria-hidden="true" />
       <p>{{ 'dashboard.currencyUnavailable' | transloco }}</p>
-      <button
-        hlmBtn
-        variant="outline"
-        size="sm"
-        class="ms-auto"
-        (click)="storeSettings.retry()"
-      >
+      <button hlmBtn variant="outline" size="sm" class="ms-auto" (click)="storeSettings.retry()">
         {{ 'common.retry' | transloco }}
       </button>
     </div>
   }
 
-  <!-- Welcome state: shown when the user has dashboard:read but no widget
-       permission is true. -->
-  @if (showWelcome) {
+  @if (showWelcome()) {
     <div class="p-6 rounded-md bg-muted text-center">
       <ng-icon name="lucideInfo" class="size-6 mb-3 text-muted-foreground" />
       <h2>{{ 'dashboard.welcomeTitle' | transloco }}</h2>
@@ -49,370 +33,138 @@
         <button hlmBtn [routerLink]="welcomeTarget()">{{ 'dashboard.welcomeLink' | transloco }}</button>
       </div>
     </div>
-  } @if (false) {
-    <!-- The KPI area: FOUR strong cards, then a compact strip for the rest.
-         Eight equal cards would say that nothing matters; four say what does. -->
+  } @else {
     @if (!statsService.overviewError(); as stats) {
       <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4" data-testid="kpi-primary-row">
         @if (canRevenue) {
-          <app-kpi-card
-            icon="lucideWallet"
-            [label]="'dashboard.metrics.totalRevenue' | transloco"
-            [value]="(stats.totalRevenue | money)"
-            [delta]="delta().revenue"
-            [comparisonLabel]="'dashboard.metrics.totalRevenue' | transloco"
-            [scopeNote]="'dashboard.totalRevenueHelp' | transloco"
-            [link]="'/dashboard/orders'"
-            [currency]="statsService.storeCurrency()"
-          />
+          <app-kpi-card icon="lucideWallet" [label]="'dashboard.metrics.totalRevenue' | transloco" [value]="(statsService.overview()?.totalRevenue | money)"  [comparisonLabel]="'dashboard.metrics.totalRevenue' | transloco" [scopeNote]="'dashboard.totalRevenueHelp' | transloco" [link]="'/dashboard/orders'" [currency]="statsService.storeCurrency()" />
         }
         @if (canOrdersKPI) {
-          <app-kpi-card
-            icon="lucideShoppingBag"
-            [label]="'dashboard.orders' | transloco"
-            [value]="fmtCount(stats.totalOrders)"
-            [delta]="delta().orders"
-            [comparisonLabel]="'dashboard.orders' | transloco"
-            [scopeNote]="'dashboard.ordersHelp' | transloco"
-            [link]="'/dashboard/orders'"
-          />
+          <app-kpi-card icon="lucideShoppingBag" [label]="'dashboard.orders' | transloco" [value]="statsService.overview()?.totalOrders?.toString() ?? '0'"  [comparisonLabel]="'dashboard.orders' | transloco" [scopeNote]="'dashboard.ordersHelp' | transloco" [link]="'/dashboard/orders'" />
         }
         @if (canTopSelling) {
-          @if (repeatPurchaseRate(); as r) {
-            <app-kpi-card
-              icon="lucideRepeat"
-              [label]="'dashboard.repeatPurchaseRate' | transloco"
-              [value]="(r.repeatRate | number:'1.0-1') + '%'"
-              [caption]="r.repeatCustomers + ' ' + ('dashboard.of' | transloco) + ' ' + (r.totalCustomers | plural: 'dashboard.countCustomers')"
-              [scopeNote]="'dashboard.repeatPurchaseRateHelp' | transloco"
-            />
-          } @if (false) {
+          @if (statsService.repeatPurchaseRate(); as r) {
+            <app-kpi-card icon="lucideRepeat" [label]="'dashboard.repeatPurchaseRate' | transloco" [value]="(r.repeatRate | number:'1.0-1') + '%'" [caption]="r.repeatCustomers + ' ' + ('dashboard.of' | transloco) + ' ' + (r.totalCustomers | plural: 'dashboard.countCustomers')" [scopeNote]="'dashboard.repeatPurchaseRateHelp' | transloco" />
+          } @else {
             <app-kpi-card icon="lucideRepeat" [label]="'dashboard.repeatPurchaseRate' | transloco" value="—" />
           }
         }
         @if (canRecentOrders) {
-          <app-kpi-card
-            icon="lucideUserPlus"
-            [label]="'dashboard.newCustomers' | transloco"
-            [value]="fmtCount(stats.newCustomers)"
-            [delta]="delta().customers"
-            [comparisonLabel]="'dashboard.newCustomers' | transloco"
-            [link]="'/dashboard/users'"
-          />
+          <app-kpi-card icon="lucideUserPlus" [label]="'dashboard.newCustomers' | transloco" [value]="(statsService.overview()?.userGrowth?.currentPeriodCount ?? 0).toString()" [comparisonLabel]="'dashboard.newCustomers' | transloco" [link]="'/dashboard/users'" />
         }
         @if (canRevenue) {
-          <app-kpi-card
-            icon="lucideReceipt"
-            [label]="'dashboard.averageOrderValue' | transloco"
-            [value]="(stats.averageOrderValue | money)"
-            [delta]="delta().aov"
-            [comparisonLabel]="'dashboard.averageOrderValue' | transloco"
-            [scopeNote]="'dashboard.aovHelp' | transloco"
-            [link]="'/dashboard/orders'"
-            [currency]="statsService.storeCurrency()"
-          />
+          <app-kpi-card icon="lucideReceipt" [label]="'dashboard.averageOrderValue' | transloco" [value]="(statsService.overview()?.averageOrderValue | money)"  [comparisonLabel]="'dashboard.averageOrderValue' | transloco" [scopeNote]="'dashboard.aovHelp' | transloco" [link]="'/dashboard/orders'" [currency]="statsService.storeCurrency()" />
         }
       </div>
     }
 
-    <!-- The secondary strip: FOUR separate cards, same as the primary row. -->
     <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4" data-testid="kpi-secondary-strip">
       @if (canTopSelling) {
-        @if (repeatPurchaseRate(); as r) {
-          <app-kpi-card
-            icon="lucideRepeat"
-            [label]="'dashboard.repeatPurchaseRate' | transloco"
-            [value]="(r.repeatRate | number:'1.0-1') + '%'"
-            [caption]="r.repeatCustomers + ' ' + ('dashboard.of' | transloco) + ' ' + (r.totalCustomers | plural: 'dashboard.countCustomers')"
-            [scopeNote]="'dashboard.repeatPurchaseRateHelp' | transloco"
-          />
-        } @if (false) {
+        @if (statsService.repeatPurchaseRate(); as r) {
+          <app-kpi-card icon="lucideRepeat" [label]="'dashboard.repeatPurchaseRate' | transloco" [value]="(r.repeatRate | number:'1.0-1') + '%'" [caption]="r.repeatCustomers + ' ' + ('dashboard.of' | transloco) + ' ' + (r.totalCustomers | plural: 'dashboard.countCustomers')" [scopeNote]="'dashboard.repeatPurchaseRateHelp' | transloco" />
+        } @else {
           <app-kpi-card icon="lucideRepeat" [label]="'dashboard.repeatPurchaseRate' | transloco" value="—" />
         }
-      } @if (false) {
-        <app-kpi-card icon="lucideRepeat" [label]="'dashboard.repeatPurchaseRate' | transloco" value="—" />
-      }
-
-      @if (canRevenue) {
-        @if (refundRate(); as r) {
-          <app-kpi-card
-            icon="lucideRefreshCw"
-            [label]="'dashboard.refundRate' | transloco"
-            [value]="(r.refundRate | number:'1.0-1') + '%'"
-            [caption]="r.totalRefunded + ' ' + ('dashboard.of' | transloco) + ' ' + (r.totalPaid | plural: 'dashboard.countOrders')"
-            [scopeNote]="'dashboard.refundRateHelp' | transloco"
-            [metric]="'refundRate'"
-          />
-        } @if (false) {
-          <app-kpi-card icon="lucideRefreshCw" [label]="'dashboard.refundRate' | transloco" value="—" />
-        }
-      } @if (false) {
-        <app-kpi-card icon="lucideRefreshCw" [label]="'dashboard.refundRate' | transloco" value="—" />
       }
 
       @if (canTopSelling) {
-        <app-kpi-card
-          icon="lucideCoffee"
-          [label]="'dashboard.coffeeSold' | transloco"
-          [value]="(stats.coffeeSold | number:'1.2-2') + ' ' + ('dashboard.kg' | transloco)"
-          [caption]="'dashboard.coffeeSoldHint' | transloco"
-          [scopeNote]="'dashboard.coffeeSoldHelp' | transloco"
-          [delta]="delta().coffee"
-        />
-      } @if (false) {
-        <app-kpi-card icon="lucideCoffee" [label]="'dashboard.coffeeSold' | transloco" value="—" />
+        <app-kpi-card icon="lucideCoffee" [label]="'dashboard.coffeeSold' | transloco" [value]="(statsService.overview()?.coffeeSoldKg | number:'1.2-2') + ' ' + ('dashboard.kg' | transloco)" [caption]="'dashboard.coffeeSoldHint' | transloco" [scopeNote]="'dashboard.coffeeSoldHelp' | transloco"  />
       }
-    }
+      @if (canOnlineUsers) {
+        <app-kpi-card icon="lucideGlobe" [label]="'dashboard.onlineUsers' | transloco" [value]="statsService.onlineUsers().toString()" [caption]="'dashboard.onlineUsersCaption' | transloco" [scopeNote]="'dashboard.onlineUsersHelp' | transloco" [live]="true" [metric]="'onlineUsers'" />
+      }
+    </div>
 
-      <!-- Online users: a LIVE indicator, not a period KPI. -->
-      <app-kpi-card
-        icon="lucideGlobe"
-        [label]="'dashboard.onlineUsers' | transloco"
-        [value]="fmtCount(onlineUsersCount())"
-        [caption]="'dashboard.onlineUsersCaption' | transloco"
-        [scopeNote]="'dashboard.onlineUsersHelp' | transloco"
-        [live]="true"
-        [metric]="'onlineUsers'"
-      />
-    }
-
-    @if (canOperatingSystem) {
-      <!-- Operating system breakdown would be rendered here; for now a
-           skeleton placeholder since the backend endpoint is gated by
-       dashboard:read too. -->
-    } @if (false) {
-      <!-- Skip: user lacks dashboard:read. -->
-    }
-
-    <!-- Needs Attention Panel -->
     <app-needs-attention-panel />
 
-    <!-- 403 page reads the denied slug from the URL (`/unauthorized?permission=<slug>`).
-         If the user was redirected here from a protected route, show the slug. -->
     @if (missingPermission) {
-      <div
-        role="alert"
-        class="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-[var(--radius-control)] border border-destructive/40 bg-destructive-soft px-4 py-3 text-sm text-destructive-text"
-      >
+      <div role="alert" class="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-[var(--radius-control)] border border-destructive/40 bg-destructive-soft px-4 py-3 text-sm text-destructive-text">
         <ng-icon name="lucideShieldAlert" class="size-4 shrink-0" aria-hidden="true" />
         <p>{{ 'unauthorized.message' | transloco }} <span class="font-mono text-xs" data-testid="unauthorized-slug">{{ missingPermission }}</span></p>
       </div>
-    } @if (false) {
-      <!-- The revenue chart is the hero: full width, and the only thing above
-           the fold that is a chart. -->
-      <hlm-card>
-        <hlm-card-header>
-          <app-widget-header [title]="'dashboard.revenueOverview' | transloco" />
-        </hlm-card-header>
-        <div hlmCardContent class="grow shrink-0">
-          @if (!statsService.loaded() && statsService.loading()) {
-            <app-widget-state [loading]="true" [skeletonRows]="4" />
-          } @else if (statsService.revenueChartData().length > 0 && statsService.revenueChartData().some(d => d.revenue > 0)) {
-            <app-revenue-chart
-              [data]="statsService.revenueChartData()"
-              [previousPeriodData]="statsService.revenueChartPreviousPeriod()"
-              [currency]="statsService.storeCurrency()"
-            />
-          } @if (false) {
-            <div class="flex flex-col items-center justify-center h-64 text-muted-foreground">
-              <ng-icon name="lucideLineChart" class="size-12 opacity-30 mb-3" />
-              <p class="font-medium">{{ 'dashboard.revenue.noData' | transloco }}</p>
-            </div>
-          }
-        </div>
-      </hlm-card>
-      <!-- One row: "Revenue by" (origin | roast level | category) and
-           "Orders by" (status | payment method). The three revenue breakdowns
-           were three separate donut cards asking the same question; they are
-           one card with three tabs now. -->
-      <div class="grid gap-4 lg:grid-cols-2">
-        <app-revenue-breakdown-card />
-        <app-orders-breakdown-card />
-      </div>
-
-      <!-- Top products | Recent orders -->
-      <div class="grid gap-4 lg:grid-cols-2">
-        <!-- Top Products -->
-        <hlm-card>
-          <hlm-card-header>
-            <app-widget-header
-              [title]="'dashboard.topSellingProducts' | transloco"
-              [actionLabel]="'dashboard.recentOrders.viewAll' | transloco"
-              actionLink="/dashboard/products"
-            />
-          </hlm-card-header>
-          <div hlmCardContent class="grow shrink-0">
-            @if (!statsService.loaded() && statsService.loading()) {
-              <app-widget-state [loading]="true" [skeletonRows]="5" />
-            } @else if (statsService.overviewError(); as error) {
-              <app-widget-state [error]="error" [retry]="retryOverview" />
-            } @else if (canTopSelling && statsService.topProducts().length > 0) {
-              <app-top-products [products]="statsService.topProducts()" />
-            } @if (false) {
-              <app-widget-state
-                [empty]="true"
-                [emptyLabel]="'dashboard.topProducts.noProducts' | transloco"
-              />
-            }
-          </div>
-        </hlm-card>
-
-        <!-- Recent Orders -->
-        <hlm-card>
-          <hlm-card-header>
-            <app-widget-header
-              [title]="'dashboard.recentOrders.title' | transloco"
-              [rangeScoped]="false"
-              [customScope]="'Latest 5'"
-              [actionLabel]="'dashboard.recentOrders.viewAll' | transloco"
-              actionLink="/dashboard/orders"
-            />
-          </hlm-card-header>
-          <div hlmCardContent class="grow shrink-0">
-            <app-recent-orders />
-          </div>
-        </hlm-card>
-      </div>
     }
 
-    @if (canLowStock) {
-      <!-- Low stock | Devices -->
-      <div class="grid gap-4 lg:grid-cols-2">
-        <hlm-card>
-          <hlm-card-header>
-            <app-widget-header
-              [title]="'dashboard.lowStockProducts' | transloco"
-              [rangeScoped]="false"
-              [customScope]="'Current'"
-              [actionLabel]="'dashboard.recentOrders.viewAll' | transloco"
-              actionLink="/dashboard/products"
-            />
-          </hlm-card-header>
-          <div hlmCardContent class="grow shrink-0">
-            @if (!statsService.loaded() && statsService.loading()) {
-              <app-widget-state [loading]="true" [skeletonRows]="2" />
-            } @else if (statsService.overviewError(); as error) {
-              <app-widget-state [error]="error" [retry]="retryOverview" />
-            } @if (false) {
-              <app-low-stock-products class="block h-full" [products]="lowStockProducts()" />
-            }
+    <hlm-card>
+      <hlm-card-header>
+        <app-widget-header [title]="'dashboard.revenueOverview' | transloco" />
+      </hlm-card-header>
+      <div hlmCardContent class="grow shrink-0">
+        @if (!statsService.loaded() && statsService.loading()) {
+          <app-widget-state [loading]="true" [skeletonRows]="4" />
+        } @else if (statsService.revenueChartData().length > 0 && statsService.revenueChartData().some(d => d.revenue > 0)) {
+          <app-revenue-chart [data]="statsService.revenueChartData()" [previousPeriodData]="statsService.revenueChartPreviousPeriod()" [currency]="statsService.storeCurrency()" />
+        } @else {
+          <div class="flex flex-col items-center justify-center h-64 text-muted-foreground">
+            <ng-icon name="lucideLineChart" class="size-12 opacity-30 mb-3" />
+            <p class="font-medium">{{ 'dashboard.revenue.noData' | transloco }}</p>
           </div>
-        </hlm-card>
-
-        <hlm-card>
-          <hlm-card-header>
-            <app-widget-header
-              [title]="'dashboard.deviceBreakdown' | transloco"
-              [infoTitle]="'dashboard.devicesNote' | transloco"
-            />
-          </hlm-card-header>
-          <div hlmCardContent class="grow shrink-0">
-            @if (!statsService.loaded() && statsService.loading()) {
-              <app-widget-state [loading]="true" [skeletonRows]="3" />
-            } @else if (canOperatingSystem) {
-              <app-device-list class="block h-full" />
-            } @if (false) {
-              <!-- Skip: user lacks dashboard:read. -->
-            }
-          </div>
-        </hlm-card>
+        }
       </div>
-    } @if (false) {
-      <!-- Low stock hidden when user lacks product:read; no empty card. -->
-    }
+    </hlm-card>
 
-    <!-- Top products | Recent orders (already rendered above if canTopSelling) -->
-    <!-- Re-render only when the user can see top products -->
+    <div class="grid gap-4 lg:grid-cols-2">
+      <app-revenue-breakdown-card />
+      <app-orders-breakdown-card />
+    </div>
+
     @if (canTopSelling) {
       <div class="grid gap-4 lg:grid-cols-2">
-        <!-- Top Products -->
         <hlm-card>
           <hlm-card-header>
-            <app-widget-header
-              [title]="'dashboard.topSellingProducts' | transloco"
-              [actionLabel]="'dashboard.recentOrders.viewAll' | transloco"
-              actionLink="/dashboard/products"
-            />
+            <app-widget-header [title]="'dashboard.topSellingProducts' | transloco" [actionLabel]="'dashboard.recentOrders.viewAll' | transloco" actionLink="/dashboard/products" />
           </hlm-card-header>
           <div hlmCardContent class="grow shrink-0">
             @if (!statsService.loaded() && statsService.loading()) {
               <app-widget-state [loading]="true" [skeletonRows]="5" />
             } @else if (statsService.overviewError(); as error) {
-              <app-widget-state [error]="error" [retry]="retryOverview" />
+              <app-widget-state [error]="error"  />
             } @else if (statsService.topProducts().length > 0) {
               <app-top-products [products]="statsService.topProducts()" />
-            } @if (false) {
-              <app-widget-state
-                [empty]="true"
-                [emptyLabel]="'dashboard.topProducts.noProducts' | transloco"
-              />
+            } @else {
+              <app-widget-state [empty]="true" [emptyLabel]="'dashboard.topProducts.noProducts' | transloco" />
             }
           </div>
         </hlm-card>
-
-        <!-- Recent Orders -->
         <hlm-card>
           <hlm-card-header>
-            <app-widget-header
-              [title]="'dashboard.recentOrders.title' | transloco"
-              [rangeScoped]="false"
-              [customScope]="'Latest 5'"
-              [actionLabel]="'dashboard.recentOrders.viewAll' | transloco"
-              actionLink="/dashboard/orders"
-            />
+            <app-widget-header [title]="'dashboard.recentOrders.title' | transloco" [rangeScoped]="false" [customScope]="'Latest 5'" [actionLabel]="'dashboard.recentOrders.viewAll' | transloco" actionLink="/dashboard/orders" />
           </hlm-card-header>
           <div hlmCardContent class="grow shrink-0">
             <app-recent-orders />
           </div>
         </hlm-card>
       </div>
-    } @if (false) {
-      <!-- Recent orders hidden when user cannot see top products; no empty card. -->
     }
 
-    <!-- Low stock | Devices (re-render only when user can see low stock) -->
     @if (canLowStock) {
       <div class="grid gap-4 lg:grid-cols-2">
         <hlm-card>
           <hlm-card-header>
-            <app-widget-header
-              [title]="'dashboard.lowStockProducts' | transloco"
-              [rangeScoped]="false"
-              [customScope]="'Current'"
-              [actionLabel]="'dashboard.recentOrders.viewAll' | transloco"
-              actionLink="/dashboard/products"
-            />
+            <app-widget-header [title]="'dashboard.lowStockProducts' | transloco" [rangeScoped]="false" [customScope]="'Current'" [actionLabel]="'dashboard.recentOrders.viewAll' | transloco" actionLink="/dashboard/products" />
           </hlm-card-header>
           <div hlmCardContent class="grow shrink-0">
             @if (!statsService.loaded() && statsService.loading()) {
               <app-widget-state [loading]="true" [skeletonRows]="2" />
             } @else if (statsService.overviewError(); as error) {
-              <app-widget-state [error]="error" [retry]="retryOverview" />
-            } @if (false) {
-              <app-low-stock-products class="block h-full" [products]="lowStockProducts()" />
+              <app-widget-state [error]="error"  />
+            } @else {
+              <app-low-stock-products class="block h-full" [products]="statsService.lowStockProducts()" />
             }
           </div>
         </hlm-card>
-
         <hlm-card>
           <hlm-card-header>
-            <app-widget-header
-              [title]="'dashboard.deviceBreakdown' | transloco"
-              [infoTitle]="'dashboard.devicesNote' | transloco"
-            />
+            <app-widget-header [title]="'dashboard.deviceBreakdown' | transloco" [infoTitle]="'dashboard.devicesNote' | transloco" />
           </hlm-card-header>
           <div hlmCardContent class="grow shrink-0">
             @if (!statsService.loaded() && statsService.loading()) {
               <app-widget-state [loading]="true" [skeletonRows]="3" />
             } @else if (canOperatingSystem) {
               <app-device-list class="block h-full" />
-            } @if (false) {
-              <!-- Skip: user lacks dashboard:read. -->
             }
           </div>
         </hlm-card>
       </div>
-    } @if (false) {
-      <!-- Low stock hidden when user lacks product:read; no empty card. -->
     }
+  }
 </div>
