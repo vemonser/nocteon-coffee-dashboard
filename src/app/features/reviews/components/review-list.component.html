@@ -6,10 +6,7 @@
     <div class="min-w-0">
       <h1 class="text-2xl font-medium tracking-tight">{{ 'reviews.title' | transloco }}</h1>
       <p class="text-sm text-muted-foreground" data-testid="reviews-count">
-        {{ stats().total | plural: 'reviews.countReviews' }} ·
-        {{ stats().approved | plural: 'reviews.countApproved' }} ·
-        {{ stats().rejected | plural: 'reviews.countRejected' }} ·
-        {{ stats().pending | plural: 'reviews.countPending' }}
+        {{ stats().total | plural: 'reviews.countReviews' }}
       </p>
     </div>
 
@@ -138,7 +135,7 @@
         <input
           hlmInput
           type="search"
-          class="w-full ps-9"
+          class="!h-8 w-full ps-9"
           [ngModel]="search()"
           (ngModelChange)="onSearch($event)"
           [placeholder]="'reviews.search' | transloco"
@@ -157,15 +154,25 @@
   <!-- The statistics strip -->
   <div class="grid grid-cols-2 gap-4 md:grid-cols-4">
     <div class="card-surface p-4 text-start" data-testid="reviews-stat-average">
-      <p class="text-[13px] font-medium text-muted-foreground">{{ 'reviews.stats.averageRatingAll' | transloco }}</p>
+      <p class="flex items-center gap-1 text-[13px] font-medium text-muted-foreground">
+        {{ 'reviews.stats.averageRating' | transloco }}
+        <span
+          class="inline-flex cursor-help"
+          hlmTooltip
+          [hlmTooltip]="'reviews.stats.averageTooltip' | transloco"
+          [attr.aria-label]="'reviews.stats.averageTooltip' | transloco"
+        >ⓘ</span>
+      </p>
       <div class="mt-1 flex items-end gap-2">
-        <app-rating-stars [rating]="stats().averageRatingAll ?? 0" />
+        <app-rating-stars [rating]="stats().averageRating ?? 0" />
         <span class="text-[clamp(1.625rem,3vw,1.75rem)] font-semibold leading-none tracking-tight tabular-nums">
-          {{ stats().averageRatingAll === null ? '—' : (stats().averageRatingAll | number: '1.1-1') }} / 5
+          {{ stats().averageRating === null ? '—' : (stats().averageRating | number: '1.1-1') }} / 5
         </span>
       </div>
-      <p class="mt-2 text-[12px] text-muted-foreground">{{ stats().total }} {{ 'reviews.stats.reviews' | transloco }} (all)</p>
-      <p class="text-[12px] text-muted-foreground">Approved only {{ stats().averageRating === null ? '—' : (stats().averageRating | number: '1.1-1') }}</p>
+      <p class="mt-2 text-[12px] text-muted-foreground">
+        {{ 'reviews.stats.allInclPending' | transloco }}: {{ stats().averageRatingAll === null ? '—' : (stats().averageRatingAll | number: '1.1-1') }}
+        ({{ stats().total }} {{ 'reviews.stats.reviews' | transloco }})
+      </p>
     </div>
 
     <div class="card-surface p-4 text-start" data-testid="reviews-stat-distribution">
@@ -203,6 +210,7 @@
         icon="lucideClock"
         [label]="'reviews.stats.pending' | transloco"
         [value]="'' + stats().pending"
+        [caption]="pendingCaption()"
       />
     </button>
 
@@ -210,7 +218,7 @@
       icon="lucideBadgeCheck"
       [label]="'reviews.stats.verifiedShare' | transloco"
       [value]="verifiedShare() + '%'"
-      [caption]="('dashboard.of' | transloco) + ' ' + stats().total + ' ' + ('reviews.stats.reviews' | transloco)"
+      [caption]="stats().verified + ' ' + ('dashboard.of' | transloco) + ' ' + stats().total + ' ' + ('reviews.stats.reviews' | transloco)"
       data-testid="reviews-stat-verified"
     />
   </div>
@@ -270,6 +278,7 @@
         [menuActions]="menuActions"
         [menuActionsFor]="menuActionsFor"
         [primaryActionFor]="primaryActionFor"
+        [reservePrimarySlot]="true"
         [hideSlug]="true"
         [minWidth]="'900px'"
         (selectionChange)="onSelectionChange($event)"
@@ -348,7 +357,7 @@
                 variant="secondary"
                 (click)="setApproval(item, false)"
               >
-                {{ 'reviews.withdrawApproval' | transloco }}
+                {{ 'reviews.moveToPending' | transloco }}
               </button>
             }
             <app-actions-cell
@@ -417,7 +426,9 @@
           </a>
           <div class="mt-1 flex items-center gap-2">
             <app-user-avatar [src]="review.avatarUrl" [name]="review.username" size="sm" />
-            <span class="text-sm"><bdi>{{ toDisplayName(review.username) }}</bdi></span>
+            <a class="text-sm hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" [routerLink]="['/dashboard/users']">
+              <bdi>{{ toDisplayName(review.username) }}</bdi>
+            </a>
             <app-verified-badge [verified]="review.verified" [showLabel]="true" />
           </div>
           <p class="mt-1 text-xs text-muted-foreground">
@@ -457,27 +468,33 @@
         <bdi>{{ review.comment }}</bdi>
       </blockquote>
 
-      <!-- The status: a LABELLED row. A badge on its own says "something is
-           approved" without saying what it is. -->
-      <div class="flex items-center gap-2 text-sm">
+      <!-- Labeled rows: Status, Created, Order. -->
+      <div class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
         <span class="text-muted-foreground">{{ 'common.status' | transloco }}:</span>
         <app-status-badge
           [status]="review.status === 'APPROVED' ? 'approved' : review.status === 'REJECTED' ? 'rejected' : 'pending'"
           [customLabel]="review.status === 'APPROVED' ? 'reviews.status.approved' : review.status === 'REJECTED' ? 'reviews.status.rejected' : 'reviews.status.pending'"
         />
-      </div>
 
-      <!-- The order behind a verified purchase. The API does not send the
-           order yet, so the link appears when it does. -->
-      @if (review.verified && review.orderId && review.orderNumber) {
-        <a
-          class="inline-flex items-center gap-1 text-sm text-primary hover:underline"
-          [routerLink]="['/dashboard/orders', review.orderId]"
-        >
-          {{ 'reviews.dialog.viewOrder' | transloco }}
-          <bdi>{{ review.orderNumber }}</bdi>
-        </a>
-      }
+        <span class="text-muted-foreground">{{ 'common.createdAt' | transloco }}:</span>
+        <app-localized-date [value]="review.createdAt" [showTime]="true" />
+
+        @if (review.verified && review.orderId && review.orderNumber) {
+          <span class="text-muted-foreground">{{ 'reviews.dialog.order' | transloco }}:</span>
+          <a
+            class="inline-flex items-center gap-1 text-primary hover:underline"
+            [routerLink]="['/dashboard/orders', review.orderId]"
+          >
+            {{ 'reviews.dialog.viewOrder' | transloco }}
+            <bdi>{{ review.orderNumber }}</bdi>
+          </a>
+        }
+
+        @if (review.moderatedBy && review.moderatedAt) {
+          <span class="text-muted-foreground">{{ 'reviews.dialog.moderatedBy' | transloco }}:</span>
+          <span>{{ 'reviews.dialog.approvedBy' | transloco: { name: review.moderatedBy, date: review.moderatedAt } }}</span>
+        }
+      </div>
     </div>
   }
 
@@ -543,7 +560,7 @@
           {{
             dialogBusy()
               ? ('reviews.action.withdrawing' | transloco)
-              : ('reviews.withdrawApproval' | transloco)
+              : ('reviews.moveToPending' | transloco)
           }}
         </button>
         <button

@@ -64,6 +64,7 @@ export class UsersListComponent extends BaseListComponent<UserResponse, UserRequ
   private auth = inject(AuthService);
 
   roleOptions = signal<string[]>([]);
+  rolesAvailable = signal(false);
   roleFilter = 'ALL';
   statusFilter = 'all';
   verificationFilter = 'all';
@@ -83,7 +84,7 @@ export class UsersListComponent extends BaseListComponent<UserResponse, UserRequ
   private loadRoleOptions(): void {
     this.userService.getRoles().subscribe({
       next: (res) => {
-        if (res?.data?.length) this.roleOptions.set(res.data);
+        if (res?.data?.length) { this.roleOptions.set(res.data); this.rolesAvailable.set(true); }
         else this.roleOptions.set(Array.from(new Set(this.items().map((u) => u.role))));
       },
       error: () => this.roleOptions.set(Array.from(new Set(this.items().map((u) => u.role)))),
@@ -215,7 +216,7 @@ export class UsersListComponent extends BaseListComponent<UserResponse, UserRequ
     const items: RowMenuAction[] = [
       { id: 'view', label: 'common.view', icon: 'lucideEye' },
       { id: 'edit', label: 'common.edit', icon: 'lucidePencil' },
-      { id: 'changeRole', label: 'users.changeRoleSoon', icon: 'lucideShield', disabled: true },
+      { id: 'changeRole', label: this.rolesAvailable() ? 'users.changeRole' : 'users.changeRoleSoon', icon: 'lucideShield', disabled: !this.rolesAvailable() },
     ];
     items.push({ id: row.active ? 'block' : 'unblock', label: row.active ? 'users.block' : 'users.unblock', icon: row.active ? 'lucideLock' : 'lucideUnlock', disabled, tooltip: disabled ? tooltip : undefined });
     items.push({ id: 'separator', label: '', disabled: true });

@@ -56,8 +56,8 @@
 
     <div class="flex items-center gap-1.5">
       <span class="text-xs text-muted-foreground" id="users-filter-verification-label">{{ 'users.verification' | transloco }}</span>
-      <hlm-native-select selectClass="w-36" size="sm" aria-labelledby="users-filter-verification-label" [(ngModel)]="verificationFilter" (ngModelChange)="onFilterChange()">
-        <option hlmNativeSelectOption value="all">{{ 'users.allVerification' | transloco }}</option>
+      <hlm-native-select selectClass="min-w-[220px]" size="sm" aria-labelledby="users-filter-verification-label" [(ngModel)]="verificationFilter" (ngModelChange)="onFilterChange()">
+        <option hlmNativeSelectOption value="all">{{ 'users.allStates' | transloco }}</option>
         <option hlmNativeSelectOption value="verified">{{ 'users.verified' | transloco }}</option>
         <option hlmNativeSelectOption value="unverified">{{ 'users.unverified' | transloco }}</option>
       </hlm-native-select>
@@ -65,7 +65,7 @@
 
     <div class="relative w-full sm:w-56">
       <ng-icon name="lucideSearch" class="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
-      <input hlmInput type="search" class="!h-8 w-full ps-9" [(ngModel)]="searchQuery" (input)="onSearch()" [placeholder]="'users.search' | transloco" [attr.aria-label]="'users.search' | transloco" />
+      <input hlmInput type="search" class="!h-8 min-w-[320px] w-full ps-9" [(ngModel)]="searchQuery" (input)="onSearch()" [placeholder]="'users.search' | transloco" [attr.aria-label]="'users.search' | transloco" />
     </div>
   </div>
 
@@ -113,7 +113,7 @@
         <div class="space-y-1.5">
           <label hlmLabel>{{ 'users.username' | transloco }} *</label>
           <div class="relative">
-            <input hlmInput formControlName="username" type="text" placeholder="johndoe" class="w-full" [readonly]="!!editing()" />
+            <input hlmInput formControlName="username" type="text" placeholder="johndoe" class="w-full" [readonly]="!!editing()" autocomplete="off" data-1p-ignore data-lpignore="true" data-bwignore />
             @if (editing()) { <ng-icon name="lucideLock" class="absolute end-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" [attr.title]="'users.usernameLocked' | transloco" /> }
           </div>
           @if (form.get('username')?.invalid && form.get('username')?.touched) {
@@ -123,7 +123,7 @@
 
         <div class="space-y-1.5">
           <label hlmLabel>{{ 'users.email' | transloco }} *</label>
-          <input hlmInput formControlName="email" type="email" placeholder="john@example.com" class="w-full" />
+          <input hlmInput formControlName="email" type="email" placeholder="john@example.com" class="w-full" autocomplete="off" data-1p-ignore data-lpignore="true" data-bwignore />
           @if (form.get('email')?.invalid && form.get('email')?.touched) {
             <p class="text-xs text-destructive">{{ 'users.emailRequired' | transloco }}</p>
           }
@@ -230,4 +230,3 @@
     </div>
   </div>
 }
-EOF

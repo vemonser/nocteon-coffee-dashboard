@@ -6,8 +6,9 @@ import { HlmInputImports } from '@spartan-ng/helm/input';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmBadgeImports } from '@spartan-ng/helm/badge';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucideChevronDown, lucideLock, lucideCheck, lucideMinus } from '@ng-icons/lucide';
-import { TranslocoPipe } from '@jsverse/transloco';
+import { lucideChevronDown, lucideLock, lucideCheck, lucideMinus, lucideShieldAlert } from '@ng-icons/lucide';
+import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
+import { humanize } from '../../utils/permission.utils';
 import {
   parsePermission, groupPermissions, domainOf, actionLabel, isSensitive, isStandardAction,
   STANDARD_ACTIONS, PERMISSION_DOMAINS,
@@ -17,10 +18,11 @@ import {
   selector: 'app-permission-matrix',
   standalone: true,
   imports: [CommonModule, FormsModule, HlmCheckboxImports, HlmInputImports, HlmButtonImports, HlmBadgeImports, NgIcon, TranslocoPipe],
-  providers: [provideIcons({ lucideChevronDown, lucideLock, lucideCheck, lucideMinus })],
+  providers: [provideIcons({ lucideChevronDown, lucideLock, lucideCheck, lucideMinus, lucideShieldAlert })],
   templateUrl: './permission-matrix.component.html',
 })
 export class PermissionMatrixComponent {
+  private transloco = inject(TranslocoService);
   permissions = input.required<string[]>();
   grantedInput = input<Set<string> | string[]>(new Set());
   mode = input<'view' | 'edit'>('view');
@@ -33,7 +35,7 @@ export class PermissionMatrixComponent {
   grantedOnly = signal(false);
 
   granted = signal<Set<string>>(new Set());
-  collapsed = signal<Set<string>>(new Set(Object.keys(PERMISSION_DOMAINS).filter(d => d !== 'Sales')));
+  collapsed = signal<Set<string>>(new Set(Object.keys(PERMISSION_DOMAINS)));
 
   constructor() {
     effect(() => {
@@ -82,6 +84,8 @@ export class PermissionMatrixComponent {
     if (s.has(domain)) s.delete(domain); else s.add(domain);
     this.collapsed.set(s);
   }
+  expandAll(): void { this.collapsed.set(new Set()); }
+  collapseAll(): void { this.collapsed.set(new Set(this.domains())); }
 
   domainGranted(domain: string): number {
     const resources = this.grouped()[domain] ?? {};
@@ -189,5 +193,11 @@ export class PermissionMatrixComponent {
 
   showFullAccessBanner = computed(() => this.mode() === 'view' && this.grantedCount() === this.total() && this.total() > 0);
   isSensitive = (slug: string) => isSensitive(slug);
+  humanizeResource = (resource: string) => humanize(resource);
+  resourceLabel = (resource: string) => {
+    const key = 'permissions.resources.' + resource;
+    const val = this.transloco.translate(key);
+    return typeof val === 'string' && val && val !== key ? val : humanize(resource);
+  };
   actionLabel = (slug: string) => actionLabel(slug);
 }

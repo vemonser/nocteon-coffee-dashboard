@@ -8,6 +8,7 @@ import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmCardImports } from '@spartan-ng/helm/card';
 import { HlmInputImports } from '@spartan-ng/helm/input';
 import { HlmNativeSelectImports } from '@spartan-ng/helm/native-select';
+import { HlmTooltipImports } from '@spartan-ng/helm/tooltip';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
   lucideBadgeCheck,
@@ -19,7 +20,7 @@ import {
   lucideTrash2,
   lucideX,
 } from '@ng-icons/lucide';
-import { TranslocoPipe } from '@jsverse/transloco';
+import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 
 import { HasPermissionDirective } from '../../../core/auth/permission.directive';
 import { LanguageService } from '../../../core/i18n/language.service';
@@ -63,6 +64,7 @@ type ReviewTab = 'pending' | 'approved' | 'rejected' | 'all';
     HlmCardImports,
     HlmInputImports,
     HlmNativeSelectImports,
+    HlmTooltipImports,
     HasPermissionDirective,
     DataTableComponent,
     PagerComponent,
@@ -97,6 +99,7 @@ export class ReviewListComponent {
   private readonly productService = inject(ProductService);
   private readonly notify = inject(NotifyService);
   private readonly language = inject(LanguageService);
+  private readonly transloco = inject(TranslocoService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
 
@@ -138,6 +141,9 @@ export class ReviewListComponent {
 
   readonly selectedIds = signal<ReadonlySet<number>>(new Set());
   readonly bulkSubmitting = signal(false);
+  readonly bulkProgress = signal(0);
+  readonly bulkDeleteConfirm = signal(false);
+  readonly bulkErrors = signal<string[]>([]);
   readonly viewing = signal<ReviewResponse | null>(null);
   readonly deleting = signal<ReviewResponse | null>(null);
   readonly deletingBusy = signal(false);
@@ -164,8 +170,24 @@ export class ReviewListComponent {
   protected readonly verifiedShare = computed(() => {
     const total = this.stats().total || 0;
     if (total === 0) return 0;
-    const verified = this.items().filter((r) => r.verified).length;
-    return Math.round((verified / Math.max(1, this.items().length)) * 100);
+    const verified = this.stats().verified || 0;
+    return Math.round((verified / total) * 100);
+  });
+
+  protected readonly oldestPendingDays = computed(() => {
+    const pending = this.items().filter((r) => r.status === 'PENDING');
+    if (pending.length === 0) return null;
+    const oldest = pending.reduce((min, r) => (r.createdAt < min ? r.createdAt : min), pending[0].createdAt);
+    const ms = Date.now() - new Date(oldest).getTime();
+    return Math.max(0, Math.floor(ms / 86400000));
+  });
+
+  protected readonly pendingCaption = computed(() => {
+    this.language.language();
+    const base = this.transloco.translate('reviews.stats.awaitingModeration');
+    const days = this.oldestPendingDays();
+    if (days === null) return base;
+    return `${base} · ${this.transloco.translate('reviews.stats.oldestPending', { days })}`;
   });
 
   constructor() {
@@ -501,9 +523,8 @@ export class ReviewListComponent {
       this.columnHelper.display({
         id: 'actions',
         header: 'Actions',
-        // The Approve button plus the menu: the shared 116px budget fits an
-        // icon row, not a labelled button.
-        meta: { width: '120px' },
+        // Eye + fixed quick-action slot + kebab: keep the kebab at a constant x.
+        meta: { width: '180px' },
       }),
     ]);
   }
@@ -520,17 +541,27 @@ export class ReviewListComponent {
   protected readonly primaryActionFor = (row: ReviewResponse) =>
     row.status === 'PENDING' ? { id: 'approve', label: 'reviews.approve' } : null;
 
+  private readonly viewAction: RowMenuAction = { id: 'view', label: 'common.view', icon: 'lucideEye' };
+  private readonly approveAction: RowMenuAction = { id: 'approve', label: 'reviews.approve', icon: 'lucideCheck' };
+  private readonly moveToPendingAction: RowMenuAction = { id: 'withdraw', label: 'reviews.moveToPending', icon: 'lucideRotateCcw' };
   private readonly rejectAction: RowMenuAction = { id: 'reject', label: 'reviews.reject', icon: 'lucideX', danger: true };
-  private readonly withdrawAction: RowMenuAction = { id: 'withdraw', label: 'reviews.withdrawApproval', icon: 'lucideX' };
   private readonly deleteAction: RowMenuAction = { id: 'delete', label: 'common.delete', icon: 'lucideTrash2', danger: true };
+  private readonly separatorAction: RowMenuAction = { id: 'separator', label: '' };
 
-  protected readonly menuActions: RowMenuAction[] = [this.rejectAction, this.withdrawAction, this.deleteAction];
+  protected readonly menuActions: RowMenuAction[] = [this.viewAction, this.approveAction, this.rejectAction, this.separatorAction, this.deleteAction];
 
-  /** Per-row kebab: Approve/Reject on Pending, Withdraw on Approved, Delete always. */
+  /** Per-row kebab: View, Approve/Move, Reject, separator, Delete. */
   protected readonly menuActionsFor = (row: ReviewResponse): RowMenuAction[] => {
-    if (row.status === 'PENDING') return [this.rejectAction, this.deleteAction];
-    if (row.status === 'APPROVED') return [this.withdrawAction, this.deleteAction];
-    return [this.deleteAction];
+    const actions: RowMenuAction[] = [this.viewAction];
+    if (row.status === 'PENDING') {
+      actions.push(this.approveAction, this.rejectAction);
+    } else if (row.status === 'APPROVED') {
+      actions.push(this.moveToPendingAction, this.rejectAction);
+    } else {
+      actions.push(this.approveAction);
+    }
+    actions.push(this.separatorAction, this.deleteAction);
+    return actions;
   };
 
   protected onMenuAction(event: { id: string; item: ReviewResponse }): void {
@@ -615,24 +646,53 @@ export class ReviewListComponent {
   }
 
   protected bulkDelete(): void {
+    if (this.selectedIds().size === 0) return;
+    this.bulkDeleteConfirm.set(true);
+  }
+
+  protected cancelBulkDelete(): void {
+    if (this.bulkSubmitting()) return;
+    this.bulkDeleteConfirm.set(false);
+  }
+
+  protected confirmBulkDelete(): void {
     const ids = Array.from(this.selectedIds());
     if (ids.length === 0) return;
+    this.bulkDeleteConfirm.set(false);
     this.bulkSubmitting.set(true);
-    // Use the first ID for the individual delete calls
-    // In a real app, you'd want a bulk delete endpoint
-    this.reviewService.remove(ids[0]).subscribe({
-      next: () => {
+    this.bulkProgress.set(0);
+    this.bulkErrors.set([]);
+    const errors: string[] = [];
+    let done = 0;
+    const next = (i: number): void => {
+      if (i >= ids.length) {
         this.bulkSubmitting.set(false);
         this.clearSelection();
-        this.notify.success('reviews.bulk.deleted', 'Review deleted');
         this.loadPage();
         this.loadStats();
-      },
-      error: (err) => {
-        this.bulkSubmitting.set(false);
-        this.notify.apiError(err, 'notify.errorFallback', 'Could not delete the review');
-      },
-    });
+        if (errors.length > 0) {
+          this.notify.apiError(null, 'reviews.bulk.deletePartial', `Deleted ${ids.length - errors.length} of ${ids.length}; ${errors.length} failed`);
+        } else {
+          this.notify.success('reviews.bulk.deleted', 'Reviews deleted');
+        }
+        return;
+      }
+      this.reviewService.remove(ids[i]).subscribe({
+        next: () => {
+          done++;
+          this.bulkProgress.set(done);
+          next(i + 1);
+        },
+        error: (err) => {
+          errors.push(String(ids[i]));
+          this.bulkErrors.set([...errors]);
+          done++;
+          this.bulkProgress.set(done);
+          next(i + 1);
+        },
+      });
+    };
+    next(0);
   }
 
   // ── the actions ───────────────────────────────────────────────────────────
