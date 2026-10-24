@@ -1411,7 +1411,7 @@
     },
     "roleDescriptions": {
       "ADMIN": "Full access to every dashboard area, including users and settings.",
-      "MODERATOR": "Reviews, orders and catalog — but not users or store settings.",
+      "MODERATOR": "Moderates reviews and messages; can view orders, carts and products.",
       "CUSTOMER": "Storefront shopping only: orders, addresses and wishlist."
     },
     "rolesPage": {

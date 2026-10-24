@@ -35,6 +35,7 @@ export const PERMISSION_LABELS: Record<string, string> = {
 export const SENSITIVE_PERMISSIONS = new Set<string>([
   'user:change_role',
   'user:delete',
+  'role:manage',
   'settings:update',
   'audit:read',
   'ai:manage',

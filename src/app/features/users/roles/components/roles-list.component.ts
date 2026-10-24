@@ -76,6 +76,18 @@ export class RolesListComponent implements OnInit {
   draft = signal<string[]>([]);
   saving = signal(false);
 
+  readonly roleDiffSummary = computed(() => {
+    const role = this.selected();
+    if (!role || !this.editing()) return null;
+    const before = new Set(role.permissions || []);
+    const after = new Set(this.draft());
+    let granted = 0;
+    let revoked = 0;
+    for (const p of after) if (!before.has(p)) granted++;
+    for (const p of before) if (!after.has(p)) revoked++;
+    return { granted, revoked };
+  });
+
   showCreate = signal(false);
   createForm!: FormGroup;
   creating = signal(false);
@@ -279,6 +291,18 @@ export class RolesListComponent implements OnInit {
   retry(): void {
     this.loadFailed.set(false);
     this.load();
+  }
+
+  canDeactivate(): boolean {
+    if (!this.editing()) return true;
+    const role = this.selected();
+    if (!role) return true;
+    const before = new Set(role.permissions || []);
+    const after = new Set(this.draft());
+    let changed = before.size !== after.size;
+    if (!changed) for (const p of before) if (!after.has(p)) { changed = true; break; }
+    if (!changed) return true;
+    return window.confirm('You have unsaved changes. Leave anyway?');
   }
 
   /** Guards the "New role" affordance: missing endpoint OR missing authority. */
