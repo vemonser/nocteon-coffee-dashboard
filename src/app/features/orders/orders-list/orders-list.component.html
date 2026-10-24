@@ -41,6 +41,7 @@
           size="sm"
           data-testid="orders-export"
           (click)="exportCsv()"
+          appCanDisable="'order:read'"
           [disabled]="loading() || pageTotal() === 0"
         >
           <ng-icon name="lucideDownload" class="size-4" aria-hidden="true" />
