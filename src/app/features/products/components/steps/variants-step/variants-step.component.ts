@@ -92,7 +92,7 @@ export class VariantsStepComponent implements OnInit {
     const price = Number(group.get('price')?.value);
     const cost = Number(group.get('costPrice')?.value);
     if (!price || !cost || price <= 0) return null;
-    return (((price - cost) / price) * 100).toFixed(1);
+    return String(Math.round(((price - cost) / price) * 1000) / 10);
   }
 
   isCollapsed(i: number): boolean {

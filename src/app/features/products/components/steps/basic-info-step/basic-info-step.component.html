@@ -1,6 +1,6 @@
 ﻿<div [formGroup]="state.form" class="space-y-5">
   <!-- Basic information -->
-  <section class="rounded-lg border border-border bg-card p-4 sm:p-5">
+  <section class="card-surface p-4 sm:p-5">
     <h2 class="mb-4 text-lg font-medium">{{ 'products.basicInformation' | transloco }}</h2>
 
     <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
@@ -109,7 +109,7 @@
 
   <!-- Coffee details -->
   @if (isCoffee) {
-    <section class="rounded-lg border border-border bg-card p-4 sm:p-5">
+    <section class="card-surface p-4 sm:p-5">
       <h2 class="mb-4 text-lg font-medium">{{ 'products.coffeeDetails' | transloco }}</h2>
 
       <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -205,7 +205,7 @@
   }
 
   <!-- Content -->
-  <section class="rounded-lg border border-border bg-card p-4 sm:p-5">
+  <section class="card-surface p-4 sm:p-5">
     <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
       <h2 class="text-lg font-medium">{{ 'products.content' | transloco }}</h2>
 
@@ -292,7 +292,7 @@
   </section>
 
   <!-- Visibility -->
-  <section class="rounded-lg border border-border bg-card p-4 sm:p-5">
+  <section class="card-surface p-4 sm:p-5">
     <h2 class="mb-4 text-lg font-medium">{{ 'products.visibility' | transloco }}</h2>
     <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
       <div class="flex items-center justify-between gap-3 rounded-md border border-border p-3">
