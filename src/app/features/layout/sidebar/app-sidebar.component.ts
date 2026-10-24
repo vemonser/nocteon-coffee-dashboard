@@ -33,6 +33,8 @@ import { filter } from 'rxjs';
 
 import { AuthService } from '../../../core/auth/auth.service';
 import { LanguageService } from '../../../core/i18n/language.service';
+import { NavCountsService } from '../../../core/nav/nav-counts.service';
+import { HlmSidebarService } from '@spartan-ng/helm/sidebar';
 import { getNavItems, sectionKeyForRoute } from '../../../shared/data/sidebar-nav-items';
 import { UserMenuComponent } from '../../../shared/ui/user-menu/user-menu.component';
 
@@ -82,6 +84,18 @@ export class AppSidebarComponent {
   private readonly _router = inject(Router);
   protected readonly auth = inject(AuthService);
   protected readonly language = inject(LanguageService);
+  protected readonly navCounts = inject(NavCountsService);
+  protected readonly sidebar = inject(HlmSidebarService);
+
+  protected badgeCount(route: string): number | null {
+    return this.navCounts.badgeFor(route);
+  }
+  protected badgeAria(route: string, n: number): string {
+    return this.navCounts.ariaLabel(route, n);
+  }
+  protected isRailCollapsed(): boolean {
+    return this.sidebar.state() === 'collapsed';
+  }
 
   private readonly ITEM_OPEN_KEY = 'nocteon-sidebar-item-open';
 
@@ -99,9 +113,20 @@ export class AppSidebarComponent {
     this._navItems()
       .sections.map((section) => ({
         ...section,
-        items: section.items.filter(
-          (parentItem) => !parentItem.permission || this.auth.hasPermission(parentItem.permission),
-        ),
+        items: section.items
+          .map((parentItem) => {
+            if (parentItem.children && parentItem.children.length > 0) {
+              const visibleChildren = parentItem.children.filter(
+                (child) => !child.permission || this.auth.hasPermission(child.permission),
+              );
+              if (visibleChildren.length === 0) return null;
+              return { ...parentItem, children: visibleChildren };
+            }
+            return !parentItem.permission || this.auth.hasPermission(parentItem.permission)
+              ? parentItem
+              : null;
+          })
+          .filter((x): x is NonNullable<typeof x> => x !== null),
       }))
       .filter((section) => section.items.length > 0),
   );

@@ -496,7 +496,7 @@
 
         @if (review.moderatedBy && review.moderatedAt) {
           <span class="text-muted-foreground">{{ 'reviews.dialog.moderatedBy' | transloco }}</span>
-          <span>{{ 'reviews.dialog.approvedBy' | transloco: { name: review.moderatedBy, date: review.moderatedAt } }}</span>
+          <span>{{ 'reviews.dialog.approvedBy' | transloco: { name: review.moderatedBy, date: (review.moderatedAt | formatDateTime) } }}</span>
         }
       </div>
     </div>

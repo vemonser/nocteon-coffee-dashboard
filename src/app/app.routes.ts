@@ -514,7 +514,7 @@ export const routes: Routes = [
       {
         path: 'carts',
         data: { breadcrumb: 'carts' },
-        canActivate: [permissionGuard('cart:manage')],
+        canActivate: [permissionGuard('cart:read_all')],
         loadComponent: () =>
           import('./features/carts/components/carts-list.component').then(
             (m) => m.CartsListComponent,

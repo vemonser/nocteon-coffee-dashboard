@@ -2472,7 +2472,8 @@
     "bulkSelected": "تم تحديد {{count}}",
     "bulkMarkRead": "تحديد كمقروء",
     "bulkMarkUnread": "تحديد كغير مقروء",
-    "bulkDelete": "حذف"
+    "bulkDelete": "حذف",
+    "replyHistory": "سيظهر سجل الردود هنا عند توفره من الخادم."
   },
   "unauthorized": {
     "title": "الوصول مرفوض",

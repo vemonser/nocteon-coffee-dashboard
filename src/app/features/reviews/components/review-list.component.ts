@@ -29,6 +29,7 @@ import { ViewMode } from '../../../core/crud/base-list.component';
 import { DataTableComponent, TableSortEvent } from '../../../shared/components/data-table/data-table.component';
 import { PagerComponent } from '../../../shared/components/pager/pager.component';
 import { PluralPipe } from '../../../shared/pipes/plural.pipe';
+import { FormatDateTimePipe } from '../../../shared/pipes/date-time.pipe';
 import { ActionsCellComponent } from '../../../shared/ui/actions-cell/actions-cell.component';
 import { LocalizedDateComponent } from '../../../shared/ui/localized-date/localized-date.component';
 import { DialogShellComponent } from '../../../shared/ui/dialog-shell/dialog-shell.component';
@@ -69,6 +70,7 @@ type ReviewTab = 'pending' | 'approved' | 'rejected' | 'all';
     DataTableComponent,
     PagerComponent,
     PluralPipe,
+    FormatDateTimePipe,
     ActionsCellComponent,
     LocalizedDateComponent,
     DialogShellComponent,

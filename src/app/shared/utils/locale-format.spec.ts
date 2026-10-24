@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatCompactCurrency, formatCurrency } from './locale-format';
+import { formatCompactCurrency, formatCurrency, formatDate, formatDateTime } from './locale-format';
 
 /**
  * Phase 1, ticket 1.3 — ONE money formatter.
@@ -160,6 +160,38 @@ describe('the compact money', () => {
 
   it('falls back to the code when a currency has no Arabic symbol', () => {
     expect(formatCompactCurrency(1200, 'ar', 'XYZ')).toContain('XYZ');
+  });
+});
+
+describe('date formatter', () => {
+  it('formats en date', () => {
+    expect(formatDate('2026-10-24', 'en')).toBe('24 Oct 2026');
+  });
+  it('formats en date+time with one comma', () => {
+    const s = formatDateTime('2026-10-24T19:51:00', 'en');
+    expect(s).toMatch(/^24 Oct 2026, \d{1,2}:\d{2} (AM|PM)$/);
+    expect(s).not.toMatch(/\\s,/);
+  });
+  it('formats ar date', () => {
+    expect(formatDate('2026-10-24', 'ar')).toContain('2026');
+    expect(formatDate('2026-10-24', 'ar')).not.toMatch(/[٠-٩]/);
+  });
+});
+
+describe('raw date format guard', () => {
+  it('no template uses a raw date format pipe', () => {
+    const offenders: string[] = [];
+    for (const [file, text] of Object.entries(templates)) {
+      if (/\|\s*date\b/.test(text)) offenders.push(file);
+    }
+    expect(offenders).toEqual([]);
+  });
+  it('no source uses toLocaleString for dates', () => {
+    const offenders: string[] = [];
+    for (const [file, text] of Object.entries(sources)) {
+      if (/toLocaleString|toLocaleDateString|toLocaleTimeString/.test(text)) offenders.push(file);
+    }
+    expect(offenders).toEqual([]);
   });
 });
 

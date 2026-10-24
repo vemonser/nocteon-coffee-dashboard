@@ -5,7 +5,8 @@
     runs RIGHT to LEFT, which reversed the date to "2026 أكتوبر 20".
   -->
   <span
-    class="inline-flex gap-1 tabular-nums"
+    class="inline-flex tabular-nums"
+    [class.gap-1]="!withComma()"
     [dir]="language.current() === 'ar' ? 'rtl' : 'ltr'"
     [class.flex-col]="stackTime()"
     [class.items-start]="stackTime()"
