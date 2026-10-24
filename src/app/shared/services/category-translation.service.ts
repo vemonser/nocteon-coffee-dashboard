@@ -28,17 +28,34 @@ export class CategoryTranslationService {
     );
   }
 
+  /**
+   * Resolve several category names in one round trip.
+   *
+   * There is no `/categories/names` endpoint on the backend — asking for one
+   * made "names" look like a category slug (404). The dashboard list endpoint
+   * already returns every category with its translations, so we resolve from
+   * that page and keep the result in the same cache.
+   */
   getCategoryNames(slugs: string[], language: string = 'en'): Observable<Map<string, string>> {
-    return this.http.get<any>(`${this.base}/names?slugs=${slugs.join(',')}&language=${language}`).pipe(
-      map((response: any) => {
-        const nameMap = new Map<string, string>();
-        response.data?.forEach((item: any) => {
-          nameMap.set(item.slug, item.name);
-          this.categoryCache.set(`${item.slug}-${language}`, item.name);
-        });
-        return nameMap;
-      }),
-      catchError(() => of(new Map()))
-    );
+    const wanted = new Set(slugs.filter(Boolean));
+    return this.http
+      .get<any>(this.base, { params: { page: 0, size: 100 } })
+      .pipe(
+        map((response: any) => {
+          const nameMap = new Map<string, string>();
+          const content = response.data?.content ?? [];
+          for (const item of content) {
+            if (!wanted.has(item.slug)) continue;
+            const translation =
+              item.translations?.find((t: any) => t.language === language) ??
+              item.translations?.[0];
+            const name = translation?.name || item.slug;
+            nameMap.set(item.slug, name);
+            this.categoryCache.set(`${item.slug}-${language}`, name);
+          }
+          return nameMap;
+        }),
+        catchError(() => of(new Map())),
+      );
   }
 }

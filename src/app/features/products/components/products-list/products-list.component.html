@@ -55,8 +55,8 @@
           <hlm-select-group>
             <hlm-select-label>{{ 'products.filters.type' | transloco }}</hlm-select-label>
             <hlm-select-item value="all">{{ 'products.filters.all' | transloco }}</hlm-select-item>
-            <hlm-select-item value="COFFEE">Coffee</hlm-select-item>
-            <hlm-select-item value="EQUIPMENT">Equipment</hlm-select-item>
+            <hlm-select-item value="COFFEE">{{ 'products.form.productTypes.COFFEE' | transloco }}</hlm-select-item>
+            <hlm-select-item value="EQUIPMENT">{{ 'products.form.productTypes.EQUIPMENT' | transloco }}</hlm-select-item>
           </hlm-select-group>
         </hlm-select-content>
       </hlm-select>
@@ -139,12 +139,47 @@
   <!-- Table -->
   @if (!loadError()) {
   @if (!isTrash() && selectedIds().size > 0) {
-    <div class="flex items-center gap-3 rounded-md border bg-muted/40 px-4 py-2">
-      <span class="text-sm font-medium">{{ selectedIds().size }} selected</span>
-      <button hlmBtn size="sm" variant="outline" (click)="bulkEnable()">Enable</button>
-      <button hlmBtn size="sm" variant="outline" (click)="bulkDisable()">Disable</button>
-      <button hlmBtn size="sm" variant="destructive" (click)="bulkTrash()">Move to Trash</button>
-      <button hlmBtn size="sm" variant="ghost" (click)="clearSelection()">Clear</button>
+    <div class="flex flex-wrap items-center gap-2 rounded-md border bg-muted/40 px-4 py-2">
+      <span class="text-sm font-medium">
+        {{ 'products.bulk.selected' | transloco: { count: selectedIds().size } }}
+      </span>
+      <button hlmBtn size="sm" variant="outline" [disabled]="bulkBusy()" (click)="bulkEnable()">
+        {{ 'products.bulk.enable' | transloco }}
+      </button>
+      <button hlmBtn size="sm" variant="outline" [disabled]="bulkBusy()" (click)="bulkDisable()">
+        {{ 'products.bulk.disable' | transloco }}
+      </button>
+      <button hlmBtn size="sm" variant="outline" [disabled]="bulkBusy()" (click)="bulkFeature()">
+        {{ 'products.bulk.feature' | transloco }}
+      </button>
+      <button hlmBtn size="sm" variant="outline" [disabled]="bulkBusy()" (click)="bulkUnfeature()">
+        {{ 'products.bulk.unfeature' | transloco }}
+      </button>
+      <button hlmBtn size="sm" variant="destructive" [disabled]="bulkBusy()" (click)="bulkTrash()">
+        {{ 'products.bulk.moveToTrash' | transloco }}
+      </button>
+      <button hlmBtn size="sm" variant="ghost" [disabled]="bulkBusy()" (click)="clearSelection()">
+        {{ 'products.bulk.clear' | transloco }}
+      </button>
+      @if (bulkProgress(); as progress) {
+        <span class="ms-auto flex items-center gap-2 text-xs text-muted-foreground">
+          <span>{{ progress.done }}/{{ progress.total }}</span>
+          <span class="h-1.5 w-24 overflow-hidden rounded-full bg-border">
+            <span class="block h-full rounded-full bg-primary transition-all" [style.width.%]="progress.total ? (progress.done / progress.total) * 100 : 0"></span>
+          </span>
+        </span>
+      }
+    </div>
+  }
+
+  @if (bulkErrors().length > 0) {
+    <div role="alert" class="rounded-md border border-destructive/40 bg-destructive-soft px-4 py-3 text-xs text-destructive">
+      <p class="font-medium">{{ 'products.bulk.someFailed' | transloco: { count: bulkErrors().length } }}</p>
+      <ul class="mt-1 list-inside list-disc">
+        @for (error of bulkErrors(); track error) {
+          <li>{{ error }}</li>
+        }
+      </ul>
     </div>
   }
 
@@ -155,31 +190,30 @@
       [data]="items()"
       [columns]="columns"
       [loading]="loading()"
+      [rowHeight]="'72px'"
       [initialSort]="{ column: currentSort, direction: currentDirection }"
-      [showEdit]="!isTrash()"
+      [showEdit]="false"
       [showView]="false"
-      [showDelete]="!isTrash()"
+      [showDelete]="false"
       [showRestore]="isTrash()"
       [showPermanentDelete]="isTrash()"
       [restoreLabel]="'common.restore' | transloco"
       [permanentDeleteLabel]="'common.deletePermanently' | transloco"
+      [navigableColumn]="isTrash() ? '' : 'main_en'"
+      [navigableHref]="editHref"
+      [clickableRows]="!isTrash()"
       (sortChange)="onSortChange($event)"
-      (edit)="goToEdit($event)"
       (delete)="confirmDelete($event)"
       (restore)="restore($event)"
       (permanentDelete)="openPermanentDelete($event)"
       (rowClick)="goToEdit($event)"
       (statusToggle)="onToggleStatus($event)"
       (featuredToggle)="onFeaturedToggle($event)"
-      [menuActions]="menuActions"
-      [editLabel]="'common.edit' | transloco"
-      [deleteLabel]="'common.delete' | transloco"
-      [restoreLabel]="'common.restore' | transloco"
-      [permanentDeleteLabel]="'common.deletePermanently' | transloco"
+      [menuActionsFor]="isTrash() ? null : menuActionsFor"
+      [menuActions]="[]"
       (menuAction)="onMenuAction($event)"
       (selectionChange)="onSelectionChange($event)"
-      (toggleAllChange)="onToggleAll($event)" 
-      (hasView)="(false)"
+      (toggleAllChange)="onToggleAll($event)"
     />
   </div>
 

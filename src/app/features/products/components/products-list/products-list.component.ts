@@ -32,6 +32,8 @@ import { ColumnDef, createColumnHelper } from '@tanstack/table-core';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { PagerComponent } from '../../../../shared/components/pager/pager.component';
 import { NotifyService } from '../../../../core/notify/notify.service';
+import { RowMenuAction } from '../../../../shared/ui/actions-cell/actions-cell.component';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-products-list',
@@ -114,43 +116,92 @@ export class ProductsListComponent {
   readonly activeCount = signal(0);
   readonly trashCount = signal(0);
 
+  readonly bulkProgress = signal<{ done: number; total: number } | null>(null);
+  readonly bulkErrors = signal<string[]>([]);
+  readonly bulkBusy = signal(false);
+
   private columnHelper = createColumnHelper<ProductListItem>();
   columns: ColumnDef<ProductListItem, any>[] = [
-    this.columnHelper.accessor('primaryImageUrl', { id: 'image', header: 'Image', enableSorting: false }),
-    this.columnHelper.accessor('name', { header: 'Name', enableSorting: true }),
-    this.columnHelper.accessor('slug', { header: 'Slug', enableSorting: true }),
-    this.columnHelper.accessor((row) => {
-      // Display translated product type name instead of raw value
-      const typeLabels: Record<ProductType, string> = {
-        'COFFEE': 'Coffee',
-        'EQUIPMENT': 'Equipment',
-      };
-      return typeLabels[row.productType] || row.productType;
-    }, { header: 'Type', enableSorting: false }),
-    this.columnHelper.accessor((row) => {
-      // Display translated category name instead of raw slug
-      return row.categoryName || row.categorySlug;
-    }, { header: 'Category', enableSorting: false, id: 'category' }),
-    this.columnHelper.accessor((row): string => {
-      const min = row.minPrice;
-      const max = row.maxPrice;
-      const fmt = (n: number) => `EGP ${n.toLocaleString('en-US')}`;
-      if (min === max) return fmt(min);
-      return `${fmt(min)} – ${fmt(max)}`;
-    }, {
-      id: 'priceRange',
-      header: 'Price Range',
-      enableSorting: true,
+    this.columnHelper.accessor(
+      (row) => ({
+        name: row.name,
+        slug: row.slug,
+        imageUrl: row.primaryImageUrl,
+        otherName: row.name,
+      }),
+      { id: 'main_en', header: 'Product', enableSorting: true, meta: { width: '260px' } },
+    ),
+    this.columnHelper.accessor('productType', {
+      id: 'productType',
+      header: 'Type',
+      enableSorting: false,
+      meta: { width: '90px' },
     }),
-    this.columnHelper.accessor('isActive', { header: 'Status', enableSorting: false }),
-    this.columnHelper.accessor('featured', { header: 'Featured', enableSorting: false }),
-    this.columnHelper.display({ id: 'actions', header: 'Actions' }),
+    this.columnHelper.accessor((row) => row.categoryName || row.categorySlug, {
+      header: 'Category',
+      enableSorting: false,
+      id: 'category',
+      meta: { width: '105px' },
+    }),
+    this.columnHelper.accessor((row) => ({ min: row.minPrice, max: row.maxPrice }), {
+      id: 'productPrice',
+      header: 'Price',
+      enableSorting: true,
+      meta: { width: '175px' },
+    }),
+    this.columnHelper.accessor(
+      (row) => ({
+        stock: row.totalStock ?? null,
+        variants: row.variantsCount ?? null,
+        level:
+          row.stockStatus === 'in-stock'
+            ? 'ok'
+            : row.stockStatus ?? 'unknown',
+      }),
+      { id: 'productStock', header: 'Stock', enableSorting: false, meta: { width: '105px' } },
+    ),
+    this.columnHelper.accessor('isActive', {
+      header: 'Status',
+      enableSorting: false,
+      meta: { width: '95px' },
+    }),
+    this.columnHelper.accessor('featured', {
+      header: 'Featured',
+      enableSorting: false,
+      meta: { width: '90px' },
+    }),
+    this.columnHelper.display({ id: 'actions', header: 'Actions', meta: { width: '56px' } }),
   ];
 
-  protected readonly menuActions: any[] = [
+  readonly editHref = (row: ProductListItem) => ['/dashboard/products', row.slug, 'edit'];
+
+  readonly menuActionsFor = (row: ProductListItem): RowMenuAction[] => [
+    { id: 'edit', label: 'common.edit', icon: 'lucidePencil' },
+    {
+      id: 'view',
+      label: 'products.actions.viewOnStorefront',
+      icon: 'lucideExternalLink',
+      disabled: !row.isActive,
+      tooltip: !row.isActive ? 'Product is disabled' : undefined,
+    },
     { id: 'duplicate', label: 'products.actions.duplicate', icon: 'lucideCopy' },
-    { id: 'view', label: 'products.actions.viewOnStorefront', icon: 'lucideExternalLink' },
-    { id: 'trash', label: 'products.actions.moveToTrash', icon: 'lucideTrash2', danger: true },
+    {
+      id: 'toggleActive',
+      label: row.isActive ? 'products.actions.disable' : 'products.actions.enable',
+      icon: 'lucideCircleSlash',
+    },
+    {
+      id: 'toggleFeatured',
+      label: row.featured ? 'products.actions.unfeature' : 'products.actions.feature',
+      icon: 'lucideStar',
+    },
+    { id: 'separator', label: '' },
+    {
+      id: 'trash',
+      label: 'products.actions.moveToTrash',
+      icon: 'lucideTrash2',
+      danger: true,
+    },
   ];
 
   constructor() {
@@ -205,13 +256,18 @@ export class ProductsListComponent {
           categorySlug: p.categorySlug || '',
           productType: p.productType || 'COFFEE',
           featured: p.featured ?? false,
-          isActive: p.isActive !== undefined ? p.isActive : true,  // Fix: default to true if undefined
+          active: p.active ?? p.isActive ?? true,
+          isActive: p.active ?? p.isActive ?? true,
           name: p.name ?? (p.translations?.find((t: any) => t.language === 'en')?.name ?? ''),
           shortDescription: p.shortDescription ?? null,
           primaryImageUrl: p.primaryImageUrl ?? p.imageUrl ?? null,
           minPrice: p.minPrice ?? 0,
           maxPrice: p.maxPrice ?? 0,
           discountPercentage: p.discountPercentage ?? null,
+          // ProductCardResponse does not carry these yet — see DECISIONS.md.
+          totalStock: p.totalStock ?? null,
+          variantsCount: p.variantsCount ?? null,
+          stockStatus: 'unknown' as const,
         }));
 
         // Fetch category names for display
@@ -266,8 +322,12 @@ export class ProductsListComponent {
           primaryImageUrl: p.primaryImageUrl ?? p.imageUrl ?? null,
           minPrice: p.minPrice ?? 0,
           maxPrice: p.maxPrice ?? 0,
-          isActive: p.isActive !== undefined ? p.isActive : true,
+          active: p.active ?? p.isActive ?? true,
+          isActive: p.active ?? p.isActive ?? true,
           featured: p.featured ?? false,
+          totalStock: null,
+          variantsCount: null,
+          stockStatus: 'unknown' as const,
         }));
 
         // Fetch category names for display
@@ -369,30 +429,99 @@ export class ProductsListComponent {
   }
 
   protected bulkEnable(): void {
-    const ids = [...this.selectedIds()];
-    const slugs = this.items().filter((p) => ids.includes(p.id)).map((p) => p.slug);
-    slugs.forEach((slug) => this.productService.toggleActive(slug, true).subscribe({ next: () => this.load() }));
+    this.runBulk('enable');
   }
 
   protected bulkDisable(): void {
-    const ids = [...this.selectedIds()];
-    const slugs = this.items().filter((p) => ids.includes(p.id)).map((p) => p.slug);
-    slugs.forEach((slug) => this.productService.toggleActive(slug, false).subscribe({ next: () => this.load() }));
+    this.runBulk('disable');
+  }
+
+  protected bulkFeature(): void {
+    this.runBulk('feature');
+  }
+
+  protected bulkUnfeature(): void {
+    this.runBulk('unfeature');
   }
 
   protected bulkTrash(): void {
-    const ids = [...this.selectedIds()];
-    const slugs = this.items().filter((p) => ids.includes(p.id)).map((p) => p.slug);
-    slugs.forEach((slug) => this.productService.delete(slug).subscribe({ next: () => this.load() }));
+    this.runBulk('trash');
   }
 
-  onMenuAction(event: { id: string; item: any }): void {
-    if (event.id === 'duplicate') {
-      this.router.navigate(['/dashboard/products', event.item.slug, 'duplicate']);
-    } else if (event.id === 'view') {
-      window.open(`/products/${event.item.slug}`, '_blank');
-    } else if (event.id === 'trash') {
-      this.confirmDelete(event.item);
+  private runBulk(kind: 'enable' | 'disable' | 'feature' | 'unfeature' | 'trash'): void {
+    const ids = [...this.selectedIds()];
+    const slugs = this.items().filter((p) => ids.includes(p.id)).map((p) => p.slug);
+    if (slugs.length === 0) return;
+
+    this.bulkBusy.set(true);
+    this.bulkErrors.set([]);
+    this.bulkProgress.set({ done: 0, total: slugs.length });
+    const errors: string[] = [];
+
+    const step = (index: number): void => {
+      if (index >= slugs.length) {
+        this.bulkProgress.set(null);
+        this.bulkBusy.set(false);
+        this.bulkErrors.set(errors);
+        this.selectedIds.set(new Set());
+        this.load();
+        return;
+      }
+
+      this.bulkRequest(kind, slugs[index]).subscribe({
+        next: () => {
+          this.bulkProgress.set({ done: index + 1, total: slugs.length });
+          step(index + 1);
+        },
+        error: (err) => {
+          errors.push(`${slugs[index]}: ${err?.error?.message ?? 'request failed'}`);
+          this.bulkProgress.set({ done: index + 1, total: slugs.length });
+          step(index + 1);
+        },
+      });
+    };
+
+    step(0);
+  }
+
+  private bulkRequest(
+    kind: 'enable' | 'disable' | 'feature' | 'unfeature' | 'trash',
+    slug: string,
+  ): Observable<unknown> {
+    switch (kind) {
+      case 'enable':
+        return this.productService.toggleActive(slug, true);
+      case 'disable':
+        return this.productService.toggleActive(slug, false);
+      case 'feature':
+        return this.productService.toggleFeatured(slug, true);
+      case 'unfeature':
+        return this.productService.toggleFeatured(slug, false);
+      case 'trash':
+        return this.productService.delete(slug);
+    }
+  }
+
+  onMenuAction(event: { id: string; item: ProductListItem }): void {
+    switch (event.id) {
+      case 'edit':
+        this.goToEdit(event.item);
+        break;
+      case 'duplicate':
+        this.router.navigate(['/dashboard/products', event.item.slug, 'duplicate']);
+        break;
+      case 'view':
+        window.open(`/products/${event.item.slug}`, '_blank');
+        break;
+      case 'toggleActive':
+        this.onToggleStatus(event.item);
+        break;
+      case 'toggleFeatured':
+        this.onFeaturedToggle(event.item);
+        break;
+      case 'trash':
+        this.confirmDelete(event.item);
+        break;
     }
   }
 
@@ -411,9 +540,10 @@ export class ProductsListComponent {
     const col = event?.column ?? 'createdAt';
     // Map column IDs to sort fields
     const sortFieldMap: Record<string, string> = {
-      'priceRange': 'minPrice',
-      'product': 'name',
-      'updatedAt': 'updatedAt',
+      productPrice: 'minPrice',
+      main_en: 'name',
+      product: 'name',
+      updatedAt: 'updatedAt',
     };
     this.currentSort = sortFieldMap[col] || col;
     this.currentDirection = event?.direction ?? 'desc';
@@ -438,17 +568,22 @@ export class ProductsListComponent {
   }
 
   toggleFeatured(product: ProductListItem): void {
-    this.productService.toggleFeatured(product.slug, !product.featured).subscribe({
-      next: () => this.load(),
-      error: (err) =>
-        this.notify.apiError(err, 'notify.errorFallback', 'Could not update featured'),
-    });
+    this.onFeaturedToggle(product);
   }
 
+  /** Optimistic star: flip immediately, roll back and toast if the API rejects it. */
   onFeaturedToggle(product: ProductListItem): void {
-    this.productService.toggleFeatured(product.slug, !product.featured).subscribe({
-      next: () => this.load(),
-      error: (err) => this.notify.apiError(err, 'notify.errorFallback', 'Could not update featured'),
+    const previous = this.items();
+    const next = !product.featured;
+    this.items.update((list) =>
+      list.map((item) => (item.id === product.id ? { ...item, featured: next } : item)),
+    );
+
+    this.productService.toggleFeatured(product.slug, next).subscribe({
+      error: (err) => {
+        this.items.set(previous);
+        this.notify.apiError(err, 'notify.errorFallback', 'Could not update featured');
+      },
     });
   }
 

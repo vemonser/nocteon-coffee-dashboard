@@ -219,6 +219,7 @@
         <tr
           hlmTr
           class="hover:bg-accent transition-colors"
+          [style.height]="rowHeight()"
           [class.cursor-pointer]="clickableRows()"
           [attr.data-selected]="isSelected(row.original) ? '' : null"
           (click)="onRowClick($event, row.original)"
@@ -300,6 +301,56 @@
                     [src]="$any(cell.getValue())"
                     [alt]="row.original.slug ?? row.original.id"
                   />
+                }
+
+                @case ('productType') {
+                  <span class="whitespace-nowrap text-[13px]">
+                    {{ 'products.form.productTypes.' + $any(cell.getValue()) | transloco }}
+                  </span>
+                }
+
+                @case ('productPrice') {
+                  @let range = $any(cell.getValue());
+                  <span class="block whitespace-nowrap text-start text-[13px] tabular-nums">
+                    @if (range.max === range.min) {
+                      {{ range.min | money }}
+                    } @else {
+                      {{ range.min | money }} – {{ range.max | money }}
+                    }
+                  </span>
+                }
+
+                @case ('productStock') {
+                  @let stock = $any(cell.getValue());
+                  <span class="flex min-w-0 flex-col items-start gap-1">
+                    @switch (stock.level) {
+                      @case ('out') {
+                        <span class="inline-flex items-center rounded-full bg-destructive-soft px-2 py-0.5 text-xs font-medium text-destructive">
+                          {{ 'products.table.outOfStock' | transloco }}
+                        </span>
+                      }
+                      @case ('low') {
+                        <span class="inline-flex items-center rounded-full bg-warning-soft px-2 py-0.5 text-xs font-medium text-warning">
+                          {{ 'products.table.lowStock' | transloco: { count: stock.stock } }}
+                        </span>
+                      }
+                      @case ('ok') {
+                        <span class="inline-flex items-center rounded-full bg-success-soft px-2 py-0.5 text-xs font-medium text-success">
+                          {{ 'products.table.inStock' | transloco: { count: stock.stock } }}
+                        </span>
+                      }
+                      @default {
+                        <span class="text-xs text-muted-foreground" [attr.title]="'products.table.stockNeedsBackend' | transloco">—</span>
+                      }
+                    }
+                    @if (stock.variants != null) {
+                      <span class="text-[11px] text-muted-foreground">
+                        {{ 'products.table.variants' | transloco: { count: stock.variants } }}
+                      </span>
+                    } @else {
+                      <span class="text-[11px] text-muted-foreground" [attr.title]="'products.table.stockNeedsBackend' | transloco">—</span>
+                    }
+                  </span>
                 }
 
                 @case ('items') {

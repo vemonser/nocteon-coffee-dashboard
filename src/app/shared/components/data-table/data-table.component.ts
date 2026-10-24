@@ -66,6 +66,7 @@ export class DataTableComponent {
     Deleted: 'common.deleted',
     Actions: 'common.actions',
     Name: 'common.name',
+    Stock: 'common.stock',
     Price: 'common.price',
     Type: 'common.type',
     Featured: 'common.featured',
@@ -211,6 +212,8 @@ export class DataTableComponent {
    * the difference between a truncated value and a whole one.
    */
   cellPadding = input<string>('px-4');
+  /** Optional fixed row height, e.g. `72px` on the products list. */
+  rowHeight = input<string | null>(null);
   sortChange = output<TableSortEvent | null>();
   edit = output<any>();
   statusToggle = output<any>();
