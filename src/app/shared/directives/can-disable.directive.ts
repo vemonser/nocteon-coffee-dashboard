@@ -14,6 +14,7 @@ import { PermissionService } from '../../core/auth/permission.service';
  */
 @Directive({
   selector: '[appCanDisable]',
+  standalone: true,
 })
 export class CanDisableDirective {
   private perm = inject(PermissionService);
