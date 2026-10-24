@@ -971,6 +971,15 @@ and page 2 do not show the same rows.
 
 ## Needs backend
 
+### Polish pass 1 — nav-counts (W2)
+- `GET /api/dashboard/nav-counts` does not exist (probed 2026-10-25); sidebar shows NO count badges. Write "nav-counts" here per spec. A dev-only `?mockNavCounts=1` (or `localStorage.devMockNavCounts=1`) flag mocks badges for screenshots.
+
+### Polish pass 1 — mark unread (W3)
+- No `mark as unread` endpoint (only `PATCH /read`); Mark unread omitted from row actions and bulk bar.
+
+### Polish pass 1 — reply history (W4)
+- Contact API returns a single reply (`replyContent`/`repliedBy`/`repliedAt`), not a thread array; thread view omitted. Write "reply history" here.
+
 ### Custom date range picker (G5)
 - The "Custom" option in the dashboard toolbar uses two native date inputs in a popover as a temporary solution.
 - The existing Spartan date-range-picker component exists in `libs/ui/date-picker/` but requires complex integration.

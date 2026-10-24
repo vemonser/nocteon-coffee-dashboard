@@ -57,9 +57,30 @@
         <ul hlmSidebarMenu class="pt-2 pb-1">
           @for (parentItem of section.items; track parentItem.route) {
             <li hlmSidebarMenuItem class="py-0">
-              <!-- Group label: the control that opens and closes the group. It
-                   carries the group's icon, so every top-level row starts on the
-                   same icon column as the pinned Home row above it. -->
+              @if (parentItem.children && parentItem.children.length === 1) {
+                <!-- Single child: render as a direct item, no expander. -->
+                @let child = parentItem.children[0];
+                <a
+                  hlmSidebarMenuButton
+                  [routerLink]="child.route"
+                  ariaCurrentWhenActive="page"
+                  routerLinkActive="bg-sidebar-accent text-sidebar-accent-foreground"
+                  class="group flex items-center gap-2.5"
+                >
+                  <ng-icon [name]="child.icon" class="size-4 shrink-0 text-sidebar-foreground/60 group-hover:text-sidebar-foreground transition-colors duration-150" aria-hidden="true" />
+                  <span class="flex-1 truncate">{{ child.label }}</span>
+                  @if (badgeCount(child.route); as n) {
+                    @if (n > 0) {
+                      @if (isRailCollapsed()) {
+                        <span class="size-2 shrink-0 rounded-full bg-primary" [attr.aria-label]="badgeAria(child.route, n)"></span>
+                      } @else {
+                        <span class="inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-primary px-1 text-[10px] font-medium text-primary-foreground" [attr.aria-label]="badgeAria(child.route, n)">{{ n > 99 ? '99+' : n }}</span>
+                      }
+                    }
+                  }
+                </a>
+              } @else {
+              <!-- Group label: the control that opens and closes the group. -->
               <button
                 type="button"
                 (click)="toggleItem(parentItem.route)"
@@ -72,11 +93,6 @@
                   aria-hidden="true"
                 />
                 <span class="flex-1 truncate">{{ parentItem.label }}</span>
-                <!--
-                  Collapsed points at the container's inline start. Written as a
-                  direction variant, not a language check, so the arrow follows the
-                  layout instead of the translation.
-                -->
                 <ng-icon
                   name="lucideChevronDown"
                   class="size-3.5 shrink-0 text-sidebar-foreground/50 transition-transform duration-150"
@@ -84,11 +100,6 @@
                 />
               </button>
 
-              <!-- Children - collapsible. ps-8, not pl-8: the indent belongs to the
-                   inline start, so it lands under the label in Arabic too. The dot
-                   replaces the per-page icon: at 6px it costs the same width the
-                   old 16px icon did, and it lets the indent read as a hierarchy
-                   instead of a second icon column. -->
               <div
                 class="nav-collapse"
                 [class.nav-collapse-open]="!isItemCollapsed(parentItem.route)"
@@ -101,18 +112,28 @@
                         [routerLink]="child.route"
                         ariaCurrentWhenActive="page"
                         routerLinkActive="bg-sidebar-accent text-sidebar-accent-foreground [&_span:first-of-type]:bg-sidebar-accent-foreground [&_span:first-of-type]:opacity-100"
-                        class="group"
+                        class="group flex items-center gap-2"
                       >
                         <span
                           class="size-1.5 shrink-0 rounded-full bg-sidebar-foreground/40 transition-colors duration-150 group-hover:bg-sidebar-foreground/70"
                           aria-hidden="true"
                         ></span>
-                        <span>{{ child.label }}</span>
+                        <span class="flex-1 truncate">{{ child.label }}</span>
+                        @if (badgeCount(child.route); as n) {
+                          @if (n > 0) {
+                            @if (isRailCollapsed()) {
+                              <span class="size-2 shrink-0 rounded-full bg-primary" [attr.aria-label]="badgeAria(child.route, n)"></span>
+                            } @else {
+                              <span class="inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-primary px-1 text-[10px] font-medium text-primary-foreground" [attr.aria-label]="badgeAria(child.route, n)">{{ n > 99 ? '99+' : n }}</span>
+                            }
+                          }
+                        }
                       </a>
                     </li>
                   }
                 </ul>
               </div>
+              }
             </li>
           }
         </ul>

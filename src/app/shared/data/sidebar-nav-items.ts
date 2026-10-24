@@ -2,7 +2,7 @@ import { NavItem } from './sidebar-nav-items.model';
 import { Language } from '../../core/i18n/language';
 import { navI18n, NavKey } from '../i18n/nav-i18n';
 
-export type NavSectionKey = 'operations' | 'content' | 'catalog' | 'coffeeData' | 'settings';
+export type NavSectionKey = 'operations' | 'access' | 'content' | 'catalog' | 'coffeeData' | 'settings';
 
 export interface NavSection {
   key: NavSectionKey;
@@ -50,6 +50,7 @@ const icons: Record<NavKey, string> = {
 const sectionLabels: Record<Language, Record<NavSectionKey, string>> = {
   en: {
     operations: 'Operations',
+    access: 'Access',
     content: 'Content',
     catalog: 'Catalog',
     coffeeData: 'Coffee data',
@@ -57,6 +58,7 @@ const sectionLabels: Record<Language, Record<NavSectionKey, string>> = {
   },
   ar: {
     operations: 'العمليات',
+    access: 'الوصول',
     content: 'المحتوى',
     catalog: 'الكتالوج',
     coffeeData: 'بيانات القهوة',
@@ -93,10 +95,22 @@ export function getNavItems(lang: Language) {
     [
       { label: t.orders, icon: icons.orders, route: '/dashboard/orders', permission: 'order:read' },
       { label: t.carts, icon: icons.carts, route: '/dashboard/carts', permission: 'cart:read_all' },
-      { label: t.users, icon: icons.users, route: '/dashboard/users', permission: 'user:read' },
-      { label: 'Roles & permissions', icon: icons.users, route: '/dashboard/users/roles', permission: 'user:read' },
       { label: t.reviews, icon: icons.reviews, route: '/dashboard/reviews', permission: 'review:moderate' },
       { label: t.contactMessages, icon: icons.contactMessages, route: '/dashboard/contact-messages', permission: 'contact:read' },
+    ],
+    t,
+    s
+  );
+
+  // Access parent with children (Users + Roles & permissions)
+  const accessParent = makeParent(
+    'access',
+    icons.users,
+    '/dashboard/users',
+    undefined,
+    [
+      { label: t.users, icon: icons.users, route: '/dashboard/users', permission: 'user:read' },
+      { label: t.roles, icon: icons.roles ?? icons.users, route: '/dashboard/users/roles', permission: 'user:read' },
     ],
     t,
     s
@@ -167,6 +181,7 @@ export function getNavItems(lang: Language) {
   );
 
   const operations: NavItem[] = [operationsParent];
+  const access: NavItem[] = [accessParent];
   const content: NavItem[] = [contentParent];
   const catalog: NavItem[] = [catalogParent];
   const coffeeData: NavItem[] = [coffeeDataParent];
@@ -176,6 +191,7 @@ export function getNavItems(lang: Language) {
     dashboard,
     sections: [
       { key: 'operations', label: s.operations, items: operations },
+      { key: 'access', label: s.access, items: access },
       { key: 'content', label: s.content, items: content },
       { key: 'catalog', label: s.catalog, items: catalog },
       { key: 'coffeeData', label: s.coffeeData, items: coffeeData },
