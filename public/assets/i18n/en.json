@@ -289,7 +289,10 @@
     "soon": "Soon",
     "saveChanges": "Save changes",
     "verified": "Verified",
-    "never": "Never"
+    "never": "Never",
+    "stock": "Stock",
+    "category": "Category",
+    "product": "Product"
   },
   "products": {
     "title": "Products",
@@ -358,7 +361,12 @@
       "featured": "Featured",
       "activeHint": "Disabled products are hidden from the storefront",
       "featuredHint": "Featured products appear on the storefront homepage",
-      "productTypeChangeWarning": "Changing the product type may affect coffee details and variants."
+      "productTypeChangeWarning": "Changing the product type may affect coffee details and variants.",
+      "featuredDisabledWarning": "Featured products that are disabled will not appear on the storefront.",
+      "productTypes": {
+        "COFFEE": "Coffee",
+        "EQUIPMENT": "Equipment"
+      }
     },
     "variants": {
       "title": "Variants",
@@ -384,7 +392,15 @@
       "selectOptionValue": "Select a value",
       "optionsRequired": "Select at least one option value for this variant.",
       "costPrice": "Cost Price",
-      "reorderThreshold": "Reorder Threshold"
+      "reorderThreshold": "Reorder Threshold",
+      "view": "Variant view",
+      "cards": "Cards",
+      "table": "Table",
+      "outOfStock": "Out of stock",
+      "lowStock": "Low: {{count}}",
+      "inStock": "{{count}} in stock",
+      "duplicate": "Duplicate",
+      "remove": "Remove"
     },
     "media": {
       "title": "Media Gallery",
@@ -398,13 +414,25 @@
       "upload": "Upload",
       "uploading": "Uploading…",
       "dropHint": "Drag & drop files here or click to browse",
-      "fileTypes": "Images or videos · max 10 MB each"
+      "fileTypes": "Images or videos · max 10 MB each",
+      "fileCount": "{{count}} files",
+      "cover": "Cover",
+      "setAsCover": "Set as cover",
+      "editAltText": "Edit alt text",
+      "delete": "Delete",
+      "altTextPlaceholder": "Describe the image",
+      "noAltText": "No alt text",
+      "readyToUpload": "Ready to upload"
     },
     "tastingNotes": {
       "title": "Tasting Notes",
       "description": "Select all flavor notes that apply to this coffee.",
       "noNotes": "No tasting notes available yet. Add some in the Tasting Notes management page first.",
-      "selected": "selected"
+      "selected": "selected",
+      "manage": "Manage notes",
+      "remove": "Remove {{name}}",
+      "search": "Search tasting notes...",
+      "noMatches": "No tasting notes match your search."
     },
     "pairings": {
       "title": "Pairings",
@@ -428,8 +456,9 @@
       "cancel": "Cancel",
       "next": "Next",
       "saving": "Saving...",
-      "saveChanges": "Save Changes",
-      "createProduct": "Create Product"
+      "saveChanges": "Save changes",
+      "createProduct": "Create Product",
+      "variantsCount": "{{count}} variants"
     },
     "table": {
       "image": "Image",
@@ -440,7 +469,12 @@
       "featured": "Featured",
       "notFeatured": "Not Featured",
       "status": "Status",
-      "actions": "Actions"
+      "actions": "Actions",
+      "outOfStock": "Out of stock",
+      "lowStock": "Low: {{count}}",
+      "inStock": "{{count}} in stock",
+      "variants": "{{count}} variants",
+      "stockNeedsBackend": "The list API does not return stock or variant counts yet."
     },
     "empty": {
       "category": "No products in this category",
@@ -455,12 +489,32 @@
       "status": "Status",
       "featured": "Featured",
       "type": "Type",
-      "all": "All"
+      "all": "All",
+      "allTypes": "All types",
+      "allStatuses": "All statuses",
+      "allFeatured": "All"
     },
     "actions": {
       "duplicate": "Duplicate",
       "viewOnStorefront": "View on storefront",
-      "moveToTrash": "Move to Trash"
+      "moveToTrash": "Move to Trash",
+      "enable": "Enable",
+      "disable": "Disable",
+      "feature": "Feature",
+      "unfeature": "Unfeature"
+    },
+    "basicInformation": "Basic information",
+    "content": "Content",
+    "visibility": "Visibility",
+    "bulk": {
+      "selected": "{{count}} selected",
+      "enable": "Enable",
+      "disable": "Disable",
+      "feature": "Feature",
+      "unfeature": "Unfeature",
+      "moveToTrash": "Move to trash",
+      "clear": "Clear",
+      "someFailed": "{{count}} action(s) failed"
     }
   },
   "categories": {

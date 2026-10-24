@@ -1941,3 +1941,37 @@ permission, but the server must enforce them before these actions are safe.
 - **Needs backend:** update V107 (or add a V-next migration) so the dev data
   has at least 3 pending, 1 rejected, 10 verified of 17, an order-linked
   verified review, and a startup assertion that prints the number checked.
+## Products pass 1 + 2 notes
+
+### Field names: `active`, `primary`
+- `DashboardProductResponse`/`ProductCardResponse` use a primitive `boolean isActive`,
+  which Jackson serializes as `active`. The dashboard reads `active` first and keeps
+  `isActive` as a compatibility fallback (`readProductActive`).
+- `ProductMediaResponse` serializes `isPrimary` as `primary`; existing media is mapped
+  to the form's `isPrimary` on load.
+
+### The list API has no stock or variant count
+- `GET /api/dashboard/products` returns `ProductCardResponse`, which has no
+  `totalStock`, `lowStockVariantCount`, or `variantsCount`.
+- The list shows an honest `—` (with a tooltip) for those cells instead of inventing
+  numbers. Needs backend: add these fields to `ProductCardResponse` (or a batch
+  summary endpoint) before the list can show real stock badges.
+
+### No default-variant field
+- The backend has no `defaultVariantId`/`isDefault` field. The variants editor does
+  not offer "set as default". Needs backend.
+
+### No per-language story
+- `ProductTranslationRequest` has `name`, `description`, and `shortDescription`, but
+  no `story`. The story stays at product level in the Coffee details card. Needs
+  backend: add `story` to `ProductTranslationRequest` before moving it into the
+  EN/AR content segments.
+
+### Tasting notes have no category
+- `TastingNoteResponse` has only `slug` + translations. The picker stays one flat
+  list; grouping by category needs a backend category field.
+
+### Media ordering is saved, but upload progress is local
+- Existing and staged media can be reordered with CDK drag/drop; `sortOrder` is sent
+  on save. New files are staged locally and show a readiness bar, not a real bytes-
+  uploaded progress stream.

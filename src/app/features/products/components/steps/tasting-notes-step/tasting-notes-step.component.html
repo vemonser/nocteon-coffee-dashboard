@@ -1,40 +1,90 @@
-﻿<!-- tasting-notes-step.component.html -->
-<div class="space-y-4">
-  <h2 class="text-lg font-medium mb-2">{{ 'products.tastingNotes.title' | transloco }}</h2>
-  <p class="text-sm text-muted-foreground mb-4">{{ 'products.tastingNotes.description' | transloco }}</p>
+﻿<div class="space-y-4">
+  <div class="flex flex-wrap items-start justify-between gap-3">
+    <div>
+      <h2 class="text-lg font-medium">{{ 'products.tastingNotes.title' | transloco }}</h2>
+      <p class="text-sm text-muted-foreground">{{ 'products.tastingNotes.description' | transloco }}</p>
+    </div>
+    <button hlmBtn variant="link" size="sm" type="button" (click)="goManageNotes()">
+      {{ 'products.tastingNotes.manage' | transloco }}
+    </button>
+  </div>
+
+  @if (selectedNotes().length > 0) {
+    <div class="rounded-md border border-border bg-muted/30 p-3">
+      <p class="mb-2 text-xs font-medium text-muted-foreground">
+        {{ selectedNotes().length }} {{ 'products.tastingNotes.selected' | transloco }}
+      </p>
+      <div class="flex flex-wrap gap-2">
+        @for (note of selectedNotes(); track note.slug) {
+          <span class="inline-flex items-center gap-1 rounded-full border border-primary bg-primary/10 py-1 pe-1 ps-3 text-sm text-primary">
+            {{ note.name }}
+            <button
+              type="button"
+              class="inline-flex size-5 items-center justify-center rounded-full hover:bg-primary/20"
+              [attr.aria-label]="'products.tastingNotes.remove' | transloco: { name: note.name }"
+              (click)="remove(note.slug)"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </span>
+        }
+      </div>
+    </div>
+  }
 
   @if (allNotes().length === 0) {
-    <div class="text-center py-12 text-muted-foreground border-2 border-dashed rounded-md">
+    <div class="rounded-md border-2 border-dashed py-12 text-center text-muted-foreground">
       {{ 'products.tastingNotes.noNotes' | transloco }}
     </div>
   } @else {
-    <div class="flex items-center justify-between mb-2">
-      <span class="text-sm text-muted-foreground">{{ selectedCount() }} {{ 'products.tastingNotes.selected' | transloco }}</span>
-    </div>
-    <div class="flex flex-wrap gap-2">
-      @for (note of allNotes(); track note.slug) {
-        <button type="button" (click)="toggle(note.slug)"
+    @if (showSearch()) {
+      <div class="relative max-w-sm">
+        <input
+          hlmInput
+          type="search"
+          class="w-full"
+          [placeholder]="'products.tastingNotes.search' | transloco"
+          [value]="search()"
+          (input)="search.set($any($event.target).value)"
+        />
+      </div>
+    }
+
+    <div class="flex flex-wrap gap-2" role="group" [attr.aria-label]="'products.tastingNotes.title' | transloco">
+      @for (note of filteredNotes(); track note.slug) {
+        <button
+          type="button"
+          (click)="toggle(note.slug)"
           [attr.aria-pressed]="isSelected(note.slug)"
-          class="px-3 py-1.5 rounded-full text-sm border transition-colors inline-flex items-center gap-1.5"
+          class="inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition-colors"
           [class]="isSelected(note.slug)
-            ? 'bg-primary/10 text-primary border-primary'
-            : 'bg-card text-muted-foreground border-border hover:border-input'">
-          @if (isSelected(note.slug)) { <span aria-hidden="true">✓</span> }
+            ? 'border-primary bg-primary/10 text-primary'
+            : 'border-border bg-card text-muted-foreground hover:border-input'"
+        >
+          @if (isSelected(note.slug)) {
+            <span aria-hidden="true">✓</span>
+          }
           {{ getNoteName(note) }}
         </button>
       }
     </div>
+
+    @if (filteredNotes().length === 0) {
+      <p class="text-sm text-muted-foreground">{{ 'products.tastingNotes.noMatches' | transloco }}</p>
+    }
   }
 
-  <!-- Sticky footer for navigation -->
-  <div class="sticky-footer">
-    <button hlmBtn variant="outline" (click)="onBack()">
-      {{ 'common.back' | transloco }}
-    </button>
-    <button hlmBtn 
-            [disabled]="!isCurrentStepDirty() || !isCurrentStepValid()" 
-            (click)="saveCurrentStep()">
-      {{ 'common.saveChanges' | transloco }}
-    </button>
-  </div>
+  @if (!state.isEditMode()) {
+    <!-- Sticky footer for navigation (create mode only) -->
+    <div class="sticky-footer">
+      <button hlmBtn variant="outline" (click)="onBack()">
+        {{ 'common.back' | transloco }}
+      </button>
+      <button hlmBtn
+              [disabled]="!isCurrentStepDirty() || !isCurrentStepValid()"
+              (click)="saveCurrentStep()">
+        {{ 'common.saveChanges' | transloco }}
+      </button>
+    </div>
+  }
 </div>

@@ -22,8 +22,10 @@ import { HlmSwitchImports } from '@spartan-ng/helm/switch';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucidePlus, lucideX, lucideChevronDown, lucideChevronUp, lucideMoreVertical, lucideTrash2, lucideCopy } from '@ng-icons/lucide';
 import { TranslocoPipe } from '@jsverse/transloco';
+import { MoneyPipe } from '../../../../../shared/pipes/money.pipe';
 import { LanguageService } from '../../../../../core/i18n/language.service';
 import { NotifyService } from '../../../../../core/notify/notify.service';
+import { stockLevel as resolveStockLevel } from '../../../../../shared/utils/stock-level';
 
 @Component({
   selector: 'app-variants-step',
@@ -39,6 +41,7 @@ import { NotifyService } from '../../../../../core/notify/notify.service';
     HlmSwitchImports,
     NgIcon,
     TranslocoPipe,
+    MoneyPipe,
   ],
   providers: [
     provideIcons({ lucidePlus, lucideX, lucideChevronDown, lucideChevronUp, lucideMoreVertical, lucideTrash2, lucideCopy }),
@@ -60,6 +63,37 @@ export class VariantsStepComponent implements OnInit {
 
   loadingOptions = signal(false);
   collapsed = signal<Set<number>>(new Set());
+  readonly view = signal<'cards' | 'table'>('cards');
+
+  stockLevel(group: AbstractControl): 'out' | 'low' | 'ok' {
+    return resolveStockLevel(
+      group.get('stockQuantity')?.value,
+      group.get('reorderThreshold')?.value,
+    );
+  }
+
+  discountPercent(group: AbstractControl): number | null {
+    const compare = Number(group.get('compareAtPrice')?.value);
+    const price = Number(group.get('price')?.value);
+    if (!compare || !price || compare <= price) return null;
+    return Math.round(((compare - price) / compare) * 100);
+  }
+
+  optionNames(): string {
+    return this.state.productOptions().map((o) => this.getOptionName(o)).join(', ');
+  }
+
+  compareAtPrice(group: AbstractControl): number | null {
+    const value = Number(group.get('compareAtPrice')?.value);
+    return Number.isFinite(value) && value > 0 ? value : null;
+  }
+
+  margin(group: AbstractControl): string | null {
+    const price = Number(group.get('price')?.value);
+    const cost = Number(group.get('costPrice')?.value);
+    if (!price || !cost || price <= 0) return null;
+    return String(Math.round(((price - cost) / price) * 1000) / 10);
+  }
 
   isCollapsed(i: number): boolean {
     if (this.collapsed().size === 0 && this.state.variantsArray.length > 1) {
@@ -92,12 +126,9 @@ export class VariantsStepComponent implements OnInit {
         
         const lang = this.language.current();
         const valueName = value.translations.find((t) => t.language?.toLowerCase() === lang?.toLowerCase())?.name;
-        const optionName = option.translations.find((t) => t.language?.toLowerCase() === lang?.toLowerCase())?.name;
         
-        // Enhanced display with option context: "250g · Weight"
-        if (valueName && optionName) {
-          parts.push(`${valueName} · ${optionName}`);
-        } else if (valueName) {
+        // The summary is the buyer-facing variant identity: values only.
+        if (valueName) {
           parts.push(valueName);
         } else if (value.slug) {
           parts.push(value.slug);
@@ -169,6 +200,11 @@ export class VariantsStepComponent implements OnInit {
   /** Stringify a value id for hlm-select-item's string-based binding. */
   valueIdString(id: number): string {
     return String(id);
+  }
+
+  /** The trigger must read "250g", not the raw option-value id. */
+  valueLabelFor(option: ProductOption): (value: string) => string {
+    return (value: string) => this.getValueName(option, value);
   }
 
   /** Returns (creating on demand) the valueId FormControl for the given option. */

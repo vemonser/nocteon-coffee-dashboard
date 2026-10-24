@@ -66,6 +66,7 @@ export class DataTableComponent {
     Deleted: 'common.deleted',
     Actions: 'common.actions',
     Name: 'common.name',
+    Stock: 'common.stock',
     Price: 'common.price',
     Type: 'common.type',
     Featured: 'common.featured',

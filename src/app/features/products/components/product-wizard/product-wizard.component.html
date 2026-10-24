@@ -10,28 +10,34 @@
     <div class="flex items-center justify-between mb-6">
       <div>
         <h1 class="text-2xl font-medium tracking-tight">
-          {{ state.isEditMode() ? (state.editingName() ?? ('products.wizard.editTitle' | transloco)) : ('products.wizard.addTitle' | transloco) }}
           @if (state.isEditMode()) {
-            <span class="text-muted-foreground"> - {{ state.editingName() }}</span>
+            {{ productNameInCurrentLang() }}
+            @if (showSecondaryArabicName()) {
+              <span class="ms-2 text-sm font-normal text-muted-foreground">{{ arabicName() }}</span>
+            }
+          } @else {
+            {{ 'products.wizard.addTitle' | transloco }}
           }
         </h1>
         @if (state.isEditMode()) {
-          <p class="text-sm text-muted-foreground">
-            {{ 'products.wizard.editTitle' | transloco }} - {{ state.editingName() }}
+          <p class="flex items-center gap-2 text-sm text-muted-foreground">
+            {{ 'products.form.productTypes.' + state.form.get('productType')?.value | transloco }} · {{ 'products.wizard.variantsCount' | transloco: { count: state.variantsArray.length } }}
             @if (state.form.get('isActive')?.value) {
-              <span class="ml-2 px-2 py-0.5 text-xs bg-success-soft text-success rounded-full">Active</span>
+              <span class="rounded-full bg-success-soft px-2 py-0.5 text-xs text-success">{{ 'products.status.active' | transloco }}</span>
             } @else {
-              <span class="ml-2 px-2 py-0.5 text-xs bg-muted text-muted-foreground rounded-full">Inactive</span>
+              <span class="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">{{ 'products.status.inactive' | transloco }}</span>
             }
           </p>
         }
       </div>
       <div class="flex gap-2">
         @if (state.isEditMode() && state.editingSlug()) {
-          <button hlmBtn variant="outline" (click)="viewOnStorefront()">
-            <ng-icon name="lucideExternalLink" class="mr-2 size-4" />
-            {{ 'products.viewOnStorefront' | transloco }}
-          </button>
+          <span [title]="!state.form.get('isActive')?.value ? 'Product is disabled' : null">
+            <button hlmBtn variant="outline" (click)="viewOnStorefront()" [disabled]="!state.form.get('isActive')?.value">
+              <ng-icon name="lucideExternalLink" class="mr-2 size-4" />
+              {{ 'products.actions.viewOnStorefront' | transloco }}
+            </button>
+          </span>
         }
       </div>
     </div>
@@ -54,6 +60,8 @@
               }
               @if (hasTabError(step.id)) {
                 <span class="absolute -top-1 -right-1 w-2 h-2 bg-destructive rounded-full"></span>
+              } @else if (isTabDirty(step.id)) {
+                <span class="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-primary"></span>
               }
             </button>
           }
@@ -87,47 +95,57 @@
     </form>
 
     <!-- Sticky footer -->
-    <div class="sticky bottom-0 z-10 flex justify-between mt-6 py-4 bg-background/80 backdrop-blur border-t -mx-6 px-6">
-      <div>
-        @if (state.currentStep() > 0) {
-          <button hlmBtn variant="outline" type="button" (click)="onBack()">
+    @if (state.isEditMode()) {
+      <div class="sticky bottom-0 z-10 mt-6 flex justify-between border-t bg-background/80 px-6 py-4 backdrop-blur -mx-6">
+        <div>
+          <button hlmBtn variant="outline" type="button" (click)="onBackToList()">
             <ng-icon name="lucideArrowLeft" class="me-2 size-4 text-foreground rtl:rotate-180" />
             {{ 'products.wizard.back' | transloco }}
           </button>
-        } @else {
-          <button hlmBtn variant="outline" type="button" (click)="onCancel()">
-            <ng-icon name="lucideX" class="mr-2 size-4" />
-            {{ 'products.wizard.cancel' | transloco }}
-          </button>
-        }
-      </div>
-
-      <div class="flex items-center gap-2">
-        @if (!state.isEditMode() && state.currentStep() < state.steps.length - 1) {
-          <button hlmBtn type="button" (click)="onNext()" [disabled]="!state.isCurrentStepValid()">
-            {{ 'products.wizard.next' | transloco }}
-            <ng-icon name="lucideArrowRight" class="ms-2 size-4 rtl:rotate-180" />
-          </button>
-        }
-        @if (state.isEditMode() && isCurrentStepDirty()) {
-          <button hlmBtn type="button" (click)="saveCurrentStep()" [disabled]="submitting() || !state.isCurrentStepValid()">
+        </div>
+        <div class="flex items-center gap-2">
+          <button hlmBtn type="button" (click)="saveAllTabs()" [disabled]="submitting() || !hasUnsavedChanges()">
             @if (submitting()) {
               <ng-icon name="lucideLoader2" class="mr-2 size-4 animate-spin" />
             } @else {
               <ng-icon name="lucideSave" class="mr-2 size-4" />
             }
-            {{ 'products.wizard.saveChanges' | transloco }}
+            {{ submitting() ? ('products.wizard.saving' | transloco) : ('products.wizard.saveChanges' | transloco) }}
           </button>
-        }
-        <button hlmBtn type="button" (click)="onSubmit()" [disabled]="submitting() || !state.isCurrentStepValid()">
-          @if (submitting()) {
-            <ng-icon name="lucideLoader2" class="mr-2 size-4 animate-spin" />
-          } @else {
-            <ng-icon name="lucideCheck" class="mr-2 size-4" />
-          }
-          {{ submitting() ? ('products.wizard.saving' | transloco) : (state.isEditMode() ? ('products.wizard.saveAll' | transloco) : ('products.wizard.createProduct' | transloco)) }}
-        </button>
+        </div>
       </div>
-    </div>
+    } @else {
+      <div class="sticky bottom-0 z-10 mt-6 flex justify-between border-t bg-background/80 px-6 py-4 backdrop-blur -mx-6">
+        <div>
+          @if (state.currentStep() > 0) {
+            <button hlmBtn variant="outline" type="button" (click)="onBack()">
+              <ng-icon name="lucideArrowLeft" class="me-2 size-4 text-foreground rtl:rotate-180" />
+              {{ 'products.wizard.back' | transloco }}
+            </button>
+          } @else {
+            <button hlmBtn variant="outline" type="button" (click)="onCancel()">
+              <ng-icon name="lucideX" class="mr-2 size-4" />
+              {{ 'products.wizard.cancel' | transloco }}
+            </button>
+          }
+        </div>
+        <div class="flex items-center gap-2">
+          @if (state.currentStep() < state.steps.length - 1) {
+            <button hlmBtn type="button" (click)="onNext()" [disabled]="!state.isCurrentStepValid()">
+              {{ 'products.wizard.next' | transloco }}
+              <ng-icon name="lucideArrowRight" class="ms-2 size-4 rtl:rotate-180" />
+            </button>
+          }
+          <button hlmBtn type="button" (click)="onSubmit()" [disabled]="submitting() || !state.isCurrentStepValid()">
+            @if (submitting()) {
+              <ng-icon name="lucideLoader2" class="mr-2 size-4 animate-spin" />
+            } @else {
+              <ng-icon name="lucideCheck" class="mr-2 size-4" />
+            }
+            {{ submitting() ? ('products.wizard.saving' | transloco) : ('products.wizard.createProduct' | transloco) }}
+          </button>
+        </div>
+      </div>
+    }
   }
 </div>
