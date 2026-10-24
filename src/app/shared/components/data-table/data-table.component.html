@@ -220,6 +220,7 @@
           hlmTr
           class="hover:bg-accent transition-colors"
           [class.cursor-pointer]="clickableRows()"
+          [style.height]="rowHeight() || null"
           [attr.data-selected]="isSelected(row.original) ? '' : null"
           (click)="onRowClick($event, row.original)"
         >

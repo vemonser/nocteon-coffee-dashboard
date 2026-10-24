@@ -211,6 +211,12 @@ export class DataTableComponent {
    * the difference between a truncated value and a whole one.
    */
   cellPadding = input<string>('px-4');
+  /**
+   * Optional fixed row height (for example `72px`). When empty the row keeps
+   * its natural content height. The height acts as a minimum in CSS tables,
+   * so the tallest cell still wins if it needs more room.
+   */
+  rowHeight = input<string>('');
   sortChange = output<TableSortEvent | null>();
   edit = output<any>();
   statusToggle = output<any>();
