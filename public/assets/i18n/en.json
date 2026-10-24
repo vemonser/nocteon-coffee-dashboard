@@ -239,7 +239,8 @@
       "converted": "Converted",
       "new": "New",
       "replied": "Replied",
-      "archived": "Archived"
+      "archived": "Archived",
+      "blocked": "Blocked"
     },
     "toggleSidebar": "Toggle sidebar",
     "total": "total",
@@ -284,7 +285,10 @@
     "countItems_other": "{{count}} items",
     "noItemsWarning": "This order has no line items — its total is the shipping, less the discount.",
     "notFeatured": "Not Featured",
-    "toggleStatus": "Toggle status"
+    "toggleStatus": "Toggle status",
+    "soon": "Soon",
+    "saveChanges": "Save changes",
+    "verified": "Verified"
   },
   "products": {
     "title": "Products",
@@ -1267,11 +1271,11 @@
   "users": {
     "title": "Users",
     "total": "total",
-    "active": "Enabled",
-    "blocked": "blocked",
-    "unverified": "unverified",
+    "active": "Active",
+    "blocked": "Blocked",
+    "unverified": "Unverified",
     "add": "Add user",
-    "search": "Search by username or email...",
+    "search": "Search name, username or email",
     "allRoles": "All Roles",
     "admin": "Admin",
     "customer": "Customer",
@@ -1312,7 +1316,27 @@
     "processing": "Processing…",
     "columns": {
       "user": "User"
-    }
+    },
+    "countLabel": "users",
+    "verification": "Verification",
+    "profile": "Profile",
+    "rolePermissions": "Role & permissions",
+    "permissionsCount": "permissions",
+    "manage": "Manage",
+    "changeRoleSoon": "Change role (Soon)",
+    "usernameLocked": "Username can't be changed",
+    "passwordStrength": "Use at least 8 characters.",
+    "confirmDelete": "Delete",
+    "typeUsername": "Type the username to confirm.",
+    "deleted": "User deleted",
+    "roleNames": {
+      "ADMIN": "Admin",
+      "MODERATOR": "Moderator",
+      "CUSTOMER": "Customer"
+    },
+    "rolePermissionsCount": "{n} permissions",
+    "changeRole": "Change role",
+    "allStates": "All states"
   },
   "carts": {
     "title": "Carts",
@@ -2219,5 +2243,35 @@
     },
     "totalCount_one": "1 address in the audience",
     "totalCount_other": "{{count}} addresses in the audience"
+  },
+  "permissions": {
+    "resources": {
+      "order": "Order",
+      "cart": "Cart",
+      "shipping": "Shipping",
+      "promo": "Promo",
+      "product": "Product",
+      "category": "Category",
+      "coffee_variety": "Coffee variety",
+      "roast_level": "Roast level",
+      "origin": "Origin",
+      "farm": "Farm",
+      "processing_method": "Processing method",
+      "brewing_method": "Brewing method",
+      "pairing": "Pairing",
+      "tasting_note": "Tasting note",
+      "journal": "Journal",
+      "review": "Review",
+      "contact": "Contact",
+      "broadcast": "Broadcast",
+      "notification": "Notification",
+      "wishlist": "Wishlist",
+      "user": "User",
+      "address": "Address",
+      "settings": "Settings",
+      "dashboard": "Dashboard",
+      "audit": "Audit",
+      "ai": "AI"
+    }
   }
 }

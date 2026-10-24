@@ -23,6 +23,14 @@ export class UserService extends BaseCrudService<UserResponse, UserRequest> {
     );
   }
 
+  getRoles(): Observable<ApiResponse<string[]>> {
+    return this.http.get<ApiResponse<string[]>>(`${environment.apiUrl}${this.basePath}/roles`);
+  }
+
+  override delete(id: string): Observable<ApiResponse<void>> {
+    return this.http.delete<ApiResponse<void>>(`${environment.apiUrl}${this.basePath}/${id}`);
+  }
+
   toggleActive(id: string): Observable<ApiResponse<UserResponse>> {
     return this.http.patch<ApiResponse<UserResponse>>(
       `${environment.apiUrl}${this.basePath}/${id}/toggle-active`,

@@ -239,7 +239,8 @@
       "converted": "محوّلة",
       "new": "جديد",
       "replied": "تم الرد",
-      "archived": "أرشف"
+      "archived": "أرشف",
+      "blocked": "محظور"
     },
     "toggleSidebar": "إظهار/إخفاء القائمة",
     "total": "إجمالي",
@@ -288,7 +289,10 @@
     "countItems_other": "{{count}} منتج",
     "noItemsWarning": "هذا الطلب لا يحتوي على بنود — إجماله هو الشحن ناقص الخصم.",
     "notFeatured": "غير مميز",
-    "toggleStatus": "تبديل الحالة"
+    "toggleStatus": "تبديل الحالة",
+    "soon": "قريباً",
+    "saveChanges": "حفظ التغييرات",
+    "verified": "موثق"
   },
   "products": {
     "title": "المنتجات",
@@ -1291,7 +1295,7 @@
     "blocked": "محظور",
     "unverified": "غير موثق",
     "add": "إضافة مستخدم",
-    "search": "بحث بالاسم أو البريد...",
+    "search": "بحث بالاسم أو اسم المستخدم أو البريد",
     "allRoles": "جميع الأدوار",
     "admin": "مدير",
     "customer": "عميل",
@@ -1332,7 +1336,26 @@
     "processing": "جارٍ التنفيذ…",
     "columns": {
       "user": "المستخدم"
-    }
+    },
+    "countLabel": "مستخدم",
+    "verification": "التحقق",
+    "profile": "الملف الشخصي",
+    "rolePermissions": "الدور والصلاحيات",
+    "permissionsCount": "صلاحيات",
+    "manage": "إدارة",
+    "changeRoleSoon": "تغيير الدور (قريباً)",
+    "usernameLocked": "لا يمكن تغيير اسم المستخدم",
+    "passwordStrength": "استخدم 8 أحرف على الأقل.",
+    "confirmDelete": "حذف",
+    "typeUsername": "اكتب اسم المستخدم للتأكيد.",
+    "deleted": "تم حذف المستخدم",
+    "roleNames": {
+      "ADMIN": "مدير",
+      "MODERATOR": "مشرف",
+      "CUSTOMER": "عميل"
+    },
+    "changeRole": "تغيير الدور",
+    "allStates": "كل الحالات"
   },
   "carts": {
     "title": "السلات",
@@ -2323,5 +2346,35 @@
     "totalCount_few": "{{count}} عناوين في الجمهور",
     "totalCount_many": "{{count}} عنوانًا في الجمهور",
     "totalCount_other": "{{count}} عنوان في الجمهور"
+  },
+  "permissions": {
+    "resources": {
+      "order": "طلب",
+      "cart": "سلة",
+      "shipping": "شحن",
+      "promo": "عرض",
+      "product": "منتج",
+      "category": "فئة",
+      "coffee_variety": "品種 القهوة",
+      "roast_level": "مستوى التحميص",
+      "origin": "منشأ",
+      "farm": "مزرعة",
+      "processing_method": "طريقة المعالجة",
+      "brewing_method": "طريقة التحضير",
+      "pairing": "تناغم",
+      "tasting_note": "ملاحظة تذوق",
+      "journal": "مجلة",
+      "review": "تقييم",
+      "contact": "تواصل",
+      "broadcast": "بث",
+      "notification": "إشعار",
+      "wishlist": "قائمة الرغبات",
+      "user": "مستخدم",
+      "address": "عنوان",
+      "settings": "إعدادات",
+      "dashboard": "لوحة تحكم",
+      "audit": "تدقيق",
+      "ai": "ذكاء اصطناعي"
+    }
   }
 }

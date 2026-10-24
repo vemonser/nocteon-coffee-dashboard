@@ -35,6 +35,15 @@ export const routes: Routes = [
               ),
           },
           {
+            path: 'roles',
+            data: { breadcrumb: 'roles' },
+            canActivate: [permissionGuard('user:read')],
+            loadComponent: () =>
+              import('./features/users/roles/components/roles-list.component').then(
+                (m) => m.RolesListComponent,
+              ),
+          },
+          {
             path: ':id',
             data: { breadcrumb: 'userDetails' },
             loadComponent: () =>

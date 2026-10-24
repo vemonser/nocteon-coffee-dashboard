@@ -1,0 +1,99 @@
+<div class="space-y-4">
+  @if (showFullAccessBanner()) {
+    <div class="rounded-md bg-success-soft px-4 py-3 text-sm text-success">
+      Full access — {{ total() }} permissions
+    </div>
+  }
+
+  <!-- Toolbar -->
+  <div class="flex flex-wrap items-center gap-3">
+    <div class="relative flex-1 max-w-xs">
+      <input hlmInput type="search" class="!h-8 w-full ps-3" [ngModel]="search()" (ngModelChange)="search.set($event)" placeholder="Filter permissions..." />
+    </div>
+    <label class="flex items-center gap-2 text-sm">
+      <hlm-checkbox [checked]="grantedOnly()" (checkedChange)="grantedOnly.set($event)" />
+      Show granted only
+    </label>
+    <button hlmBtn variant="outline" size="sm" (click)="expandAll()">Expand all</button>
+    <button hlmBtn variant="outline" size="sm" (click)="collapseAll()">Collapse all</button>
+    <div class="ms-auto flex items-center gap-2 text-sm text-muted-foreground">
+      <span>{{ grantedCount() }} / {{ total() }} permissions</span>
+      <div class="h-[6px] w-[160px] rounded-full bg-muted overflow-hidden">
+        <div class="h-full bg-primary" [style.width.%]="total() ? (grantedCount()/total()*100) : 0"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Domains -->
+  <div class="space-y-3">
+    @for (domain of domains(); track domain) {
+      @if (filteredGrouped()[domain]) {
+        <div class="rounded-md border overflow-hidden">
+          <button type="button" class="flex w-full items-center justify-between px-4 py-3 text-start" (click)="toggleDomain(domain)" [attr.aria-expanded]="!isCollapsed(domain)">
+            <span class="flex items-center gap-2 font-medium">
+              <ng-icon name="lucideChevronDown" class="size-4 transition-transform" [class.rotate-180]="isCollapsed(domain)" />
+              {{ domain }}
+              <span class="text-xs text-muted-foreground">{{ domainGranted(domain) }}/{{ domainTotal(domain) }}</span>
+            </span>
+            @if (mode() === 'edit') {
+              <hlm-checkbox [checked]="domainAllGranted(domain)" [indeterminate]="domainSomeGranted(domain)" (checkedChange)="toggleDomainAll(domain, $event)" (click)="$event.stopPropagation()" />
+            }
+          </button>
+          @if (!isCollapsed(domain)) {
+            <div class="border-t">
+              <!-- header row -->
+              <div class="grid items-center gap-2 border-b bg-muted/30 px-3 py-2 text-xs text-muted-foreground" style="grid-template-columns: minmax(200px,1.4fr) repeat(4,96px) minmax(220px,2fr);">
+                <span>Resource</span>
+                @for (a of STANDARD_ACTIONS; track a) {
+                  <span class="text-center">
+                    {{ a === 'read' ? 'View' : a === 'create' ? 'Create' : a === 'update' ? 'Edit' : 'Delete' }}
+                    @if (mode() === 'edit') {
+                      <div class="mt-1 flex justify-center">
+                        <hlm-checkbox [checked]="columnAllGranted(a)" [indeterminate]="columnSomeGranted(a)" (checkedChange)="toggleColumn(a, $event)" />
+                      </div>
+                    }
+                  </span>
+                }
+                <span>Special</span>
+              </div>
+              @for (resource of objectKeys(filteredGrouped()[domain]); track resource) {
+                <div class="grid items-center gap-2 px-3 py-2" style="grid-template-columns: minmax(200px,1.4fr) repeat(4,96px) minmax(220px,2fr);">
+                  <span class="font-medium">
+                    {{ resourceLabel(resource) }}
+                  </span>
+                  @for (a of STANDARD_ACTIONS; track a) {
+                    <span class="relative flex items-center justify-center">
+                      @let slug = standardAction(resource, a);
+                      @if (slug) {
+                        @if (mode() === 'edit') {
+                          <hlm-checkbox [checked]="hasGranted(slug)" [disabled]="isLocked(slug)" (checkedChange)="toggle(slug, $event)" />
+                        } @else {
+                          @if (hasGranted(slug)) { <ng-icon name="lucideCheck" class="size-4 text-success" /> } @else { <span class="text-muted-foreground">—</span> }
+                        }
+                        @if (isLocked(slug)) { <ng-icon name="lucideLock" class="absolute end-1 top-1/2 -translate-y-1/2 size-3 text-muted-foreground" [attr.title]="'Required for this role'" /> }
+                        @if (isSensitive(slug)) { <ng-icon name="lucideShieldAlert" class="absolute end-1 top-1/2 -translate-y-1/2 size-[14px] text-warning" [attr.title]="'Sensitive permission'" /> }
+                      }
+                    </span>
+                  }
+                  <span class="flex flex-wrap gap-1">
+                    @for (slug of specialActions(resource); track slug) {
+                      @if (mode() === 'edit') {
+                        <label class="inline-flex items-center gap-1 text-xs">
+                          <hlm-checkbox [checked]="hasGranted(slug)" [disabled]="isLocked(slug)" (checkedChange)="toggle(slug, $event)" />
+                          {{ actionLabel(slug) }}
+                          @if (isSensitive(slug)) { <ng-icon name="lucideShieldAlert" class="size-[14px] text-warning" [attr.title]="'Sensitive permission'" /> }
+                        </label>
+                      } @else {
+                        @if (hasGranted(slug)) { <span class="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-xs">{{ actionLabel(slug) }}</span> }
+                      }
+                    }
+                  </span>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      }
+    }
+  </div>
+</div>

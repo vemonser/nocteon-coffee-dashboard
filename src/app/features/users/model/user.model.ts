@@ -10,6 +10,7 @@ export interface UserResponse {
   firstName: string | null;
   lastName: string | null;
   avatarUrl: string | null;
+  phone?: string | null;
   createdAt: string;
   lastActiveAt: string | null;
   permissions?: string[];

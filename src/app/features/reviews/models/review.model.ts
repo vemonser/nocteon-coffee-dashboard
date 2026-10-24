@@ -13,6 +13,10 @@ export interface ReviewResponse {
   /** The order behind a confirmed purchase, when there is one. */
   orderId: number | null;
   orderNumber: string | null;
+  /** Optional moderation audit fields — present only on backends that track them. */
+  moderatedBy?: string | null;
+  moderatedAt?: string | null;
+  moderationNote?: string | null;
 }
 
 export interface ReviewRequest {

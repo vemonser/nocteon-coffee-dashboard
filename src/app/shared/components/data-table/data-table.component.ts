@@ -27,6 +27,7 @@ import { StatusBadgeComponent } from '../../ui/status-badge/status-badge.compone
 import { RatingStarsComponent } from '../../ui/rating-stars/rating-stars.component';
 import { VerifiedBadgeComponent } from '../../ui/verified-badge/verified-badge.component';
 import { LocalizedNameService } from '../../../core/i18n/localized-name.service';
+import { LocalizedDateService } from '../../../core/i18n/localized-date.service';
 import { LanguageService } from '../../../core/i18n/language.service';
 import { formatRelativeTime } from '../../../core/i18n/relative-time';
 
@@ -239,6 +240,7 @@ export class DataTableComponent {
    */
   primaryAction = input<{ id: string; label: string } | null>(null);
   primaryActionFor = input<((row: any) => { id: string; label: string } | null) | null>(null);
+  reservePrimarySlot = input<boolean>(false);
 
   /**
    * Hides the slug under the name in the main cell.
@@ -289,6 +291,7 @@ export class DataTableComponent {
   private readonly language = inject(LanguageService);
   /** The shared localized-name helper — the method label is translated at render time. */
   protected readonly names = inject(LocalizedNameService);
+  protected readonly dates = inject(LocalizedDateService);
 
   /**
    * The entity-identity name column of the CURRENT UI language (`name_en` /

@@ -93,6 +93,7 @@ export function getNavItems(lang: Language) {
       { label: t.orders, icon: icons.orders, route: '/dashboard/orders', permission: 'order:read' },
       { label: t.carts, icon: icons.carts, route: '/dashboard/carts', permission: 'cart:manage' },
       { label: t.users, icon: icons.users, route: '/dashboard/users', permission: 'user:read' },
+      { label: 'Roles & permissions', icon: icons.users, route: '/dashboard/users/roles', permission: 'user:read' },
       { label: t.reviews, icon: icons.reviews, route: '/dashboard/reviews', permission: 'review:moderate' },
       { label: t.contactMessages, icon: icons.contactMessages, route: '/dashboard/contact-messages', permission: 'contact:read' },
     ],
