@@ -187,7 +187,11 @@ export class ReviewListComponent {
     const base = this.transloco.translate('reviews.stats.awaitingModeration');
     const days = this.oldestPendingDays();
     if (days === null) return base;
-    return `${base} · ${this.transloco.translate('reviews.stats.oldestPending', { days })}`;
+    const oldest =
+      days === 0
+        ? this.transloco.translate('reviews.stats.oldestPendingToday')
+        : this.transloco.translate('reviews.stats.oldestPending', { days });
+    return `${base} · ${oldest}`;
   });
 
   constructor() {

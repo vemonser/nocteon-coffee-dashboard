@@ -163,9 +163,12 @@
           [attr.aria-label]="'reviews.stats.averageTooltip' | transloco"
         >ⓘ</span>
       </p>
-      <div class="mt-1 flex items-end gap-2">
-        <app-rating-stars [rating]="stats().averageRating ?? 0" />
-        <span class="text-[clamp(1.625rem,3vw,1.75rem)] font-semibold leading-none tracking-tight tabular-nums">
+      <div class="mt-1 flex items-center gap-1.5">
+        <app-rating-stars class="shrink-0" [rating]="stats().averageRating ?? 0" />
+        <span
+          dir="ltr"
+          class="whitespace-nowrap text-[clamp(1.5rem,2.6vw,1.75rem)] font-semibold leading-none tracking-tight tabular-nums"
+        >
           {{ stats().averageRating === null ? '—' : (stats().averageRating | number: '1.1-1') }} / 5
         </span>
       </div>
