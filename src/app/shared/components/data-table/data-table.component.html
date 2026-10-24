@@ -756,13 +756,19 @@
                         size="sm"
                         class="shrink-0"
                       />
-                      <a
-                        class="truncate text-start hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                        [routerLink]="['/dashboard/users']"
-                        [attr.title]="reviewer.name"
-                      >
-                        <bdi>{{ reviewer.name }}</bdi>
-                      </a>
+                      @if (reviewer.userId) {
+                        <a
+                          class="truncate text-start hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                          [routerLink]="['/dashboard/users', reviewer.userId]"
+                          [attr.title]="reviewer.name"
+                        >
+                          <bdi>{{ reviewer.name }}</bdi>
+                        </a>
+                      } @else {
+                        <span class="truncate text-start" [attr.title]="reviewer.name">
+                          <bdi>{{ reviewer.name }}</bdi>
+                        </span>
+                      }
                       @if (reviewer.verified) {
                         @if (reviewer.orderId) {
                           <a [routerLink]="['/dashboard/orders', reviewer.orderId]" class="inline-flex shrink-0" [attr.title]="'reviews.columns.verifiedPurchase' | transloco">

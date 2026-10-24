@@ -156,7 +156,7 @@
     "fixErrors": "Please fix the highlighted fields to continue.",
     "freeShipping": "Free Shipping",
     "freeShippingThreshold": "Free Shipping Threshold",
-    "fullName": "Full Name",
+    "fullName": "Full name",
     "generalInfo": "General Info",
     "gridView": "Grid view",
     "id": "ID",
@@ -164,7 +164,7 @@
     "inactive": "Disabled",
     "items": "Items",
     "joined": "Joined",
-    "lastActive": "Last Active",
+    "lastActive": "Last active",
     "lastName": "Last Name",
     "listView": "List view",
     "loading": "Loading...",
@@ -1411,7 +1411,7 @@
     },
     "roleDescriptions": {
       "ADMIN": "Full access to every dashboard area, including users and settings.",
-      "MODERATOR": "Reviews, orders and catalog — but not users or store settings.",
+      "MODERATOR": "Moderates reviews and messages; can view orders, carts and products.",
       "CUSTOMER": "Storefront shopping only: orders, addresses and wishlist."
     },
     "rolesPage": {
@@ -1457,7 +1457,8 @@
       "sameRole": "This is already this user's role.",
       "selectToSeeDiff": "Select a role to see what changes.",
       "changed": "Role changed"
-    }
+    },
+    "thisIsYourAccount": "This is your account"
   },
   "carts": {
     "title": "Carts",

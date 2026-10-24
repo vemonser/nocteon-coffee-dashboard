@@ -24,6 +24,8 @@ import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 
 import { HasPermissionDirective } from '../../../core/auth/permission.directive';
 import { LanguageService } from '../../../core/i18n/language.service';
+import { AuthService } from '../../../core/auth/auth.service';
+import { UserService } from '../../users/services/user.service';
 import { NotifyService } from '../../../core/notify/notify.service';
 import { ViewMode } from '../../../core/crud/base-list.component';
 import { DataTableComponent, TableSortEvent } from '../../../shared/components/data-table/data-table.component';
@@ -101,6 +103,9 @@ export class ReviewListComponent {
   private readonly productService = inject(ProductService);
   private readonly notify = inject(NotifyService);
   private readonly language = inject(LanguageService);
+  protected readonly auth = inject(AuthService);
+  private readonly userService = inject(UserService);
+  readonly reviewUsers = signal<Record<number, { id: string; fullName: string | null } | null>>({});
   private readonly transloco = inject(TranslocoService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
@@ -345,6 +350,28 @@ export class ReviewListComponent {
             content = content.filter((r) => r.status === status);
           }
           this.items.set(content);
+          if (this.auth.hasPermission('user:read')) {
+            for (const r of content) {
+              if (this.reviewUsers()[r.id] === undefined) {
+                this.userService.getAll({ search: r.username, size: 5 }).subscribe({
+                  next: (res) => {
+                    const found = (res.data?.content ?? []).find(
+                      (u) => u.username?.toLowerCase() === r.username.toLowerCase(),
+                    );
+                    const fullName = found
+                      ? `${found.firstName ?? ''} ${found.lastName ?? ''}`.trim() || found.username
+                      : null;
+                    this.reviewUsers.update((prev) => ({
+                      ...prev,
+                      [r.id]: found ? { id: found.id, fullName } : null,
+                    }));
+                  },
+                  error: () =>
+                    this.reviewUsers.update((prev) => ({ ...prev, [r.id]: null })),
+                });
+              }
+            }
+          }
           const reportedTotal = status === 'REJECTED'
             ? this.stats().rejected
             : (res.data?.totalElements ?? 0);
@@ -490,7 +517,8 @@ export class ReviewListComponent {
       ),
       this.columnHelper.accessor(
         (row) => ({
-          name: this.toDisplayName(row.username),
+          name: this.reviewUsers()[row.id]?.fullName ?? this.toDisplayName(row.username),
+          userId: this.reviewUsers()[row.id]?.id ?? null,
           avatarUrl: row.avatarUrl,
           verified: row.verified,
           orderId: row.orderId,
@@ -760,7 +788,8 @@ export class ReviewListComponent {
   protected readonly deleteTargetLabel = computed(() => {
     const review = this.deleting();
     if (!review) return '';
-    return `${review.productName ?? review.productSlug} (${this.toDisplayName(review.username)})`;
+    const name = this.reviewUsers()[review.id]?.fullName ?? this.toDisplayName(review.username);
+    return `${review.productName ?? review.productSlug} (${name})`;
   });
 
   /**

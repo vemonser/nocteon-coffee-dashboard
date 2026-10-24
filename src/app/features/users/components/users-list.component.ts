@@ -289,7 +289,7 @@ export class UsersListComponent extends BaseListComponent<UserResponse, UserRequ
     const items: RowMenuAction[] = [
       { id: 'view', label: 'common.view', icon: 'lucideEye' },
       { id: 'edit', label: 'common.edit', icon: 'lucidePencil' },
-      { id: 'changeRole', label: this.rolesAvailable() ? 'users.changeRole' : 'users.changeRoleSoon', icon: 'lucideShield', disabled: !this.rolesAvailable() },
+      { id: 'changeRole', label: this.rolesAvailable() ? 'users.changeRole' : 'users.changeRoleSoon', icon: 'lucideShield', disabled: !this.rolesAvailable() || disabled, tooltip: (!this.rolesAvailable() || disabled) ? (disabled ? tooltip : undefined) : undefined },
     ];
     items.push({ id: row.active ? 'block' : 'unblock', label: row.active ? 'users.block' : 'users.unblock', icon: row.active ? 'lucideLock' : 'lucideUnlock', disabled, tooltip: disabled ? tooltip : undefined });
     items.push({ id: 'separator', label: '', disabled: true });

@@ -98,11 +98,7 @@
                   {{ 'users.roleCard.systemBadge' | transloco }}
                 </span>
               }
-              <span class="text-xs text-muted-foreground">
-                {{ userCountLabel(role.userCount) }}
-                <span class="mx-1">·</span>
-                {{ permissionCountLabel(role.permissionCount) }}
-              </span>
+
             </div>
             @if (description(role)) {
               <p class="mt-1 text-sm text-muted-foreground">{{ description(role) }}</p>
@@ -118,11 +114,24 @@
                   <ng-icon name="lucidePencil" class="me-2 size-4" />
                   {{ 'users.rolesPage.editPermissions' | transloco }}
                 </button>
-                <button hlmBtn variant="ghost" size="sm" class="text-destructive-text" (click)="askDelete()">
+                <button
+                  hlmBtn
+                  variant="ghost"
+                  size="sm"
+                  class="text-destructive-text"
+                  [disabled]="(selected()?.userCount ?? 0) > 0"
+                  [attr.title]="(selected()?.userCount ?? 0) > 0 ? (selected()?.userCount + ' users') : null"
+                  (click)="askDelete()"
+                >
                   <ng-icon name="lucideTrash2" class="me-2 size-4" />
                   {{ 'users.rolesPage.deleteRole' | transloco }}
                 </button>
               } @else {
+                @if (roleDiffSummary(); as d) {
+                  <span class="text-xs text-muted-foreground">
+                    +{{ d.granted }} granted, -{{ d.revoked }} revoked
+                  </span>
+                }
                 <button hlmBtn variant="outline" size="sm" [disabled]="saving()" (click)="cancelEdit()">
                   {{ 'common.cancel' | transloco }}
                 </button>
@@ -192,7 +201,7 @@
             <hlm-native-select selectClass="w-full" size="sm" [ngModel]="createForm.get('cloneFrom')?.value" [ngModelOptions]="{ standalone: true }" (ngModelChange)="createForm.get('cloneFrom')?.setValue($event)">
               <option hlmNativeSelectOption value="">{{ 'users.rolesPage.cloneFromNone' | transloco }}</option>
               @for (role of roles(); track role.name) {
-                <option hlmNativeSelectOption [value]="role.name">{{ displayName(role) }}</option>
+                <option hlmNativeSelectOption [value]="role.name">{{ displayName(role) }} ({{ role.permissionCount }})</option>
               }
             </hlm-native-select>
           </div>

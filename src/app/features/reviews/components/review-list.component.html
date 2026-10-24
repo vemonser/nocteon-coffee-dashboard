@@ -422,22 +422,27 @@
           />
         }
         <div class="min-w-0 flex-1">
-          <a
-            class="font-medium hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-            [routerLink]="productLink(review)"
-          >
-            <bdi>{{ review.productName ?? review.productSlug }}</bdi>
-          </a>
+          @if (auth.hasPermission('product:read')) {
+            <a
+              class="font-medium hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              [routerLink]="productLink(review)"
+            >
+              <bdi>{{ review.productName ?? review.productSlug }}</bdi>
+            </a>
+          } @else {
+            <span class="font-medium"><bdi>{{ review.productName ?? review.productSlug }}</bdi></span>
+          }
           <div class="mt-1 flex items-center gap-2">
             <app-user-avatar [src]="review.avatarUrl" [name]="review.username" size="sm" />
-            <a class="text-sm hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" [routerLink]="['/dashboard/users']">
-              <bdi>{{ toDisplayName(review.username) }}</bdi>
-            </a>
+            @if (auth.hasPermission('user:read') && reviewUsers()[review.id]?.id) {
+              <a class="text-sm hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" [routerLink]="['/dashboard/users', reviewUsers()[review.id]!.id]">
+                <bdi>{{ reviewUsers()[review.id]?.fullName ?? toDisplayName(review.username) }}</bdi>
+              </a>
+            } @else {
+              <span class="text-sm"><bdi>{{ reviewUsers()[review.id]?.fullName ?? toDisplayName(review.username) }}</bdi></span>
+            }
             <app-verified-badge [verified]="review.verified" [showLabel]="true" />
           </div>
-          <p class="mt-1 text-xs text-muted-foreground">
-            <app-localized-date [value]="review.createdAt" [showTime]="true" [withComma]="true" />
-          </p>
         </div>
       </div>
 
@@ -529,18 +534,6 @@
       @if (review.status === 'PENDING') {
         <button
           hlmBtn
-          type="button"
-          [disabled]="dialogBusy()"
-          (click)="setApprovalFromDialog(review, true)"
-        >
-          {{
-            dialogBusy()
-              ? ('reviews.action.approving' | transloco)
-              : ('reviews.approve' | transloco)
-          }}
-        </button>
-        <button
-          hlmBtn
           variant="outline"
           type="button"
           class="border-destructive text-destructive hover:bg-destructive/10"
@@ -551,6 +544,18 @@
             dialogBusy()
               ? ('reviews.action.rejecting' | transloco)
               : ('reviews.reject' | transloco)
+          }}
+        </button>
+        <button
+          hlmBtn
+          type="button"
+          [disabled]="dialogBusy()"
+          (click)="setApprovalFromDialog(review, true)"
+        >
+          {{
+            dialogBusy()
+              ? ('reviews.action.approving' | transloco)
+              : ('reviews.approve' | transloco)
           }}
         </button>
       } @else if (review.status === 'APPROVED') {

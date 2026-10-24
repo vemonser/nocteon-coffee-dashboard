@@ -56,6 +56,7 @@ export const routes: Routes = [
             path: 'roles/:roleName',
             data: { breadcrumb: 'roles' },
             canActivate: [permissionGuard('user:read')],
+            canDeactivate: [UnsavedChangesGuard],
             loadComponent: () =>
               import('./features/users/roles/components/roles-list.component').then(
                 (m) => m.RolesListComponent,
