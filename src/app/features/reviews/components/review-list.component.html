@@ -297,8 +297,8 @@
          thumbnail beside the text, not a full-bleed image. -->
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       @for (item of items(); track item.id) {
-        <hlm-card class="flex min-h-[12rem] flex-col overflow-hidden py-0">
-          <div hlmCardContent class="flex gap-3">
+        <div class="card-surface flex min-h-[12rem] flex-col overflow-hidden">
+          <div class="flex gap-4 p-4">
             @if (item.primaryImageUrl) {
               <img
                 [src]="item.primaryImageUrl"
@@ -374,7 +374,7 @@
               (view)="openView(item)"
             />
           </div>
-        </hlm-card>
+        </div>
       } @empty {
         <div class="col-span-full py-12 text-center text-muted-foreground">
           <p class="text-lg font-medium">{{ emptyMessage() }}</p>
