@@ -1,175 +1,199 @@
 <div class="page-shell">
-  <!-- Header -->
-  <div class="flex items-center justify-between">
+  <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
     <div>
       <h1 class="text-2xl font-bold tracking-tight">{{ 'notifications.title' | transloco }}</h1>
-      <p class="text-muted-foreground">
-        {{ 'notifications.totalCount' | transloco: { count: pageData()?.totalElements ?? 0 } }} · {{ 'notifications.unreadCount' | transloco: { count: unreadCount() } }}
+      <p class="text-sm text-muted-foreground">
+        {{ 'notifications.totalCount' | transloco: { count: totalElements() } }}
+        ·
+        {{ 'notifications.unreadCount' | transloco: { count: unreadCount() } }}
       </p>
     </div>
 
-    @if (unreadCount() > 0) {
+    @if (canUpdate() && unreadCount() > 0) {
       <button hlmBtn variant="outline" (click)="markAllAsRead()">
-        <ng-icon name="lucideCheck" class="me-2 size-4" />
+        <ng-icon name="lucideCheck" class="me-2 size-4" aria-hidden="true" />
         {{ 'notifications.markAllAsRead' | transloco }}
       </button>
     }
   </div>
 
-  <!-- Filters -->
-  <div class="flex flex-col gap-4 sm:flex-row sm:items-center items-stretch">
-    <hlm-select
-      [value]="statusFilterString()"
-      [itemToString]="itemToString"
-      (valueChange)="onStatusFilterValueChange($event)"
-      class="rounded-sm!"
-    >
-      <hlm-select-trigger class="rounded-sm h-full">
-        <hlm-select-value placeholder="{{ 'notifications.all' | transloco }}" />
-      </hlm-select-trigger>
-      <hlm-select-content *hlmSelectPortal>
-        <hlm-select-group>
-          <hlm-select-label>{{ 'notifications.status' | transloco }}</hlm-select-label>
-          <hlm-select-item value="all">{{ 'notifications.all' | transloco }}</hlm-select-item>
-          <hlm-select-item value="unread">{{ 'notifications.unreadOnly' | transloco }}</hlm-select-item>
-        </hlm-select-group>
-      </hlm-select-content>
-    </hlm-select>
+  <!-- Controls -->
+  <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+    <div class="flex gap-1 rounded-full border p-1" role="tablist">
+      <button
+        type="button"
+        role="tab"
+        class="rounded-full px-3 py-1 text-sm font-medium transition-colors"
+        [class.bg-primary]="filter() === 'all'"
+        [class.text-primary-foreground]="filter() === 'all'"
+        [class.text-muted-foreground]="filter() !== 'all'"
+        [attr.aria-selected]="filter() === 'all'"
+        (click)="onStatusChange('all')"
+      >
+        {{ 'notifications.all' | transloco }}
+      </button>
+      <button
+        type="button"
+        role="tab"
+        class="rounded-full px-3 py-1 text-sm font-medium transition-colors"
+        [class.bg-primary]="filter() === 'unread'"
+        [class.text-primary-foreground]="filter() === 'unread'"
+        [class.text-muted-foreground]="filter() !== 'unread'"
+        [attr.aria-selected]="filter() === 'unread'"
+        (click)="onStatusChange('unread')"
+      >
+        {{ 'notifications.unreadTab' | transloco }}
+      </button>
+    </div>
+
+    <label class="flex items-center gap-2 text-sm sm:ms-auto">
+      <span class="sr-only">{{ 'notifications.type' | transloco }}</span>
+      <select
+        class="h-9 rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        [value]="typeFilter()"
+        (change)="onTypeChange($any($event.target).value)"
+      >
+        <option value="all">{{ 'notifications.allTypes' | transloco }}</option>
+        @for (t of typeOptions(); track t) {
+          <option [value]="t">{{ typeLabel(t) }}</option>
+        }
+      </select>
+    </label>
   </div>
 
+  <!-- Bulk bar -->
+  @if (selectedItems().length > 0) {
+    <div
+      class="flex flex-wrap items-center gap-2 rounded-[var(--radius-card)] border bg-muted/40 px-3 py-2"
+    >
+      <span class="text-sm text-muted-foreground">
+        {{ 'notifications.selectedCount' | transloco: { count: selectedItems().length } }}
+      </span>
+      @if (canUpdate()) {
+        <button hlmBtn variant="outline" size="sm" (click)="markSelectedAsRead()">
+          <ng-icon name="lucideCheck" class="me-1.5 size-4" aria-hidden="true" />
+          {{ 'notifications.markSelectedRead' | transloco }}
+        </button>
+      }
+      @if (canDelete()) {
+        <button hlmBtn variant="outline" size="sm" class="text-destructive" (click)="deleteSelected()">
+          {{ 'notifications.deleteSelected' | transloco }}
+        </button>
+      }
+    </div>
+  }
+
   <!-- List -->
-  <div class="card-surface divide-y">
-    @if (loading()) {
-      <div class="p-4 text-center text-muted-foreground" *ngFor="let _ of [1, 2, 3, 4, 5]">
-        <div class="h-12 bg-muted animate-pulse rounded-md"></div>
+  <div class="card-surface overflow-hidden">
+    @if (loading() && items().length === 0) {
+      <div class="space-y-5 p-5" data-testid="notifications-page-skeleton">
+        @for (i of [1, 2, 3, 4, 5]; track i) {
+          <div class="flex items-center gap-3">
+            <div class="size-9 shrink-0 animate-pulse rounded-full bg-muted"></div>
+            <div class="flex-1 space-y-2">
+              <div class="h-3 w-2/5 animate-pulse rounded bg-muted"></div>
+              <div class="h-2.5 w-3/5 animate-pulse rounded bg-muted"></div>
+            </div>
+          </div>
+        }
       </div>
-    } @else if (items().length === 0) {
-      <div class="p-10 text-center text-muted-foreground">
-        <ng-icon name="lucideBell" class="mx-auto size-12 opacity-20 mb-4" />
-        <p class="text-lg font-medium">{{ 'notifications.noNotifications' | transloco }}</p>
-        <p class="text-sm">{{ 'notifications.allCaughtUp' | transloco }}</p>
+    } @else if (error()) {
+      <div class="flex flex-col items-center gap-3 p-10 text-center">
+        <p class="text-sm text-destructive">{{ 'notifications.loadError' | transloco }}</p>
+        <button hlmBtn variant="outline" size="sm" (click)="retry()">
+          {{ 'notifications.retry' | transloco }}
+        </button>
+      </div>
+    } @else if (visibleItems().length === 0) {
+      <div
+        class="flex flex-col items-center gap-3 p-12 text-center"
+        data-testid="notifications-page-empty"
+      >
+        <div class="flex size-14 items-center justify-center rounded-full bg-muted">
+          <ng-icon name="lucideBellOff" class="size-6 text-muted-foreground" aria-hidden="true" />
+        </div>
+        <p class="text-lg font-medium">{{ 'notifications.emptyTitle' | transloco }}</p>
+        <p class="text-sm text-muted-foreground">{{ 'notifications.emptySubtitle' | transloco }}</p>
       </div>
     } @else {
-      @for (n of items(); track n.id) {
-        <div
-          class="flex items-start gap-3 p-4 cursor-pointer hover:bg-muted/50 transition-colors"
-          [class.bg-muted-50]="!n.read"
-          (click)="openNotification(n)"
-        >
-          <div
-            class="flex size-9 shrink-0 items-center justify-center rounded-full"
-            [class]="n.read ? 'bg-muted text-muted-foreground' : 'bg-primary/10 text-primary'"
-          >
-            <ng-icon [name]="iconFor(n.type)" class="size-4" />
-          </div>
-
-          <div class="flex-1 min-w-0">
-            <div class="flex items-center gap-2">
-              <p class="font-medium truncate" [class.font-semibold]="!n.read">{{ n.title }}</p>
-              @if (!n.read) {
-                <span class="size-2 rounded-full bg-red-500 shrink-0"></span>
-              }
+      <div class="flex items-center gap-3 border-b px-4 py-2">
+        <input
+          type="checkbox"
+          class="size-4 rounded border-input accent-primary"
+          [checked]="allSelected()"
+          [attr.aria-label]="'notifications.selectAll' | transloco"
+          (change)="toggleAll()"
+        />
+        <span class="text-xs text-muted-foreground">{{ 'notifications.selectAll' | transloco }}</span>
+      </div>
+      <div role="list">
+        @for (n of visibleItems(); track n.id) {
+          <div class="flex items-start gap-2 border-b ps-4 last:border-b-0">
+            <input
+              type="checkbox"
+              class="mt-4 size-4 shrink-0 rounded border-input accent-primary"
+              [checked]="isSelected(n)"
+              (change)="toggleSelect(n)"
+              [attr.aria-label]="'notifications.selectItem' | transloco"
+            />
+            <div class="min-w-0 flex-1">
+              <app-notification-item
+                [item]="n"
+                (clicked)="openItem($event)"
+                (markRead)="onMarkRead($event)"
+                (markUnread)="onMarkUnread($event)"
+                (delete)="deleteOne($event)"
+              />
             </div>
-            <p class="text-sm text-muted-foreground truncate">{{ n.message }}</p>
-            <p class="text-xs text-muted-foreground mt-1"><app-localized-date [value]="n.createdAt" /></p>
           </div>
-
-          @if (!n.read) {
-            <button
-              hlmBtn
-              variant="ghost"
-              size="sm"
-              (click)="$event.stopPropagation(); markAsRead(n)"
-            >
-              {{ 'notifications.markAsRead' | transloco }}
-            </button>
-          }
-        </div>
-      }
+        }
+      </div>
     }
   </div>
 
   <!-- Pagination -->
-  @if (pageData() && !loading()) {
+  @if (totalPages() > 1 && !loading()) {
     <div class="flex items-center justify-between">
       <span class="text-sm text-muted-foreground">
-        {{ 'common.showing' | transloco }} {{ pageData()!.page * pageData()!.size + 1 }} -
-        {{ Math.min((pageData()!.page + 1) * pageData()!.size, pageData()!.totalElements) }}
-        {{ 'common.of' | transloco }} {{ pageData()!.totalElements }}
+        {{ 'common.page' | transloco }} {{ currentPage() + 1 }} {{ 'common.of' | transloco }}
+        {{ totalPages() }}
       </span>
-
       <div class="flex items-center gap-2">
         <button
           hlmBtn
           variant="outline"
           size="sm"
-          [disabled]="pageData()!.first"
+          [disabled]="currentPage() === 0"
           (click)="goToPage(currentPage() - 1)"
         >
-          <ng-icon name="lucideChevronLeft" class="size-4" />
+          <ng-icon name="lucideChevronLeft" class="size-4" aria-hidden="true" />
         </button>
-
-        <span class="text-sm text-muted-foreground px-2">
-          {{ 'common.page' | transloco }} {{ pageData()!.page + 1 }} {{ 'common.of' | transloco }} {{ pageData()!.totalPages }}
-        </span>
-
         <button
           hlmBtn
           variant="outline"
           size="sm"
-          [disabled]="pageData()!.last"
+          [disabled]="currentPage() + 1 >= totalPages()"
           (click)="goToPage(currentPage() + 1)"
         >
-          <ng-icon name="lucideChevronRight" class="size-4" />
+          <ng-icon name="lucideChevronRight" class="size-4" aria-hidden="true" />
         </button>
       </div>
     </div>
   }
 </div>
 
-<!-- ══════ View Notification Dialog ══════ -->
-@if (viewing()) {
-  <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-    <div class="dialog-surface w-full max-w-md max-h-[90vh] overflow-y-auto">
-      <div class="flex justify-between items-center p-6 border-b sticky top-0 rounded-t-[var(--radius-card)] bg-card">
-        <h2 class="text-lg font-bold">{{ 'notifications.detail' | transloco }}</h2>
-        <button (click)="closeView()" class="text-gray-400 hover:text-gray-600 text-xl">✕</button>
-      </div>
-
-      <div class="p-6 space-y-4">
-        <div class="flex items-center gap-3">
-          <div
-            class="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary"
-          >
-            <ng-icon [name]="iconFor(viewing()!.type)" class="size-5" />
-          </div>
-          <div>
-            <p class="font-semibold">{{ viewing()!.title }}</p>
-            <p class="text-xs text-gray-500"><app-localized-date [value]="viewing()!.createdAt" variant="long" /></p>
-          </div>
-        </div>
-
-        <div class="border border-gray-200 rounded-md p-4">
-          <p class="text-sm whitespace-pre-wrap">{{ viewing()!.message }}</p>
-        </div>
-      </div>
-
-      <div class="flex gap-3 p-6 border-t">
-        <button
-          (click)="closeView()"
-          class="flex-1 px-4 py-2 border rounded-md text-gray-700 hover:bg-gray-50"
-        >
-          {{ 'common.close' | transloco }}
-        </button>
-        @if (viewing()!.link) {
-          <button
-            (click)="router.navigateByUrl(viewing()!.link!)"
-            class="flex-1 px-4 py-2 bg-primary text-white rounded-md hover:opacity-90"
-          >
-            {{ 'notifications.viewDetails' | transloco }}
-          </button>
-        }
-      </div>
-    </div>
-  </div>
-}
+<app-dialog-shell
+  [open]="confirmState() !== null"
+  [title]="'notifications.deleteTitle' | transloco"
+  panelRole="alertdialog"
+  size="sm"
+  (closed)="cancelDelete()"
+>
+  <p class="text-sm text-muted-foreground">{{ confirmState()?.message }}</p>
+  <button dialog-footer-end hlmBtn variant="outline" (click)="cancelDelete()">
+    {{ 'common.cancel' | transloco }}
+  </button>
+  <button dialog-footer-end hlmBtn variant="destructive" (click)="confirmDelete()">
+    {{ 'notifications.kebab.delete' | transloco }}
+  </button>
+</app-dialog-shell>

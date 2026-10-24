@@ -12,6 +12,13 @@ export const routes: Routes = [
       import('./features/auth/login/login.component').then((m) => m.LoginComponent),
   },
   {
+    // The product spec calls the full page "/notifications"; the dashboard
+    // shell owns the real route, so keep one canonical URL.
+    path: 'notifications',
+    redirectTo: '/dashboard/notifications',
+    pathMatch: 'full',
+  },
+  {
     path: 'dashboard',
     canActivate: [authGuard],
     loadComponent: () =>
