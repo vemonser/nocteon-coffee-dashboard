@@ -92,7 +92,7 @@ export function getNavItems(lang: Language) {
     'order:read',
     [
       { label: t.orders, icon: icons.orders, route: '/dashboard/orders', permission: 'order:read' },
-      { label: t.carts, icon: icons.carts, route: '/dashboard/carts', permission: 'cart:manage' },
+      { label: t.carts, icon: icons.carts, route: '/dashboard/carts', permission: 'cart:read_all' },
       { label: t.users, icon: icons.users, route: '/dashboard/users', permission: 'user:read' },
       { label: 'Roles & permissions', icon: icons.users, route: '/dashboard/users/roles', permission: 'user:read' },
       { label: t.reviews, icon: icons.reviews, route: '/dashboard/reviews', permission: 'review:moderate' },

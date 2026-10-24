@@ -15,7 +15,7 @@ export const ROUTE_PERMISSIONS: Record<string, string[]> = {
   '/dashboard/orders': ['order:read'],
   '/dashboard/orders/new': ['order:create'],
   '/dashboard/orders/:id': ['order:read'],
-  '/dashboard/carts': ['cart:manage'],
+  '/dashboard/carts': ['cart:read_all'],
   '/dashboard/reviews': ['review:moderate'],
   '/dashboard/reviews/:id': ['review:moderate'],
   '/dashboard/journal': ['journal:read'],
