@@ -1335,7 +1335,6 @@
       "MODERATOR": "Moderator",
       "CUSTOMER": "Customer"
     },
-    "rolePermissionsCount": "{n} permissions",
     "changeRole": "Change role",
     "allStates": "All states",
     "roleCard": {
