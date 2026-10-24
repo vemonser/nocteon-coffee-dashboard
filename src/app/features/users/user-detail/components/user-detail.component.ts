@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { catchError, map, of, switchMap, tap } from 'rxjs';
 
 import { HlmCardImports } from '@spartan-ng/helm/card';
@@ -26,6 +26,8 @@ import { BreadcrumbService } from '../../../../shared/components/breadcrumb/serv
 import { RoleResponse, UserRequest, UserResponse } from '../../model/user.model';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { LocalizedDateComponent } from '../../../../shared/ui/localized-date/localized-date.component';
+import { FormatRelativePipe } from '../../../../shared/pipes/relative-time.pipe';
+import { FormatDateTimePipe } from '../../../../shared/pipes/date-time.pipe';
 import { PermissionMatrixComponent } from '../../../../shared/components/permission-matrix/permission-matrix.component';
 import {
   ALL_PERMISSIONS, actionLabel, humanize, parsePermission,
@@ -38,9 +40,9 @@ import { NotifyService } from '../../../../core/notify/notify.service';
   selector: 'app-user-detail',
   standalone: true,
   imports: [
-    LocalizedDateComponent, CommonModule, FormsModule, ReactiveFormsModule,
+    LocalizedDateComponent, CommonModule, FormsModule, ReactiveFormsModule, RouterModule,
     HlmCardImports, HlmButtonImports, HlmBadgeImports, HlmInputImports, HlmLabelImports,
-    HlmSkeletonImports, HlmSeparatorImports, HlmAvatarImports, HlmNativeSelectImports, HlmDropdownMenuImports, NgIcon, TranslocoPipe, PermissionMatrixComponent,
+    HlmSkeletonImports, HlmSeparatorImports, HlmAvatarImports, HlmNativeSelectImports, HlmDropdownMenuImports, NgIcon, TranslocoPipe, PermissionMatrixComponent, FormatRelativePipe, FormatDateTimePipe,
   ],
   providers: [provideIcons({
     lucideArrowLeft, lucidePencil, lucideLock, lucideUnlock, lucideCheck, lucideX, lucideLoader2,
