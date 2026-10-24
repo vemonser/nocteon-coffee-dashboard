@@ -1,60 +1,208 @@
-﻿<div class="relative">
-  <hlm-popover sideOffset="17" smoothScroll>
-    <button
-      hlmPopoverTrigger
-      (click)="toggleDropdown()"
-      hlmBtn
-      variant="ghost"
-      size="icon"
-      class="rounded-full! text-muted-foreground hover:text-foreground"
-      [attr.aria-label]="'notifications.title' | transloco"
-    >
-      <ng-icon name="heroBell" size="20" />
-      @if (notificationService.unreadCount() > 0) {
-        <span class="absolute top-0 -inset-e-1 w-2 h-2 bg-primary rounded-full"></span>
-      }
-    </button>
-    <hlm-popover-content class="w-screen! max-w-80! p-0 end-6!" *hlmPopoverPortal="let ctx">
-      <!-- الهيدر ثابت، برّه الـ scroll -->
-      <div class="flex justify-between items-center p-3 border-b">
-        <span class="font-medium">{{ 'notifications.title' | transloco }}</span>
-        @if (notificationService.unreadCount() > 0) {
-          <button (click)="markAllAsRead()" class="text-sm text-primary">{{ 'notifications.markAllAsRead' | transloco }}</button>
+﻿@if (canRead()) {
+  <div class="relative" (keydown)="onKeydown($event)">
+    <hlm-popover sideOffset="12" [align]="align()" (stateChanged)="onPopoverState($event)">
+      <button
+        hlmPopoverTrigger
+        type="button"
+        hlmBtn
+        variant="ghost"
+        size="icon"
+        class="relative rounded-full! text-muted-foreground hover:text-foreground"
+        data-testid="notifications-bell"
+        [attr.aria-label]="'notifications.ariaLabel' | transloco: { n: unreadCount() }"
+        [attr.aria-expanded]="isOpen()"
+        aria-haspopup="dialog"
+      >
+        <ng-icon name="lucideBell" size="20" aria-hidden="true" />
+        @if (unreadCount() > 0) {
+          <span
+            class="absolute -top-0.5 -end-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-semibold leading-none text-primary-foreground"
+            aria-hidden="true"
+          >
+            {{ badgeLabel() }}
+          </span>
         }
-      </div>
+      </button>
 
-      <!-- الـ list بس هي اللي بتعمل scroll -->
-      <div class="max-h-80 overflow-y-auto" smoothScroll>
-        @if (loading()) {
-          <div class="p-4 text-center text-muted-foreground">{{ 'dashboard.loading' | transloco }}</div>
-        } @else if (notifications().length === 0) {
-          <div class="p-4 text-center text-muted-foreground">{{ 'notifications.noNotifications' | transloco }}</div>
-        } @else {
-          @for (n of notifications(); track n.id; let last = $last) {
-            <hlm-popover-header
-              class="p-4"
-              [class]="n.read ? 'bg-accent' : 'bg-card'"
-              (click)="onNotificationClick(n)"
-            >
-              <div hlmPopoverTitle>{{ n.title }}</div>
-              <p hlmPopoverDescription>{{ n.message }}</p>
-              <p hlmPopoverDescription><app-localized-date [value]="n.createdAt" [fallback]="''" /></p>
-            </hlm-popover-header>
-            @if (!last) {
-              <hlm-separator class="divider" role="separator" aria-label="Divider" />
+      <hlm-popover-content
+        *hlmPopoverPortal
+        class="flex max-h-[480px] w-[380px] max-w-[calc(100vw-16px)] flex-col overflow-hidden p-0"
+        data-testid="notifications-popover"
+        (keydown)="onKeydown($event)"
+      >
+        <!-- Sticky header -->
+        <div
+          class="flex shrink-0 items-center justify-between gap-2 border-b px-4 py-3"
+          data-testid="notifications-header"
+        >
+          <div class="flex items-center gap-2">
+            <h2 class="text-sm font-semibold">{{ 'notifications.title' | transloco }}</h2>
+            @if (unreadCount() > 0) {
+              <span
+                class="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary"
+              >
+                {{ 'notifications.newCount' | transloco: { count: unreadCount() } }}
+              </span>
             }
-          }
-        }
-      </div>
-      @if (notifications().length > 0){
-        <!-- فوتر ثابت كمان، فيه لينك للصفحة الكاملة -->
-        <hlm-separator class="divider" role="separator" aria-label="Divider" />
-        <div class="m-1">
-          <button hlmBtn variant="default" class="hover:bg-primary/90 w-full">
-            <a routerLink="/dashboard/notifications"> View All Notifications </a>
+          </div>
+          <button
+            type="button"
+            hlmBtn
+            variant="ghost"
+            size="icon"
+            class="size-8"
+            data-testid="notifications-mark-all"
+            [disabled]="unreadCount() === 0 || !canUpdate()"
+            [attr.title]="'notifications.markAllAsRead' | transloco"
+            [attr.aria-label]="'notifications.markAllAsRead' | transloco"
+            (click)="markAllAsRead()"
+          >
+            <ng-icon name="lucideMailOpen" class="size-4" aria-hidden="true" />
           </button>
         </div>
-      }
-    </hlm-popover-content>
-  </hlm-popover>
-</div>
+
+        <!-- Segmented tabs -->
+        <div class="flex shrink-0 gap-1 border-b px-4 py-2" role="tablist">
+          <button
+            type="button"
+            role="tab"
+            data-testid="notifications-tab-all"
+            [attr.aria-selected]="notificationService.filter() === 'all'"
+            class="rounded-full px-3 py-1 text-xs font-medium transition-colors"
+            [class.bg-primary]="notificationService.filter() === 'all'"
+            [class.text-primary-foreground]="notificationService.filter() === 'all'"
+            [class.text-muted-foreground]="notificationService.filter() !== 'all'"
+            (click)="notificationService.setFilter('all')"
+          >
+            {{ 'notifications.all' | transloco }}
+          </button>
+          <button
+            type="button"
+            role="tab"
+            data-testid="notifications-tab-unread"
+            [attr.aria-selected]="notificationService.filter() === 'unread'"
+            class="rounded-full px-3 py-1 text-xs font-medium transition-colors"
+            [class.bg-primary]="notificationService.filter() === 'unread'"
+            [class.text-primary-foreground]="notificationService.filter() === 'unread'"
+            [class.text-muted-foreground]="notificationService.filter() !== 'unread'"
+            (click)="notificationService.setFilter('unread')"
+          >
+            {{ 'notifications.unreadTab' | transloco }}
+          </button>
+        </div>
+
+        <!-- Scrollable list -->
+        <div
+          class="min-h-0 flex-1 overflow-y-auto"
+          data-testid="notifications-list"
+          role="list"
+          [attr.aria-label]="'notifications.title' | transloco"
+        >
+          @if (loading() && items().length === 0) {
+            <div class="space-y-3 p-4" data-testid="notifications-skeleton">
+              @for (i of [1, 2, 3]; track i) {
+                <div class="flex items-center gap-3">
+                  <div class="size-9 shrink-0 animate-pulse rounded-full bg-muted"></div>
+                  <div class="flex-1 space-y-1.5">
+                    <div class="h-3 w-2/3 animate-pulse rounded bg-muted"></div>
+                    <div class="h-2.5 w-1/2 animate-pulse rounded bg-muted"></div>
+                  </div>
+                </div>
+              }
+            </div>
+          } @else if (error()) {
+            <div class="flex flex-col items-center gap-2 p-6 text-center">
+              <p class="text-sm text-destructive">{{ 'notifications.loadError' | transloco }}</p>
+              <button type="button" hlmBtn variant="outline" size="sm" (click)="retry()">
+                {{ 'notifications.retry' | transloco }}
+              </button>
+            </div>
+          } @else if (items().length === 0) {
+            <div
+              class="flex flex-col items-center gap-2 px-6 py-10 text-center"
+              data-testid="notifications-empty"
+            >
+              <div class="flex size-12 items-center justify-center rounded-full bg-muted">
+                <ng-icon
+                  name="lucideBellOff"
+                  class="size-5 text-muted-foreground"
+                  aria-hidden="true"
+                />
+              </div>
+              <p class="text-sm font-medium">{{ 'notifications.emptyTitle' | transloco }}</p>
+              <p class="text-xs text-muted-foreground">
+                {{ 'notifications.emptySubtitle' | transloco }}
+              </p>
+            </div>
+          } @else {
+            @if (todayItems().length) {
+              <div class="sticky top-0 z-10 bg-popover/95 px-4 py-1.5 backdrop-blur">
+                <span
+                  class="text-[11px] font-medium uppercase tracking-wide text-muted-foreground"
+                >
+                  {{ 'notifications.today' | transloco }}
+                </span>
+              </div>
+              @for (n of todayItems(); track n.id; let i = $index) {
+                <div [attr.data-idx]="i">
+                  <app-notification-item
+                    [item]="n"
+                    [focused]="focusedIndex() === i"
+                    (clicked)="handleItemClick($event)"
+                    (markRead)="onMarkRead($event)"
+                    (markUnread)="onMarkUnread($event)"
+                    (delete)="onDelete($event)"
+                  />
+                </div>
+              }
+            }
+            @if (earlierItems().length) {
+              <div class="sticky top-0 z-10 bg-popover/95 px-4 py-1.5 backdrop-blur">
+                <span
+                  class="text-[11px] font-medium uppercase tracking-wide text-muted-foreground"
+                >
+                  {{ 'notifications.earlier' | transloco }}
+                </span>
+              </div>
+              @for (n of earlierItems(); track n.id; let i = $index) {
+                <div [attr.data-idx]="todayItems().length + i">
+                  <app-notification-item
+                    [item]="n"
+                    [focused]="focusedIndex() === todayItems().length + i"
+                    (clicked)="handleItemClick($event)"
+                    (markRead)="onMarkRead($event)"
+                    (markUnread)="onMarkUnread($event)"
+                    (delete)="onDelete($event)"
+                  />
+                </div>
+              }
+            }
+
+            @if (notificationService.hasMore()) {
+              <div class="p-2">
+                <button
+                  type="button"
+                  hlmBtn
+                  variant="ghost"
+                  size="sm"
+                  class="w-full text-xs"
+                  [disabled]="loading()"
+                  (click)="loadMore()"
+                >
+                  {{ 'notifications.loadMore' | transloco }}
+                </button>
+              </div>
+            }
+          }
+        </div>
+
+        <!-- Sticky footer -->
+        <div class="shrink-0 border-t p-2" data-testid="notifications-footer">
+          <button type="button" hlmBtn class="w-full" (click)="goToAll()">
+            {{ 'notifications.viewAll' | transloco }}
+          </button>
+        </div>
+      </hlm-popover-content>
+    </hlm-popover>
+  </div>
+}

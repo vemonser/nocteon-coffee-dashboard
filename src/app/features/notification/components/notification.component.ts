@@ -1,98 +1,178 @@
-﻿import { Component, ElementRef, HostListener, inject, signal } from '@angular/core';
-import { NotificationService } from '../services/notification.service';
-import { LocalizedDateComponent } from '../../../shared/ui/localized-date/localized-date.component';
+﻿import { Component, ElementRef, inject, signal, computed, viewChild } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { heroBell } from '@ng-icons/heroicons/outline';
-import { NotificationDto } from '../models/notification.model';
-import { Router, RouterLink } from '@angular/router';
-import { lucideChevronLeft } from '@ng-icons/lucide';
+import { lucideBell, lucideBellOff, lucideMailOpen } from '@ng-icons/lucide';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
-import { HlmPopoverImports } from '@spartan-ng/helm/popover';
-import { SmoothScroll } from 'ngx-scrollbar/smooth-scroll';
-import { HlmSeparator } from '@spartan-ng/helm/separator';
-
+import { HlmPopover, HlmPopoverImports } from '@spartan-ng/helm/popover';
+import { BrnPopover } from '@spartan-ng/brain/popover';
+import { HlmBadgeImports } from '@spartan-ng/helm/badge';
+import { HlmSeparatorImports } from '@spartan-ng/helm/separator';
 import { TranslocoPipe } from '@jsverse/transloco';
-import { NotifyService } from '../../../core/notify/notify.service';
+import { NotificationService } from '../services/notification.service';
+import { PermissionService } from '../../../core/auth/permission.service';
+import { NotificationItem } from '../models/notification.model';
+import { NotificationItemComponent } from './notification-item.component';
+import { notificationRoute } from '../notification-type.registry';
+import { LanguageService } from '../../../core/i18n/language.service';
+
 @Component({
   selector: 'app-notification',
-  templateUrl: './notification.component.html',
+  standalone: true,
   imports: [
+    CommonModule,
     NgIcon,
-    HlmPopoverImports,
     HlmButtonImports,
-    SmoothScroll,
-    HlmSeparator,
-    RouterLink,
-      TranslocoPipe,
-      LocalizedDateComponent,
+    HlmPopoverImports,
+    HlmBadgeImports,
+    HlmSeparatorImports,
+    TranslocoPipe,
+    NotificationItemComponent,
   ],
-  providers: [
-    provideIcons({
-      heroBell,
-      lucideChevronLeft,
-    }),
-  ],
+  providers: [provideIcons({ lucideBell, lucideBellOff, lucideMailOpen })],
+  templateUrl: './notification.component.html',
 })
 export class NotificationComponent {
   notificationService = inject(NotificationService);
-  private notify = inject(NotifyService);
+  private perm = inject(PermissionService);
   private router = inject(Router);
   private elementRef = inject(ElementRef);
+  private language = inject(LanguageService);
+  private popover = viewChild(HlmPopover, { read: BrnPopover });
+
   isOpen = signal(false);
-  notifications = signal<NotificationDto[]>([]);
-  loading = signal(false);
+  focusedIndex = signal(-1);
 
-  toggleDropdown() {
-    this.isOpen.update((v) => !v);
-    if (this.isOpen()) {
-      this.loadNotifications();
+  /** Keep the 380px panel inside the viewport on both sides of the bell. */
+  align = computed<'start' | 'end'>(() =>
+    this.language.language() === 'ar' ? 'start' : 'end',
+  );
+
+  canRead = () => this.perm.has('notification:read');
+  canUpdate = () => this.perm.has('notification:update');
+
+  items = this.notificationService.notifications;
+  loading = this.notificationService.loading;
+  error = this.notificationService.error;
+  unreadCount = this.notificationService.unreadCount;
+
+  badgeLabel = computed(() => {
+    const n = this.unreadCount();
+    return n > 9 ? '9+' : String(n);
+  });
+
+  todayItems = computed(() => {
+    const start = this.startOfToday();
+    return this.items().filter((n) => new Date(n.createdAt).getTime() >= start);
+  });
+
+  earlierItems = computed(() => {
+    const start = this.startOfToday();
+    return this.items().filter((n) => new Date(n.createdAt).getTime() < start);
+  });
+
+  private startOfToday(): number {
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  }
+
+  onPopoverState(state: 'open' | 'closed'): void {
+    this.isOpen.set(state === 'open');
+    if (state === 'open') {
+      this.focusedIndex.set(-1);
+      this.notificationService.loadItems(true);
     }
   }
 
-  goToAllNotifications() {
+  close(): void {
+    this.popover()?.close();
+    this.focusedIndex.set(-1);
+    setTimeout(() => {
+      const btn = this.elementRef.nativeElement.querySelector(
+        '[data-testid="notifications-bell"]',
+      ) as HTMLElement | null;
+      btn?.focus();
+    }, 0);
+  }
+
+  onKeydown(event: KeyboardEvent): void {
+    if (!this.isOpen()) return;
+    const flat = this.items();
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      this.close();
+      return;
+    }
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      this.focusedIndex.update((i) => Math.min(flat.length - 1, i + 1));
+      this.focusItem();
+      return;
+    }
+    if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      this.focusedIndex.update((i) => Math.max(0, i - 1));
+      this.focusItem();
+      return;
+    }
+    if (event.key === 'Enter' || event.key === ' ') {
+      const idx = this.focusedIndex();
+      if (idx >= 0 && flat[idx]) {
+        event.preventDefault();
+        this.handleItemClick(flat[idx]);
+      }
+    }
+  }
+
+  private focusItem(): void {
+    setTimeout(() => {
+      const idx = this.focusedIndex();
+      const el = document.querySelector(
+        `[data-idx="${idx}"] .item-main`,
+      ) as HTMLElement | null;
+      el?.focus();
+      el?.scrollIntoView({ block: 'nearest' });
+    }, 0);
+  }
+
+  handleItemClick(item: NotificationItem): void {
+    if (!item.read) {
+      this.notificationService.markAsRead(item, true);
+    }
+    const route = notificationRoute(item);
+    this.close();
+    if (route) {
+      this.router.navigateByUrl(route);
+    }
+  }
+
+  markAllAsRead(): void {
+    if (!this.canUpdate() || this.unreadCount() === 0) return;
+    this.notificationService.markAllAsRead();
+  }
+
+  onMarkRead(item: NotificationItem): void {
+    this.notificationService.markAsRead(item, true);
+  }
+
+  onMarkUnread(item: NotificationItem): void {
+    this.notificationService.markAsUnread(item);
+  }
+
+  onDelete(item: NotificationItem): void {
+    this.notificationService.delete(item);
+  }
+
+  loadMore(): void {
+    this.notificationService.loadMore();
+  }
+
+  retry(): void {
+    this.notificationService.loadItems(true);
+  }
+
+  goToAll(): void {
+    this.close();
     this.router.navigateByUrl('/dashboard/notifications');
-  }
-  loadNotifications() {
-    this.loading.set(true);
-    this.notificationService.getNotifications(true, 0, 10).subscribe({
-      next: (res) => {
-        this.notifications.set(res.data?.content ?? []);
-        this.loading.set(false);
-      },
-      error: () => this.loading.set(false),
-    });
-  }
-
-  onNotificationClick(notification: NotificationDto) {
-    if (!notification.read) {
-      this.notificationService.markAsRead(notification.id).subscribe({
-        // نقلل العداد فورًا محليًا من غير ما نستنى الـ polling
-        next: () => this.notificationService.unreadCount.update((c) => Math.max(0, c - 1)),
-        error: (err) =>
-          this.notify.apiError(err, 'notify.errorFallback', 'Could not mark as read'),
-      });
-    }
-    this.isOpen.set(false);
-    this.router.navigateByUrl(notification.link);
-  }
-
-  markAllAsRead() {
-    this.notificationService.markAllAsRead().subscribe({
-      next: () => {
-        this.notifications.update((list) => list.map((n) => ({ ...n, isRead: true })));
-        this.notificationService.unreadCount.set(0);
-        this.notify.success('notify.allMarkedAsRead', 'All marked as read');
-      },
-      error: (err) =>
-        this.notify.apiError(err, 'notify.errorFallback', 'Could not mark all as read'),
-    });
-  }
-
-  // يقفل الـ dropdown لو دست بره الـ component
-  @HostListener('document:click', ['$event'])
-  onClickOutside(event: MouseEvent) {
-    if (this.isOpen() && !this.elementRef.nativeElement.contains(event.target)) {
-      this.isOpen.set(false);
-    }
   }
 }
