@@ -1,155 +1,174 @@
-﻿<div class="space-y-5">
-  <h2 class="text-lg font-medium">{{ 'products.media.title' | transloco }}</h2>
+<div class="space-y-5">
+  <div class="flex flex-wrap items-center justify-between gap-2">
+    <h2 class="text-lg font-medium">{{ 'products.media.title' | transloco }}</h2>
+    <span class="text-sm text-muted-foreground">
+      {{ 'products.media.fileCount' | transloco: { count: state.existingMedia().length + state.stagedMedia().length } }}
+    </span>
+  </div>
 
   <!-- Upload -->
-
   <div>
-    <label class="block text-sm font-medium text-foreground mb-2"> {{ 'products.media.imagesVideos' | transloco }} </label>
-
-    <label
-      class="flex flex-col items-center justify-center gap-2 rounded-md border-2 border-dashed border-input p-8 text-center cursor-pointer hover:bg-muted/40 transition"
-    >
+    <label class="mb-2 block text-sm font-medium text-foreground">{{ 'products.media.imagesVideos' | transloco }}</label>
+    <label class="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-md border-2 border-dashed border-input p-8 text-center transition hover:bg-muted/40">
       <ng-icon name="lucideUpload" class="size-8 text-muted-foreground" />
       <span class="text-sm font-medium">{{ 'products.media.dropHint' | transloco }}</span>
       <span class="text-xs text-muted-foreground">{{ 'products.media.fileTypes' | transloco }}</span>
-      <input
-        type="file"
-        accept="image/*,video/*"
-        multiple
-        (change)="onFilesSelected($event)"
-        class="sr-only"
-      />
+      <input type="file" accept="image/*,video/*" multiple (change)="onFilesSelected($event)" class="sr-only" />
     </label>
   </div>
 
-  <!-- Existing Media -->
+  @if (fileErrors().length > 0) {
+    <div class="space-y-2 rounded-md border border-destructive/40 bg-destructive-soft p-3">
+      @for (error of fileErrors(); track error.name) {
+        <p class="flex items-start gap-2 text-xs text-destructive">
+          <span class="font-mono">{{ error.name }}</span>
+          <span>{{ error.message }}</span>
+        </p>
+      }
+    </div>
+  }
 
+  <!-- Existing media -->
   @if (state.existingMedia().length > 0) {
     <div>
-      <p class="text-sm font-medium mb-3">{{ 'products.media.currentMedia' | transloco }}</p>
-
-      <div class="grid grid-cols-4 gap-4">
+      <p class="mb-3 text-sm font-medium">{{ 'products.media.currentMedia' | transloco }}</p>
+      <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4" cdkDropList (cdkDropListDropped)="dropExisting($event)">
         @for (media of state.existingMedia(); track media.id; let i = $index) {
-          <div class="relative group">
-            @if (media.type === 'IMAGE') {
-              <img [src]="media.url" class="w-full aspect-square object-cover rounded-md border" />
+          <div class="group relative flex flex-col rounded-md border bg-card p-2" cdkDrag>
+            <div class="relative">
+              @if (media.type === 'IMAGE') {
+                <img [src]="media.url" [alt]="media.altText" class="aspect-square w-full rounded-md border object-cover" />
+              } @else {
+                <video [src]="media.url" controls class="aspect-square w-full rounded-md border"></video>
+              }
+
+              @if (media.isPrimary) {
+                <span class="absolute start-2 top-2 rounded bg-primary px-2 py-1 text-xs text-primary-foreground">
+                  {{ 'products.media.cover' | transloco }}
+                </span>
+              }
+
+              @if (media.type === 'VIDEO') {
+                <span class="pointer-events-none absolute inset-0 flex items-center justify-center">
+                  <ng-icon name="lucidePlay" class="size-8 text-white drop-shadow" />
+                </span>
+              }
+
+              <div class="absolute end-2 top-2 flex gap-1 opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100">
+                @if (media.type === 'IMAGE' && !media.isPrimary) {
+                  <button type="button" class="rounded bg-card/95 p-1.5 text-foreground shadow-sm" (click)="setPrimary('existing', i)" [attr.aria-label]="'products.media.setAsCover' | transloco" [title]="'products.media.setAsCover' | transloco">
+                    <ng-icon name="lucideStar" class="size-4" />
+                  </button>
+                }
+                <button type="button" class="rounded bg-card/95 p-1.5 text-foreground shadow-sm" (click)="toggleAlt('existing-' + i)" [attr.aria-label]="'products.media.editAltText' | transloco" [title]="'products.media.editAltText' | transloco">
+                  <ng-icon name="lucidePencil" class="size-4" />
+                </button>
+                <button type="button" class="rounded bg-destructive p-1.5 text-destructive-foreground shadow-sm" (click)="removeExisting(i)" [attr.aria-label]="'products.media.delete' | transloco" [title]="'products.media.delete' | transloco">
+                  <ng-icon name="lucideTrash2" class="size-4" />
+                </button>
+              </div>
+            </div>
+
+            @if (isEditingAlt('existing-' + i)) {
+              <input
+                type="text"
+                [value]="media.altText"
+                (change)="onExistingAltChange(i, $event)"
+                [placeholder]="'products.media.altTextPlaceholder' | transloco"
+                class="mt-2 w-full rounded border px-2 py-1 text-xs"
+              />
             } @else {
-              <video
-                [src]="media.url"
-                controls
-                class="w-full aspect-square rounded-md border"
-              ></video>
+              <p class="mt-2 truncate text-xs text-muted-foreground" [title]="media.altText">{{ media.altText || ('products.media.noAltText' | transloco) }}</p>
             }
-
-            @if (media.isPrimary) {
-              <span class="absolute top-2 left-2 px-2 py-1 bg-primary text-primary-foreground text-xs rounded">
-                {{ 'products.media.primary' | transloco }}
-              </span>
-            }
-
-            @if (media.type === 'IMAGE' && !media.isPrimary) {
-              <button
-                type="button"
-                (click)="setPrimary('existing', i)"
-                class="absolute bottom-2 left-2 px-2 py-1 bg-card/90 text-xs rounded opacity-0 group-hover:opacity-100 transition"
-              >
-                {{ 'products.media.setPrimary' | transloco }}
-              </button>
-            }
-
-            <button
-              type="button"
-              (click)="removeExisting(i)"
-              class="absolute top-2 right-2 w-6 h-6 rounded-full bg-destructive text-destructive-foreground opacity-0 group-hover:opacity-100 transition-opacity duration-150"
-            >
-              ✕
-            </button>
           </div>
-          <input
-            type="text"
-            [value]="media.altText"
-            (change)="onExistingAltChange(i, $event)"
-            placeholder="Alt text"
-            class="mt-1 w-full text-xs rounded border px-2 py-1"
-          />
         }
       </div>
     </div>
   }
 
-  <!-- Staged Media -->
-
+  <!-- Staged media -->
   @if (state.stagedMedia().length > 0) {
     <div>
-      <p class="text-sm font-medium mb-3">{{ 'products.media.newMedia' | transloco }}</p>
-
-      <div class="grid grid-cols-4 gap-4">
+      <p class="mb-3 text-sm font-medium">{{ 'products.media.newMedia' | transloco }}</p>
+      <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4" cdkDropList (cdkDropListDropped)="dropStaged($event)">
         @for (media of state.stagedMedia(); track media.file.name; let i = $index) {
-          <div class="relative group">
-            @if (media.type === 'IMAGE') {
-              <img
-                [src]="media.previewUrl"
-                class="w-full aspect-square object-cover rounded-md border-2 border-primary"
+          <div class="group relative flex flex-col rounded-md border-2 border-primary bg-card p-2" cdkDrag>
+            <div class="relative">
+              @if (media.type === 'IMAGE') {
+                <img [src]="media.previewUrl" [alt]="media.altText" class="aspect-square w-full rounded-md border object-cover" />
+              } @else {
+                <video [src]="media.previewUrl" controls class="aspect-square w-full rounded-md border"></video>
+              }
+
+              @if (media.isPrimary) {
+                <span class="absolute start-2 top-2 rounded bg-primary px-2 py-1 text-xs text-primary-foreground">
+                  {{ 'products.media.cover' | transloco }}
+                </span>
+              }
+
+              @if (media.type === 'VIDEO') {
+                <span class="pointer-events-none absolute inset-0 flex items-center justify-center">
+                  <ng-icon name="lucidePlay" class="size-8 text-white drop-shadow" />
+                </span>
+                @if (videoDuration(media.file.name); as duration) {
+                  <span class="absolute bottom-2 end-2 rounded bg-black/70 px-1.5 py-0.5 text-[11px] text-white">{{ duration }}</span>
+                }
+              }
+
+              <div class="absolute end-2 top-2 flex gap-1 opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100">
+                @if (media.type === 'IMAGE' && !media.isPrimary) {
+                  <button type="button" class="rounded bg-card/95 p-1.5 text-foreground shadow-sm" (click)="setPrimary('staged', i)" [attr.aria-label]="'products.media.setAsCover' | transloco" [title]="'products.media.setAsCover' | transloco">
+                    <ng-icon name="lucideStar" class="size-4" />
+                  </button>
+                }
+                <button type="button" class="rounded bg-card/95 p-1.5 text-foreground shadow-sm" (click)="toggleAlt('staged-' + i)" [attr.aria-label]="'products.media.editAltText' | transloco" [title]="'products.media.editAltText' | transloco">
+                  <ng-icon name="lucidePencil" class="size-4" />
+                </button>
+                <button type="button" class="rounded bg-destructive p-1.5 text-destructive-foreground shadow-sm" (click)="removeStaged(i)" [attr.aria-label]="'products.media.delete' | transloco" [title]="'products.media.delete' | transloco">
+                  <ng-icon name="lucideTrash2" class="size-4" />
+                </button>
+              </div>
+            </div>
+
+            @if (isEditingAlt('staged-' + i)) {
+              <input
+                type="text"
+                [value]="media.altText"
+                (change)="onStagedAltChange(i, $event)"
+                [placeholder]="'products.media.altTextPlaceholder' | transloco"
+                class="mt-2 w-full rounded border px-2 py-1 text-xs"
               />
             } @else {
-              <video
-                [src]="media.previewUrl"
-                controls
-                class="w-full aspect-square rounded-md border-2 border-primary"
-              ></video>
+              <p class="mt-2 truncate text-xs text-muted-foreground" [title]="media.altText">{{ media.altText || ('products.media.noAltText' | transloco) }}</p>
             }
 
-            @if (media.isPrimary) {
-              <span class="absolute top-2 left-2 px-2 py-1 bg-primary text-primary-foreground text-xs rounded">
-                {{ 'products.media.primary' | transloco }}
-              </span>
-            }
-
-            @if (media.type === 'IMAGE' && !media.isPrimary) {
-              <button
-                type="button"
-                (click)="setPrimary('staged', i)"
-                class="absolute bottom-2 left-2 px-2 py-1 bg-card/90 text-xs rounded opacity-0 group-hover:opacity-100 transition"
-              >
-                {{ 'products.media.setPrimary' | transloco }}
-              </button>
-            }
-
-            <button
-              type="button"
-              (click)="removeStaged(i)"
-              class="absolute top-2 right-2 w-6 h-6 rounded-full bg-destructive text-destructive-foreground opacity-0 group-hover:opacity-100 transition-opacity duration-150"
-            >
-              ✕
-            </button>
+            <div class="mt-2 h-1 w-full overflow-hidden rounded-full bg-muted">
+              <div class="h-full w-full rounded-full bg-primary"></div>
+            </div>
+            <p class="mt-1 text-[11px] text-muted-foreground">{{ 'products.media.readyToUpload' | transloco }}</p>
           </div>
-          <input
-            type="text"
-            [value]="media.altText"
-            (change)="onStagedAltChange(i, $event)"
-            placeholder="Alt text"
-            class="mt-1 w-full text-xs rounded border px-2 py-1"
-          />
         }
       </div>
     </div>
   }
 
   @if (state.existingMedia().length === 0 && state.stagedMedia().length === 0) {
-    <div class="text-center py-12 border-2 border-dashed rounded-md text-muted-foreground">
+    <div class="rounded-md border-2 border-dashed py-12 text-center text-muted-foreground">
       {{ 'products.media.noMedia' | transloco }}
     </div>
   }
 
-  <!-- Sticky footer for navigation -->
-  <div class="sticky-footer">
-    <button hlmBtn variant="outline" (click)="onBack()">
-      {{ 'common.back' | transloco }}
-    </button>
-    <button hlmBtn 
-            [disabled]="!isCurrentStepDirty() || !isCurrentStepValid()" 
-            (click)="saveCurrentStep()">
-      {{ 'common.saveChanges' | transloco }}
-    </button>
-  </div>
+  @if (!state.isEditMode()) {
+    <!-- Sticky footer for navigation (create mode only) -->
+    <div class="sticky-footer">
+      <button hlmBtn variant="outline" (click)="onBack()">
+        {{ 'common.back' | transloco }}
+      </button>
+      <button hlmBtn
+              [disabled]="!isCurrentStepDirty() || !isCurrentStepValid()"
+              (click)="saveCurrentStep()">
+        {{ 'common.saveChanges' | transloco }}
+      </button>
+    </div>
+  }
 </div>
