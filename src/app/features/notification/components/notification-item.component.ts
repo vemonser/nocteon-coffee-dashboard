@@ -23,7 +23,11 @@ import {
 } from '@spartan-ng/helm/dropdown-menu';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { NotificationItem } from '../models/notification.model';
-import { notificationIcon, notificationTint, notificationRoute } from '../notification-type.registry';
+import {
+  notificationIcon,
+  notificationTint,
+  notificationTypeConfig,
+} from '../notification-type.registry';
 import { PermissionService } from '../../../core/auth/permission.service';
 import { LanguageService } from '../../../core/i18n/language.service';
 
@@ -158,17 +162,26 @@ export class NotificationItemComponent {
   tint = () => notificationTint(this.item.type);
 
   title = () => {
-    if (this.item.titleKey) {
+    // An unregistered type must still render with the payload it carries.
+    const known = notificationTypeConfig(this.item.type) !== null;
+    if (known && this.item.titleKey) {
       return this.transloco.translate(this.item.titleKey, this.item.params ?? {});
     }
-    return this.item.title || '';
+    if (this.item.title) return this.item.title;
+    return this.item.titleKey
+      ? this.transloco.translate(this.item.titleKey, this.item.params ?? {})
+      : '';
   };
 
   description = () => {
-    if (this.item.bodyKey) {
+    const known = notificationTypeConfig(this.item.type) !== null;
+    if (known && this.item.bodyKey) {
       return this.transloco.translate(this.item.bodyKey, this.item.params ?? {});
     }
-    return this.item.message || '';
+    if (this.item.message) return this.item.message;
+    return this.item.bodyKey
+      ? this.transloco.translate(this.item.bodyKey, this.item.params ?? {})
+      : '';
   };
 
   relativeTime(): string {
