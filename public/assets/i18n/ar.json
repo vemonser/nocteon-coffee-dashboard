@@ -292,7 +292,8 @@
     "toggleStatus": "تبديل الحالة",
     "soon": "قريباً",
     "saveChanges": "حفظ التغييرات",
-    "verified": "موثق"
+    "verified": "موثق",
+    "never": "أبدًا"
   },
   "products": {
     "title": "المنتجات",
@@ -1355,7 +1356,67 @@
       "CUSTOMER": "عميل"
     },
     "changeRole": "تغيير الدور",
-    "allStates": "كل الحالات"
+    "allStates": "كل الحالات",
+    "roleCard": {
+      "systemBadge": "نظام",
+      "users_zero": "لا مستخدمين",
+      "users_one": "مستخدم واحد",
+      "users_two": "مستخدمان",
+      "users_few": "{{count}} مستخدمين",
+      "users_many": "{{count}} مستخدمًا",
+      "users_other": "{{count}} مستخدم",
+      "permissions": "{{count}} صلاحية",
+      "viewUsers": "عرض المستخدمين"
+    },
+    "roleDescriptions": {
+      "ADMIN": "صلاحية كاملة على كل أجزاء لوحة التحكم، بما فيها المستخدمون والإعدادات.",
+      "MODERATOR": "التقييمات والطلبات والكتالوج، دون المستخدمين أو إعدادات الموقع.",
+      "CUSTOMER": "التسوق فقط: الطلبات والعناوين وقائمة الرغبات."
+    },
+    "rolesPage": {
+      "title": "الأدوار والصلاحيات",
+      "subtitle": "ما يمكن لكل دور الوصول إليه في لوحة التحكم.",
+      "newRole": "دور جديد",
+      "newRoleUnavailable": "الأدوار المخصصة غير متاحة بعد",
+      "systemRoleInfo": "دور نظام - لا يمكن تعديل الصلاحيات.",
+      "noPermissions": "هذا الدور بلا صلاحيات. لن يستطيع المستخدمون بهذا الدور الوصول إلى أي شيء في لوحة التحكم.",
+      "editPermissions": "تعديل الصلاحيات",
+      "savePermissions": "حفظ الصلاحيات",
+      "deleteRole": "حذف الدور",
+      "deleteRoleTitle": "حذف الدور",
+      "deleteRoleBody": "حذف دور {{name}}؟ يجب ألا يكون مسندًا لأي مستخدم.",
+      "createTitle": "دور جديد",
+      "name": "الاسم",
+      "nameHint": "أحرف إنجليزية كبيرة وأرقام وشرطات سفلية؛ من 3 إلى 32 حرفًا.",
+      "nameInvalid": "استخدم من 3 إلى 32 حرفًا: A–Z و0–9 و_",
+      "description": "الوصف",
+      "cloneFrom": "ابدأ من",
+      "cloneFromNone": "بلا صلاحيات",
+      "create": "إنشاء الدور",
+      "empty": "لا توجد أدوار.",
+      "loadFailed": "تعذّر تحميل الأدوار.",
+      "retry": "إعادة المحاولة",
+      "selectRole": "اختر دور {{name}}",
+      "created": "تم إنشاء الدور",
+      "saved": "تم حفظ الصلاحيات",
+      "deleted": "تم حذف الدور"
+    },
+    "roleBadgeTooltip": "{{role}} - {{count}} صلاحية",
+    "roleChange": {
+      "currentRole": "الدور الحالي",
+      "newRole": "الدور الجديد",
+      "diffSummary": "يمنح {{granted}} ويسحب {{revoked}}",
+      "granted": "الصلاحيات الممنوحة",
+      "revoked": "الصلاحيات المسحوبة",
+      "noChanges": "لا تغيير في الصلاحيات",
+      "sensitiveWarning": "هذا الدور يتضمن صلاحيات حساسة.",
+      "sensitiveHint": "اكتب اسم المستخدم للتأكيد.",
+      "ownAccount": "لا يمكنك تغيير دورك.",
+      "lastAdmin": "لا يمكن أن يفقد آخر مدير دور المدير.",
+      "sameRole": "هذا هو دور المستخدم بالفعل.",
+      "selectToSeeDiff": "اختر دورًا لعرض التغييرات.",
+      "changed": "تم تغيير الدور"
+    }
   },
   "carts": {
     "title": "السلات",
@@ -2438,6 +2499,25 @@
       "dashboard": "لوحة تحكم",
       "audit": "تدقيق",
       "ai": "ذكاء اصطناعي"
+    }
+  },
+  "permissionMatrix": {
+    "fullAccess": "صلاحية كاملة — {{count}} صلاحية",
+    "filter": "تصفية الصلاحيات…",
+    "showGrantedOnly": "إظهار الممنوحة فقط",
+    "expandAll": "توسيع الكل",
+    "collapseAll": "طي الكل",
+    "readOnly": "للقراءة فقط",
+    "lockedCell": "ثابتة لهذا الدور",
+    "sensitive": "صلاحية حساسة",
+    "permissionsCount": "{{granted}} / {{total}} صلاحية",
+    "resource": "المورد",
+    "special": "خاصة",
+    "actions": {
+      "read": "عرض",
+      "create": "إنشاء",
+      "update": "تعديل",
+      "delete": "حذف"
     }
   }
 }

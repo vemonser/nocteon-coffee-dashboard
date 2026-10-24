@@ -2,14 +2,29 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { BaseCrudService } from '../../../core/crud/base-crud.service';
-import { UserListParams, UserRequest, UserResponse } from '../model/user.model';
+import {
+  RoleRequest,
+  RoleResponse,
+  UserListParams,
+  UserRequest,
+  UserResponse,
+} from '../model/user.model';
 import { ApiResponse, PageResponse } from '../../../core/models/api-response.model';
 import { environment } from '../../../../environments/environment';
 
-
+/**
+ * Users and roles share one controller family in the API but two prefixes:
+ * users live under `/api/dashboard/users`, roles under `/api/dashboard/roles`.
+ * Role changes have their own endpoint (`PUT /users/{id}/role`) because the
+ * general update cannot express — or audit — a permission diff.
+ */
 @Injectable({ providedIn: 'root' })
 export class UserService extends BaseCrudService<UserResponse, UserRequest> {
   protected override basePath = '/api/dashboard/users';
+
+  private get rolesUrl(): string {
+    return `${environment.apiUrl}/api/dashboard/roles`;
+  }
 
   getAll(params: UserListParams = {}): Observable<ApiResponse<PageResponse<UserResponse>>> {
     let p: HttpParams = this.buildBaseParams(params);
@@ -23,8 +38,36 @@ export class UserService extends BaseCrudService<UserResponse, UserRequest> {
     );
   }
 
-  getRoles(): Observable<ApiResponse<string[]>> {
-    return this.http.get<ApiResponse<string[]>>(`${environment.apiUrl}${this.basePath}/roles`);
+  /** `GET /api/dashboard/roles` — name, description, system flag, user and permission counts. */
+  getRoles(): Observable<ApiResponse<RoleResponse[]>> {
+    return this.http.get<ApiResponse<RoleResponse[]>>(this.rolesUrl);
+  }
+
+  getRoleByName(name: string): Observable<ApiResponse<RoleResponse>> {
+    return this.http.get<ApiResponse<RoleResponse>>(`${this.rolesUrl}/${encodeURIComponent(name)}`);
+  }
+
+  createRole(body: RoleRequest): Observable<ApiResponse<RoleResponse>> {
+    return this.http.post<ApiResponse<RoleResponse>>(this.rolesUrl, body);
+  }
+
+  updateRole(name: string, body: RoleRequest): Observable<ApiResponse<RoleResponse>> {
+    return this.http.put<ApiResponse<RoleResponse>>(
+      `${this.rolesUrl}/${encodeURIComponent(name)}`,
+      body
+    );
+  }
+
+  deleteRole(name: string): Observable<ApiResponse<void>> {
+    return this.http.delete<ApiResponse<void>>(`${this.rolesUrl}/${encodeURIComponent(name)}`);
+  }
+
+  /** `PUT /api/dashboard/users/{id}/role` — returns the user plus the effective-permission diff. */
+  changeRole(id: string, role: string): Observable<ApiResponse<UserResponse>> {
+    return this.http.put<ApiResponse<UserResponse>>(
+      `${environment.apiUrl}${this.basePath}/${id}/role`,
+      { role }
+    );
   }
 
   override delete(id: string): Observable<ApiResponse<void>> {
@@ -37,7 +80,8 @@ export class UserService extends BaseCrudService<UserResponse, UserRequest> {
       {}
     );
   }
+
   getById(id: string): Observable<ApiResponse<UserResponse>> {
-     return this.http.get<ApiResponse<UserResponse>>(`${this.fullUrl}/${id}`);
-   }
+    return this.http.get<ApiResponse<UserResponse>>(`${this.fullUrl}/${id}`);
+  }
 }

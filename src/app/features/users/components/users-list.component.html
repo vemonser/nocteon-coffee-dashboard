@@ -10,12 +10,17 @@
         <button role="tab" hlmBtn size="sm" [variant]="quickFilter() === 'ALL' ? 'default' : 'outline'" (click)="setQuickFilter('ALL')">
           {{ 'common.all' | transloco }} {{ totalUsers() }}
         </button>
-        <button role="tab" hlmBtn size="sm" [variant]="quickFilter() === 'ADMIN' ? 'default' : 'outline'" (click)="setQuickFilter('ADMIN')">
-          {{ 'users.admin' | transloco }}s {{ adminCount() }}
-        </button>
-        <button role="tab" hlmBtn size="sm" [variant]="quickFilter() === 'CUSTOMER' ? 'default' : 'outline'" (click)="setQuickFilter('CUSTOMER')">
-          {{ 'users.customer' | transloco }}s {{ customerCount() }}
-        </button>
+        @for (role of roleCounts(); track role.name) {
+          <button
+            role="tab"
+            hlmBtn
+            size="sm"
+            [variant]="quickFilter() === role.name ? 'default' : 'outline'"
+            (click)="setQuickFilter(role.name)"
+          >
+            {{ roleLabel(role.name) }} {{ role.userCount }}
+          </button>
+        }
         <button role="tab" hlmBtn size="sm" [variant]="quickFilter() === 'BLOCKED' ? 'default' : 'outline'" (click)="setQuickFilter('BLOCKED')">
           {{ 'users.blocked' | transloco }} {{ blockedCount() }}
         </button>
@@ -37,12 +42,14 @@
   <div class="flex flex-wrap items-center gap-3">
     <div class="flex items-center gap-1.5">
       <span class="text-xs text-muted-foreground" id="users-filter-role-label">{{ 'users.role' | transloco }}</span>
-      <hlm-native-select selectClass="w-36" size="sm" aria-labelledby="users-filter-role-label" [(ngModel)]="roleFilter" (ngModelChange)="onFilterChange()">
-        <option hlmNativeSelectOption value="ALL">{{ 'users.allRoles' | transloco }}</option>
-        @for (role of roleOptions(); track role) {
-          <option hlmNativeSelectOption [value]="role">{{ 'users.roleNames.' + role | transloco }}</option>
-        }
-      </hlm-native-select>
+      @if (roleOptions().length) {
+        <hlm-native-select selectClass="w-36" size="sm" aria-labelledby="users-filter-role-label" [(ngModel)]="roleFilter" (ngModelChange)="onFilterChange()">
+          <option hlmNativeSelectOption value="ALL">{{ 'users.allRoles' | transloco }}</option>
+          @for (role of roleOptions(); track role) {
+            <option hlmNativeSelectOption [value]="role">{{ roleLabel(role) }}</option>
+          }
+        </hlm-native-select>
+      }
     </div>
 
     <div class="flex items-center gap-1.5">
@@ -85,6 +92,7 @@
         [loading]="loading()"
         [clickableRows]="true"
         [menuActionsFor]="menuActionsFor"
+        [roleBadgeFor]="roleBadgeFor"
         [showView]="false"
         [showEdit]="false"
         [showDelete]="false"
@@ -151,7 +159,7 @@
             <label hlmLabel>{{ 'users.role' | transloco }} *</label>
             <hlm-native-select selectClass="w-full" size="sm" [ngModel]="form.get('role')?.value" [ngModelOptions]="{standalone: true}" (ngModelChange)="form.get('role')?.setValue($event); updatePhoneValidators()">
               @for (role of roleOptions(); track role) {
-                <option hlmNativeSelectOption [value]="role">{{ 'users.roleNames.' + role | transloco }}</option>
+                <option hlmNativeSelectOption [value]="role">{{ roleLabel(role) }}</option>
               }
             </hlm-native-select>
           </div>

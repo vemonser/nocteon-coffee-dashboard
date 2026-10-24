@@ -5,6 +5,7 @@ export type NavKey =
   | 'dashboard'
   | 'orders'
   | 'users'
+  | 'roles'
   | 'reviews'
   | 'storeSettings'
   | 'journal'
@@ -40,6 +41,7 @@ export const navI18n: Record<Language, Record<NavKey, string>> = {
     dashboard: 'Dashboard',
     orders: 'Orders',
     users: 'Users',
+    roles: 'Roles & permissions',
     reviews: 'Reviews',
     storeSettings: 'Store Settings',
     promoCodes: 'Promo Codes',
@@ -74,6 +76,7 @@ export const navI18n: Record<Language, Record<NavKey, string>> = {
     dashboard: 'لوحة التحكم',
     orders: 'الطلبات',
     users: 'المستخدمين',
+    roles: 'الأدوار والصلاحيات',
     reviews: 'التقييمات',
     notifications: 'الإشعارات',
     storeSettings: 'إعدادات الموقع',

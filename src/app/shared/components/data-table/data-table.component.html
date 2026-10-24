@@ -624,20 +624,22 @@
 
                 @case ('role') {
                   @let role = $any(cell.getValue());
+                  @let badge = roleBadgeFor() ? roleBadgeFor()!(role) : null;
                   <span
-                    class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
-                    [class.bg-primary/10]="role === 'ADMIN'"
-                    [class.text-primary]="role === 'ADMIN'"
-                    [class.bg-muted]="role !== 'ADMIN'"
-                    [class.text-muted-foreground]="role !== 'ADMIN'"
+                    [class]="badge ? badge.classes : 'inline-flex items-center rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground'"
+                    [attr.title]="badge ? badge.title : null"
                   >
-                    {{ 'users.roleNames.' + role | transloco }}
+                    {{ badge ? badge.label : ('users.roleNames.' + role | transloco) }}
                   </span>
                 }
 
                 @case ('lastActive') {
                   <span class="block text-xs text-muted-foreground" [attr.title]="$any(cell.getValue()) ? dates.formatDateAndTime($any(cell.getValue())) : ''">
-                    {{ $any(cell.getValue()) ? relativeTime($any(cell.getValue())) : '—' }}
+                    @if ($any(cell.getValue())) {
+                      {{ relativeTime($any(cell.getValue())) }}
+                    } @else {
+                      {{ 'common.never' | transloco }}
+                    }
                   </span>
                 }
 
