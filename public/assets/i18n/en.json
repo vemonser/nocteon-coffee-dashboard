@@ -289,7 +289,10 @@
     "soon": "Soon",
     "saveChanges": "Save changes",
     "verified": "Verified",
-    "never": "Never"
+    "never": "Never",
+    "stock": "Stock",
+    "category": "Category",
+    "product": "Product"
   },
   "products": {
     "title": "Products",
@@ -358,7 +361,12 @@
       "featured": "Featured",
       "activeHint": "Disabled products are hidden from the storefront",
       "featuredHint": "Featured products appear on the storefront homepage",
-      "productTypeChangeWarning": "Changing the product type may affect coffee details and variants."
+      "productTypeChangeWarning": "Changing the product type may affect coffee details and variants.",
+      "featuredDisabledWarning": "Featured products that are disabled will not appear on the storefront.",
+      "productTypes": {
+        "COFFEE": "Coffee",
+        "EQUIPMENT": "Equipment"
+      }
     },
     "variants": {
       "title": "Variants",
@@ -384,7 +392,15 @@
       "selectOptionValue": "Select a value",
       "optionsRequired": "Select at least one option value for this variant.",
       "costPrice": "Cost Price",
-      "reorderThreshold": "Reorder Threshold"
+      "reorderThreshold": "Reorder Threshold",
+      "view": "Variant view",
+      "cards": "Cards",
+      "table": "Table",
+      "outOfStock": "Out of stock",
+      "lowStock": "Low: {{count}}",
+      "inStock": "{{count}} in stock",
+      "duplicate": "Duplicate",
+      "remove": "Remove"
     },
     "media": {
       "title": "Media Gallery",
@@ -398,13 +414,25 @@
       "upload": "Upload",
       "uploading": "Uploading…",
       "dropHint": "Drag & drop files here or click to browse",
-      "fileTypes": "Images or videos · max 10 MB each"
+      "fileTypes": "Images or videos · max 10 MB each",
+      "fileCount": "{{count}} files",
+      "cover": "Cover",
+      "setAsCover": "Set as cover",
+      "editAltText": "Edit alt text",
+      "delete": "Delete",
+      "altTextPlaceholder": "Describe the image",
+      "noAltText": "No alt text",
+      "readyToUpload": "Ready to upload"
     },
     "tastingNotes": {
       "title": "Tasting Notes",
       "description": "Select all flavor notes that apply to this coffee.",
       "noNotes": "No tasting notes available yet. Add some in the Tasting Notes management page first.",
-      "selected": "selected"
+      "selected": "selected",
+      "manage": "Manage notes",
+      "remove": "Remove {{name}}",
+      "search": "Search tasting notes...",
+      "noMatches": "No tasting notes match your search."
     },
     "pairings": {
       "title": "Pairings",
@@ -428,8 +456,9 @@
       "cancel": "Cancel",
       "next": "Next",
       "saving": "Saving...",
-      "saveChanges": "Save Changes",
-      "createProduct": "Create Product"
+      "saveChanges": "Save changes",
+      "createProduct": "Create Product",
+      "variantsCount": "{{count}} variants"
     },
     "table": {
       "image": "Image",
@@ -440,7 +469,12 @@
       "featured": "Featured",
       "notFeatured": "Not Featured",
       "status": "Status",
-      "actions": "Actions"
+      "actions": "Actions",
+      "outOfStock": "Out of stock",
+      "lowStock": "Low: {{count}}",
+      "inStock": "{{count}} in stock",
+      "variants": "{{count}} variants",
+      "stockNeedsBackend": "The list API does not return stock or variant counts yet."
     },
     "empty": {
       "category": "No products in this category",
@@ -455,12 +489,32 @@
       "status": "Status",
       "featured": "Featured",
       "type": "Type",
-      "all": "All"
+      "all": "All",
+      "allTypes": "All types",
+      "allStatuses": "All statuses",
+      "allFeatured": "All"
     },
     "actions": {
       "duplicate": "Duplicate",
       "viewOnStorefront": "View on storefront",
-      "moveToTrash": "Move to Trash"
+      "moveToTrash": "Move to Trash",
+      "enable": "Enable",
+      "disable": "Disable",
+      "feature": "Feature",
+      "unfeature": "Unfeature"
+    },
+    "basicInformation": "Basic information",
+    "content": "Content",
+    "visibility": "Visibility",
+    "bulk": {
+      "selected": "{{count}} selected",
+      "enable": "Enable",
+      "disable": "Disable",
+      "feature": "Feature",
+      "unfeature": "Unfeature",
+      "moveToTrash": "Move to trash",
+      "clear": "Clear",
+      "someFailed": "{{count}} action(s) failed"
     }
   },
   "categories": {
@@ -1191,7 +1245,10 @@
     "deleteConfirmNamed": "The review and its comment will be removed. This cannot be undone.",
     "dialog": {
       "ratingLabel": "Rating: {{rating}} out of 5",
-      "viewOrder": "View order"
+      "viewOrder": "View order",
+      "order": "Order",
+      "moderatedBy": "Moderated",
+      "approvedBy": "{{name}}, {{date}}"
     },
     "action": {
       "approved": "Review approved",
@@ -1223,6 +1280,7 @@
       "rejected": "Rejected"
     },
     "withdrawApproval": "Withdraw approval",
+    "moveToPending": "Move to pending",
     "emptyState": {
       "noReviews": "No reviews yet",
       "noResults": "No reviews match these filters"
@@ -1234,7 +1292,9 @@
       "delete": "Delete selected",
       "clear": "Clear selection",
       "approved": "Reviews approved",
-      "rejected": "Reviews rejected"
+      "rejected": "Reviews rejected",
+      "deleted": "Reviews deleted",
+      "deletePartial": "Some reviews could not be deleted"
     },
     "columns": {
       "product": "Product",
@@ -1255,6 +1315,11 @@
     "stats": {
       "averageRating": "Average rating (approved)",
       "averageRatingAll": "Average rating (all)",
+      "averageTooltip": "The storefront shows the approved-only average.",
+      "allInclPending": "All incl. pending",
+      "awaitingModeration": "Awaiting moderation",
+      "oldestPending": "Oldest {{days}} days ago",
+      "oldestPendingToday": "Oldest today",
       "distribution": "Star distribution",
       "pending": "Pending",
       "total": "Total",
@@ -1813,9 +1878,72 @@
     "detail": "Notification",
     "markAllAsRead": "Mark all as read",
     "markAsRead": "Mark as read",
-    "totalCount": "notifications",
-    "unreadCount": "unread",
-    "viewDetails": "View details"
+    "totalCount": "{{count}} total",
+    "unreadCount": "{{count}} unread",
+    "viewDetails": "View details",
+    "ariaLabel": "Notifications, {{n}} unread",
+    "newCount": "{{count}} new",
+    "viewAll": "View all notifications",
+    "today": "Today",
+    "earlier": "Earlier",
+    "loadMore": "Load more",
+    "retry": "Retry",
+    "loadError": "Couldn't load notifications",
+    "emptyTitle": "You're all caught up",
+    "emptySubtitle": "New orders, reviews and messages will show up here.",
+    "markedRead": "Marked as read",
+    "deleted": "Deleted",
+    "deleteTitle": "Delete notification?",
+    "deleteMessage": "Delete {{count}} selected notifications? This cannot be undone.",
+    "deleteOneMessage": "Delete this notification? This cannot be undone.",
+    "kebab": {
+      "more": "More actions",
+      "markRead": "Mark as read",
+      "markUnread": "Mark as unread",
+      "delete": "Delete"
+    },
+    "type": "Type",
+    "allTypes": "All types",
+    "selectedCount": "{{count}} selected",
+    "markSelectedRead": "Mark selected as read",
+    "deleteSelected": "Delete selected",
+    "selectAll": "Select all",
+    "selectItem": "Select notification",
+    "types": {
+      "order_new": {
+        "title": "New order received",
+        "description": "Order #{{orderId}} · {{total}}"
+      },
+      "payment_failed": {
+        "title": "Payment failed",
+        "description": "Payment for order #{{orderId}} did not go through."
+      },
+      "payment_succeeded": {
+        "title": "Payment received",
+        "description": "Order #{{orderId}} was paid successfully."
+      },
+      "review_pending": {
+        "title": "Review awaiting moderation",
+        "description": "{{productName}} received a new {{rating}}-star review."
+      },
+      "contact_message": {
+        "title": "New contact message",
+        "description": "{{name}} sent a message through the storefront."
+      },
+      "stock_low": {
+        "title": "Low stock",
+        "description": "{{productName}} ({{variant}}) is running low."
+      },
+      "user_new": {
+        "title": "New customer registered",
+        "description": "{{name}} just created an account."
+      },
+      "system": {
+        "title": "System update",
+        "description": "You have a new system notification."
+      }
+    },
+    "unreadTab": "Unread"
   },
   "journal": {
     "title": "Journal Post",

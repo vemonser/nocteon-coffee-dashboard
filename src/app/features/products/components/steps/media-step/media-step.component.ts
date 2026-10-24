@@ -1,27 +1,44 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { CdkDragDrop, DragDropModule } from '@angular/cdk/drag-drop';
 import { ProductWizardStateService } from '../../product-wizard/product-wizard-state.service';
 import { ProductWizardComponent } from '../../product-wizard/product-wizard.component';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucideUpload } from '@ng-icons/lucide';
+import {
+  lucideUpload,
+  lucidePlay,
+  lucidePencil,
+  lucideStar,
+  lucideTrash2,
+  lucideGripVertical,
+} from '@ng-icons/lucide';
+
+interface MediaFileError {
+  name: string;
+  message: string;
+}
 
 /**
  * Step 3 — Media gallery.
- * Two separate lists: existingMedia (already uploaded, has a URL — only
- * removable, can't re-upload) and stagedMediaFiles (new File objects,
- * sent together on final submit).
+ * Existing media (already uploaded) and staged files share the same tile UI.
  */
 @Component({
   selector: 'app-media-step',
   standalone: true,
-  imports: [CommonModule, TranslocoPipe, NgIcon],
-  providers: [provideIcons({ lucideUpload })],
+  imports: [CommonModule, DragDropModule, TranslocoPipe, NgIcon],
+  providers: [provideIcons({ lucideUpload, lucidePlay, lucidePencil, lucideStar, lucideTrash2, lucideGripVertical })],
   templateUrl: './media-step.component.html',
 })
 export class MediaStepComponent {
   protected state = inject(ProductWizardStateService);
   private wizard = inject(ProductWizardComponent);
+
+  readonly fileErrors = signal<MediaFileError[]>([]);
+  readonly videoDurations = signal<Record<string, string>>({});
+  readonly editingAlt = signal<Set<string>>(new Set());
+
+  private static readonly MAX_BYTES = 10 * 1024 * 1024;
 
   saveCurrentStep(): void {
     this.wizard.saveCurrentStep();
@@ -42,21 +59,55 @@ export class MediaStepComponent {
   setPrimary(source: 'existing' | 'staged', index: number): void {
     this.state.setPrimaryMedia(source, index);
   }
+
   onFilesSelected(event: Event): void {
-    const files = (event.target as HTMLInputElement).files;
+    const input = event.target as HTMLInputElement;
+    const files = input.files;
     if (!files) return;
 
+    const errors: MediaFileError[] = [];
     Array.from(files).forEach((file) => {
+      if (!file.type.startsWith('image/') && !file.type.startsWith('video/')) {
+        errors.push({ name: file.name, message: 'Unsupported file type. Use an image or a video.' });
+        return;
+      }
+      if (file.size > MediaStepComponent.MAX_BYTES) {
+        errors.push({ name: file.name, message: 'File is larger than 10 MB.' });
+        return;
+      }
+
+      const isVideo = file.type.startsWith('video/');
+      if (isVideo) this.readVideoDuration(file);
+
       this.state.addStagedMedia({
         file,
         previewUrl: URL.createObjectURL(file),
-        type: file.type.startsWith('video/') ? 'VIDEO' : 'IMAGE',
+        type: isVideo ? 'VIDEO' : 'IMAGE',
         altText: '',
-        isPrimary: false, 
+        isPrimary: false,
         sortOrder: this.state.stagedMedia().length,
       });
     });
+
+    this.fileErrors.set(errors);
+    input.value = '';
   }
+
+  private readVideoDuration(file: File): void {
+    const url = URL.createObjectURL(file);
+    const video = document.createElement('video');
+    video.preload = 'metadata';
+    video.onloadedmetadata = () => {
+      const total = Number.isFinite(video.duration) ? video.duration : 0;
+      const minutes = Math.floor(total / 60);
+      const seconds = Math.floor(total % 60).toString().padStart(2, '0');
+      this.videoDurations.update((d) => ({ ...d, [file.name]: `${minutes}:${seconds}` }));
+      URL.revokeObjectURL(url);
+    };
+    video.onerror = () => URL.revokeObjectURL(url);
+    video.src = url;
+  }
+
   removeStaged(index: number): void {
     if (window.confirm('Remove this media?')) {
       this.state.removeStagedMedia(index);
@@ -77,6 +128,29 @@ export class MediaStepComponent {
   onExistingAltChange(index: number, event: Event): void {
     const value = (event.target as HTMLInputElement).value;
     this.state.updateExistingAltText(index, value);
+  }
+
+  toggleAlt(key: string): void {
+    const next = new Set(this.editingAlt());
+    if (next.has(key)) next.delete(key);
+    else next.add(key);
+    this.editingAlt.set(next);
+  }
+
+  isEditingAlt(key: string): boolean {
+    return this.editingAlt().has(key);
+  }
+
+  dropExisting(event: CdkDragDrop<unknown[]>): void {
+    this.state.reorderExistingMedia(event.previousIndex, event.currentIndex);
+  }
+
+  dropStaged(event: CdkDragDrop<unknown[]>): void {
+    this.state.reorderStagedMedia(event.previousIndex, event.currentIndex);
+  }
+
+  videoDuration(name: string): string | null {
+    return this.videoDurations()[name] ?? null;
   }
 
   previewUrl(file: File): string {

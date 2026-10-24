@@ -293,7 +293,10 @@
     "soon": "قريباً",
     "saveChanges": "حفظ التغييرات",
     "verified": "موثق",
-    "never": "أبدًا"
+    "never": "أبدًا",
+    "stock": "المخزون",
+    "category": "الفئة",
+    "product": "المنتج"
   },
   "products": {
     "title": "المنتجات",
@@ -362,7 +365,12 @@
       "featured": "مميز",
       "activeHint": "المنتجات المعطلة مخفية عن الواجهة",
       "featuredHint": "المنتجات المميزة تظهر في الصفحة الرئيسية",
-      "productTypeChangeWarning": "تغيير نوع المنتج قد يؤثر على تفاصيل القهوة والمتغيرات."
+      "productTypeChangeWarning": "تغيير نوع المنتج قد يؤثر على تفاصيل القهوة والمتغيرات.",
+      "featuredDisabledWarning": "المنتجات المميزة المعطلة لن تظهر في المتجر.",
+      "productTypes": {
+        "COFFEE": "قهوة",
+        "EQUIPMENT": "معدات"
+      }
     },
     "variants": {
       "title": "المتغيرات",
@@ -388,7 +396,15 @@
       "selectOptionValue": "اختر قيمة",
       "optionsRequired": "اختر قيمة خيار واحدة على الأقل لهذا المتغير.",
       "costPrice": "تكلفة الشراء",
-      "reorderThreshold": "حد إعادة الطلب"
+      "reorderThreshold": "حد إعادة الطلب",
+      "view": "عرض المتغيرات",
+      "cards": "بطاقات",
+      "table": "جدول",
+      "outOfStock": "غير متوفر",
+      "lowStock": "منخفض: {{count}}",
+      "inStock": "{{count}} متوفر",
+      "duplicate": "نسخ",
+      "remove": "إزالة"
     },
     "media": {
       "title": "معرض الوسائط",
@@ -402,13 +418,25 @@
       "upload": "رفع",
       "uploading": "جارٍ الرفع…",
       "dropHint": "اسحب وأفلت الملفات هنا أو انقر للتصفح",
-      "fileTypes": "صور أو فيديو · حد أقصى 10 ميجابايت"
+      "fileTypes": "صور أو فيديو · حد أقصى 10 ميجابايت",
+      "fileCount": "{{count}} ملفات",
+      "cover": "الغلاف",
+      "setAsCover": "تعيين كغلاف",
+      "editAltText": "تحرير النص البديل",
+      "delete": "حذف",
+      "altTextPlaceholder": "صف الصورة",
+      "noAltText": "لا يوجد نص بديل",
+      "readyToUpload": "جاهز للرفع"
     },
     "tastingNotes": {
       "title": "ملاحظات التذوق",
       "description": "اختر جميع النكهات التي تنطبق على هذا القهوة.",
       "noNotes": "لا توجد ملاحظات تذوق متاحة بعد. أضف بعضها في صفحة إدارة ملاحظات التذوق أولاً.",
-      "selected": "محدد"
+      "selected": "محدد",
+      "manage": "إدارة النكهات",
+      "remove": "إزالة {{name}}",
+      "search": "ابحث في نكهات التذوق...",
+      "noMatches": "لا توجد نكهات تطابق بحثك."
     },
     "pairings": {
       "title": "التوائم",
@@ -433,7 +461,8 @@
       "next": "التالي",
       "saving": "جارٍ الحفظ...",
       "saveChanges": "حفظ التغييرات",
-      "createProduct": "إنشاء منتج"
+      "createProduct": "إنشاء منتج",
+      "variantsCount": "{{count}} متغيرات"
     },
     "table": {
       "image": "الصورة",
@@ -444,7 +473,12 @@
       "featured": "مميز",
       "notFeatured": "غير مميز",
       "status": "الحالة",
-      "actions": "الإجراءات"
+      "actions": "الإجراءات",
+      "outOfStock": "غير متوفر",
+      "lowStock": "منخفض: {{count}}",
+      "inStock": "{{count}} متوفر",
+      "variants": "{{count}} متغيرات",
+      "stockNeedsBackend": "واجهة القائمة لا ترجع المخزون أو عدد المتغيرات بعد."
     },
     "empty": {
       "category": "لا توجد منتجات في هذه الفئة",
@@ -456,15 +490,35 @@
     "categoryFilter": "الفئة: {{slug}}",
     "clearCategoryFilter": "مسح فلتر الفئة",
     "filters": {
-      "status": "مميز",
+      "status": "الحالة",
       "featured": "مميز",
       "type": "النوع",
-      "all": "الكل"
+      "all": "الكل",
+      "allTypes": "كل الأنواع",
+      "allStatuses": "كل الحالات",
+      "allFeatured": "الكل"
     },
     "actions": {
       "duplicate": "نسخ",
       "viewOnStorefront": "عرض في المتجر",
-      "moveToTrash": "نقل إلى سلة المحذوفات"
+      "moveToTrash": "نقل إلى سلة المحذوفات",
+      "enable": "تفعيل",
+      "disable": "تعطيل",
+      "feature": "تمييز",
+      "unfeature": "إلغاء التمييز"
+    },
+    "basicInformation": "المعلومات الأساسية",
+    "content": "المحتوى",
+    "visibility": "الظهور",
+    "bulk": {
+      "selected": "{{count}} محدد",
+      "enable": "تفعيل",
+      "disable": "تعطيل",
+      "feature": "تمييز",
+      "unfeature": "إلغاء التمييز",
+      "moveToTrash": "نقل إلى المهملات",
+      "clear": "مسح",
+      "someFailed": "فشل {{count}} إجراء"
     }
   },
   "categories": {
@@ -1195,7 +1249,10 @@
     "deleteConfirmNamed": "سيتم حذف التقييم وتعليقه. لا يمكن التراجع عن هذا الإجراء.",
     "dialog": {
       "ratingLabel": "التقييم: {{rating}} من 5",
-      "viewOrder": "عرض الطلب"
+      "viewOrder": "عرض الطلب",
+      "order": "الطلب",
+      "moderatedBy": "تمت المراجعة",
+      "approvedBy": "{{name}}، {{date}}"
     },
     "action": {
       "approved": "تم اعتماد التقييم",
@@ -1243,6 +1300,7 @@
       "rejected": "مرفوض"
     },
     "withdrawApproval": "سحب الاعتماد",
+    "moveToPending": "نقل إلى قيد المراجعة",
     "emptyState": {
       "noReviews": "لا توجد تقييمات بعد",
       "noResults": "لا توجد تقييمات مطابقة للفلاتر"
@@ -1254,7 +1312,9 @@
       "delete": "حذف المحدد",
       "clear": "مسح التحديد",
       "approved": "تم اعتماد التقييمات",
-      "rejected": "تم رفض التقييمات"
+      "rejected": "تم رفض التقييمات",
+      "deleted": "تم حذف التقييمات",
+      "deletePartial": "تعذر حذف بعض التقييمات"
     },
     "columns": {
       "product": "المنتج",
@@ -1275,6 +1335,11 @@
     "stats": {
       "averageRating": "متوسط التقييم (المعتمد)",
       "averageRatingAll": "متوسط التقييم (الكل)",
+      "averageTooltip": "يعرض المتجر متوسط التقييمات المعتمدة فقط.",
+      "allInclPending": "الكل بما في ذلك قيد المراجعة",
+      "awaitingModeration": "بانتظار المراجعة",
+      "oldestPending": "الأقدم منذ {{days}} يومًا",
+      "oldestPendingToday": "الأقدم اليوم",
       "distribution": "توزيع النجوم",
       "pending": "قيد المراجعة",
       "total": "الإجمالي",
@@ -1857,9 +1922,72 @@
     "detail": "الإشعار",
     "markAllAsRead": "تعيين الكل كمقروء",
     "markAsRead": "تعيين كمقروء",
-    "totalCount": "إشعارات",
-    "unreadCount": "غير مقروءة",
-    "viewDetails": "عرض التفاصيل"
+    "totalCount": "{{count}} إجمالي",
+    "unreadCount": "{{count}} غير مقروء",
+    "viewDetails": "عرض التفاصيل",
+    "ariaLabel": "الإشعارات، {{n}} غير مقروء",
+    "newCount": "{{count}} جديد",
+    "viewAll": "عرض كل الإشعارات",
+    "today": "اليوم",
+    "earlier": "سابقاً",
+    "loadMore": "تحميل المزيد",
+    "retry": "إعادة المحاولة",
+    "loadError": "تعذّر تحميل الإشعارات",
+    "emptyTitle": "لا شيء جديد",
+    "emptySubtitle": "ستظهر هنا الطلبات والتقييمات والرسائل الجديدة.",
+    "markedRead": "تم تعليمه كمقروء",
+    "deleted": "تم الحذف",
+    "deleteTitle": "حذف الإشعار؟",
+    "deleteMessage": "حذف {{count}} إشعارات محددة؟ لا يمكن التراجع عن ذلك.",
+    "deleteOneMessage": "حذف هذا الإشعار؟ لا يمكن التراجع عن ذلك.",
+    "kebab": {
+      "more": "إجراءات أخرى",
+      "markRead": "تعليم كمقروء",
+      "markUnread": "تعليم كغير مقروء",
+      "delete": "حذف"
+    },
+    "type": "النوع",
+    "allTypes": "كل الأنواع",
+    "selectedCount": "تم تحديد {{count}}",
+    "markSelectedRead": "تعليم المحدد كمقروء",
+    "deleteSelected": "حذف المحدد",
+    "selectAll": "تحديد الكل",
+    "selectItem": "تحديد الإشعار",
+    "types": {
+      "order_new": {
+        "title": "طلب جديد",
+        "description": "الطلب رقم {{orderId}} · {{total}}"
+      },
+      "payment_failed": {
+        "title": "فشل الدفع",
+        "description": "لم يكتمل دفع الطلب رقم {{orderId}}."
+      },
+      "payment_succeeded": {
+        "title": "تم استلام الدفع",
+        "description": "تم دفع الطلب رقم {{orderId}} بنجاح."
+      },
+      "review_pending": {
+        "title": "تقييم بانتظار المراجعة",
+        "description": "تلقّى {{productName}} تقييماً جديداً بـ {{rating}} نجوم."
+      },
+      "contact_message": {
+        "title": "رسالة تواصل جديدة",
+        "description": "أرسل {{name}} رسالة من المتجر."
+      },
+      "stock_low": {
+        "title": "مخزون منخفض",
+        "description": "مخزون {{productName}} ({{variant}}) على وشك النفاد."
+      },
+      "user_new": {
+        "title": "عميل جديد",
+        "description": "أنشأ {{name}} حساباً جديداً."
+      },
+      "system": {
+        "title": "تحديث النظام",
+        "description": "لديك إشعار نظام جديد."
+      }
+    },
+    "unreadTab": "غير مقروء"
   },
   "journal": {
     "title": "مقالة المجلة",

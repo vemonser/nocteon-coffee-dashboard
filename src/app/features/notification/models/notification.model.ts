@@ -1,23 +1,23 @@
-export interface NotificationDto {
-  id: number;
+export interface NotificationItem {
+  id: number | string;
   type: string;
-  title: string;
-  message: string;
-  link: string;
+  title?: string;
+  message?: string;
+  titleKey?: string;
+  bodyKey?: string;
+  params?: Record<string, unknown>;
+  entityType?: string;
+  entityId?: string | number;
+  link?: string | null;
   read: boolean;
+  readAt?: string | null;
   createdAt: string;
+  customerName?: string | null;
 }
-export interface NotificationReq {
-  id: string;
-}
-export type NotificationType = 'ORDER_CREATED' | 'PAYMENT_SUCCEEDED' | 'PAYMENT_FAILED' | 'REVIEW_CREATED';
 
-export interface NotificationResponse {
-  id: number;
-  type: NotificationType;
-  title: string;
-  message: string;
-  link: string | null;
-  read: boolean;
-  createdAt: string;
-}
+export type NotificationFilter = 'all' | 'unread';
+
+// Back-compat aliases for older call sites
+export type NotificationDto = NotificationItem;
+export type NotificationResponse = NotificationItem;
+export type NotificationType = string;

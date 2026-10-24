@@ -24,7 +24,10 @@ import { HlmInputImports } from '@spartan-ng/helm/input';
 import { HlmLabel } from '@spartan-ng/helm/label';
 import { HlmCheckboxImports } from '@spartan-ng/helm/checkbox';
 import { HlmSwitchImports } from '@spartan-ng/helm/switch';
-import { TranslocoPipe } from '@jsverse/transloco';
+import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { lucidePencil } from '@ng-icons/lucide';
+import { LanguageService } from '../../../../../core/i18n/language.service';
 
 @Component({
   selector: 'app-basic-info-step',
@@ -38,7 +41,9 @@ import { TranslocoPipe } from '@jsverse/transloco';
     HlmCheckboxImports,
     HlmSwitchImports,
     TranslocoPipe,
+    NgIcon,
   ],
+  providers: [provideIcons({ lucidePencil })],
   templateUrl: './basic-info-step.component.html',
 })
 export class BasicInfoStepComponent {
@@ -53,6 +58,8 @@ export class BasicInfoStepComponent {
   private processingMethodService = inject(ProcessingMethodService);
   private coffeeVarietyService = inject(CoffeeVarietyService);
   private notify = inject(NotifyService);
+  private transloco = inject(TranslocoService);
+  private language = inject(LanguageService);
 
   categories = signal<CategoryResponse[]>([]);
   origins = signal<OriginOption[]>([]);
@@ -63,10 +70,34 @@ export class BasicInfoStepComponent {
 
   readonly harvestYears: number[] = Array.from({ length: 15 }, (_, i) => new Date().getFullYear() - i);
 
-  readonly productTypes: { label: string; value: ProductType }[] = [
-    { label: 'Coffee', value: 'COFFEE' },
-    { label: 'Equipment', value: 'EQUIPMENT' },
+  readonly productTypes: { value: ProductType }[] = [
+    { value: 'COFFEE' },
+    { value: 'EQUIPMENT' },
   ];
+
+  readonly activeLanguage = signal<'en' | 'ar'>('en');
+  readonly slugUnlocked = signal(false);
+  readonly translationLanguages: { code: 'en' | 'ar'; label: string; dir: 'ltr' | 'rtl' }[] = [
+    { code: 'en', label: 'English', dir: 'ltr' },
+    { code: 'ar', label: 'العربي', dir: 'rtl' },
+  ];
+
+  readonly productTypeLabel = (value: string): string =>
+    value ? this.transloco.translate(`products.form.productTypes.${value}`) : '';
+  readonly categoryLabel = (value: string): string => this.getCategoryName(value);
+  readonly originLabel = (value: string): string => this.getOriginName(value);
+  readonly farmLabel = (value: string): string => this.getFarmName(value);
+  readonly roastLevelLabel = (value: string): string => this.getRoastLevelName(value);
+  readonly processingMethodLabel = (value: string): string =>
+    this.getProcessingMethodName(value);
+  readonly coffeeVarietyLabel = (value: string): string => this.getCoffeeVarietyName(value);
+
+  isTranslationComplete(code: string): boolean {
+    const group = this.state.translationsArray.controls.find(
+      (c) => c.get('language')?.value === code,
+    );
+    return String(group?.get('name')?.value ?? '').trim().length >= 2;
+  }
 
   constructor() {
     // A failed preload must not look like an empty catalog: toast on error.
@@ -124,13 +155,22 @@ export class BasicInfoStepComponent {
     return this.state.isCurrentStepValid();
   }
 
-  private enName(translations: { language: string; name: string }[], fallback: string): string {
-    return translations.find((t) => t.language === 'en')?.name ?? fallback;
+  private localizedName(
+    translations: { language: string; name: string }[],
+    fallback: string,
+  ): string {
+    const lang = this.language.current();
+    return (
+      translations.find((t) => t.language?.toLowerCase() === lang)?.name ??
+      translations.find((t) => t.language?.toLowerCase() === 'en')?.name ??
+      translations[0]?.name ??
+      fallback
+    );
   }
 
   getCategoryName(slug: string): string {
     const c = this.categories().find((c) => c.slug === slug);
-    return c ? this.enName(c.translations, slug) : slug;
+    return c ? this.localizedName(c.translations, slug) : slug;
   }
 
   getOriginName(slug: string): string {
@@ -140,21 +180,21 @@ export class BasicInfoStepComponent {
 
   getFarmName(slug: string): string {
     const f = this.farms().find((f) => f.slug === slug);
-    return f ? this.enName(f.translations, slug) : slug;
+    return f ? this.localizedName(f.translations, slug) : slug;
   }
 
   getRoastLevelName(slug: string): string {
     const r = this.roastLevels().find((r) => r.slug === slug);
-    return r ? this.enName(r.translations, slug) : slug;
+    return r ? this.localizedName(r.translations, slug) : slug;
   }
 
   getProcessingMethodName(slug: string): string {
     const p = this.processingMethods().find((p) => p.slug === slug);
-    return p ? this.enName(p.translations, slug) : slug;
+    return p ? this.localizedName(p.translations, slug) : slug;
   }
 
   getCoffeeVarietyName(slug: string): string {
     const v = this.coffeeVarieties().find((v) => v.slug === slug);
-    return v ? this.enName(v.translations, slug) : slug;
+    return v ? this.localizedName(v.translations, slug) : slug;
   }
 }

@@ -27,6 +27,8 @@ export class LocalizedDateComponent {
   variant = input<'short' | 'long'>('short');
   /** Append the time of day. */
   showTime = input<boolean>(false);
+  /** Put a comma between the date and the time ("23 Oct 2026, 10:58 PM"). */
+  withComma = input<boolean>(false);
   /** Put the time on its OWN line (a table cell that must stay one line wide). */
   stackTime = input<boolean>(false);
 

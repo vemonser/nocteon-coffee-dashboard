@@ -16,6 +16,7 @@ import {
   lucideCircleSlash,
   lucideCopy,
   lucideMail,
+  lucideStar,
 } from '@ng-icons/lucide';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmTooltipImports } from '@spartan-ng/helm/tooltip';
@@ -65,6 +66,7 @@ export interface RowMenuAction {
       lucideCircleSlash,
       lucideCopy,
       lucideMail,
+      lucideStar,
     }),
   ],
   templateUrl: './actions-cell.component.html',
