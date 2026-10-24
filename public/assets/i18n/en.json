@@ -1757,9 +1757,72 @@
     "detail": "Notification",
     "markAllAsRead": "Mark all as read",
     "markAsRead": "Mark as read",
-    "totalCount": "notifications",
-    "unreadCount": "unread",
-    "viewDetails": "View details"
+    "totalCount": "{{count}} total",
+    "unreadCount": "{{count}} unread",
+    "viewDetails": "View details",
+    "ariaLabel": "Notifications, {{n}} unread",
+    "newCount": "{{count}} new",
+    "viewAll": "View all notifications",
+    "today": "Today",
+    "earlier": "Earlier",
+    "loadMore": "Load more",
+    "retry": "Retry",
+    "loadError": "Couldn't load notifications",
+    "emptyTitle": "You're all caught up",
+    "emptySubtitle": "New orders, reviews and messages will show up here.",
+    "markedRead": "Marked as read",
+    "deleted": "Deleted",
+    "deleteTitle": "Delete notification?",
+    "deleteMessage": "Delete {{count}} selected notifications? This cannot be undone.",
+    "deleteOneMessage": "Delete this notification? This cannot be undone.",
+    "kebab": {
+      "more": "More actions",
+      "markRead": "Mark as read",
+      "markUnread": "Mark as unread",
+      "delete": "Delete"
+    },
+    "type": "Type",
+    "allTypes": "All types",
+    "selectedCount": "{{count}} selected",
+    "markSelectedRead": "Mark selected as read",
+    "deleteSelected": "Delete selected",
+    "selectAll": "Select all",
+    "selectItem": "Select notification",
+    "types": {
+      "order_new": {
+        "title": "New order received",
+        "description": "Order #{{orderId}} · {{total}}"
+      },
+      "payment_failed": {
+        "title": "Payment failed",
+        "description": "Payment for order #{{orderId}} did not go through."
+      },
+      "payment_succeeded": {
+        "title": "Payment received",
+        "description": "Order #{{orderId}} was paid successfully."
+      },
+      "review_pending": {
+        "title": "Review awaiting moderation",
+        "description": "{{productName}} received a new {{rating}}-star review."
+      },
+      "contact_message": {
+        "title": "New contact message",
+        "description": "{{name}} sent a message through the storefront."
+      },
+      "stock_low": {
+        "title": "Low stock",
+        "description": "{{productName}} ({{variant}}) is running low."
+      },
+      "user_new": {
+        "title": "New customer registered",
+        "description": "{{name}} just created an account."
+      },
+      "system": {
+        "title": "System update",
+        "description": "You have a new system notification."
+      }
+    },
+    "unreadTab": "Unread"
   },
   "journal": {
     "title": "Journal Post",

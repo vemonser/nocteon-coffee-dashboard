@@ -1796,9 +1796,72 @@
     "detail": "الإشعار",
     "markAllAsRead": "تعيين الكل كمقروء",
     "markAsRead": "تعيين كمقروء",
-    "totalCount": "إشعارات",
-    "unreadCount": "غير مقروءة",
-    "viewDetails": "عرض التفاصيل"
+    "totalCount": "{{count}} إجمالي",
+    "unreadCount": "{{count}} غير مقروء",
+    "viewDetails": "عرض التفاصيل",
+    "ariaLabel": "الإشعارات، {{n}} غير مقروء",
+    "newCount": "{{count}} جديد",
+    "viewAll": "عرض كل الإشعارات",
+    "today": "اليوم",
+    "earlier": "سابقاً",
+    "loadMore": "تحميل المزيد",
+    "retry": "إعادة المحاولة",
+    "loadError": "تعذّر تحميل الإشعارات",
+    "emptyTitle": "لا شيء جديد",
+    "emptySubtitle": "ستظهر هنا الطلبات والتقييمات والرسائل الجديدة.",
+    "markedRead": "تم تعليمه كمقروء",
+    "deleted": "تم الحذف",
+    "deleteTitle": "حذف الإشعار؟",
+    "deleteMessage": "حذف {{count}} إشعارات محددة؟ لا يمكن التراجع عن ذلك.",
+    "deleteOneMessage": "حذف هذا الإشعار؟ لا يمكن التراجع عن ذلك.",
+    "kebab": {
+      "more": "إجراءات أخرى",
+      "markRead": "تعليم كمقروء",
+      "markUnread": "تعليم كغير مقروء",
+      "delete": "حذف"
+    },
+    "type": "النوع",
+    "allTypes": "كل الأنواع",
+    "selectedCount": "تم تحديد {{count}}",
+    "markSelectedRead": "تعليم المحدد كمقروء",
+    "deleteSelected": "حذف المحدد",
+    "selectAll": "تحديد الكل",
+    "selectItem": "تحديد الإشعار",
+    "types": {
+      "order_new": {
+        "title": "طلب جديد",
+        "description": "الطلب رقم {{orderId}} · {{total}}"
+      },
+      "payment_failed": {
+        "title": "فشل الدفع",
+        "description": "لم يكتمل دفع الطلب رقم {{orderId}}."
+      },
+      "payment_succeeded": {
+        "title": "تم استلام الدفع",
+        "description": "تم دفع الطلب رقم {{orderId}} بنجاح."
+      },
+      "review_pending": {
+        "title": "تقييم بانتظار المراجعة",
+        "description": "تلقّى {{productName}} تقييماً جديداً بـ {{rating}} نجوم."
+      },
+      "contact_message": {
+        "title": "رسالة تواصل جديدة",
+        "description": "أرسل {{name}} رسالة من المتجر."
+      },
+      "stock_low": {
+        "title": "مخزون منخفض",
+        "description": "مخزون {{productName}} ({{variant}}) على وشك النفاد."
+      },
+      "user_new": {
+        "title": "عميل جديد",
+        "description": "أنشأ {{name}} حساباً جديداً."
+      },
+      "system": {
+        "title": "تحديث النظام",
+        "description": "لديك إشعار نظام جديد."
+      }
+    },
+    "unreadTab": "غير مقروء"
   },
   "journal": {
     "title": "مقالة المجلة",
