@@ -206,13 +206,12 @@
                 </span>
               </span>
 
+              <span
+                class="ms-auto shrink-0 text-end text-xs text-muted-foreground"
+                [attr.title]="absoluteTime(message.createdAt)"
+                >{{ relativeTime(message.createdAt) }}</span
+              >
             </button>
-
-            <span
-              class="w-20 shrink-0 text-end text-xs text-muted-foreground"
-              [attr.title]="absoluteTime(message.createdAt)"
-              >{{ relativeTime(message.createdAt) }}</span
-            >
 
             <div
               class="flex shrink-0 items-center gap-1 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:focus-within:opacity-100"
@@ -228,19 +227,7 @@
               >
                 <ng-icon name="lucideReply" class="size-4" aria-hidden="true" />
               </button>
-              @if (!message.read) {
-                <button
-                  type="button"
-                  hlmBtn
-                  variant="ghost"
-                  size="icon"
-                  (click)="markRead(message)"
-                  [attr.aria-label]="'contactMessages.markRead' | transloco"
-                  [title]="'contactMessages.markRead' | transloco"
-                >
-                  <ng-icon name="lucideMail" class="size-4" aria-hidden="true" />
-                </button>
-              }
+
               <button
                 type="button"
                 hlmBtn
