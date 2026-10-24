@@ -14,6 +14,10 @@ export interface UserResponse {
   createdAt: string;
   lastActiveAt: string | null;
   permissions?: string[];
+  /** Effective-permission diff, present on responses that follow a role change. */
+  granted?: string[] | null;
+  revoked?: string[] | null;
+  sensitiveGranted?: string[] | null;
 }
 
 export interface UserRequest {

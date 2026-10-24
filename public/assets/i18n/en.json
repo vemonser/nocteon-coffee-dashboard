@@ -1378,7 +1378,22 @@
       "saved": "Permissions saved",
       "deleted": "Role deleted"
     },
-    "roleBadgeTooltip": "{{role}} - {{count}} permissions"
+    "roleBadgeTooltip": "{{role}} - {{count}} permissions",
+    "roleChange": {
+      "currentRole": "Current role",
+      "newRole": "New role",
+      "diffSummary": "Grants {{granted}}, revokes {{revoked}}",
+      "granted": "Granted permissions",
+      "revoked": "Revoked permissions",
+      "noChanges": "No permission changes",
+      "sensitiveWarning": "This role includes sensitive permissions.",
+      "sensitiveHint": "Type the username to confirm.",
+      "ownAccount": "You can't change your own role.",
+      "lastAdmin": "The last admin can't lose the admin role.",
+      "sameRole": "This is already this user's role.",
+      "selectToSeeDiff": "Select a role to see what changes.",
+      "changed": "Role changed"
+    }
   },
   "carts": {
     "title": "Carts",

@@ -62,6 +62,14 @@ export class UserService extends BaseCrudService<UserResponse, UserRequest> {
     return this.http.delete<ApiResponse<void>>(`${this.rolesUrl}/${encodeURIComponent(name)}`);
   }
 
+  /** `PUT /api/dashboard/users/{id}/role` — returns the user plus the effective-permission diff. */
+  changeRole(id: string, role: string): Observable<ApiResponse<UserResponse>> {
+    return this.http.put<ApiResponse<UserResponse>>(
+      `${environment.apiUrl}${this.basePath}/${id}/role`,
+      { role }
+    );
+  }
+
   override delete(id: string): Observable<ApiResponse<void>> {
     return this.http.delete<ApiResponse<void>>(`${environment.apiUrl}${this.basePath}/${id}`);
   }

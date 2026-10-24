@@ -1401,7 +1401,22 @@
       "saved": "تم حفظ الصلاحيات",
       "deleted": "تم حذف الدور"
     },
-    "roleBadgeTooltip": "{{role}} - {{count}} صلاحية"
+    "roleBadgeTooltip": "{{role}} - {{count}} صلاحية",
+    "roleChange": {
+      "currentRole": "الدور الحالي",
+      "newRole": "الدور الجديد",
+      "diffSummary": "يمنح {{granted}} ويسحب {{revoked}}",
+      "granted": "الصلاحيات الممنوحة",
+      "revoked": "الصلاحيات المسحوبة",
+      "noChanges": "لا تغيير في الصلاحيات",
+      "sensitiveWarning": "هذا الدور يتضمن صلاحيات حساسة.",
+      "sensitiveHint": "اكتب اسم المستخدم للتأكيد.",
+      "ownAccount": "لا يمكنك تغيير دورك.",
+      "lastAdmin": "لا يمكن أن يفقد آخر مدير دور المدير.",
+      "sameRole": "هذا هو دور المستخدم بالفعل.",
+      "selectToSeeDiff": "اختر دورًا لعرض التغييرات.",
+      "changed": "تم تغيير الدور"
+    }
   },
   "carts": {
     "title": "السلات",

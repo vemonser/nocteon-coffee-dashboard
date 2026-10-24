@@ -36,12 +36,7 @@
                 [class.bg-warning-soft]="status.variant === 'secondary'"
                 [class.text-warning]="status.variant === 'secondary'"
               >{{ status.label }}</span>
-              <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
-                [class.bg-primary/10]="u.role === 'ADMIN'"
-                [class.text-primary]="u.role === 'ADMIN'"
-                [class.bg-muted]="u.role !== 'ADMIN'"
-                [class.text-muted-foreground]="u.role !== 'ADMIN'"
-              >{{ 'users.roleNames.' + u.role | transloco }}</span>
+              <span [class]="roleBadgeClasses(u.role)">{{ roleLabel(u.role) }}</span>
             </div>
           </div>
         </div>
@@ -124,14 +119,20 @@
           </header>
           <div class="px-6 pb-6 pt-4 space-y-3">
             <div class="flex items-center gap-2">
-              <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
-                [class.bg-primary/10]="u.role === 'ADMIN'"
-                [class.text-primary]="u.role === 'ADMIN'"
-                [class.bg-muted]="u.role !== 'ADMIN'"
-                [class.text-muted-foreground]="u.role !== 'ADMIN'"
-              >{{ 'users.roleNames.' + u.role | transloco }}</span>
+              <span [class]="roleBadgeClasses(u.role)">{{ roleLabel(u.role) }}</span>
               <span class="text-sm text-muted-foreground">{{ permissionCount(u) }} / {{ allPermissions.length }} {{ 'users.permissionsCount' | transloco }}</span>
-              <button hlmBtn variant="outline" size="sm" (click)="openRoleDialog()" [disabled]="isSelf(u)" [attr.aria-disabled]="isSelf(u)">{{ 'users.changeRole' | transloco }}</button>
+              <button
+                hlmBtn
+                variant="outline"
+                size="sm"
+                data-testid="change-role-button"
+                (click)="openRoleDialog()"
+                [disabled]="!canChangeRole()"
+                [attr.aria-disabled]="!canChangeRole()"
+                [attr.title]="roleChangeBlockedReason() || null"
+              >
+                {{ 'users.changeRole' | transloco }}
+              </button>
             </div>
             <app-permission-matrix [permissions]="allPermissions" [grantedInput]="u.permissions || []" mode="view" />
           </div>
@@ -220,14 +221,109 @@
   <!-- Block confirm -->
   @if (showRoleDialog() && user(); as u) {
     <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-      <div class="dialog-surface w-full max-w-lg p-6 space-y-4">
-        <h2 class="text-lg font-medium">{{ 'users.changeRole' | transloco }}</h2>
-        <hlm-native-select selectClass="w-full" size="sm" [ngModel]="newRole()" [ngModelOptions]="{standalone:true}" (ngModelChange)="newRole.set($event)">
-          @for (role of roleOptions(); track role) { <option [value]="role">{{ 'users.roleNames.' + role | transloco }}</option> }
-        </hlm-native-select>
+      <div class="dialog-surface max-h-[90vh] w-full max-w-lg space-y-4 overflow-y-auto p-6" data-testid="change-role-dialog">
+        <div class="flex items-center justify-between">
+          <h2 class="text-lg font-medium">{{ 'users.changeRole' | transloco }}</h2>
+          <button hlmBtn variant="ghost" size="icon" (click)="closeRoleDialog()" [attr.aria-label]="'common.close' | transloco">
+            <ng-icon name="lucideX" class="size-4" />
+          </button>
+        </div>
+
+        <p class="text-sm text-muted-foreground">
+          {{ 'users.roleChange.currentRole' | transloco }}:
+          <span class="font-medium text-foreground">{{ roleLabel(u.role) }}</span>
+        </p>
+
+        <div class="space-y-1.5">
+          <label hlmLabel for="change-role-select">{{ 'users.roleChange.newRole' | transloco }}</label>
+          <hlm-native-select
+            selectClass="w-full"
+            size="sm"
+            [ngModel]="newRole()"
+            [ngModelOptions]="{ standalone: true }"
+            (ngModelChange)="newRole.set($event)"
+          >
+            @for (role of roleDetails(); track role.name) {
+              <option hlmNativeSelectOption [value]="role.name">{{ roleLabel(role.name) }}</option>
+            }
+          </hlm-native-select>
+          @if (roleDescription(targetRole())) {
+            <p class="text-xs text-muted-foreground">{{ roleDescription(targetRole()) }}</p>
+          }
+        </div>
+
+        @if (targetRole(); as target) {
+          @if (target.name === u.role) {
+            <p class="text-sm text-muted-foreground">{{ 'users.roleChange.sameRole' | transloco }}</p>
+          } @else {
+            <!-- What actually changes. Both lists are collapsible, so a move
+                 that grants 70 permissions stays readable. -->
+            <div class="space-y-2 rounded-md border p-3">
+              <p class="text-sm font-medium">{{ diffSummaryLabel() }}</p>
+
+              @if (roleDiff().granted.length) {
+                <details class="rounded-md bg-success-soft px-3 py-2">
+                  <summary class="cursor-pointer text-xs font-medium text-success">
+                    {{ 'users.roleChange.granted' | transloco }} ({{ roleDiff().granted.length }})
+                  </summary>
+                  <ul class="mt-2 grid gap-1 text-xs text-foreground/80 sm:grid-cols-2">
+                    @for (slug of roleDiff().granted; track slug) {
+                      <li>{{ permissionLabel(slug) }}</li>
+                    }
+                  </ul>
+                </details>
+              }
+
+              @if (roleDiff().revoked.length) {
+                <details class="rounded-md bg-destructive-soft px-3 py-2">
+                  <summary class="cursor-pointer text-xs font-medium text-destructive-text">
+                    {{ 'users.roleChange.revoked' | transloco }} ({{ roleDiff().revoked.length }})
+                  </summary>
+                  <ul class="mt-2 grid gap-1 text-xs text-foreground/80 sm:grid-cols-2">
+                    @for (slug of roleDiff().revoked; track slug) {
+                      <li>{{ permissionLabel(slug) }}</li>
+                    }
+                  </ul>
+                </details>
+              }
+
+              @if (!roleDiff().granted.length && !roleDiff().revoked.length) {
+                <p class="text-xs text-muted-foreground">{{ 'users.roleChange.noChanges' | transloco }}</p>
+              }
+            </div>
+
+            @if (requiresUsername()) {
+              <div role="alert" class="rounded-md bg-warning-soft px-4 py-3 text-sm text-warning">
+                <p class="font-medium">{{ 'users.roleChange.sensitiveWarning' | transloco }}</p>
+                <p class="mt-1 text-xs">{{ 'users.roleChange.sensitiveHint' | transloco }}</p>
+              </div>
+              <input
+                hlmInput
+                [(ngModel)]="roleConfirmText"
+                [placeholder]="u.username"
+                [attr.aria-label]="'users.roleChange.sensitiveHint' | transloco"
+                class="w-full"
+                autocomplete="off"
+                data-1p-ignore
+                data-lpignore="true"
+              />
+            }
+          }
+        }
+
         <div class="flex gap-3">
-          <button hlmBtn variant="outline" class="flex-1" (click)="closeRoleDialog()">{{ 'common.cancel' | transloco }}</button>
-          <button hlmBtn class="flex-1" [disabled]="newRole() === u.role" (click)="confirmRoleChange()">{{ 'common.saveChanges' | transloco }}</button>
+          <button hlmBtn variant="outline" class="flex-1" (click)="closeRoleDialog()">
+            {{ 'common.cancel' | transloco }}
+          </button>
+          <button
+            hlmBtn
+            class="flex-1"
+            [disabled]="targetRole()?.name === u.role || saving() || (requiresUsername() && roleConfirmText() !== u.username)"
+            (click)="confirmRoleChange()"
+          >
+            @if (saving()) { <ng-icon name="lucideLoader2" class="me-2 size-4 animate-spin" /> }
+            {{ 'common.saveChanges' | transloco }}
+          </button>
         </div>
       </div>
     </div>
