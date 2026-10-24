@@ -16,6 +16,7 @@ import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { NotifyService } from '../../../../core/notify/notify.service';
+import { LanguageService } from '../../../../core/i18n/language.service';
 import { CanComponentDeactivate } from '../../../../core/guards/unsaved-changes.guard';
 import {
   lucideArrowLeft,
@@ -27,6 +28,7 @@ import {
   lucideX,
   lucideLoader2,
   lucideSave,
+  lucideExternalLink,
 } from '@ng-icons/lucide';
 
 @Component({
@@ -56,7 +58,8 @@ import {
       lucideX,
       lucideCheck,
       lucideLoader2,
-      lucideSave
+      lucideSave,
+      lucideExternalLink
     }),
   ],
   templateUrl: './product-wizard.component.html',
@@ -68,6 +71,7 @@ export class ProductWizardComponent implements CanComponentDeactivate {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private notify = inject(NotifyService);
+  private language = inject(LanguageService);
 
   loadingDetail = signal(false);
   submitting = signal(false);
@@ -101,7 +105,7 @@ export class ProductWizardComponent implements CanComponentDeactivate {
   readonly activeTab = signal<string>('basic');
 
   canDeactivate(): boolean {
-    if (this.state.form.dirty && !this.submitting()) {
+    if (this.hasUnsavedChanges() && !this.submitting()) {
       return window.confirm('You have unsaved changes. Leave anyway?');
     }
     return true;
@@ -215,6 +219,8 @@ export class ProductWizardComponent implements CanComponentDeactivate {
     call$.subscribe({
       next: () => {
         this.submitting.set(false);
+        this.state.mediaDirty.set(false);
+        this.state.form.markAsPristine();
         this.notify.success(wasEdit ? 'notify.updated' : 'notify.created', wasEdit ? 'Updated successfully' : 'Created successfully');
         this.router.navigate(['/dashboard/products']);
       },
@@ -234,6 +240,7 @@ export class ProductWizardComponent implements CanComponentDeactivate {
       originSlug: v.originSlug || undefined,
       farmSlug: v.farmSlug || undefined,
       productType: v.productType,
+      active: v.isActive,
       isActive: v.isActive,
       featured: v.featured,
 
@@ -303,5 +310,92 @@ export class ProductWizardComponent implements CanComponentDeactivate {
     if (this.state.editingSlug()) {
       window.open(`/products/${this.state.editingSlug()}`, '_blank');
     }
+  }
+
+  productNameInCurrentLang(): string {
+    const lang = this.language.current();
+    const arr = this.state.translationsArray.value as { language: string; name: string }[];
+    const t =
+      arr.find((x) => (x.language || '').toLowerCase() === lang) ??
+      arr.find((x) => (x.language || '').toLowerCase() === 'en') ??
+      arr[0];
+    return t?.name || this.state.editingName() || this.state.editingSlug() || 'Product';
+  }
+
+  arabicName(): string {
+    const arr = this.state.translationsArray.value as { language: string; name: string }[];
+    return arr.find((x) => (x.language || '').toLowerCase() === 'ar')?.name || '';
+  }
+
+  showSecondaryArabicName(): boolean {
+    return (
+      this.language.current() === 'en' &&
+      !!this.arabicName() &&
+      this.arabicName() !== this.productNameInCurrentLang()
+    );
+  }
+
+  isFormValid(): boolean {
+    const basicValid = ['categorySlug', 'productType'].every(
+      (f) => this.state.form.get(f)?.valid,
+    );
+    return (
+      basicValid &&
+      this.state.translationsArray.valid &&
+      this.state.variantsArray.length > 0 &&
+      this.state.variantsArray.valid
+    );
+  }
+
+  isTabDirty(tabId: string): boolean {
+    switch (tabId) {
+      case 'basic':
+        return (
+          ['categorySlug', 'originSlug', 'farmSlug', 'productType', 'altitude', 'harvestYear',
+            'processingMethodSlug', 'roastLevelSlug', 'coffeeVarietySlug', 'story'].some(
+            (field) => this.state.form.get(field)?.dirty,
+          ) || this.state.translationsArray.dirty
+        );
+      case 'variants':
+        return this.state.variantsArray.dirty;
+      case 'media':
+        return this.state.mediaDirty();
+      case 'tasting-notes':
+        return this.state.tastingNotesArray.dirty;
+      case 'pairings':
+        return this.state.pairingsArray.dirty;
+      default:
+        return false;
+    }
+  }
+
+  hasUnsavedChanges(): boolean {
+    return !!this.state.form.dirty || this.state.mediaDirty();
+  }
+
+  onBackToList(): void {
+    if (this.hasUnsavedChanges() && !this.submitting()) {
+      if (!window.confirm('You have unsaved changes. Leave anyway?')) return;
+    }
+    this.router.navigate(['/dashboard/products']);
+  }
+
+  saveAllTabs(): void {
+    if (!this.isFormValid()) {
+      const firstInvalid = this.stepTabs.find((t) => this.hasTabError(t.id));
+      if (firstInvalid) this.onTabChange(firstInvalid.id);
+      this.focusFirstInvalidField();
+      return;
+    }
+    this.onSubmit();
+  }
+
+  private focusFirstInvalidField(): void {
+    setTimeout(() => {
+      const el = document.querySelector(
+        '.ng-invalid, [aria-invalid="true"]',
+      ) as HTMLElement | null;
+      el?.focus();
+    }, 0);
   }
 }

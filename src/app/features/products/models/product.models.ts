@@ -13,6 +13,8 @@ export interface ProductListItem {
   categoryName?: string;  // Added for display purposes
   productType: ProductType;
   featured: boolean;
+  /** The API serializes Lombok's primitive `isActive` as `active`. */
+  active?: boolean;
   isActive: boolean;
   name: string;
   shortDescription?: string | null;
@@ -20,9 +22,12 @@ export interface ProductListItem {
   minPrice: number;
   maxPrice: number;
   discountPercentage?: number | null;
-  variantsCount?: number;  // Added for display purposes
-  stockStatus?: 'in-stock' | 'low' | 'out';  // Added for display purposes
-  updatedAt?: string;  // Added for display purposes
+  /** Not currently returned by ProductCardResponse — see DECISIONS.md. */
+  variantsCount?: number | null;
+  /** Not currently returned by ProductCardResponse — see DECISIONS.md. */
+  totalStock?: number | null;
+  stockStatus?: 'in-stock' | 'low' | 'out' | 'unknown';
+  updatedAt?: string;
 }
 
 // export type ProductType = 'WHOLE_BEAN' | 'GROUND' | 'CAPSULE' | 'INSTANT'; // adjust to your enum
@@ -86,6 +91,8 @@ export interface ProductVariant {
   reservedQuantity?: number;
   reorderThreshold?: number;
   discountPercentage?: number;
+  /** The API serializes the primitive `isActive` as `active`. */
+  active?: boolean;
   isActive: boolean;
   optionValues: ProductOptionValueSummary[];
 }
@@ -124,6 +131,8 @@ export interface ProductDetail {
   originSlug?: string;
   farmSlug?: string;
   productType: ProductType;
+  /** The API serializes the primitive `isActive` as `active`. */
+  active?: boolean;
   isActive: boolean;
   featured: boolean;
   translations: ProductTranslation[];
@@ -142,7 +151,10 @@ export interface ProductRequest {
   originSlug?: string;
   farmSlug?: string;
   productType: ProductType;
-  isActive: boolean;
+  /** What the backend's ProductRequest actually binds. */
+  active: boolean;
+  /** Kept for older callers; the backend ignores it. */
+  isActive?: boolean;
   featured: boolean;
   translations: ProductTranslation[];
   coffeeDetails?: CoffeeDetails;
@@ -168,6 +180,8 @@ export interface ExistingMedia {
   altText: string;
   type: 'IMAGE' | 'VIDEO';
   sortOrder: number;
+  /** The media API serializes `isPrimary` as `primary`. */
+  primary?: boolean;
   isPrimary: boolean;
 }
 

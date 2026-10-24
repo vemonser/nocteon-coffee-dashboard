@@ -292,7 +292,10 @@
     "toggleStatus": "تبديل الحالة",
     "soon": "قريباً",
     "saveChanges": "حفظ التغييرات",
-    "verified": "موثق"
+    "verified": "موثق",
+    "stock": "المخزون",
+    "category": "الفئة",
+    "product": "المنتج"
   },
   "products": {
     "title": "المنتجات",
@@ -361,7 +364,12 @@
       "featured": "مميز",
       "activeHint": "المنتجات المعطلة مخفية عن الواجهة",
       "featuredHint": "المنتجات المميزة تظهر في الصفحة الرئيسية",
-      "productTypeChangeWarning": "تغيير نوع المنتج قد يؤثر على تفاصيل القهوة والمتغيرات."
+      "productTypeChangeWarning": "تغيير نوع المنتج قد يؤثر على تفاصيل القهوة والمتغيرات.",
+      "featuredDisabledWarning": "المنتجات المميزة المعطلة لن تظهر في المتجر.",
+      "productTypes": {
+        "COFFEE": "قهوة",
+        "EQUIPMENT": "معدات"
+      }
     },
     "variants": {
       "title": "المتغيرات",
@@ -387,7 +395,15 @@
       "selectOptionValue": "اختر قيمة",
       "optionsRequired": "اختر قيمة خيار واحدة على الأقل لهذا المتغير.",
       "costPrice": "تكلفة الشراء",
-      "reorderThreshold": "حد إعادة الطلب"
+      "reorderThreshold": "حد إعادة الطلب",
+      "view": "عرض المتغيرات",
+      "cards": "بطاقات",
+      "table": "جدول",
+      "outOfStock": "غير متوفر",
+      "lowStock": "منخفض: {{count}}",
+      "inStock": "{{count}} متوفر",
+      "duplicate": "نسخ",
+      "remove": "إزالة"
     },
     "media": {
       "title": "معرض الوسائط",
@@ -401,13 +417,25 @@
       "upload": "رفع",
       "uploading": "جارٍ الرفع…",
       "dropHint": "اسحب وأفلت الملفات هنا أو انقر للتصفح",
-      "fileTypes": "صور أو فيديو · حد أقصى 10 ميجابايت"
+      "fileTypes": "صور أو فيديو · حد أقصى 10 ميجابايت",
+      "fileCount": "{{count}} ملفات",
+      "cover": "الغلاف",
+      "setAsCover": "تعيين كغلاف",
+      "editAltText": "تحرير النص البديل",
+      "delete": "حذف",
+      "altTextPlaceholder": "صف الصورة",
+      "noAltText": "لا يوجد نص بديل",
+      "readyToUpload": "جاهز للرفع"
     },
     "tastingNotes": {
       "title": "ملاحظات التذوق",
       "description": "اختر جميع النكهات التي تنطبق على هذا القهوة.",
       "noNotes": "لا توجد ملاحظات تذوق متاحة بعد. أضف بعضها في صفحة إدارة ملاحظات التذوق أولاً.",
-      "selected": "محدد"
+      "selected": "محدد",
+      "manage": "إدارة النكهات",
+      "remove": "إزالة {{name}}",
+      "search": "ابحث في نكهات التذوق...",
+      "noMatches": "لا توجد نكهات تطابق بحثك."
     },
     "pairings": {
       "title": "التوائم",
@@ -432,7 +460,8 @@
       "next": "التالي",
       "saving": "جارٍ الحفظ...",
       "saveChanges": "حفظ التغييرات",
-      "createProduct": "إنشاء منتج"
+      "createProduct": "إنشاء منتج",
+      "variantsCount": "{{count}} متغيرات"
     },
     "table": {
       "image": "الصورة",
@@ -443,7 +472,12 @@
       "featured": "مميز",
       "notFeatured": "غير مميز",
       "status": "الحالة",
-      "actions": "الإجراءات"
+      "actions": "الإجراءات",
+      "outOfStock": "غير متوفر",
+      "lowStock": "منخفض: {{count}}",
+      "inStock": "{{count}} متوفر",
+      "variants": "{{count}} متغيرات",
+      "stockNeedsBackend": "واجهة القائمة لا ترجع المخزون أو عدد المتغيرات بعد."
     },
     "empty": {
       "category": "لا توجد منتجات في هذه الفئة",
@@ -455,15 +489,35 @@
     "categoryFilter": "الفئة: {{slug}}",
     "clearCategoryFilter": "مسح فلتر الفئة",
     "filters": {
-      "status": "مميز",
+      "status": "الحالة",
       "featured": "مميز",
       "type": "النوع",
-      "all": "الكل"
+      "all": "الكل",
+      "allTypes": "كل الأنواع",
+      "allStatuses": "كل الحالات",
+      "allFeatured": "الكل"
     },
     "actions": {
       "duplicate": "نسخ",
       "viewOnStorefront": "عرض في المتجر",
-      "moveToTrash": "نقل إلى سلة المحذوفات"
+      "moveToTrash": "نقل إلى سلة المحذوفات",
+      "enable": "تفعيل",
+      "disable": "تعطيل",
+      "feature": "تمييز",
+      "unfeature": "إلغاء التمييز"
+    },
+    "basicInformation": "المعلومات الأساسية",
+    "content": "المحتوى",
+    "visibility": "الظهور",
+    "bulk": {
+      "selected": "{{count}} محدد",
+      "enable": "تفعيل",
+      "disable": "تعطيل",
+      "feature": "تمييز",
+      "unfeature": "إلغاء التمييز",
+      "moveToTrash": "نقل إلى المهملات",
+      "clear": "مسح",
+      "someFailed": "فشل {{count}} إجراء"
     }
   },
   "categories": {

@@ -30,6 +30,8 @@ export class ProductWizardStateService {
 
   // ─── Staged media files (not yet uploaded — sent together on final submit) ────
   stagedMedia = signal<StagedMedia[]>([]);
+  /** Media lives outside the reactive form, so it tracks dirty separately. */
+  readonly mediaDirty = signal(false);
 
   // ─── The single source of truth form, built once ──────────────────────────────
   form: FormGroup = this.fb.group({
@@ -184,6 +186,7 @@ export class ProductWizardStateService {
   existingMedia = signal<ExistingMedia[]>([]);
 
   addStagedMedia(media: StagedMedia): void {
+    this.mediaDirty.set(true);
     const hasAnyPrimary =
       this.existingMedia().some((m) => m.isPrimary) || this.stagedMedia().some((m) => m.isPrimary);
 
@@ -194,6 +197,7 @@ export class ProductWizardStateService {
   }
 
   removeStagedMedia(index: number): void {
+    this.mediaDirty.set(true);
     this.stagedMedia.update((media) =>
       media
         .filter((_, i) => i !== index)
@@ -205,7 +209,34 @@ export class ProductWizardStateService {
   }
 
   removeExistingMedia(index: number): void {
-    this.existingMedia.update((media) => media.filter((_, i) => i !== index));
+    this.mediaDirty.set(true);
+    this.existingMedia.update((media) =>
+      media
+        .filter((_, i) => i !== index)
+        .map((m, i) => ({ ...m, sortOrder: i })),
+    );
+  }
+
+  reorderExistingMedia(from: number, to: number): void {
+    if (from === to) return;
+    this.mediaDirty.set(true);
+    this.existingMedia.update((media) => {
+      const next = [...media];
+      const [moved] = next.splice(from, 1);
+      next.splice(to, 0, moved);
+      return next.map((item, i) => ({ ...item, sortOrder: i }));
+    });
+  }
+
+  reorderStagedMedia(from: number, to: number): void {
+    if (from === to) return;
+    this.mediaDirty.set(true);
+    this.stagedMedia.update((media) => {
+      const next = [...media];
+      const [moved] = next.splice(from, 1);
+      next.splice(to, 0, moved);
+      return next.map((item, i) => ({ ...item, sortOrder: i }));
+    });
   }
 
   // ─── Navigation ──────────────────────────────────────────────────────────────
@@ -261,7 +292,7 @@ export class ProductWizardStateService {
       originSlug: detail.originSlug ?? '',
       farmSlug: detail.farmSlug ?? '', // NEW
       productType: detail.productType,
-      isActive: detail.isActive,
+      isActive: detail.active ?? detail.isActive ?? true,
       featured: detail.featured,
 
       altitude: detail.coffeeDetails?.altitude ?? null,
@@ -277,7 +308,12 @@ export class ProductWizardStateService {
     this.variantsArray.clear();
     this.pendingEditPicks = [];
     detail.variants.forEach((v) => {
-      this.variantsArray.push(this.buildVariantGroup(v));
+      this.variantsArray.push(
+        this.buildVariantGroup({
+          ...v,
+          isActive: v.active ?? v.isActive ?? true,
+        }),
+      );
       this.pendingEditPicks.push(collectOptionPicks(v.optionValues));
     });
     // Options may already be loaded (order varies); resolve immediately if so.
@@ -290,7 +326,12 @@ export class ProductWizardStateService {
         this.brewingMethodsArray.push(this.buildBrewingMethodGroup(bm)), // NEW
     ); // NEW
 
-    this.existingMedia.set(detail.media);
+    this.existingMedia.set(
+      (detail.media ?? []).map((m) => ({
+        ...m,
+        isPrimary: m.isPrimary ?? !!m.primary,
+      })),
+    );
 
     this.tastingNotesArray.clear();
     detail.tastingNotes.forEach((slug) => {
@@ -310,6 +351,7 @@ export class ProductWizardStateService {
     this.isEditMode.set(false);
     this.editingSlug.set(null);
     this.stagedMedia.set([]);
+    this.mediaDirty.set(false);
     this.existingMedia.set([]);
     this.variantsArray.clear();
     this.brewingMethodsArray.clear();
@@ -321,6 +363,7 @@ export class ProductWizardStateService {
     this.form.reset({ isActive: true, featured: false });
   }
   setPrimaryMedia(source: 'existing' | 'staged', index: number): void {
+    this.mediaDirty.set(true);
     // امنع الفيديو يبقى primary من أساسه
     if (source === 'staged' && this.stagedMedia()[index]?.type === 'VIDEO') return;
     if (source === 'existing' && this.existingMedia()[index]?.type === 'VIDEO') return;
@@ -363,11 +406,13 @@ export class ProductWizardStateService {
   }
 
   updateAltText(index: number, altText: string): void {
+    this.mediaDirty.set(true);
     this.stagedMedia.update((media) =>
       media.map((item, i) => (i === index ? { ...item, altText } : item)),
     );
   }
   updateExistingAltText(index: number, altText: string): void {
+    this.mediaDirty.set(true);
     this.existingMedia.update((media) =>
       media.map((item, i) => (i === index ? { ...item, altText } : item)),
     );

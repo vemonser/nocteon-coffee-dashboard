@@ -11,6 +11,16 @@ import {
 import { Observable } from 'rxjs';
 import { ApiResponse, PageResponse } from '../../../core/models/api-response.model';
 
+/**
+ * Read the product-level visibility flag from either shape the API has used.
+ * Lombok's `isActive` on a primitive boolean serializes as `active`, while
+ * older fixtures/callers still send `isActive`.
+ */
+export function readProductActive(entity: { active?: boolean; isActive?: boolean } | null | undefined): boolean {
+  if (!entity) return true;
+  return entity.active ?? entity.isActive ?? true;
+}
+
 @Injectable({ providedIn: 'root' })
 export class ProductService {
   private http = inject(HttpClient);
