@@ -1863,3 +1863,20 @@ and page 2 do not show the same rows.
 - `evidence/reviews/pass1/results.json` records the measured checks:
   row-height spread, kebab x spread, Verified KPI vs API stats, search/select
   heights, and the dialog actions for each status.
+
+### R4 — seed and startup assertion: skipped in this branch
+- The dev seed (`V107__seed_orders_reviews_contacts.sql`) and any startup
+  assertion live in the `nocteon-backend` repository, not in this dashboard
+  branch. The current backend seed creates every review with `NOW()` and
+  `is_verified = TRUE`; it has no rejected review and no order-linked
+  verified review, so it cannot satisfy R4 as written.
+- The running dev database was inspected for the evidence: 17 reviews,
+  1 pending, 15 approved, 1 rejected, 6 verified. The screenshots and
+  `results.json` use that data; the Verified KPI (35%, 6 of 17) is the true
+  count over all reviews, not a hard-coded example.
+- Why skipped: changing the seed needs a backend migration and a database
+  re-seed, which is outside `reviews-pass-1` (dashboard only). No seed rule,
+  no synthetic review and no startup assertion was invented in the frontend.
+- **Needs backend:** update V107 (or add a V-next migration) so the dev data
+  has at least 3 pending, 1 rejected, 10 verified of 17, an order-linked
+  verified review, and a startup assertion that prints the number checked.
