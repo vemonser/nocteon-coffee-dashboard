@@ -1191,7 +1191,10 @@
     "deleteConfirmNamed": "The review and its comment will be removed. This cannot be undone.",
     "dialog": {
       "ratingLabel": "Rating: {{rating}} out of 5",
-      "viewOrder": "View order"
+      "viewOrder": "View order",
+      "order": "Order",
+      "moderatedBy": "Moderated",
+      "approvedBy": "{{name}}, {{date}}"
     },
     "action": {
       "approved": "Review approved",
@@ -1223,6 +1226,7 @@
       "rejected": "Rejected"
     },
     "withdrawApproval": "Withdraw approval",
+    "moveToPending": "Move to pending",
     "emptyState": {
       "noReviews": "No reviews yet",
       "noResults": "No reviews match these filters"
@@ -1234,7 +1238,9 @@
       "delete": "Delete selected",
       "clear": "Clear selection",
       "approved": "Reviews approved",
-      "rejected": "Reviews rejected"
+      "rejected": "Reviews rejected",
+      "deleted": "Reviews deleted",
+      "deletePartial": "Some reviews could not be deleted"
     },
     "columns": {
       "product": "Product",
@@ -1255,6 +1261,11 @@
     "stats": {
       "averageRating": "Average rating (approved)",
       "averageRatingAll": "Average rating (all)",
+      "averageTooltip": "The storefront shows the approved-only average.",
+      "allInclPending": "All incl. pending",
+      "awaitingModeration": "Awaiting moderation",
+      "oldestPending": "Oldest {{days}} days ago",
+      "oldestPendingToday": "Oldest today",
       "distribution": "Star distribution",
       "pending": "Pending",
       "total": "Total",

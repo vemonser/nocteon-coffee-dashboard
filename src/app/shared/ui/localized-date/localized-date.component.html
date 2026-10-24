@@ -22,6 +22,9 @@
       }
     </span>
     @if (showTime()) {
+      @if (withComma()) {
+        <span aria-hidden="true">,</span>
+      }
       <span class="text-muted-foreground" [class.ms-1]="!stackTime()">{{
         time()
       }}</span>

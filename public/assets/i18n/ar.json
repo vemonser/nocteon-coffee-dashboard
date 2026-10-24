@@ -1195,7 +1195,10 @@
     "deleteConfirmNamed": "سيتم حذف التقييم وتعليقه. لا يمكن التراجع عن هذا الإجراء.",
     "dialog": {
       "ratingLabel": "التقييم: {{rating}} من 5",
-      "viewOrder": "عرض الطلب"
+      "viewOrder": "عرض الطلب",
+      "order": "الطلب",
+      "moderatedBy": "تمت المراجعة",
+      "approvedBy": "{{name}}، {{date}}"
     },
     "action": {
       "approved": "تم اعتماد التقييم",
@@ -1243,6 +1246,7 @@
       "rejected": "مرفوض"
     },
     "withdrawApproval": "سحب الاعتماد",
+    "moveToPending": "نقل إلى قيد المراجعة",
     "emptyState": {
       "noReviews": "لا توجد تقييمات بعد",
       "noResults": "لا توجد تقييمات مطابقة للفلاتر"
@@ -1254,7 +1258,9 @@
       "delete": "حذف المحدد",
       "clear": "مسح التحديد",
       "approved": "تم اعتماد التقييمات",
-      "rejected": "تم رفض التقييمات"
+      "rejected": "تم رفض التقييمات",
+      "deleted": "تم حذف التقييمات",
+      "deletePartial": "تعذر حذف بعض التقييمات"
     },
     "columns": {
       "product": "المنتج",
@@ -1275,6 +1281,11 @@
     "stats": {
       "averageRating": "متوسط التقييم (المعتمد)",
       "averageRatingAll": "متوسط التقييم (الكل)",
+      "averageTooltip": "يعرض المتجر متوسط التقييمات المعتمدة فقط.",
+      "allInclPending": "الكل بما في ذلك قيد المراجعة",
+      "awaitingModeration": "بانتظار المراجعة",
+      "oldestPending": "الأقدم منذ {{days}} يومًا",
+      "oldestPendingToday": "الأقدم اليوم",
       "distribution": "توزيع النجوم",
       "pending": "قيد المراجعة",
       "total": "الإجمالي",
