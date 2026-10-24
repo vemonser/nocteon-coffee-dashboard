@@ -1822,3 +1822,44 @@ and page 2 do not show the same rows.
 - No activity summary endpoint: Activity card hidden. Needs backend (activity).
 - No password-reset/invite-email endpoint: those kebab/dialog options omitted. Needs backend.
 - Delete confirm dialog requires typing the username.
+
+## Reviews pass 1 (reviews-pass-1)
+
+### Reviewer identity is an API gap, not a UI choice
+- `GET /api/dashboard/reviews` returns `username` only. There is no `userId`,
+  `firstName` or `lastName` on the review response, so the list and the
+  details dialog can only render a display name derived from the username
+  (`toDisplayName`). The name links to `/dashboard/users` (the user list);
+  a deep link to `/dashboard/users/:id` needs `userId` from the backend.
+- **Needs backend:** add `userId` (and, if available, the customer's full
+  name) to `ReviewResponse` so the reviewer can link to the customer page.
+
+### Moderation metadata does not exist yet
+- The API exposes `status` and `createdAt`; it has no moderation note, no
+  `moderatedBy` / `moderatedAt`, and no status history. The dialog shows only
+  the rows it can prove (Status, Created, Order). The "Moderated" row is
+  conditional and is not rendered with the current API.
+- **Needs backend:** a moderation note/history endpoint or fields on the
+  review response. No note or history is invented in the UI.
+
+### The status filter is a backend gap the list works around
+- `GET /api/dashboard/reviews` ignores the `status` query parameter. The list
+  sends `isApproved` for the Pending/Approved tabs and filters the Rejected
+  tab client-side after the response. Tab counts come from
+  `/dashboard/reviews/stats`.
+- **Needs backend:** honour `status` (or document `isApproved` as the only
+  supported filter) so the client-side filtering can be removed.
+
+### Control heights
+- The app's compact control token is 32px (`--control-height-compact`).
+  The search input and the filter selects both measure 32px; there is no
+  36px token or shared 36px search component in this revision.
+- The reviews table opts into a 72px row height through the new optional
+  `rowHeight` input on `DataTableComponent`; rows measure 72px exactly.
+
+### Evidence
+- Viewport screenshots are 1440x900 (not full page) under
+  `evidence/reviews/pass1/{light-en,dark-en,light-ar}/`.
+- `evidence/reviews/pass1/results.json` records the measured checks:
+  row-height spread, kebab x spread, Verified KPI vs API stats, search/select
+  heights, and the dialog actions for each status.
