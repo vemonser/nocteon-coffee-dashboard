@@ -1,20 +1,54 @@
 ﻿<div class="space-y-4">
-  <div class="flex justify-between items-center mb-4">
+  <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
     <h2 class="text-lg font-medium">{{ 'products.variants.title' | transloco }}</h2>
-    <button hlmBtn size="sm" type="button" (click)="addVariant()">
-      <ng-icon name="lucidePlus" class="mr-1 size-4" />
-      {{ 'products.variants.add' | transloco }}
-    </button>
+    <div class="flex items-center gap-2">
+      <div class="inline-flex rounded-md border border-border bg-muted/40 p-0.5" role="tablist" [attr.aria-label]="'products.variants.view' | transloco">
+        <button
+          type="button"
+          role="tab"
+          class="rounded px-3 py-1.5 text-sm transition-colors"
+          [class.bg-background]="view() === 'cards'"
+          [class.text-foreground]="view() === 'cards'"
+          [class.shadow-sm]="view() === 'cards'"
+          [class.text-muted-foreground]="view() !== 'cards'"
+          [attr.aria-selected]="view() === 'cards'"
+          (click)="view.set('cards')"
+        >
+          {{ 'products.variants.cards' | transloco }}
+        </button>
+        <button
+          type="button"
+          role="tab"
+          class="rounded px-3 py-1.5 text-sm transition-colors"
+          [class.bg-background]="view() === 'table'"
+          [class.text-foreground]="view() === 'table'"
+          [class.shadow-sm]="view() === 'table'"
+          [class.text-muted-foreground]="view() !== 'table'"
+          [attr.aria-selected]="view() === 'table'"
+          (click)="view.set('table')"
+        >
+          {{ 'products.variants.table' | transloco }}
+        </button>
+      </div>
+      <button hlmBtn size="sm" type="button" (click)="addVariant()">
+        <ng-icon name="lucidePlus" class="mr-1 size-4" />
+        {{ 'products.variants.add' | transloco }}
+      </button>
+    </div>
   </div>
 
   @if (state.variantsArray.length === 0) {
-    <div class="text-center py-12 text-muted-foreground border-2 border-dashed rounded-md">
-      {{ 'products.variants.noVariants' | transloco }}
+    <div class="flex flex-col items-center gap-3 rounded-md border-2 border-dashed py-12 text-center text-muted-foreground">
+      <p>{{ 'products.variants.noVariants' | transloco }}</p>
+      <button hlmBtn size="sm" type="button" (click)="addVariant()">
+        <ng-icon name="lucidePlus" class="mr-1 size-4" />
+        {{ 'products.variants.add' | transloco }}
+      </button>
     </div>
   }
 
   @if (loadingOptions()) {
-    <div class="text-sm text-muted-foreground animate-pulse">
+    <div class="animate-pulse text-sm text-muted-foreground">
       {{ 'products.variants.loadingOptions' | transloco }}
     </div>
   }
@@ -25,191 +59,197 @@
     </div>
   }
 
-  <div formArrayName="variants">
-    @for (group of state.variantsArray.controls; track $index; let i = $index) {
-      <div [formGroupName]="i" class="border rounded-md mb-3 overflow-hidden">
-        <!-- Card header -->
-        <div class="flex items-center justify-between gap-2 px-4 py-3 bg-muted/30">
-          <button type="button" class="flex items-center gap-2 text-start flex-1 min-w-0" (click)="toggleCollapse(i)">
-            <ng-icon [name]="isCollapsed(i) ? 'lucideChevronDown' : 'lucideChevronUp'" class="size-4 shrink-0" />
-            <span class="font-medium truncate">{{ variantLabel(group) }}</span>
-            <span class="text-xs text-muted-foreground font-mono truncate">{{ group.get('sku')?.value }}</span>
-          </button>
-          <div class="flex items-center gap-2 shrink-0">
-            <span class="text-sm font-medium">{{ group.get('price')?.value }} EGP</span>
-            @if (group.get('compareAtPrice')?.value && group.get('price')?.value && group.get('compareAtPrice')!.value > group.get('price')!.value) {
-              <span class="text-xs px-2 py-0.5 rounded-full bg-success-soft text-success font-medium">
-                -{{ (((group.get('compareAtPrice')!.value - group.get('price')!.value) / group.get('compareAtPrice')!.value) * 100).toFixed(0) }}%
-              </span>
-            }
-            <span class="text-xs text-muted-foreground">{{ group.get('stockQuantity')?.value }} in stock</span>
-            <hlm-switch formControlName="isActive" [attr.aria-label]="'products.variants.active' | transloco" />
+  @if (view() === 'cards') {
+    <div formArrayName="variants">
+      @for (group of state.variantsArray.controls; track $index; let i = $index) {
+        <div [formGroupName]="i" class="mb-3 overflow-hidden rounded-md border">
+          <!-- Summary row -->
+          <div class="flex flex-wrap items-center justify-between gap-2 bg-muted/30 px-4 py-3">
+            <button type="button" class="flex min-w-0 flex-1 items-center gap-2 text-start" (click)="toggleCollapse(i)">
+              <ng-icon [name]="isCollapsed(i) ? 'lucideChevronDown' : 'lucideChevronUp'" class="size-4 shrink-0" />
+              <span class="truncate font-medium">{{ variantLabel(group) }}</span>
+              <span class="truncate font-mono text-xs text-muted-foreground">{{ group.get('sku')?.value }}</span>
+            </button>
+            <div class="flex flex-wrap items-center gap-2">
+              @if (compareAtPrice(group); as compare) {
+                <span class="text-xs text-muted-foreground line-through">{{ compare | money }}</span>
+              }
+              <span class="text-sm font-medium">{{ group.get('price')?.value | money }}</span>
+              @if (discountPercent(group) != null) {
+                <span class="rounded-full bg-success-soft px-2 py-0.5 text-xs font-medium text-success">
+                  -{{ discountPercent(group) }}%
+                </span>
+              }
 
-          </div>
-        </div>
+              @switch (stockLevel(group)) {
+                @case ('out') {
+                  <span class="rounded-full bg-destructive-soft px-2 py-0.5 text-xs font-medium text-destructive">{{ 'products.variants.outOfStock' | transloco }}</span>
+                }
+                @case ('low') {
+                  <span class="rounded-full bg-warning-soft px-2 py-0.5 text-xs font-medium text-warning">{{ 'products.variants.lowStock' | transloco: { count: group.get('stockQuantity')?.value } }}</span>
+                }
+                @default {
+                  <span class="rounded-full bg-success-soft px-2 py-0.5 text-xs font-medium text-success">{{ 'products.variants.inStock' | transloco: { count: group.get('stockQuantity')?.value } }}</span>
+                }
+              }
 
-        @if (!isCollapsed(i)) {
-        <div class="p-4">
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div class="space-y-1.5">
-            <label hlmLabel>{{ 'products.variants.sku' | transloco }} *</label>
-            <input
-              hlmInput
-              formControlName="sku"
-              type="text"
-              class="w-full"
-              [placeholder]="'products.variants.skuPlaceholder' | transloco"
-            />
-            @if (group.get('sku')?.invalid && group.get('sku')?.touched) {
-              <p class="text-destructive text-xs mt-1">SKU is required</p>
-            }
+              <hlm-switch formControlName="isActive" [attr.aria-label]="'products.variants.active' | transloco" />
+            </div>
           </div>
-          <div class="space-y-1.5">
-            <label hlmLabel>{{ 'products.variants.price' | transloco }} (EGP) *</label>
-            <input
-              hlmInput
-              formControlName="price"
-              type="number"
-              step="0.01"
-              min="0.01"
-              class="w-full"
-            />
-            @if (group.get('price')?.hasError('required') && group.get('price')?.touched) {
-              <p class="text-destructive text-xs mt-1">Price is required</p>
-            }
-            @if (group.get('price')?.hasError('min') && group.get('price')?.touched) {
-              <p class="text-destructive text-xs mt-1">Price must be greater than 0</p>
-            }
-          </div>
-          <div class="space-y-1.5">
-            <label hlmLabel>
-              {{ 'products.variants.compareAtPrice' | transloco }} (EGP)
-              <span class="text-xs text-muted-foreground font-normal ml-1"
-                >({{ 'products.variants.noDiscountHint' | transloco }})</span
-              >
-            </label>
-            <input
-              hlmInput
-              formControlName="compareAtPrice"
-              type="number"
-              step="0.01"
-              class="w-full"
-            />
-            @if (group.get('compareAtPrice')?.hasError('compareAtNotGreater') && group.get('compareAtPrice')?.touched) {
-              <p class="text-destructive text-xs mt-1">Compare-at price must be greater than price</p>
-            }
-            @if (group.get('compareAtPrice')?.value && group.get('price')?.value && group.get('compareAtPrice')!.value > group.get('price')!.value) {
-              <p class="text-success text-xs mt-1">
-                On sale
-              </p>
-            }
-          </div>
-          <div class="space-y-1.5">
-            <label hlmLabel>{{ 'products.variants.costPrice' | transloco }} (EGP)</label>
-            <input
-              hlmInput
-              formControlName="costPrice"
-              type="number"
-              step="0.01"
-              class="w-full"
-            />
-            @if (group.get('costPrice')?.value && group.get('price')?.value) {
-              <p class="text-xs text-muted-foreground mt-1">
-                Margin: {{ (((group.get('price')!.value - group.get('costPrice')!.value) / group.get('price')!.value) * 100).toFixed(1) }}%
-              </p>
-            }
-          </div>
-          <div class="space-y-1.5">
-            <label hlmLabel>{{ 'products.variants.stockQuantity' | transloco }} *</label>
-            <input
-              hlmInput
-              formControlName="stockQuantity"
-              type="number"
-              class="w-full"
-            />
-          </div>
-          <div class="space-y-1.5">
-            <label hlmLabel>{{ 'products.variants.reorderThreshold' | transloco }}</label>
-            <input
-              hlmInput
-              formControlName="reorderThreshold"
-              type="number"
-              class="w-full"
-            />
-          </div>
-        </div>
 
-        <!-- Option value picks -->
-        @if (!loadingOptions() && state.productOptions().length > 0) {
-          <div class="mt-4 space-y-3">
-            <p class="text-sm font-medium">{{ 'products.variants.optionsLabel' | transloco }}</p>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              @for (option of state.productOptions(); track option.id) {
+          @if (!isCollapsed(i)) {
+            <div class="p-4">
+              <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div class="space-y-1.5">
-                  <label hlmLabel>{{ getOptionName(option) }}</label>
-                  <hlm-select [formControl]="getPickControl(group, option)" class="w-full">
-                    <hlm-select-trigger class="w-full">
-                      <hlm-select-value placeholder="{{ 'products.variants.selectOptionValue' | transloco }}" />
-                    </hlm-select-trigger>
-                    <hlm-select-content *hlmSelectPortal>
-                      @for (value of option.values; track value.id) {
-                        <hlm-select-item [value]="valueIdString(value.id)">
-                          <div class="flex items-center justify-between w-full">
-                            <span class="font-medium">
-                              {{ getEnhancedValueName(option, value.id) }}
-                            </span>
-                            @if (value.numericValue != null) {
-                              <span class="text-xs text-muted-foreground ml-2">
-                                {{ value.numericValue }}g
-                              </span>
+                  <label hlmLabel>{{ 'products.variants.sku' | transloco }} *</label>
+                  <input hlmInput formControlName="sku" type="text" class="w-full" [placeholder]="'products.variants.skuPlaceholder' | transloco" />
+                  @if (group.get('sku')?.invalid && group.get('sku')?.touched) {
+                    <p class="mt-1 text-xs text-destructive">SKU is required</p>
+                  }
+                </div>
+                <div class="space-y-1.5">
+                  <label hlmLabel>{{ 'products.variants.price' | transloco }} *</label>
+                  <input hlmInput formControlName="price" type="number" step="0.01" min="0.01" class="w-full" />
+                  @if (group.get('price')?.hasError('required') && group.get('price')?.touched) {
+                    <p class="mt-1 text-xs text-destructive">Price is required</p>
+                  }
+                  @if (group.get('price')?.hasError('min') && group.get('price')?.touched) {
+                    <p class="mt-1 text-xs text-destructive">Price must be greater than 0</p>
+                  }
+                </div>
+                <div class="space-y-1.5">
+                  <label hlmLabel>
+                    {{ 'products.variants.compareAtPrice' | transloco }}
+                    <span class="ms-1 text-xs font-normal text-muted-foreground">({{ 'products.variants.noDiscountHint' | transloco }})</span>
+                  </label>
+                  <input hlmInput formControlName="compareAtPrice" type="number" step="0.01" class="w-full" />
+                  @if (group.get('compareAtPrice')?.hasError('compareAtNotGreater') && group.get('compareAtPrice')?.touched) {
+                    <p class="mt-1 text-xs text-destructive">Compare-at price must be greater than price</p>
+                  }
+                  @if (discountPercent(group) != null) {
+                    <p class="mt-1 text-xs text-success">{{ 'products.variants.onSale' | transloco }}: -{{ discountPercent(group) }}%</p>
+                  }
+                </div>
+                <div class="space-y-1.5">
+                  <label hlmLabel>{{ 'products.variants.costPrice' | transloco }}</label>
+                  <input hlmInput formControlName="costPrice" type="number" step="0.01" class="w-full" />
+                  @if (margin(group); as m) {
+                    <p class="mt-1 text-xs text-muted-foreground">Margin: {{ m }}%</p>
+                  }
+                </div>
+                <div class="space-y-1.5">
+                  <label hlmLabel>{{ 'products.variants.stockQuantity' | transloco }} *</label>
+                  <input hlmInput formControlName="stockQuantity" type="number" class="w-full" />
+                </div>
+                <div class="space-y-1.5">
+                  <label hlmLabel>{{ 'products.variants.reorderThreshold' | transloco }}</label>
+                  <input hlmInput formControlName="reorderThreshold" type="number" class="w-full" />
+                </div>
+              </div>
+
+              @if (!loadingOptions() && state.productOptions().length > 0) {
+                <div class="mt-4 space-y-3">
+                  <p class="text-sm font-medium">
+                    {{ 'products.variants.optionsLabel' | transloco }}
+                    <span class="font-normal text-muted-foreground">({{ optionNames() }})</span>
+                  </p>
+                  <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    @for (option of state.productOptions(); track option.id) {
+                      <div class="space-y-1.5">
+                        <label hlmLabel>{{ getOptionName(option) }}</label>
+                        <hlm-select
+                          [formControl]="getPickControl(group, option)"
+                          [itemToString]="valueLabelFor(option)"
+                          class="w-full"
+                        >
+                          <hlm-select-trigger class="w-full">
+                            <hlm-select-value placeholder="{{ 'products.variants.selectOptionValue' | transloco }}" />
+                          </hlm-select-trigger>
+                          <hlm-select-content *hlmSelectPortal>
+                            @for (value of option.values; track value.id) {
+                              <hlm-select-item [value]="valueIdString(value.id)">
+                                {{ getValueName(option, value.id) }}
+                              </hlm-select-item>
                             }
-                          </div>
-                        </hlm-select-item>
-                      }
-                    </hlm-select-content>
-                  </hlm-select>
+                          </hlm-select-content>
+                        </hlm-select>
+                      </div>
+                    }
+                  </div>
+                  @if (group.get('optionPicks')?.dirty && group.get('optionPicks')?.invalid) {
+                    <p class="text-xs text-destructive">{{ 'products.variants.optionsRequired' | transloco }}</p>
+                  }
                 </div>
               }
+
+              <div class="mt-4 flex justify-end gap-2 border-t pt-3">
+                <button hlmBtn variant="outline" size="sm" type="button" (click)="duplicateVariant(i)">
+                  <ng-icon name="lucideCopy" class="mr-1 size-4" />
+                  {{ 'products.variants.duplicate' | transloco }}
+                </button>
+                <button hlmBtn variant="destructive" size="sm" type="button" (click)="confirmRemoveVariant(i)">
+                  <ng-icon name="lucideTrash2" class="mr-1 size-4" />
+                  {{ 'products.variants.remove' | transloco }}
+                </button>
+              </div>
             </div>
-            @if (group.get('optionPicks')?.dirty && group.get('optionPicks')?.invalid) {
-              <p class="text-xs text-destructive">{{ 'products.variants.optionsRequired' | transloco }}</p>
-            }
-          </div>
-        }
-
+          }
         </div>
-
-        <div class="flex justify-end gap-2 mt-4 pt-3 border-t">
-          <button hlmBtn variant="outline" size="sm" type="button" (click)="duplicateVariant(i)">
-            <ng-icon name="lucideCopy" class="mr-1 size-4" /> Duplicate
-          </button>
-          <button hlmBtn variant="destructive" size="sm" type="button" (click)="confirmRemoveVariant(i)">
-            <ng-icon name="lucideTrash2" class="mr-1 size-4" /> Remove
-          </button>
-        </div>
-        }
-      </div>
-    }
-  </div>
-
-  @if (state.variantsArray.length > 0) {
-    <div class="flex justify-center pt-2">
-      <button hlmBtn variant="outline" size="sm" type="button" (click)="addVariant()">
-        <ng-icon name="lucidePlus" class="mr-1 size-4" />
-        {{ 'products.variants.add' | transloco }}
-      </button>
+      }
+    </div>
+  } @else {
+    <!-- Table view: inline editing for every variant -->
+    <div formArrayName="variants" class="overflow-x-auto rounded-md border">
+      <table class="w-full text-sm">
+        <thead class="bg-muted/40 text-start text-xs font-medium text-muted-foreground">
+          <tr>
+            <th class="px-3 py-2 text-start">{{ 'products.variants.sku' | transloco }}</th>
+            <th class="px-3 py-2 text-start">{{ 'products.variants.price' | transloco }}</th>
+            <th class="px-3 py-2 text-start">{{ 'products.variants.compareAtPrice' | transloco }}</th>
+            <th class="px-3 py-2 text-start">{{ 'products.variants.stockQuantity' | transloco }}</th>
+            <th class="px-3 py-2 text-start">{{ 'products.variants.reorderThreshold' | transloco }}</th>
+            <th class="px-3 py-2 text-center">{{ 'products.variants.active' | transloco }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (group of state.variantsArray.controls; track $index; let i = $index) {
+            <tr [formGroupName]="i" class="border-t" [class.bg-warning-soft]="group.dirty">
+              <td class="px-3 py-2">
+                <input hlmInput formControlName="sku" type="text" class="h-8 w-full" [class.border-destructive]="group.get('sku')?.invalid && group.get('sku')?.touched" />
+              </td>
+              <td class="px-3 py-2">
+                <input hlmInput formControlName="price" type="number" step="0.01" class="h-8 w-28" [class.border-destructive]="group.get('price')?.invalid && group.get('price')?.touched" />
+              </td>
+              <td class="px-3 py-2">
+                <input hlmInput formControlName="compareAtPrice" type="number" step="0.01" class="h-8 w-28" [class.border-destructive]="group.get('compareAtPrice')?.invalid && group.get('compareAtPrice')?.touched" />
+              </td>
+              <td class="px-3 py-2">
+                <input hlmInput formControlName="stockQuantity" type="number" class="h-8 w-24" [class.border-destructive]="group.get('stockQuantity')?.invalid && group.get('stockQuantity')?.touched" />
+              </td>
+              <td class="px-3 py-2">
+                <input hlmInput formControlName="reorderThreshold" type="number" class="h-8 w-24" />
+              </td>
+              <td class="px-3 py-2 text-center">
+                <hlm-switch formControlName="isActive" [attr.aria-label]="'products.variants.active' | transloco" />
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
     </div>
   }
 
-  <!-- Sticky footer for navigation -->
-  <div class="sticky-footer">
-    <button hlmBtn variant="outline" (click)="onBack()">
-      {{ 'common.back' | transloco }}
-    </button>
-    <button hlmBtn 
-            [disabled]="!isCurrentStepDirty() || !isCurrentStepValid()" 
-            (click)="saveCurrentStep()">
-      {{ 'common.saveChanges' | transloco }}
-    </button>
-  </div>
+  @if (!state.isEditMode()) {
+    <!-- Sticky footer for navigation (create mode only) -->
+    <div class="sticky-footer">
+      <button hlmBtn variant="outline" (click)="onBack()">
+        {{ 'common.back' | transloco }}
+      </button>
+      <button hlmBtn
+              [disabled]="!isCurrentStepDirty() || !isCurrentStepValid()"
+              (click)="saveCurrentStep()">
+        {{ 'common.saveChanges' | transloco }}
+      </button>
+    </div>
+  }
 </div>
