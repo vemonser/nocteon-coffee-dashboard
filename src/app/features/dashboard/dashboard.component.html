@@ -42,13 +42,6 @@
         @if (canOrdersKPI) {
           <app-kpi-card icon="lucideShoppingBag" [label]="'dashboard.orders' | transloco" [value]="statsService.overview()?.totalOrders?.toString() ?? '0'"  [comparisonLabel]="'dashboard.orders' | transloco" [scopeNote]="'dashboard.ordersHelp' | transloco" [link]="'/dashboard/orders'" />
         }
-        @if (canTopSelling) {
-          @if (statsService.repeatPurchaseRate(); as r) {
-            <app-kpi-card icon="lucideRepeat" [label]="'dashboard.repeatPurchaseRate' | transloco" [value]="(r.repeatRate | number:'1.0-1') + '%'" [caption]="r.repeatCustomers + ' ' + ('dashboard.of' | transloco) + ' ' + (r.totalCustomers | plural: 'dashboard.countCustomers')" [scopeNote]="'dashboard.repeatPurchaseRateHelp' | transloco" />
-          } @else {
-            <app-kpi-card icon="lucideRepeat" [label]="'dashboard.repeatPurchaseRate' | transloco" value="—" />
-          }
-        }
         @if (canRecentOrders) {
           <app-kpi-card icon="lucideUserPlus" [label]="'dashboard.newCustomers' | transloco" [value]="(statsService.overview()?.userGrowth?.currentPeriodCount ?? 0).toString()" [comparisonLabel]="'dashboard.newCustomers' | transloco" [link]="'/dashboard/users'" />
         }
@@ -64,6 +57,14 @@
           <app-kpi-card icon="lucideRepeat" [label]="'dashboard.repeatPurchaseRate' | transloco" [value]="(r.repeatRate | number:'1.0-1') + '%'" [caption]="r.repeatCustomers + ' ' + ('dashboard.of' | transloco) + ' ' + (r.totalCustomers | plural: 'dashboard.countCustomers')" [scopeNote]="'dashboard.repeatPurchaseRateHelp' | transloco" />
         } @else {
           <app-kpi-card icon="lucideRepeat" [label]="'dashboard.repeatPurchaseRate' | transloco" value="—" />
+        }
+      }
+
+      @if (canRevenue) {
+        @if (statsService.refundRate(); as r) {
+          <app-kpi-card icon="lucideRefreshCw" [label]="'dashboard.refundRate' | transloco" [value]="(r.refundRate | number:'1.0-1') + '%'" [caption]="r.totalRefunded + ' ' + ('dashboard.of' | transloco) + ' ' + (r.totalPaid | plural: 'dashboard.countOrders')" [scopeNote]="'dashboard.refundRateHelp' | transloco" [metric]="'refundRate'" />
+        } @else {
+          <app-kpi-card icon="lucideRefreshCw" [label]="'dashboard.refundRate' | transloco" value="—" />
         }
       }
 
@@ -138,7 +139,7 @@
 
     @if (canLowStock) {
       <div class="grid gap-4 lg:grid-cols-2">
-        <hlm-card>
+        <hlm-card [class.lg:col-span-2]="!canOperatingSystem">
           <hlm-card-header>
             <app-widget-header [title]="'dashboard.lowStockProducts' | transloco" [rangeScoped]="false" [customScope]="'Current'" [actionLabel]="'dashboard.recentOrders.viewAll' | transloco" actionLink="/dashboard/products" />
           </hlm-card-header>
@@ -152,18 +153,20 @@
             }
           </div>
         </hlm-card>
-        <hlm-card>
-          <hlm-card-header>
-            <app-widget-header [title]="'dashboard.deviceBreakdown' | transloco" [infoTitle]="'dashboard.devicesNote' | transloco" />
-          </hlm-card-header>
-          <div hlmCardContent class="grow shrink-0">
-            @if (!statsService.loaded() && statsService.loading()) {
-              <app-widget-state [loading]="true" [skeletonRows]="3" />
-            } @else if (canOperatingSystem) {
-              <app-device-list class="block h-full" />
-            }
-          </div>
-        </hlm-card>
+        @if (canOperatingSystem) {
+          <hlm-card>
+            <hlm-card-header>
+              <app-widget-header [title]="'dashboard.deviceBreakdown' | transloco" [infoTitle]="'dashboard.devicesNote' | transloco" />
+            </hlm-card-header>
+            <div hlmCardContent class="grow shrink-0">
+              @if (!statsService.loaded() && statsService.loading()) {
+                <app-widget-state [loading]="true" [skeletonRows]="3" />
+              } @else {
+                <app-device-list class="block h-full" />
+              }
+            </div>
+          </hlm-card>
+        }
       </div>
     }
   }
