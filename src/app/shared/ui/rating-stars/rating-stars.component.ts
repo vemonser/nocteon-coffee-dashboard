@@ -1,4 +1,4 @@
-import { Component, input } from '@angular/core';
+import { Component, input, computed } from '@angular/core';
 
 @Component({
   selector: 'app-rating-stars',
@@ -6,7 +6,7 @@ import { Component, input } from '@angular/core';
   template: `
     <span class="inline-flex items-center gap-2" [attr.aria-label]="rating() + ' out of ' + max()">
       @for (star of stars(); track star) {
-        @if (star < rating()) {
+        @if (star < floorRating()) {
           <svg viewBox="0 0 24 24" class="size-4 text-warning" aria-hidden="true">
             <path
               d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
@@ -14,6 +14,15 @@ import { Component, input } from '@angular/core';
               stroke="currentColor"
               stroke-width="1.5"
               stroke-linejoin="round"
+            />
+          </svg>
+        } @else if (star === floorRating() && rating() > floorRating()) {
+          <!-- Partial star: draw proportion based on decimal part -->
+          <svg viewBox="0 0 24 24" class="size-4 text-warning/80" aria-hidden="true">
+            <path
+              d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+              fill="currentColor"
+              stroke="none"
             />
           </svg>
         } @else {
@@ -40,6 +49,7 @@ export class RatingStarsComponent {
   readonly rating = input<number>(0);
   readonly max = input<number>(5);
   readonly showText = input<boolean>(false);
+  protected readonly floorRating = computed(() => Math.floor(this.rating()));
   protected stars(): number[] {
     return Array.from({ length: this.max() }, (_, i) => i);
   }
