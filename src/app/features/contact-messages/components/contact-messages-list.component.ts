@@ -1,12 +1,13 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmInputImports } from '@spartan-ng/helm/input';
 import { HlmNativeSelectImports } from '@spartan-ng/helm/native-select';
 import { HlmTooltipImports } from '@spartan-ng/helm/tooltip';
+import { HlmDropdownMenuImports } from '@spartan-ng/helm/dropdown-menu';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
   lucideArchive,
@@ -14,6 +15,7 @@ import {
   lucideReply,
   lucideInbox,
   lucideMail,
+  lucideMoreVertical,
   lucideSearch,
   lucideSend,
   lucideTrash2,
@@ -36,6 +38,8 @@ import { DialogShellComponent } from '../../../shared/ui/dialog-shell/dialog-she
 import { StatusBadgeComponent } from '../../../shared/ui/status-badge/status-badge.component';
 import { ContactResponse, ContactStats } from '../models/contact-message.model';
 import { ContactMessageService } from '../services/contact-message.service';
+import { UserService } from '../../users/services/user.service';
+import { AuthService } from '../../../core/auth/auth.service';
 
 type MessageTab = 'all' | 'unread' | 'replied' | 'archived';
 
@@ -45,10 +49,12 @@ type MessageTab = 'all' | 'unread' | 'replied' | 'archived';
   imports: [
     CommonModule,
     FormsModule,
+    RouterModule,
     HlmButtonImports,
     HlmInputImports,
     HlmNativeSelectImports,
     HlmTooltipImports,
+    HlmDropdownMenuImports,
     PluralPipe,
     LocalizedDateComponent,
     PagerComponent,
@@ -66,6 +72,7 @@ type MessageTab = 'all' | 'unread' | 'replied' | 'archived';
       lucideInbox,
   lucideReply,
       lucideMail,
+      lucideMoreVertical,
       lucideSearch,
       lucideSend,
       lucideTrash2,
@@ -80,7 +87,10 @@ export class ContactMessagesListComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly service = inject(ContactMessageService);
+  private readonly userService = inject(UserService);
+  protected readonly auth = inject(AuthService);
   protected readonly language = inject(LanguageService);
+  readonly customerLinks = signal<Record<number, string | null>>({});
 
   readonly stats = signal<ContactStats>({
     total: 0,
@@ -105,6 +115,7 @@ export class ContactMessagesListComponent {
   readonly replyText = signal('');
   readonly replying = signal(false);
   readonly replyError = signal<string | null>(null);
+  readonly replyFeedback = signal<string | null>(null);
   readonly deleting = signal<ContactResponse | null>(null);
   readonly deletingBusy = signal(false);
   readonly selectedIds = signal<Set<number>>(new Set());
@@ -178,6 +189,25 @@ export class ContactMessagesListComponent {
         this.total.set(res.data?.totalElements ?? content.length);
         this.items.set(content);
         this.loading.set(false);
+        if (this.auth.hasPermission('user:read')) {
+          for (const m of content) {
+            if (this.customerLinks()[m.id] === undefined) {
+              this.userService.getAll({ search: m.email, size: 5 }).subscribe({
+                next: (r) => {
+                  const found = (r.data?.content ?? []).find(
+                    (u) => u.email?.toLowerCase() === m.email.toLowerCase(),
+                  );
+                  this.customerLinks.update((prev) => ({
+                    ...prev,
+                    [m.id]: found ? found.id : null,
+                  }));
+                },
+                error: () =>
+                  this.customerLinks.update((prev) => ({ ...prev, [m.id]: null })),
+              });
+            }
+          }
+        }
       },
       error: (err) => {
         this.loading.set(false);
@@ -250,6 +280,7 @@ export class ContactMessagesListComponent {
     this.selected.set(item);
     this.replyText.set('');
     this.replyError.set(null);
+    this.replyFeedback.set(null);
     if (!item.read) {
       this.service.markAsRead(item.id).subscribe({
         next: (res) => {
@@ -267,6 +298,7 @@ export class ContactMessagesListComponent {
     this.selected.set(null);
     this.replyText.set('');
     this.replyError.set(null);
+    this.replyFeedback.set(null);
   }
 
   protected sendReply(): void {
@@ -284,8 +316,10 @@ export class ContactMessagesListComponent {
           this.items.update((list) => list.map((m) => (m.id === item.id ? res.data! : m)));
           this.replyText.set('');
           if (res.data.emailStatus === 'SENT') {
-            this.notify.success('contactMessages.replySent', 'Reply sent');
+            this.replyFeedback.set(`Reply sent to ${item.email}`);
+            this.notify.success('contactMessages.replySent', `Reply sent to ${item.email}`);
           } else {
+            this.replyFeedback.set('Reply saved, but the email could not be sent');
             this.notify.warning(
               'contactMessages.replySavedNotSent',
               'Reply saved, but the email could not be sent',
@@ -463,6 +497,11 @@ export class ContactMessagesListComponent {
 
   protected absoluteTime(value: string): string {
     return formatDateAndTime(value, this.language.language());
+  }
+
+  protected customerUserId(message: ContactResponse): string | null {
+    if (!this.auth.hasPermission('user:read')) return null;
+    return this.customerLinks()[message.id] ?? null;
   }
 
   protected emailStatusLabel(status: string | undefined): string {

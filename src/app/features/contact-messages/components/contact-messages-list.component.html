@@ -6,10 +6,7 @@
     <div>
       <h1 class="text-2xl font-medium tracking-tight">{{ 'contactMessages.title' | transloco }}</h1>
       <p class="text-sm text-muted-foreground" data-testid="contact-messages-count">
-        {{ stats().total | plural: 'contactMessages.countMessages' }} ·
-        {{ stats().unreadCount | plural: 'contactMessages.countUnread' }} ·
-        {{ stats().repliedCount | plural: 'contactMessages.countReplied' }} ·
-        {{ stats().archivedCount | plural: 'contactMessages.countArchived' }}
+        {{ stats().total | plural: 'contactMessages.countMessages' }}
       </p>
     </div>
 
@@ -185,11 +182,21 @@
               <span class="min-w-0 flex-1">
                 <span class="flex items-center gap-2">
                   <span class="truncate text-sm" [class.font-semibold]="!message.read">{{ message.subject }}</span>
-                  <app-status-badge
-                    class="shrink-0"
-                    [status]="message.status === 'NEW' ? 'new' : message.status === 'REPLIED' ? 'replied' : 'archived'"
-                    [customLabel]="message.status === 'NEW' ? 'contactMessages.status.new' : message.status === 'REPLIED' ? 'contactMessages.status.replied' : 'contactMessages.status.archived'"
-                  />
+                  @if (customerUserId(message); as uid) {
+                    <a
+                      [routerLink]="['/dashboard/users', uid]"
+                      class="shrink-0 rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground hover:text-foreground"
+                    >
+                      {{ 'common.customer' | transloco }}
+                    </a>
+                  }
+                  @if (message.status === 'REPLIED' || message.status === 'ARCHIVED') {
+                    <app-status-badge
+                      class="shrink-0"
+                      [status]="message.status === 'REPLIED' ? 'replied' : 'archived'"
+                      [customLabel]="message.status === 'REPLIED' ? 'contactMessages.status.replied' : 'contactMessages.status.archived'"
+                    />
+                  }
                 </span>
                 <span class="mt-1 block truncate text-xs text-muted-foreground">
                   <bdi>{{ message.message }}</bdi>
@@ -220,17 +227,6 @@
               >
                 <ng-icon name="lucideReply" class="size-4" aria-hidden="true" />
               </button>
-              <button
-                type="button"
-                hlmBtn
-                variant="ghost"
-                size="icon"
-                (click)="copyEmail(message.email)"
-                [attr.aria-label]="'contactMessages.copyEmail' | transloco"
-                [title]="'contactMessages.copyEmail' | transloco"
-              >
-                <ng-icon name="lucideCopy" class="size-4" aria-hidden="true" />
-              </button>
               @if (!message.read) {
                 <button
                   type="button"
@@ -243,19 +239,35 @@
                 >
                   <ng-icon name="lucideMail" class="size-4" aria-hidden="true" />
                 </button>
-              } @else {
-                <button
-                  type="button"
-                  hlmBtn
-                  variant="ghost"
-                  size="icon"
-                  disabled
-                  [attr.aria-label]="'contactMessages.markUnreadNotSupported' | transloco"
-                  [title]="'contactMessages.markUnreadNotSupported' | transloco"
-                >
-                  <ng-icon name="lucideMail" class="size-4" aria-hidden="true" />
-                </button>
               }
+              <button
+                type="button"
+                hlmBtn
+                variant="ghost"
+                size="icon"
+                [hlmDropdownMenuTrigger]="rowMenu"
+                align="end"
+                [attr.aria-label]="'common.actions' | transloco"
+              >
+                <ng-icon name="lucideMoreVertical" class="size-4" aria-hidden="true" />
+              </button>
+
+              <ng-template #rowMenu>
+                <hlm-dropdown-menu class="min-w-40 rounded-md">
+                  <button hlmDropdownMenuItem class="flex items-center gap-2" (click)="copyEmail(message.email)">
+                    <ng-icon name="lucideCopy" class="size-4 shrink-0" aria-hidden="true" />
+                    <span>{{ 'contactMessages.copyEmail' | transloco }}</span>
+                  </button>
+                  <button
+                    hlmDropdownMenuItem
+                    class="flex items-center gap-2 text-destructive-text"
+                    (click)="confirmDelete(message)"
+                  >
+                    <ng-icon name="lucideTrash2" class="size-4 shrink-0" aria-hidden="true" />
+                    <span>{{ 'common.delete' | transloco }}</span>
+                  </button>
+                </hlm-dropdown-menu>
+              </ng-template>
               @if (message.status !== 'ARCHIVED') {
                 <button
                   type="button"
@@ -269,18 +281,6 @@
                   <ng-icon name="lucideArchive" class="size-4" aria-hidden="true" />
                 </button>
               }
-              <button
-                type="button"
-                hlmBtn
-                variant="ghost"
-                size="icon"
-                class="text-destructive-text hover:bg-destructive/10"
-                (click)="confirmDelete(message)"
-                [attr.aria-label]="'common.delete' | transloco"
-                [title]="'common.delete' | transloco"
-              >
-                <ng-icon name="lucideTrash2" class="size-4" aria-hidden="true" />
-              </button>
             </div>
           </div>
         }
@@ -308,7 +308,7 @@
 <app-dialog-shell
   [open]="selected() !== null"
   [title]="selected()?.subject ?? ''"
-  [subtitle]="selected() ? (selected()!.name + ' · ' + selected()!.email) : ''"
+  [subtitle]="''"
   [size]="'md'"
   (closed)="closeMessage()"
 >
@@ -316,7 +316,7 @@
     <div class="space-y-4">
       <div class="flex flex-wrap items-center justify-between gap-2">
         <p class="text-xs text-muted-foreground" [attr.title]="absoluteTime(message.createdAt)">
-          <app-localized-date [value]="message.createdAt" [showTime]="true" />
+          <app-localized-date [value]="message.createdAt" [showTime]="true" [withComma]="true" />
         </p>
         <app-status-badge
           [status]="message.status === 'NEW' ? 'new' : message.status === 'REPLIED' ? 'replied' : 'archived'"
@@ -337,10 +337,21 @@
         }
       </div>
 
-      <div class="flex items-center justify-end gap-2">
-        <button hlmBtn variant="ghost" size="sm" (click)="copyEmail(message.email)">
-          <ng-icon name="lucideCopy" class="size-4" aria-hidden="true" />
-          {{ 'contactMessages.copyEmail' | transloco }}
+      <div class="flex items-center gap-2 text-sm text-muted-foreground">
+        <span><bdi>{{ message.name }}</bdi></span>
+        <span aria-hidden="true">·</span>
+        <span><bdi>{{ message.email }}</bdi></span>
+        <button
+          type="button"
+          hlmBtn
+          variant="ghost"
+          size="icon"
+          class="size-6"
+          (click)="copyEmail(message.email)"
+          [attr.aria-label]="'contactMessages.copyEmail' | transloco"
+          [title]="'contactMessages.copyEmail' | transloco"
+        >
+          <ng-icon name="lucideCopy" class="size-3.5" aria-hidden="true" />
         </button>
       </div>
 
@@ -383,10 +394,8 @@
         ></textarea>
         <div class="flex items-center justify-between">
           <p class="text-xs text-muted-foreground">
-            @if (message.emailStatus === 'SENT') {
-              {{ 'contactMessages.replyNotice' | transloco: { email: message.email } }}
-            } @else {
-              {{ 'contactMessages.replySaved' | transloco }}
+            @if (replyFeedback()) {
+              {{ replyFeedback() }}
             }
           </p>
           <span class="text-xs text-muted-foreground tabular-nums">{{ replyText().length }}/2000</span>
@@ -401,17 +410,31 @@
     </div>
   }
   @if (selected()) {
+    <div dialog-footer-start class="flex items-center gap-2">
+      <button
+        hlmBtn
+        variant="destructive"
+        size="sm"
+        (click)="confirmDelete(selected()!)"
+        [attr.aria-label]="'common.delete' | transloco"
+      >
+        <ng-icon name="lucideTrash2" class="mr-1 size-3.5" aria-hidden="true" />
+        {{ 'common.delete' | transloco }}
+      </button>
+    </div>
+  }
+  @if (selected()) {
     <div dialog-footer-end class="flex items-center gap-2">
-      <button hlmBtn variant="default" size="sm" (click)="sendReply()" [disabled]="replying() || !replyText().trim()">
-        <ng-icon name="lucideSend" class="mr-1 size-3.5" />
-        {{ replying() ? ('contactMessages.sending' | transloco) : ('contactMessages.sendReply' | transloco) }}
+      <button hlmBtn variant="secondary" size="sm" (click)="closeMessage()">
+        {{ 'common.close' | transloco }}
       </button>
       <button hlmBtn variant="outline" size="sm" (click)="archive(selected()!)" [disabled]="selected()?.status === 'ARCHIVED'">
         <ng-icon name="lucideArchive" class="mr-1 size-3.5" />
         {{ 'contactMessages.archive' | transloco }}
       </button>
-      <button hlmBtn variant="secondary" size="sm" (click)="closeMessage()">
-        {{ 'common.close' | transloco }}
+      <button hlmBtn variant="default" size="sm" (click)="sendReply()" [disabled]="replying() || !replyText().trim()">
+        <ng-icon name="lucideSend" class="mr-1 size-3.5" />
+        {{ replying() ? ('contactMessages.sending' | transloco) : ('contactMessages.sendReply' | transloco) }}
       </button>
     </div>
   }
@@ -427,8 +450,7 @@
   (closed)="deleting.set(null)"
 >
   <p id="contact-delete-confirm-description" class="text-sm text-muted-foreground">
-    <bdi class="block font-medium text-foreground">{{ selected()?.subject ?? 'this message' }}</bdi>
-    <span class="mt-1 block">{{ 'common.deleteConfirm' | transloco }}</span>
+    <span class="block">Delete message from {{ deleting()?.name }}: “{{ deleting()?.subject }}”?</span>
   </p>
 
   <div dialog-footer-end class="flex items-center gap-3">
