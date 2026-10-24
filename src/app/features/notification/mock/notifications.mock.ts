@@ -1,0 +1,101 @@
+import { NotificationItem } from '../models/notification.model';
+
+/** Dev-only fixture, replaced by an empty stub in production builds. */
+export const MOCK_NOTIFICATION_ITEMS: NotificationItem[] = [
+  {
+    id: 101,
+    type: 'order.new',
+    titleKey: 'notifications.types.order_new.title',
+    bodyKey: 'notifications.types.order_new.description',
+    params: { orderId: 1042, total: '1,240.00 EGP' },
+    entityType: 'order',
+    entityId: 1042,
+    read: false,
+    createdAt: new Date(Date.now() - 1000 * 60 * 12).toISOString(),
+    customerName: 'Sara Al-Mansoori',
+  },
+  {
+    id: 102,
+    type: 'payment.failed',
+    titleKey: 'notifications.types.payment_failed.title',
+    bodyKey: 'notifications.types.payment_failed.description',
+    params: { orderId: 1039 },
+    entityType: 'order',
+    entityId: 1039,
+    read: false,
+    createdAt: new Date(Date.now() - 1000 * 60 * 45).toISOString(),
+  },
+  {
+    id: 103,
+    type: 'review.pending',
+    titleKey: 'notifications.types.review_pending.title',
+    bodyKey: 'notifications.types.review_pending.description',
+    params: { productName: 'Ethiopian Yirgacheffe', rating: 5 },
+    entityType: 'review',
+    entityId: 55,
+    read: true,
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 3).toISOString(),
+  },
+  {
+    id: 104,
+    type: 'contact.message',
+    titleKey: 'notifications.types.contact_message.title',
+    bodyKey: 'notifications.types.contact_message.description',
+    params: { name: 'Omar Hassan' },
+    entityType: 'contact',
+    entityId: 77,
+    read: false,
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 6).toISOString(),
+    customerName: 'Omar Hassan',
+  },
+  {
+    id: 105,
+    type: 'stock.low',
+    titleKey: 'notifications.types.stock_low.title',
+    bodyKey: 'notifications.types.stock_low.description',
+    params: { productName: 'House Blend', variant: '250g' },
+    entityType: 'product',
+    entityId: 'house-blend',
+    read: true,
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 26).toISOString(),
+  },
+  {
+    id: 106,
+    type: 'user.new',
+    titleKey: 'notifications.types.user_new.title',
+    bodyKey: 'notifications.types.user_new.description',
+    params: { name: 'Layla Kareem' },
+    entityType: 'user',
+    entityId: 91,
+    read: false,
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 30).toISOString(),
+    customerName: 'Layla Kareem',
+  },
+  {
+    id: 107,
+    type: 'system',
+    titleKey: 'notifications.types.system.title',
+    bodyKey: 'notifications.types.system.description',
+    params: {},
+    read: true,
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 48).toISOString(),
+  },
+  {
+    id: 108,
+    type: 'order.new',
+    titleKey: 'notifications.types.order_new.title',
+    bodyKey: 'notifications.types.order_new.description',
+    params: { orderId: 1043, total: '320.00 EGP' },
+    entityType: 'order',
+    entityId: 1043,
+    read: false,
+    createdAt: new Date(Date.now() - 1000 * 60 * 5).toISOString(),
+    customerName: 'Khalid Nasser',
+  },
+];
+
+/** Query-string switch that enables the fixture in a dev build. */
+export const MOCK_NOTIFICATION_PARAM = 'mockNotifications';
+
+/** Simulated latency so the loading skeleton is reviewable in dev. */
+export const MOCK_NOTIFICATION_DELAY_MS = 1200;

@@ -47,7 +47,13 @@
                 "fonts": {
                   "inline": false
                 }
-              }
+              },
+              "fileReplacements": [
+                {
+                  "replace": "src/app/features/notification/mock/notifications.mock.ts",
+                  "with": "src/app/features/notification/mock/notifications.mock.prod.ts"
+                }
+              ]
             },
             "development": {
               "optimization": false,
