@@ -47,15 +47,26 @@ export class RatingStarsComponent {
   readonly max = input<number>(5);
   readonly showText = input<boolean>(false);
 
+  protected readonly floorRating = computed(() => Math.floor(this.rating()));
+
   /** Fill percentage for star at position i (1=leftmost, 5=rightmost) */
   protected fillPercent(i: number): number {
-    const ratingAboveFloor = this.rating() >= i;
-    if (!ratingAboveFloor) return 0;
+    const ratingVal = this.rating();
+    const floor = this.floorRating();
 
-    const aboveFloor = this.rating() - i + 1;
-    if (aboveFloor > 1) return 100;
-    if (aboveFloor <= 0) return 0;
-    // Decimal part determines fill: e.g., 4.3 → star 5 gets 30%, 4.7 → star 5 gets 70%
-    return Math.round(((aboveFloor % 1) + 1) * 100);
+    // Stars at or before the floor are fully filled
+    if (i <= floor) return 100;
+
+    // If there's a decimal part, the next star after floor gets partial fill
+    if (ratingVal % 1 !== 0 && i === floor + 1) {
+      return Math.round((ratingVal % 1) * 100);
+    }
+
+    // Everything else is empty
+    return 0;
+  }
+
+  protected stars(): number[] {
+    return Array.from({ length: this.max() }, (_, i) => i + 1);
   }
 }
