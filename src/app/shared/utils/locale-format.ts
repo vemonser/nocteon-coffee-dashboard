@@ -108,19 +108,17 @@ export function dateParts(
  * a date is flattened; `datetime` on the same element carries the
  * reorder-proof value, so nothing depends on reading this string.
  */
+export function formatDate(value: unknown, lang: Language): string {
+  const parts = dateParts(value, lang, 'short');
+  if (!parts) return '';
+  return `${parts.day} ${parts.month} ${parts.year}`;
+}
+
 export function formatDateTime(value: unknown, lang: Language): string {
-  if (value === null || value === undefined || value === '') return '';
-  const d = value instanceof Date ? value : new Date(String(value));
-  if (Number.isNaN(d.getTime())) return '';
-  return clean(
-    new Intl.DateTimeFormat(appLocale(lang), {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-      hour: 'numeric',
-      minute: '2-digit',
-    }).format(d),
-  );
+  const parts = dateParts(value, lang, 'short');
+  if (!parts) return '';
+  const time = formatTime(value, lang).replace(/[\u2066\u2069]/g, '');
+  return time ? `${parts.day} ${parts.month} ${parts.year}, ${time}` : `${parts.day} ${parts.month} ${parts.year}`;
 }
 
 /**
@@ -325,3 +323,5 @@ export function formatCount(value: number, lang: Language): string {
   const s = clean(new Intl.NumberFormat(appLocale(lang), { maximumFractionDigits: 0 }).format(value));
   return `\u2066${s}\u2069`;
 }
+
+export { formatRelativeTime as formatRelative } from '../../core/i18n/relative-time';
