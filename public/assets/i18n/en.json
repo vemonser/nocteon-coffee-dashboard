@@ -2368,7 +2368,8 @@
       "replied": "Replied",
       "archived": "Archived"
     },
-    "selectMessage": "Select message"
+    "selectMessage": "Select message",
+    "replyHistory": "Reply history will appear here once the API returns it."
   },
   "unauthorized": {
     "title": "Access Denied",

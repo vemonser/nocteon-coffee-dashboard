@@ -377,6 +377,10 @@
             </button>
           }
         </div>
+      } @else {
+        <div class="rounded-[var(--radius-control)] border bg-muted/40 p-4">
+          <p class="text-xs text-muted-foreground">{{ 'contactMessages.replyHistory' | transloco }}</p>
+        </div>
       }
 
       <div class="space-y-2">
