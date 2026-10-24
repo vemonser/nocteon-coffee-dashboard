@@ -550,7 +550,7 @@
                 @case ('createdAtTime') {
                   <span
                     class="block text-xs text-muted-foreground"
-                    [attr.title]="relativeTime($any(cell.getValue()))"
+                    [attr.title]="dates.formatDateAndTime($any(cell.getValue()))"
                   >
                     <time [attr.datetime]="$any(cell.getValue())">
                       <app-localized-date
@@ -660,6 +660,7 @@
                     [showRestore]="showRestore()"
                     [menuActions]="menuActionsFor() ? menuActionsFor()!(row.original) : menuActions()"
                     [primaryAction]="primaryActionFor() ? primaryActionFor()!(row.original) : primaryAction()"
+                    [reservePrimarySlot]="reservePrimarySlot()"
                     [editHref]="hrefFor(row.original)"
                     (edit)="edit.emit($event)"
                     (delete)="delete.emit($event)"
@@ -702,16 +703,22 @@
                         size="sm"
                         class="shrink-0"
                       />
-                      <span class="truncate text-start" [attr.title]="reviewer.name">
+                      <a
+                        class="truncate text-start hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                        [routerLink]="['/dashboard/users']"
+                        [attr.title]="reviewer.name"
+                      >
                         <bdi>{{ reviewer.name }}</bdi>
-                      </span>
+                      </a>
                       @if (reviewer.verified) {
                         @if (reviewer.orderId) {
-                          <a [routerLink]="['/dashboard/orders', reviewer.orderId]" class="inline-flex shrink-0">
+                          <a [routerLink]="['/dashboard/orders', reviewer.orderId]" class="inline-flex shrink-0" [attr.title]="'reviews.columns.verifiedPurchase' | transloco">
                             <app-verified-badge [verified]="true" />
                           </a>
                         } @else {
-                          <app-verified-badge [verified]="true" />
+                          <span class="inline-flex shrink-0" [attr.title]="'reviews.columns.verifiedPurchase' | transloco">
+                            <app-verified-badge [verified]="true" />
+                          </span>
                         }
                       }
                     </div>
@@ -738,7 +745,7 @@
                     and a long comment grew the row to half a page.
                   -->
                   <span
-                    class="max-w-full text-start text-sm leading-relaxed line-clamp-2"
+                    class="max-w-full text-start text-sm leading-relaxed line-clamp-1"
                     [attr.title]="$any(cell.getValue())"
                   >
                     <bdi>{{ $any(cell.getValue()) }}</bdi>

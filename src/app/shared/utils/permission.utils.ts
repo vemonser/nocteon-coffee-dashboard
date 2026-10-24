@@ -90,9 +90,19 @@ export function groupPermissions(slugs: string[]): Record<string, Record<string,
     result[domain][resource] ??= [];
     result[domain][resource].push(slug);
   }
-  // sort domains and resources for deterministic output
+  const domainOrder = Object.keys(PERMISSION_DOMAINS);
   const sorted: Record<string, Record<string, string[]>> = {};
-  for (const domain of Object.keys(result).sort()) {
+  for (const domain of domainOrder) {
+    if (!result[domain]) continue;
+    const resources: Record<string, string[]> = {};
+    for (const resource of Object.keys(result[domain]).sort()) {
+      resources[resource] = result[domain][resource].sort();
+    }
+    sorted[domain] = resources;
+  }
+  // append unknown domains (Other) last
+  for (const domain of Object.keys(result)) {
+    if (sorted[domain]) continue;
     const resources: Record<string, string[]> = {};
     for (const resource of Object.keys(result[domain]).sort()) {
       resources[resource] = result[domain][resource].sort();

@@ -131,6 +131,9 @@ export class ActionsCellComponent {
    * shown to a customer that should not have been.
    */
   readonly primaryAction = input<{ id: string; label: string } | null>(null);
+  /** Reserve a fixed-width slot for the primary action even when it is null,
+   * so the kebab menu stays at a constant x across rows. */
+  readonly reservePrimarySlot = input<boolean>(false);
 
   onMenuAction(action: RowMenuAction): void {
     this.menuAction.emit({ id: action.id, item: this.item() });

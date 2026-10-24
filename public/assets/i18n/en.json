@@ -1272,10 +1272,10 @@
     "title": "Users",
     "total": "total",
     "active": "Active",
-    "blocked": "blocked",
-    "unverified": "unverified",
+    "blocked": "Blocked",
+    "unverified": "Unverified",
     "add": "Add user",
-    "search": "Search by username or email...",
+    "search": "Search name, username or email",
     "allRoles": "All Roles",
     "admin": "Admin",
     "customer": "Customer",
@@ -1335,7 +1335,8 @@
       "CUSTOMER": "Customer"
     },
     "rolePermissionsCount": "{n} permissions",
-    "changeRole": "Change role"
+    "changeRole": "Change role",
+    "allStates": "All states"
   },
   "carts": {
     "title": "Carts",
@@ -2242,5 +2243,35 @@
     },
     "totalCount_one": "1 address in the audience",
     "totalCount_other": "{{count}} addresses in the audience"
+  },
+  "permissions": {
+    "resources": {
+      "order": "Order",
+      "cart": "Cart",
+      "shipping": "Shipping",
+      "promo": "Promo",
+      "product": "Product",
+      "category": "Category",
+      "coffee_variety": "Coffee variety",
+      "roast_level": "Roast level",
+      "origin": "Origin",
+      "farm": "Farm",
+      "processing_method": "Processing method",
+      "brewing_method": "Brewing method",
+      "pairing": "Pairing",
+      "tasting_note": "Tasting note",
+      "journal": "Journal",
+      "review": "Review",
+      "contact": "Contact",
+      "broadcast": "Broadcast",
+      "notification": "Notification",
+      "wishlist": "Wishlist",
+      "user": "User",
+      "address": "Address",
+      "settings": "Settings",
+      "dashboard": "Dashboard",
+      "audit": "Audit",
+      "ai": "AI"
+    }
   }
 }

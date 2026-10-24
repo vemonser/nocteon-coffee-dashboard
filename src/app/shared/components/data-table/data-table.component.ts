@@ -240,6 +240,7 @@ export class DataTableComponent {
    */
   primaryAction = input<{ id: string; label: string } | null>(null);
   primaryActionFor = input<((row: any) => { id: string; label: string } | null) | null>(null);
+  reservePrimarySlot = input<boolean>(false);
 
   /**
    * Hides the slug under the name in the main cell.

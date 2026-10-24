@@ -1,20 +1,225 @@
 <div class="page-shell">
-  @if (loading()) { <div class="h-64 bg-muted animate-pulse rounded-xl"></div> }
-  @if (user(); as u) {
-    <header class="flex items-center gap-3">
-      <button hlmBtn variant="ghost" size="icon" class="size-9" (click)="goBack()"><ng-icon name="lucideArrowLeft" class="size-4 rtl:rotate-180" /></button>
-      <h1 class="text-2xl font-medium">{{ getFullName(u) }}</h1>
-      <span class="text-muted-foreground">@{{ u.username }}</span>
-      <button hlmBtn variant="outline" size="sm" (click)="openRoleDialog()" [disabled]="isSelf(u)" [attr.aria-disabled]="isSelf(u)">{{ 'users.changeRole' | transloco }}</button>
-    </header>
-    <section class="card-surface mt-4">
-      <div class="px-6 py-4">
-        <app-permission-matrix [permissions]="allPermissions" [grantedInput]="u.permissions || []" mode="view" />
-      </div>
-    </section>
+  @if (loading()) {
+    <div class="space-y-6">
+      <div class="h-9 w-24 bg-muted animate-pulse rounded-md"></div>
+      <div class="h-64 bg-muted animate-pulse rounded-xl"></div>
+    </div>
   }
+
+  @if (error() && !loading()) {
+    <div class="flex flex-col items-center justify-center py-20 text-center">
+      <ng-icon name="lucideUser" class="size-16 text-muted-foreground opacity-20 mb-4" />
+      <h2 class="text-xl font-medium text-destructive">{{ error() }}</h2>
+      <button hlmBtn variant="outline" class="mt-4" (click)="goBack()">
+        {{ 'common.back' | transloco }}
+      </button>
+    </div>
+  }
+
+  @if (user(); as u) {
+    <header class="flex flex-col gap-4">
+      <div class="flex flex-wrap items-start justify-between gap-4">
+        <div class="flex min-w-0 items-start gap-3">
+          <button hlmBtn variant="ghost" size="icon" class="size-9 shrink-0" (click)="goBack()" [attr.aria-label]="'common.back' | transloco">
+            <ng-icon name="lucideArrowLeft" class="size-4 rtl:rotate-180" aria-hidden="true" />
+          </button>
+          <div class="min-w-0">
+            <div class="flex flex-wrap items-center gap-2">
+              <h1 class="text-2xl font-medium tracking-tight">{{ getFullName(u) }}</h1>
+              <span class="text-sm text-muted-foreground">@{{ u.username }}</span>
+              @let status = getStatus(u);
+              <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
+                [class.bg-success-soft]="status.variant === 'default'"
+                [class.text-success]="status.variant === 'default'"
+                [class.bg-destructive-soft]="status.variant === 'destructive'"
+                [class.text-destructive-text]="status.variant === 'destructive'"
+                [class.bg-warning-soft]="status.variant === 'secondary'"
+                [class.text-warning]="status.variant === 'secondary'"
+              >{{ status.label }}</span>
+              <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
+                [class.bg-primary/10]="u.role === 'ADMIN'"
+                [class.text-primary]="u.role === 'ADMIN'"
+                [class.bg-muted]="u.role !== 'ADMIN'"
+                [class.text-muted-foreground]="u.role !== 'ADMIN'"
+              >{{ 'users.roleNames.' + u.role | transloco }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+          <button hlmBtn variant="outline" size="sm" (click)="openEditDialog()">
+            <ng-icon name="lucidePencil" class="me-2 size-4" />
+            {{ 'common.edit' | transloco }}
+          </button>
+          <button hlmBtn variant="ghost" size="icon" class="size-9" [hlmDropdownMenuTrigger]="menu" [attr.aria-label]="'common.actions' | transloco">
+            <ng-icon name="lucideMoreVertical" class="size-4" />
+          </button>
+          <ng-template #menu>
+            <hlm-dropdown-menu class="min-w-48 rounded-md">
+              @if (!isSelf(u)) {
+                <button hlmDropdownMenuItem class="flex items-center gap-2" (click)="toggleBlock()">
+                  <ng-icon [name]="u.active ? 'lucideLock' : 'lucideUnlock'" class="size-4" />
+                  {{ u.active ? ('users.block' | transloco) : ('users.unblock' | transloco) }}
+                </button>
+                <button hlmDropdownMenuItem class="flex items-center gap-2 text-destructive-text" (click)="delete()">
+                  <ng-icon name="lucideTrash2" class="size-4" />
+                  {{ 'common.delete' | transloco }}
+                </button>
+              }
+            </hlm-dropdown-menu>
+          </ng-template>
+        </div>
+      </div>
+    </header>
+
+    <div class="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
+      <!-- Left -->
+      <div class="flex min-w-0 flex-col gap-6">
+        <section class="card-surface">
+          <header class="px-6 pt-6">
+            <h2 class="text-base font-medium">{{ 'users.profile' | transloco }}</h2>
+          </header>
+          <div class="px-6 pb-6 pt-4">
+            <dl class="space-y-3">
+              <div class="flex items-start justify-between gap-4">
+                <dt class="text-sm text-muted-foreground">{{ 'common.fullName' | transloco }}</dt>
+                <dd class="text-sm">{{ getFullName(u) }}</dd>
+              </div>
+              <div class="flex items-start justify-between gap-4">
+                <dt class="text-sm text-muted-foreground">{{ 'users.username' | transloco }}</dt>
+                <dd class="text-sm">@{{ u.username }}</dd>
+              </div>
+              <div class="flex items-start justify-between gap-4">
+                <dt class="text-sm text-muted-foreground">{{ 'users.email' | transloco }}</dt>
+                <dd class="text-sm flex items-center gap-1">
+                  {{ u.email }}
+                  @if (u.enabled) {
+                    <ng-icon name="lucideBadgeCheck" class="size-4 text-success" />
+                  } @else {
+                    <span class="inline-flex items-center rounded-full bg-warning-soft px-2 py-0.5 text-xs font-medium text-warning">{{ 'users.unverified' | transloco }}</span>
+                  }
+                </dd>
+              </div>
+              <div class="flex items-start justify-between gap-4">
+                <dt class="text-sm text-muted-foreground">{{ 'users.phone' | transloco }}</dt>
+                <dd class="text-sm">{{ u.phone || '—' }}</dd>
+              </div>
+              <div class="flex items-start justify-between gap-4">
+                <dt class="text-sm text-muted-foreground">{{ 'common.joined' | transloco }}</dt>
+                <dd class="text-sm"><app-localized-date [value]="u.createdAt" variant="long" [showTime]="true" /></dd>
+              </div>
+              <div class="flex items-start justify-between gap-4">
+                <dt class="text-sm text-muted-foreground">{{ 'common.lastActive' | transloco }}</dt>
+                <dd class="text-sm">
+                  @if (u.lastActiveAt) { <app-localized-date [value]="u.lastActiveAt" variant="long" [showTime]="true" /> } @else { — }
+                </dd>
+              </div>
+            </dl>
+          </div>
+        </section>
+
+        <section class="card-surface">
+          <header class="px-6 pt-6">
+            <h2 class="text-base font-medium">{{ 'users.rolePermissions' | transloco }}</h2>
+          </header>
+          <div class="px-6 pb-6 pt-4 space-y-3">
+            <div class="flex items-center gap-2">
+              <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
+                [class.bg-primary/10]="u.role === 'ADMIN'"
+                [class.text-primary]="u.role === 'ADMIN'"
+                [class.bg-muted]="u.role !== 'ADMIN'"
+                [class.text-muted-foreground]="u.role !== 'ADMIN'"
+              >{{ 'users.roleNames.' + u.role | transloco }}</span>
+              <span class="text-sm text-muted-foreground">{{ permissionCount(u) }} / {{ allPermissions.length }} {{ 'users.permissionsCount' | transloco }}</span>
+              <button hlmBtn variant="outline" size="sm" (click)="openRoleDialog()" [disabled]="isSelf(u)" [attr.aria-disabled]="isSelf(u)">{{ 'users.changeRole' | transloco }}</button>
+            </div>
+            <app-permission-matrix [permissions]="allPermissions" [grantedInput]="u.permissions || []" mode="view" />
+          </div>
+        </section>
+      </div>
+
+      <!-- Right -->
+      <div class="flex flex-col gap-6 xl:sticky xl:top-6">
+        <section class="card-surface">
+          <header class="px-6 pt-6">
+            <h2 class="text-base font-medium">{{ 'users.account' | transloco }}</h2>
+          </header>
+          <div class="px-6 pb-6 pt-4 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-sm text-muted-foreground">{{ 'common.status' | transloco }}</span>
+              @let accountStatus = getStatus(u);
+              <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
+                [class.bg-success-soft]="accountStatus.variant === 'default'"
+                [class.text-success]="accountStatus.variant === 'default'"
+                [class.bg-destructive-soft]="accountStatus.variant === 'destructive'"
+                [class.text-destructive-text]="accountStatus.variant === 'destructive'"
+                [class.bg-warning-soft]="accountStatus.variant === 'secondary'"
+                [class.text-warning]="accountStatus.variant === 'secondary'"
+              >{{ accountStatus.label }}</span>
+            </div>
+            @if (!isSelf(u)) {
+              <button hlmBtn [variant]="u.active ? 'destructive' : 'default'" size="sm" class="w-full" (click)="toggleBlock()">
+                <ng-icon [name]="u.active ? 'lucideLock' : 'lucideUnlock'" class="me-2 size-4" />
+                {{ u.active ? ('users.block' | transloco) : ('users.unblock' | transloco) }}
+              </button>
+            }
+          </div>
+        </section>
+      </div>
+    </div>
+  }
+
+  <!-- Edit dialog -->
+  @if (showEditDialog() && user(); as u) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+      <div class="dialog-surface w-full max-w-lg p-6 space-y-5">
+        <div class="flex items-center justify-between border-b pb-4">
+          <h2 class="text-xl font-medium">{{ 'users.editTitle' | transloco }}</h2>
+          <button hlmBtn variant="ghost" size="icon" (click)="closeEditDialog()"><ng-icon name="lucideX" class="size-4" /></button>
+        </div>
+        <form [formGroup]="form" (ngSubmit)="saveChanges()" class="space-y-4">
+          <div class="space-y-1.5">
+            <label hlmLabel>{{ 'users.username' | transloco }}</label>
+            <div class="relative">
+              <input hlmInput [value]="u.username" readonly class="w-full bg-muted/50" autocomplete="off" data-1p-ignore data-lpignore="true" data-bwignore />
+              <ng-icon name="lucideLock" class="absolute end-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" [attr.title]="'users.usernameLocked' | transloco" />
+            </div>
+          </div>
+          <div class="space-y-1.5">
+            <label hlmLabel>{{ 'users.email' | transloco }} *</label>
+            <input hlmInput formControlName="email" type="email" class="w-full" autocomplete="off" data-1p-ignore data-lpignore="true" data-bwignore />
+            @if (form.get('email')?.invalid && form.get('email')?.touched) { <p class="text-xs text-destructive">{{ 'users.emailRequired' | transloco }}</p> }
+          </div>
+          <div class="space-y-1.5">
+            <label hlmLabel>{{ 'users.phone' | transloco }} @if (u.role === 'CUSTOMER') { * }</label>
+            <input hlmInput formControlName="phone" type="text" placeholder="01xxxxxxxxx" class="w-full" />
+            @if (form.get('phone')?.invalid && form.get('phone')?.touched) { <p class="text-xs text-destructive">{{ 'users.phoneRequired' | transloco }}</p> }
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div class="space-y-1.5">
+              <label hlmLabel>{{ 'users.firstName' | transloco }}</label>
+              <input hlmInput formControlName="firstName" type="text" class="w-full" />
+            </div>
+            <div class="space-y-1.5">
+              <label hlmLabel>{{ 'users.lastName' | transloco }}</label>
+              <input hlmInput formControlName="lastName" type="text" class="w-full" />
+            </div>
+          </div>
+          <div class="flex gap-3 pt-2">
+            <button type="button" hlmBtn variant="outline" class="flex-1" (click)="closeEditDialog()">{{ 'common.cancel' | transloco }}</button>
+            <button type="submit" hlmBtn class="flex-1" [disabled]="form.invalid || !form.dirty || saving()">
+              @if (saving()) { <ng-icon name="lucideLoader2" class="mr-2 size-4 animate-spin" /> }
+              {{ saving() ? ('common.saving' | transloco) : ('common.saveChanges' | transloco) }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- Block confirm -->
   @if (showRoleDialog() && user(); as u) {
-    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
       <div class="dialog-surface w-full max-w-lg p-6 space-y-4">
         <h2 class="text-lg font-medium">{{ 'users.changeRole' | transloco }}</h2>
         <hlm-native-select selectClass="w-full" size="sm" [ngModel]="newRole()" [ngModelOptions]="{standalone:true}" (ngModelChange)="newRole.set($event)">
@@ -23,6 +228,36 @@
         <div class="flex gap-3">
           <button hlmBtn variant="outline" class="flex-1" (click)="closeRoleDialog()">{{ 'common.cancel' | transloco }}</button>
           <button hlmBtn class="flex-1" [disabled]="newRole() === u.role" (click)="confirmRoleChange()">{{ 'common.saveChanges' | transloco }}</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  @if (blocking()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+      <div class="dialog-surface w-full max-w-sm p-6">
+        <h2 class="text-lg font-medium mb-2">{{ blocking()!.active ? ('users.blockUser' | transloco) : ('users.unblockUser' | transloco) }}</h2>
+        <p class="text-muted-foreground mb-6">{{ 'users.confirmAction' | transloco }} <strong>{{ blocking()!.username }}</strong>?</p>
+        <div class="flex gap-3">
+          <button hlmBtn variant="outline" class="flex-1" (click)="blocking.set(null)">{{ 'common.cancel' | transloco }}</button>
+          <button hlmBtn [variant]="blocking()!.active ? 'destructive' : 'default'" class="flex-1" (click)="confirmBlock()">
+            {{ blocking()!.active ? ('users.block' | transloco) : ('users.unblock' | transloco) }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Delete confirm -->
+  @if (deleting()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+      <div class="dialog-surface w-full max-w-sm p-6 space-y-4">
+        <h2 class="text-lg font-medium">{{ 'users.deleteTitle' | transloco }}</h2>
+        <p class="text-muted-foreground">{{ 'users.confirmDelete' | transloco }} <strong>{{ deleting()!.username }}</strong>. {{ 'users.typeUsername' | transloco }}</p>
+        <input hlmInput [(ngModel)]="deleteConfirmText" [placeholder]="deleting()!.username" class="w-full" />
+        <div class="flex gap-3">
+          <button hlmBtn variant="outline" class="flex-1" (click)="deleting.set(null)">{{ 'common.cancel' | transloco }}</button>
+          <button hlmBtn variant="destructive" class="flex-1" [disabled]="deleteConfirmText() !== deleting()!.username" (click)="confirmDelete()">{{ 'common.delete' | transloco }}</button>
         </div>
       </div>
     </div>

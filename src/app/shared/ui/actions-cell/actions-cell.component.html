@@ -126,6 +126,8 @@
     >
       {{ primary.label | transloco }}
     </button>
+  } @else if (reservePrimarySlot()) {
+    <span class="inline-block w-24 shrink-0" aria-hidden="true"></span>
   }
 
   <!--
@@ -140,6 +142,7 @@
       size="icon"
       class="text-muted-foreground hover:text-foreground"
       [hlmDropdownMenuTrigger]="menu"
+      align="end"
       [attr.aria-label]="'common.actions' | transloco"
     >
       <ng-icon name="lucideMoreVertical" class="size-4" aria-hidden="true" />
@@ -148,20 +151,24 @@
     <ng-template #menu>
       <hlm-dropdown-menu class="min-w-48 rounded-md">
         @for (action of menuActions(); track action.id) {
-          <button
-            hlmDropdownMenuItem
-            class="flex items-center gap-2"
-            [class.text-destructive-text]="action.danger"
-            [disabled]="action.disabled"
-            [attr.aria-disabled]="action.disabled"
-            [attr.title]="action.tooltip"
-            (click)="onMenuAction(action)"
-          >
-            @if (action.icon) {
-              <ng-icon [name]="action.icon" class="size-4 shrink-0" aria-hidden="true" />
-            }
-            <span>{{ action.label | transloco }}</span>
-          </button>
+          @if (action.id === 'separator') {
+            <hlm-dropdown-menu-separator />
+          } @else {
+            <button
+              hlmDropdownMenuItem
+              class="flex items-center gap-2"
+              [class.text-destructive-text]="action.danger"
+              [disabled]="action.disabled"
+              [attr.aria-disabled]="action.disabled"
+              [attr.title]="action.tooltip"
+              (click)="onMenuAction(action)"
+            >
+              @if (action.icon) {
+                <ng-icon [name]="action.icon" class="size-4 shrink-0" aria-hidden="true" />
+              }
+              <span>{{ action.label | transloco }}</span>
+            </button>
+          }
         }
       </hlm-dropdown-menu>
     </ng-template>
