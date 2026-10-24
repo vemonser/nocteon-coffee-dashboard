@@ -236,7 +236,7 @@
     >
       <p class="text-sm">{{ 'reviews.bulk.selected' | transloco: { count: selectedCount() } }}</p>
       <div class="flex items-center gap-2">
-        <button hlmBtn size="sm" (click)="bulkApprove()" [disabled]="bulkSubmitting()">
+        <button hlmBtn size="sm" (click)="bulkApprove()" appCanDisable="'review:moderate'" [disabled]="bulkSubmitting()">
           {{ 'reviews.bulk.approve' | transloco }}
         </button>
         <button hlmBtn size="sm" variant="destructive" (click)="bulkReject()" [disabled]="bulkSubmitting()">
@@ -337,7 +337,7 @@
           <div class="mt-auto flex items-center gap-2 border-t px-4 py-3">
             @if (item.status === 'PENDING') {
               <button
-                *hasPermission="'review:moderate'"
+                appCanDisable="'review:moderate'"
                 hlmBtn
                 size="sm"
                 (click)="approve(item)"
@@ -345,7 +345,7 @@
                 {{ 'reviews.approve' | transloco }}
               </button>
               <button
-                *hasPermission="'review:moderate'"
+                appCanDisable="'review:moderate'"
                 hlmBtn
                 size="sm"
                 variant="destructive"
@@ -355,7 +355,7 @@
               </button>
             } @else if (item.status === 'APPROVED') {
               <button
-                *hasPermission="'review:moderate'"
+                appCanDisable="'review:moderate'"
                 hlmBtn
                 size="sm"
                 variant="secondary"
