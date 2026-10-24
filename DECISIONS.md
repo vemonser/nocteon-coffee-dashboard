@@ -1822,3 +1822,64 @@ and page 2 do not show the same rows.
 - No activity summary endpoint: Activity card hidden. Needs backend (activity).
 - No password-reset/invite-email endpoint: those kebab/dialog options omitted. Needs backend.
 - Delete confirm dialog requires typing the username.
+
+---
+
+# Notifications pass 1 — Needs backend
+
+The client discovered these gaps by reading the running backend source, not by
+guessing. Until they ship, the UI only calls endpoints that exist.
+
+## Missing event producers
+
+These events do **not** create an admin notification today:
+
+- `payment.failed` — `PAYMENT_FAILED` exists in the enum, but no listener writes it.
+- `contact.message` — no event/listener.
+- `stock.low` — no event/listener.
+- `user.new` — no event/listener.
+- `review.pending` — `REVIEW_CREATED` fires on submit, but carries no moderation
+  status; it is shown as a pending review in the client.
+
+`order.new` already exists as `ORDER_CREATED` and `payment.succeeded` exists as
+`PAYMENT_SUCCEEDED`.
+
+## Requested notification contract
+
+The current row is `{ id, type, title, message, link, read, createdAt }` with
+server-rendered English `title`/`message`. The client's i18n templates need:
+
+```json
+{
+  "type": "order.new",
+  "titleKey": "notifications.types.order_new.title",
+  "bodyKey": "notifications.types.order_new.description",
+  "params": { "orderId": 1042, "total": "1,240.00 EGP" },
+  "entityType": "order",
+  "entityId": 1042,
+  "createdAt": "2026-10-24T12:00:00Z",
+  "readAt": null
+}
+```
+
+`titleKey`/`bodyKey` let the client translate; `params` fill the templates;
+`entityType`/`entityId` build routes; `readAt` replaces the one-way `read`
+boolean so unread can be represented. Keeping `title`/`message` as a fallback
+lets old rows render during the migration.
+
+## Missing endpoints
+
+| Need | Requested endpoint | Current state |
+|---|---|---|
+| Delete one | `DELETE /api/dashboard/notifications/{id}` | absent |
+| Bulk delete | `DELETE /api/dashboard/notifications` with ids | absent |
+| Mark unread | `PATCH /api/dashboard/notifications/{id}/unread` | absent |
+| Type filter | `GET /api/dashboard/notifications?type=order.new` | only `unreadOnly` |
+| Bulk read | `PATCH /api/dashboard/notifications/read` with ids | absent; client loops `/{id}/read` |
+
+## Permissions
+
+`notification:update` and `notification:delete` exist in the permission
+catalog, but every notification endpoint is guarded by
+`notification:read` only. The UI hides/disables update/delete controls by
+permission, but the server must enforce them before these actions are safe.
