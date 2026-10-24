@@ -15,6 +15,7 @@ const icons: Record<NavKey, string> = {
   dashboard: 'lucideLayoutDashboard',
   orders: 'lucidePackage',
   users: 'lucideUsers',
+  roles: 'lucideShield',
   reviews: 'lucideStar',
   promoCodes: 'lucideTags',
   storeSettings: 'lucideSettings2',

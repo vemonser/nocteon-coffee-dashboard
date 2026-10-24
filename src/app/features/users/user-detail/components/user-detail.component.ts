@@ -72,7 +72,7 @@ export class UserDetailComponent implements OnInit {
   form!: FormGroup;
 
   ngOnInit(): void {
-    this.userService.getRoles().subscribe({ next: (r) => { if (r?.data?.length) this.roleOptions.set(r.data); } });
+    this.userService.getRoles().subscribe({ next: (r) => { if (r?.data?.length) this.roleOptions.set(r.data.map((role) => role.name)); } });
     this.route.paramMap.pipe(
       map((params) => params.get('id')),
       switchMap((id) => {

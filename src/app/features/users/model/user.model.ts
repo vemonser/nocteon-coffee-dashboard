@@ -31,3 +31,20 @@ export interface UserListParams extends BaseListParams {
   isActive?: boolean;
   enabled?: boolean;
 }
+
+/** A role as the roles endpoint describes it. */
+export interface RoleResponse {
+  name: string;
+  description: string | null;
+  system: boolean;
+  userCount: number;
+  permissionCount: number;
+  permissions: string[];
+}
+
+export interface RoleRequest {
+  name?: string;
+  description?: string | null;
+  permissions?: string[];
+  cloneFrom?: string | null;
+}

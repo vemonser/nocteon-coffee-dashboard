@@ -84,7 +84,7 @@ export class UsersListComponent extends BaseListComponent<UserResponse, UserRequ
   private loadRoleOptions(): void {
     this.userService.getRoles().subscribe({
       next: (res) => {
-        if (res?.data?.length) { this.roleOptions.set(res.data); this.rolesAvailable.set(true); }
+        if (res?.data?.length) { this.roleOptions.set(res.data.map((role) => role.name)); this.rolesAvailable.set(true); }
         else this.roleOptions.set(Array.from(new Set(this.items().map((u) => u.role))));
       },
       error: () => this.roleOptions.set(Array.from(new Set(this.items().map((u) => u.role)))),

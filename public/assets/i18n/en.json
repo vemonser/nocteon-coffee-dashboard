@@ -1336,7 +1336,47 @@
     },
     "rolePermissionsCount": "{n} permissions",
     "changeRole": "Change role",
-    "allStates": "All states"
+    "allStates": "All states",
+    "roleCard": {
+      "systemBadge": "System",
+      "users_one": "{{count}} user",
+      "users_other": "{{count}} users",
+      "permissions": "{{count}} permissions",
+      "viewUsers": "View users"
+    },
+    "roleDescriptions": {
+      "ADMIN": "Full access to every dashboard area, including users and settings.",
+      "MODERATOR": "Reviews, orders and catalog — but not users or store settings.",
+      "CUSTOMER": "Storefront shopping only: orders, addresses and wishlist."
+    },
+    "rolesPage": {
+      "title": "Roles & permissions",
+      "subtitle": "What each role can reach in the dashboard.",
+      "newRole": "New role",
+      "newRoleUnavailable": "Custom roles are not available yet",
+      "systemRoleInfo": "System role - permissions can't be edited.",
+      "noPermissions": "This role has no permissions. Users with this role can't access anything in the dashboard.",
+      "editPermissions": "Edit permissions",
+      "savePermissions": "Save permissions",
+      "deleteRole": "Delete role",
+      "deleteRoleTitle": "Delete role",
+      "deleteRoleBody": "Delete the {{name}} role? It must have no users assigned.",
+      "createTitle": "New role",
+      "name": "Name",
+      "nameHint": "Uppercase letters, digits and underscores; 3–32 characters.",
+      "nameInvalid": "Use 3–32 characters: A–Z, 0–9 and _",
+      "description": "Description",
+      "cloneFrom": "Start from",
+      "cloneFromNone": "No permissions",
+      "create": "Create role",
+      "empty": "No roles found.",
+      "loadFailed": "Could not load roles.",
+      "retry": "Retry",
+      "selectRole": "Select the {{name}} role",
+      "created": "Role created",
+      "saved": "Permissions saved",
+      "deleted": "Role deleted"
+    }
   },
   "carts": {
     "title": "Carts",
@@ -2272,6 +2312,25 @@
       "dashboard": "Dashboard",
       "audit": "Audit",
       "ai": "AI"
+    }
+  },
+  "permissionMatrix": {
+    "fullAccess": "Full access — {{count}} permissions",
+    "filter": "Filter permissions…",
+    "showGrantedOnly": "Show granted only",
+    "expandAll": "Expand all",
+    "collapseAll": "Collapse all",
+    "readOnly": "Read-only",
+    "lockedCell": "Fixed for this role",
+    "sensitive": "Sensitive permission",
+    "permissionsCount": "{{granted}} / {{total}} permissions",
+    "resource": "Resource",
+    "special": "Special",
+    "actions": {
+      "read": "View",
+      "create": "Create",
+      "update": "Edit",
+      "delete": "Delete"
     }
   }
 }

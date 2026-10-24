@@ -6,9 +6,12 @@ import { HlmInputImports } from '@spartan-ng/helm/input';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmBadgeImports } from '@spartan-ng/helm/badge';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucideChevronDown, lucideLock, lucideCheck, lucideMinus, lucideShieldAlert } from '@ng-icons/lucide';
+import {
+  lucideChevronRight, lucideLock, lucideCheck, lucideMinus, lucideShieldAlert,
+} from '@ng-icons/lucide';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { humanize } from '../../utils/permission.utils';
+import { LanguageService } from '../../../core/i18n/language.service';
 import {
   parsePermission, groupPermissions, domainOf, actionLabel, isSensitive, isStandardAction,
   STANDARD_ACTIONS, PERMISSION_DOMAINS,
@@ -18,16 +21,22 @@ import {
   selector: 'app-permission-matrix',
   standalone: true,
   imports: [CommonModule, FormsModule, HlmCheckboxImports, HlmInputImports, HlmButtonImports, HlmBadgeImports, NgIcon, TranslocoPipe],
-  providers: [provideIcons({ lucideChevronDown, lucideLock, lucideCheck, lucideMinus, lucideShieldAlert })],
+  providers: [provideIcons({ lucideChevronRight, lucideLock, lucideCheck, lucideMinus, lucideShieldAlert })],
   templateUrl: './permission-matrix.component.html',
 })
 export class PermissionMatrixComponent {
   private transloco = inject(TranslocoService);
+  private language = inject(LanguageService);
   permissions = input.required<string[]>();
   grantedInput = input<Set<string> | string[]>(new Set());
   mode = input<'view' | 'edit'>('view');
   locked = input<Set<string> | string[]>(new Set());
   inherited = input<Set<string> | string[]>(new Set());
+  /**
+   * A view-mode grid cannot be edited, so it states that once — with a single
+   * lock in the toolbar — instead of repeating a lock on every cell.
+   */
+  readOnlyLock = input<boolean>(true);
 
   grantedChange = output<Set<string>>();
 
@@ -79,6 +88,22 @@ export class PermissionMatrixComponent {
   grantedCount = computed(() => this.granted().size);
 
   isCollapsed(domain: string): boolean { return this.collapsed().has(domain); }
+
+  /**
+   * One chevron, rotated rather than swapped: pointing right when collapsed,
+   * down when open. In RTL "right" is the reading START, so the collapsed
+   * arrow is mirrored to point the other way — down stays down in both.
+   */
+  chevronTransform(collapsed: boolean): string {
+    if (!collapsed) return 'rotate(90deg)';
+    return this.language.current() === 'ar' ? 'rotate(180deg)' : 'rotate(0deg)';
+  }
+
+  actionColumnLabel(action: string): string {
+    const key = `permissionMatrix.actions.${action}`;
+    const val = this.transloco.translate(key);
+    return typeof val === 'string' && val && val !== key ? val : humanize(action);
+  }
   toggleDomain(domain: string): void {
     const s = new Set(this.collapsed());
     if (s.has(domain)) s.delete(domain); else s.add(domain);

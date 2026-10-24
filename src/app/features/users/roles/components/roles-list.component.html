@@ -1,36 +1,237 @@
 <div class="page-shell">
-  <header class="flex items-center justify-between">
-    <h1 class="text-2xl font-medium tracking-tight">Roles & permissions</h1>
-    <button hlmBtn disabled title="Needs backend">
+  <header class="flex flex-wrap items-start justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-medium tracking-tight">{{ 'users.rolesPage.title' | transloco }}</h1>
+      <p class="text-sm text-muted-foreground">{{ 'users.rolesPage.subtitle' | transloco }}</p>
+    </div>
+    <button
+      hlmBtn
+      [disabled]="newRoleUnavailable"
+      [attr.title]="newRoleUnavailable && newRoleTooltip ? newRoleTooltip : null"
+      (click)="openCreate()"
+    >
       <ng-icon name="lucidePlus" class="me-2 size-4" />
-      New role
+      {{ 'users.rolesPage.newRole' | transloco }}
     </button>
   </header>
 
-  <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
-    @for (role of roles(); track role) {
-      <button class="card-surface p-4 text-start" (click)="select(role)">
-        <div class="flex items-center gap-2">
-          <ng-icon name="lucideShield" class="size-4" />
-          <span class="font-medium">{{ 'users.roleNames.' + role | transloco }}</span>
-          @if (isSystem(role)) { <span class="inline-flex rounded-full bg-muted px-2 py-0.5 text-xs">System</span> }
-        </div>
-        <p class="mt-2 text-xs text-muted-foreground">
-          {{ userCount(role) }} users
-        </p>
-      </button>
-    }
-  </div>
+  @if (loading()) {
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+      @for (_ of [1, 2, 3]; track $index) {
+        <div class="h-[148px] animate-pulse rounded-xl bg-muted"></div>
+      }
+    </div>
+  }
 
-  @if (selectedRole()) {
-    <section class="card-surface mt-6">
-      <header class="px-6 pt-6">
-        <h2 class="text-base font-medium">{{ 'users.roleNames.' + selectedRole() | transloco }}</h2>
-      </header>
-      <div class="px-6 pb-6 pt-4">
-        <p class="mb-3 text-sm text-muted-foreground">Editing is disabled — Needs backend.</p>
-        <app-permission-matrix [permissions]="allPermissions" [grantedInput]="[]" mode="edit" [locked]="allPermissions" />
+  @if (!loading() && loadFailed()) {
+    <div class="card-surface flex flex-col items-center gap-3 p-10 text-center">
+      <p class="text-sm text-muted-foreground">{{ 'users.rolesPage.loadFailed' | transloco }}</p>
+      <button hlmBtn variant="outline" size="sm" (click)="retry()">
+        {{ 'users.rolesPage.retry' | transloco }}
+      </button>
+    </div>
+  }
+
+  @if (!loading() && !loadFailed()) {
+    <!-- Role cards. The whole card selects the role (one overlay button), while
+         "View users" stays a real link on top of it. -->
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+      @for (role of roles(); track role.name) {
+        <article
+          class="card-surface relative flex flex-col p-4"
+          [ngClass]="isSelected(role) ? 'ring-2 ring-primary bg-primary/5' : 'hover:bg-muted/40'"
+        >
+          <button
+            type="button"
+            class="absolute inset-0 rounded-[inherit] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            [attr.aria-label]="selectLabel(role)"
+            [attr.aria-current]="isSelected(role) ? 'true' : null"
+            [attr.data-role]="role.name"
+            (click)="select(role.name)"
+          ></button>
+
+          <div class="pointer-events-none relative">
+            <div class="flex items-center gap-2">
+              <ng-icon name="lucideShield" class="size-4 text-muted-foreground" />
+              <span class="font-medium">{{ displayName(role) }}</span>
+              @if (role.system) {
+                <span class="inline-flex rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+                  {{ 'users.roleCard.systemBadge' | transloco }}
+                </span>
+              }
+            </div>
+
+            <p class="mt-2 text-sm text-muted-foreground">
+              {{ userCountLabel(role.userCount) }}
+              <span class="mx-1 text-border">·</span>
+              {{ permissionCountLabel(role.permissionCount) }}
+            </p>
+
+            @if (description(role)) {
+              <p class="mt-1 line-clamp-1 text-xs text-muted-foreground">{{ description(role) }}</p>
+            }
+          </div>
+
+          <a
+            class="relative z-10 mt-3 inline-flex w-fit items-center gap-1 text-xs font-medium text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            [routerLink]="['/dashboard/users']"
+            [queryParams]="{ role: role.name }"
+          >
+            {{ 'users.roleCard.viewUsers' | transloco }}
+          </a>
+        </article>
+      }
+    </div>
+
+    @if (roles().length === 0) {
+      <p class="text-sm text-muted-foreground">{{ 'users.rolesPage.empty' | transloco }}</p>
+    }
+
+    @if (selected(); as role) {
+      <section class="card-surface mt-6">
+        <header class="flex flex-wrap items-start justify-between gap-3 px-6 pt-6">
+          <div class="min-w-0">
+            <div class="flex flex-wrap items-center gap-2">
+              <h2 class="text-base font-medium">{{ displayName(role) }}</h2>
+              @if (role.system) {
+                <span class="inline-flex rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+                  {{ 'users.roleCard.systemBadge' | transloco }}
+                </span>
+              }
+              <span class="text-xs text-muted-foreground">
+                {{ userCountLabel(role.userCount) }}
+                <span class="mx-1">·</span>
+                {{ permissionCountLabel(role.permissionCount) }}
+              </span>
+            </div>
+            @if (description(role)) {
+              <p class="mt-1 text-sm text-muted-foreground">{{ description(role) }}</p>
+            }
+          </div>
+
+          <!-- Custom roles are editable; system roles are not, and a reader
+               without role:manage sees no editing affordance at all. -->
+          @if (canEdit(role)) {
+            <div class="flex flex-wrap items-center gap-2">
+              @if (!editing()) {
+                <button hlmBtn variant="outline" size="sm" (click)="startEdit()">
+                  <ng-icon name="lucidePencil" class="me-2 size-4" />
+                  {{ 'users.rolesPage.editPermissions' | transloco }}
+                </button>
+                <button hlmBtn variant="ghost" size="sm" class="text-destructive-text" (click)="askDelete()">
+                  <ng-icon name="lucideTrash2" class="me-2 size-4" />
+                  {{ 'users.rolesPage.deleteRole' | transloco }}
+                </button>
+              } @else {
+                <button hlmBtn variant="outline" size="sm" [disabled]="saving()" (click)="cancelEdit()">
+                  {{ 'common.cancel' | transloco }}
+                </button>
+                <button hlmBtn size="sm" [disabled]="saving()" (click)="savePermissions()">
+                  @if (saving()) {
+                    <ng-icon name="lucideLoader2" class="me-2 size-4 animate-spin" />
+                  }
+                  {{ 'users.rolesPage.savePermissions' | transloco }}
+                </button>
+              }
+            </div>
+          }
+        </header>
+
+        <div class="space-y-4 px-6 pb-6 pt-4">
+          @if (role.system) {
+            <div class="flex items-start gap-2 rounded-md bg-muted px-4 py-3 text-sm text-muted-foreground">
+              <ng-icon name="lucideLock" class="mt-0.5 size-4 shrink-0" />
+              <span>{{ 'users.rolesPage.systemRoleInfo' | transloco }}</span>
+            </div>
+          }
+
+          @if (role.permissionCount === 0 && !editing()) {
+            <div role="status" class="rounded-md bg-warning-soft px-4 py-3 text-sm text-warning">
+              {{ 'users.rolesPage.noPermissions' | transloco }}
+            </div>
+          }
+
+          <app-permission-matrix
+            [permissions]="allPermissions"
+            [grantedInput]="editing() ? draft() : (role.permissions || [])"
+            [mode]="editing() ? 'edit' : 'view'"
+            (grantedChange)="toggleDraft($event)"
+          />
+        </div>
+      </section>
+    }
+  }
+
+  @if (showCreate()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+      <div class="dialog-surface w-full max-w-lg space-y-4 p-6">
+        <div class="flex items-center justify-between">
+          <h2 class="text-lg font-medium">{{ 'users.rolesPage.createTitle' | transloco }}</h2>
+          <button hlmBtn variant="ghost" size="icon" (click)="closeCreate()" [attr.aria-label]="'common.close' | transloco">
+            <ng-icon name="lucideX" class="size-4" />
+          </button>
+        </div>
+
+        <form [formGroup]="createForm" (ngSubmit)="submitCreate()" class="space-y-4">
+          <div class="space-y-1.5">
+            <label hlmLabel for="role-name">{{ 'users.rolesPage.name' | transloco }} *</label>
+            <input id="role-name" hlmInput formControlName="name" class="w-full" placeholder="CONTENT_EDITOR" autocomplete="off" />
+            <p class="text-xs text-muted-foreground">{{ 'users.rolesPage.nameHint' | transloco }}</p>
+            @if (createForm.get('name')?.invalid && createForm.get('name')?.touched) {
+              <p class="text-xs text-destructive">{{ 'users.rolesPage.nameInvalid' | transloco }}</p>
+            }
+          </div>
+
+          <div class="space-y-1.5">
+            <label hlmLabel for="role-description">{{ 'users.rolesPage.description' | transloco }}</label>
+            <input id="role-description" hlmInput formControlName="description" class="w-full" />
+          </div>
+
+          <div class="space-y-1.5">
+            <label hlmLabel for="role-clone">{{ 'users.rolesPage.cloneFrom' | transloco }}</label>
+            <hlm-native-select selectClass="w-full" size="sm" [ngModel]="createForm.get('cloneFrom')?.value" [ngModelOptions]="{ standalone: true }" (ngModelChange)="createForm.get('cloneFrom')?.setValue($event)">
+              <option hlmNativeSelectOption value="">{{ 'users.rolesPage.cloneFromNone' | transloco }}</option>
+              @for (role of roles(); track role.name) {
+                <option hlmNativeSelectOption [value]="role.name">{{ displayName(role) }}</option>
+              }
+            </hlm-native-select>
+          </div>
+
+          <div class="flex gap-3 pt-1">
+            <button type="button" hlmBtn variant="outline" class="flex-1" (click)="closeCreate()">
+              {{ 'common.cancel' | transloco }}
+            </button>
+            <button type="submit" hlmBtn class="flex-1" [disabled]="createForm.invalid || creating()">
+              @if (creating()) {
+                <ng-icon name="lucideLoader2" class="me-2 size-4 animate-spin" />
+              }
+              {{ 'users.rolesPage.create' | transloco }}
+            </button>
+          </div>
+        </form>
       </div>
-    </section>
+    </div>
+  }
+
+  @if (deleting(); as role) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+      <div class="dialog-surface w-full max-w-sm space-y-4 p-6">
+        <h2 class="text-lg font-medium">{{ 'users.rolesPage.deleteRoleTitle' | transloco }}</h2>
+        <p class="text-sm text-muted-foreground">
+          {{ 'users.rolesPage.deleteRoleBody' | transloco: { name: displayName(role) } }}
+        </p>
+        @if (deleteError()) {
+          <p role="alert" class="text-sm text-destructive-text">{{ deleteError() }}</p>
+        }
+        <div class="flex gap-3">
+          <button hlmBtn variant="outline" class="flex-1" (click)="deleting.set(null)">
+            {{ 'common.cancel' | transloco }}
+          </button>
+          <button hlmBtn variant="destructive" class="flex-1" (click)="confirmDelete()">
+            {{ 'common.delete' | transloco }}
+          </button>
+        </div>
+      </div>
+    </div>
   }
 </div>
