@@ -288,7 +288,8 @@
     "toggleStatus": "Toggle status",
     "soon": "Soon",
     "saveChanges": "Save changes",
-    "verified": "Verified"
+    "verified": "Verified",
+    "never": "Never"
   },
   "products": {
     "title": "Products",
@@ -1376,7 +1377,8 @@
       "created": "Role created",
       "saved": "Permissions saved",
       "deleted": "Role deleted"
-    }
+    },
+    "roleBadgeTooltip": "{{role}} - {{count}} permissions"
   },
   "carts": {
     "title": "Carts",

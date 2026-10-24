@@ -233,6 +233,15 @@ export class DataTableComponent {
   menuActionsFor = input<((row: any) => RowMenuAction[]) | null>(null);
 
   /**
+   * How the `role` cell is painted.
+   *
+   * The tint is per role (Admin copper, Moderator blue, Customer neutral,
+   * custom roles a stable palette colour) and the tooltip carries the
+   * permission count, so the table does not need to know what a role means.
+   */
+  roleBadgeFor = input<((role: string) => { classes: string; label: string; title: string }) | null>(null);
+
+  /**
    * The row's PRIMARY action — a LABELLED button, not an icon.
    *
    * <p>An unlabelled icon makes the reader guess what it does, and a review

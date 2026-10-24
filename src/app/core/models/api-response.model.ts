@@ -5,6 +5,16 @@ export interface ApiResponse<T> {
     data: T;
     errors: FieldError[] | null;
     timestamp: string;
+    /** Aggregate counters some list endpoints return alongside the page. */
+    summary?: ListSummary | null;
+}
+
+export interface ListSummary {
+    total: number;
+    admins: number;
+    customers: number;
+    blocked: number;
+    unverified: number;
 }
 
 export interface FieldError {

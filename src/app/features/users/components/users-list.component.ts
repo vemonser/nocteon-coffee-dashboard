@@ -1,9 +1,9 @@
 ﻿import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormGroup, Validators } from '@angular/forms';
-import { Observable, throwError } from 'rxjs';
-import { map } from 'rxjs/operators';
-import { Router } from '@angular/router';
+import { Observable, throwError, forkJoin, of } from 'rxjs';
+import { catchError, map, tap } from 'rxjs/operators';
+import { ActivatedRoute, Router } from '@angular/router';
 
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
@@ -31,15 +31,18 @@ import { HasPermissionDirective } from '../../../core/auth/permission.directive'
 import { AuthService } from '../../../core/auth/auth.service';
 import { UserService } from '../services/user.service';
 import { UserListParams, UserRequest, UserResponse } from '../model/user.model';
-import { ApiResponse, PageResponse } from '../../../core/models/api-response.model';
+import { ApiResponse, ListSummary, PageResponse } from '../../../core/models/api-response.model';
 import { createColumnHelper, ColumnDef } from '@tanstack/angular-table';
 import { HlmFieldImports } from '@spartan-ng/helm/field';
 
-import { TranslocoPipe } from '@jsverse/transloco';
+import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { PagerComponent } from '../../../shared/components/pager/pager.component';
 import { NotifyService } from '../../../core/notify/notify.service';
+import { humanize } from '../../../shared/utils/permission.utils';
+import { RoleResponse } from '../model/user.model';
+import { roleBadgeClasses } from '../utils/role-chips';
 
-type QuickFilter = 'ALL' | 'ADMIN' | 'CUSTOMER' | 'BLOCKED' | 'UNVERIFIED';
+type QuickFilter = 'ALL' | 'BLOCKED' | 'UNVERIFIED' | (string & {});
 
 @Component({
   selector: 'app-users-list',
@@ -61,14 +64,23 @@ type QuickFilter = 'ALL' | 'ADMIN' | 'CUSTOMER' | 'BLOCKED' | 'UNVERIFIED';
 export class UsersListComponent extends BaseListComponent<UserResponse, UserRequest, string> {
   private userService = inject(UserService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
   private auth = inject(AuthService);
+  private i18n = inject(TranslocoService);
 
   roleOptions = signal<string[]>([]);
+  /** The roles endpoint, in its own order — the source of the count chips. */
+  roleCounts = signal<RoleResponse[]>([]);
   rolesAvailable = signal(false);
   roleFilter = 'ALL';
   statusFilter = 'all';
   verificationFilter = 'all';
   quickFilter = signal<QuickFilter>('ALL');
+
+  /** Server aggregate from the users list response (not a page of rows). */
+  summary = signal<ListSummary | null>(null);
+  blockedTotal = signal(0);
+  unverifiedTotal = signal(0);
 
   blocking = signal<UserResponse | null>(null);
   override deleting = signal<UserResponse | null>(null);
@@ -77,6 +89,13 @@ export class UsersListComponent extends BaseListComponent<UserResponse, UserRequ
   showPassword = signal(false);
 
   override ngOnInit(): void {
+    // A role link from the Roles page (`/users?role=ADMIN`) seeds the filter
+    // BEFORE the first page request, so the list never flashes all users.
+    const roleFromUrl = this.route.snapshot.queryParamMap.get('role');
+    if (roleFromUrl) {
+      this.roleFilter = roleFromUrl;
+      this.quickFilter.set(roleFromUrl);
+    }
     super.ngOnInit();
     this.loadRoleOptions();
   }
@@ -84,12 +103,60 @@ export class UsersListComponent extends BaseListComponent<UserResponse, UserRequ
   private loadRoleOptions(): void {
     this.userService.getRoles().subscribe({
       next: (res) => {
-        if (res?.data?.length) { this.roleOptions.set(res.data.map((role) => role.name)); this.rolesAvailable.set(true); }
-        else this.roleOptions.set(Array.from(new Set(this.items().map((u) => u.role))));
+        const roles = res?.data ?? [];
+        this.roleCounts.set(roles);
+        this.rolesAvailable.set(roles.length > 0);
+        this.roleOptions.set(roles.length ? roles.map((r) => r.name) : this.rolesFromItems());
+        this.refreshStatusCounts();
       },
-      error: () => this.roleOptions.set(Array.from(new Set(this.items().map((u) => u.role)))),
+      error: () => {
+        this.roleCounts.set([]);
+        this.rolesAvailable.set(false);
+        this.roleOptions.set(this.rolesFromItems());
+        this.refreshStatusCounts();
+      },
     });
   }
+
+  private rolesFromItems(): string[] {
+    return Array.from(new Set(this.items().map((u) => u.role)));
+  }
+
+  /** Blocked and unverified are status buckets, not roles — two size-1 calls. */
+  private refreshStatusCounts(): void {
+    forkJoin({
+      blocked: this.userService
+        .getAll({ page: 0, size: 1, isActive: false })
+        .pipe(map((res) => res.data.totalElements), catchError(() => of(null))),
+      unverified: this.userService
+        .getAll({ page: 0, size: 1, enabled: false })
+        .pipe(map((res) => res.data.totalElements), catchError(() => of(null))),
+    }).subscribe(({ blocked, unverified }) => {
+      this.blockedTotal.set(blocked ?? 0);
+      this.unverifiedTotal.set(unverified ?? 0);
+    });
+  }
+
+  roleLabel(name: string): string {
+    const key = `users.roleNames.${name}`;
+    const translated = this.i18n.translate(key);
+    if (typeof translated === 'string' && translated && translated !== key) return translated;
+    return humanize(name);
+  }
+
+  /**
+   * The role cell's tint and tooltip. Admin copper, Moderator blue, Customer
+   * neutral; anything else gets a stable colour from the five-token palette.
+   */
+  roleBadgeFor = (role: string): { classes: string; label: string; title: string } => {
+    const label = this.roleLabel(role);
+    const permissionCount = this.roleCounts().find((r) => r.name === role)?.permissionCount ?? 0;
+    const title = this.i18n.translate('users.roleBadgeTooltip', {
+      role: label,
+      count: permissionCount,
+    });
+    return { classes: roleBadgeClasses(role), label, title };
+  };
 
   // Columns
   private columnHelper = createColumnHelper<UserResponse>();
@@ -104,11 +171,11 @@ export class UsersListComponent extends BaseListComponent<UserResponse, UserRequ
     this.columnHelper.display({ id: 'actions', header: 'Actions', enableSorting: false, meta: { width: '6%' } }),
   ];
 
-  readonly totalUsers = computed(() => this.pageData()?.totalElements ?? this.items().length);
-  readonly adminCount = computed(() => this.items().filter((u) => u.role === 'ADMIN').length);
-  readonly customerCount = computed(() => this.items().filter((u) => u.role === 'CUSTOMER').length);
-  readonly blockedCount = computed(() => this.items().filter((u) => u.enabled && !u.active).length);
-  readonly unverifiedCount = computed(() => this.items().filter((u) => !u.enabled).length);
+  readonly totalUsers = computed(
+    () => this.summary()?.total ?? this.pageData()?.totalElements ?? this.items().length,
+  );
+  readonly blockedCount = computed(() => this.blockedTotal());
+  readonly unverifiedCount = computed(() => this.unverifiedTotal());
 
   protected override readonly Math = Math;
 
@@ -122,7 +189,10 @@ export class UsersListComponent extends BaseListComponent<UserResponse, UserRequ
       isActive: this.statusFilter === 'all' ? undefined : this.statusFilter === 'active',
       enabled: this.verificationFilter === 'all' ? undefined : this.verificationFilter === 'verified',
     };
-    return this.userService.getAll(params).pipe(map((res) => res.data));
+    return this.userService.getAll(params).pipe(
+      tap((res) => this.summary.set(res.summary ?? null)),
+      map((res) => res.data),
+    );
   }
 
   protected override buildForm(): FormGroup {
@@ -202,7 +272,10 @@ export class UsersListComponent extends BaseListComponent<UserResponse, UserRequ
   }
 
   isSelf(user: UserResponse): boolean { return String(this.auth.currentUser()?.id) === String(user.id); }
-  isLastAdmin(user: UserResponse): boolean { return user.role === 'ADMIN' && this.adminCount() <= 1; }
+  isLastAdmin(user: UserResponse): boolean {
+    const adminCount = this.roleCounts().find((r) => r.name === 'ADMIN')?.userCount ?? 0;
+    return user.role === 'ADMIN' && adminCount <= 1;
+  }
   safeguardsDisabled(user: UserResponse): boolean { return this.isSelf(user) || this.isLastAdmin(user); }
   safeguardTooltip(user: UserResponse): string {
     if (this.isSelf(user)) return "You can't do this on your own account";
@@ -239,7 +312,7 @@ export class UsersListComponent extends BaseListComponent<UserResponse, UserRequ
     if (!user) return;
     this.submitting.set(true);
     this.userService.toggleActive(user.id).subscribe({
-      next: () => { this.submitting.set(false); this.blocking.set(null); this.load(); this.notify.success('notify.statusUpdated', 'Status updated'); },
+      next: () => { this.submitting.set(false); this.blocking.set(null); this.load(); this.refreshStatusCounts(); this.notify.success('notify.statusUpdated', 'Status updated'); },
       error: (err) => { this.submitting.set(false); this.notify.apiError(err, 'notify.errorFallback', 'Could not update status'); },
     });
   }
@@ -260,14 +333,23 @@ export class UsersListComponent extends BaseListComponent<UserResponse, UserRequ
     this.load();
   }
 
+  /**
+   * One chip strip: All, one chip per role (from the roles endpoint), then the
+   * two status buckets. A role chip filters the Role select to that role, so
+   * the strip and the select never disagree.
+   */
   setQuickFilter(filter: QuickFilter): void {
     this.quickFilter.set(filter);
-    switch (filter) {
-      case 'ALL': this.roleFilter = 'ALL'; this.statusFilter = 'all'; this.verificationFilter = 'all'; break;
-      case 'ADMIN': this.roleFilter = 'ADMIN'; this.statusFilter = 'all'; this.verificationFilter = 'all'; break;
-      case 'CUSTOMER': this.roleFilter = 'CUSTOMER'; this.statusFilter = 'all'; this.verificationFilter = 'all'; break;
-      case 'BLOCKED': this.roleFilter = 'ALL'; this.statusFilter = 'blocked'; this.verificationFilter = 'verified'; break;
-      case 'UNVERIFIED': this.roleFilter = 'ALL'; this.statusFilter = 'all'; this.verificationFilter = 'unverified'; break;
+    this.roleFilter = 'ALL';
+    this.statusFilter = 'all';
+    this.verificationFilter = 'all';
+    if (filter === 'BLOCKED') {
+      this.statusFilter = 'blocked';
+      this.verificationFilter = 'verified';
+    } else if (filter === 'UNVERIFIED') {
+      this.verificationFilter = 'unverified';
+    } else if (filter !== 'ALL') {
+      this.roleFilter = filter;
     }
     this.currentPage.set(0);
     this.load();

@@ -292,7 +292,8 @@
     "toggleStatus": "تبديل الحالة",
     "soon": "قريباً",
     "saveChanges": "حفظ التغييرات",
-    "verified": "موثق"
+    "verified": "موثق",
+    "never": "أبدًا"
   },
   "products": {
     "title": "المنتجات",
@@ -1399,7 +1400,8 @@
       "created": "تم إنشاء الدور",
       "saved": "تم حفظ الصلاحيات",
       "deleted": "تم حذف الدور"
-    }
+    },
+    "roleBadgeTooltip": "{{role}} - {{count}} صلاحية"
   },
   "carts": {
     "title": "السلات",
