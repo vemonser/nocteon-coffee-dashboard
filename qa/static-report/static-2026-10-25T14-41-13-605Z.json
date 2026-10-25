@@ -1,0 +1,2672 @@
+[
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: common.countItems_zero"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: common.countItems_two"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: common.countItems_few"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: common.countItems_many"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: reviews.countReviews_zero"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: reviews.countReviews_two"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: reviews.countReviews_few"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: reviews.countReviews_many"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: reviews.countApproved_zero"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: reviews.countApproved_two"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: reviews.countApproved_few"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: reviews.countApproved_many"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: reviews.countPending_zero"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: reviews.countPending_two"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: reviews.countPending_few"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: reviews.countPending_many"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: reviews.countRejected_zero"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: reviews.countRejected_two"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: reviews.countRejected_few"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: reviews.countRejected_many"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: users.roleCard.users_zero"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: users.roleCard.users_two"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: users.roleCard.users_few"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: users.roleCard.users_many"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: orders.countItems_zero"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: orders.countItems_two"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: orders.countItems_few"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: orders.countItems_many"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: orders.countOrders_zero"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: orders.countOrders_two"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: orders.countOrders_few"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: orders.countOrders_many"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: orders.countResults_zero"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: orders.countResults_two"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: orders.countResults_few"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: orders.countResults_many"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: orders.detail.productsCount_zero"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: orders.detail.productsCount_two"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: orders.detail.productsCount_few"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: orders.detail.productsCount_many"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: orders.detail.itemsCount_zero"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: orders.detail.itemsCount_two"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: orders.detail.itemsCount_few"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: orders.detail.itemsCount_many"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: dashboard.recentOrders.minutesAgo_zero"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: dashboard.recentOrders.minutesAgo_two"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: dashboard.recentOrders.minutesAgo_few"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: dashboard.recentOrders.minutesAgo_many"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: dashboard.recentOrders.hoursAgo_zero"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: dashboard.recentOrders.hoursAgo_two"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: dashboard.recentOrders.hoursAgo_few"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: dashboard.recentOrders.hoursAgo_many"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: dashboard.recentOrders.daysAgo_zero"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: dashboard.recentOrders.daysAgo_two"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: dashboard.recentOrders.daysAgo_few"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: dashboard.recentOrders.daysAgo_many"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: dashboard.recentOrders.items_zero"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: dashboard.recentOrders.items_two"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: dashboard.recentOrders.items_few"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: dashboard.recentOrders.items_many"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: dashboard.countDays_zero"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: dashboard.countDays_two"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: dashboard.countDays_few"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: dashboard.countDays_many"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: dashboard.countSold_zero"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: dashboard.countSold_two"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: dashboard.countSold_few"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: dashboard.countSold_many"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: dashboard.countOrders_zero"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: dashboard.countOrders_two"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: dashboard.countOrders_few"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: dashboard.countOrders_many"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: dashboard.countCustomers_zero"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: dashboard.countCustomers_two"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: dashboard.countCustomers_few"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: dashboard.countCustomers_many"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: dashboard.countSessions_zero"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: dashboard.countSessions_two"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: dashboard.countSessions_few"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: dashboard.countSessions_many"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: broadcasts.totalCount_zero"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: broadcasts.totalCount_two"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: broadcasts.totalCount_few"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: broadcasts.totalCount_many"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: contactMessages.countMessages_zero"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: contactMessages.countMessages_two"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: contactMessages.countMessages_few"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: contactMessages.countMessages_many"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: contactMessages.countNew_zero"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: contactMessages.countNew_two"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: contactMessages.countNew_few"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: contactMessages.countNew_many"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: contactMessages.countReplied_zero"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: contactMessages.countReplied_two"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: contactMessages.countReplied_few"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: contactMessages.countReplied_many"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: contactMessages.countArchived_zero"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: contactMessages.countArchived_two"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: contactMessages.countArchived_few"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: contactMessages.countArchived_many"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: contactMessages.countUnread_zero"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: contactMessages.countUnread_two"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: contactMessages.countUnread_few"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: contactMessages.countUnread_many"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: newsletter.totalCount_zero"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: newsletter.totalCount_two"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: newsletter.totalCount_few"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "missing in en: newsletter.totalCount_many"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "var mismatch common.countItems_one: en=count ar="
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "var mismatch reviews.countReviews_one: en=count ar="
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "var mismatch reviews.countApproved_one: en=count ar="
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "var mismatch reviews.countPending_one: en=count ar="
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "var mismatch reviews.countRejected_one: en=count ar="
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "var mismatch users.roleCard.users_one: en=count ar="
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P2",
+    "msg": "ar identical to en: carts.detail.col.sku"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "var mismatch orders.countItems_one: en=count ar="
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "var mismatch orders.countOrders_one: en=count ar="
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "var mismatch orders.countResults_one: en=count ar="
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "var mismatch orders.detail.productsCount_one: en=count ar="
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "var mismatch orders.detail.itemsCount_one: en=count ar="
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P2",
+    "msg": "ar identical to en: orders.timeline.statusChangedFrom"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "var mismatch dashboard.recentOrders.minutesAgo_one: en=count ar="
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "var mismatch dashboard.recentOrders.hoursAgo_one: en=count ar="
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "var mismatch dashboard.recentOrders.daysAgo_one: en=count ar="
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "var mismatch dashboard.countSold_one: en=count ar="
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "var mismatch dashboard.countOrders_one: en=count ar="
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "var mismatch dashboard.countCustomers_one: en=count ar="
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P2",
+    "msg": "ar identical to en: dashboard.deviceTypes.IOS"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P2",
+    "msg": "ar identical to en: dashboard.deviceTypes.MAC"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "var mismatch contactMessages.countMessages_one: en=count ar="
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "var mismatch contactMessages.countNew_one: en=count ar="
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "var mismatch contactMessages.countReplied_one: en=count ar="
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "var mismatch contactMessages.countArchived_one: en=count ar="
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P0",
+    "msg": "var mismatch contactMessages.countUnread_one: en=count ar="
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "notify.errorFallback: \"Something went wrong. Please try again.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "loginPage.title: \"Welcome Back\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "loginPage.statementFooter: \"Private Roasters — Est. 2026\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "loginPage.form.identifier: \"Email or Username\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "loginPage.form.passwordPlaceholder: \"Enter your Password\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "loginPage.form.signIn: \"Sign In\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "loginPage.form.loginWithGoogle: \"Login with Google\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "navigationBar.switchToEnglish: \"Switch to English\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "navigationBar.switchToArabic: \"Switch to Arabic\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "navigationBar.mainMenu: \"Main Menu\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "nav.promoCodes: \"Promo Codes\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "nav.journalPosts: \"Journal Posts\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "nav.contactMessages: \"Contact Messages\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "StoreSettingPage.title: \"Store Setting\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "common.accountSettings: \"Account Settings\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "common.allProducts: \"All Products\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "common.allStatus: \"All Status\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "common.avatar: \"Profile Picture\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "common.changeAvatar: \"Change Photo\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "common.changePassword: \"Change Password\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "common.confirmPassword: \"Confirm Password\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "common.currentPassword: \"Current Password\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "common.discountType: \"Discount Type\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "common.firstName: \"First Name\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "common.fixedAmount: \"Fixed Amount\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "common.freeShipping: \"Free Shipping\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "common.freeShippingThreshold: \"Free Shipping Threshold\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "common.generalInfo: \"General Info\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "common.lastName: \"Last Name\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "common.maxPerUser: \"Max Per User\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "common.maxTotalRedemptions: \"Max Total Redemptions\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "common.minOrderAmount: \"Minimum Order Amount\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "common.newPassword: \"New Password\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "common.originSlug: \"Origin Slug\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "common.personalInfo: \"Personal Information\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "common.priceRange: \"Price Range\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "common.shippingCost: \"Shipping Cost\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "common.specificCategories: \"Specific Categories\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "common.validFrom: \"Valid From\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "common.validUntil: \"Valid Until\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "common.roastLevel: \"Roast Level\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "common.processingMethod: \"Processing Method\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "common.coffeeVariety: \"Coffee Variety\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "common.tastingNote: \"Tasting Note\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "common.notFeatured: \"Not Featured\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "products.variants.noOptions: \"No product options available yet. Add some in the product options page first.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "products.tastingNotes.noNotes: \"No tasting notes available yet. Add some in the tasting notes management page first.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "products.pairings.noPairings: \"No pairings available yet. Add some in the pairings management page first.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "categories.deleteConfirm: \"Move “{{name}}” to the trash? You can restore it later.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "categories.trash.banner: \"These categories are hidden from the store. Restore them, or remove them permanently.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "categories.trash.noResultsInActive: \"No results in Active. {{count}} result in Trash.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "categories.trash.noResultsInTrash: \"No results in Trash. {{count}} result in Active.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "categories.trash.switchToTrash: \"Open Trash\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "categories.trash.switchToActive: \"Open Active\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "categories.trash.restoreConflictBody: \"Another category already uses this slug. Rename or remove it, then restore again.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "categories.trash.restoreFailed: \"Restore failed. Try again.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "categories.trash.permanentDescription: \"This cannot be undone. Type the slug to confirm.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "categories.detail.unsavedChangesBody: \"You have unsaved changes. Leave without saving them?\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "categories.detail.deleteImpact: \"This category has {{count}} products. They will be hidden from the store until the category is restored.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "origins.add: \"Add Origin\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "origins.addTitle: \"Add Origin\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "origins.detail.deleteConfirm: \"Are you sure you want to delete {{name}}? This cannot be undone.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "farms.edit: \"Edit Farm\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "farms.editTitle: \"Edit Farm\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "farms.deleteTitle: \"Delete Farm\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "farms.originSlug: \"Origin Slug\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "roastLevels.title: \"Roast Levels\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "roastLevels.edit: \"Edit Roast Level\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "roastLevels.editTitle: \"Edit Roast Level\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "roastLevels.deleteTitle: \"Delete Roast Level\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "roastLevels.trash.banner: \"These items are hidden from the store. Restore them, or remove them permanently.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "roastLevels.trash.noResultsInActive: \"No results in Active. {{count}} result in Trash.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "roastLevels.trash.noResultsInTrash: \"No results in Trash. {{count}} result in Active.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "roastLevels.trash.switchToTrash: \"Open Trash\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "roastLevels.trash.switchToActive: \"Open Active\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "roastLevels.trash.restoreConflictBody: \"Another category already uses this slug. Rename or remove it, then restore again.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "roastLevels.trash.restoreFailed: \"Restore failed. Try again.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "roastLevels.trash.permanentDescription: \"This cannot be undone. Type the slug to confirm.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "processingMethods.title: \"Processing Methods\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "processingMethods.edit: \"Edit Processing Method\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "processingMethods.editTitle: \"Edit Processing Method\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "processingMethods.deleteTitle: \"Delete Processing Method\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "processingMethods.trash.banner: \"These items are hidden from the store. Restore them, or remove them permanently.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "processingMethods.trash.noResultsInActive: \"No results in Active. {{count}} result in Trash.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "processingMethods.trash.noResultsInTrash: \"No results in Trash. {{count}} result in Active.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "processingMethods.trash.switchToTrash: \"Open Trash\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "processingMethods.trash.switchToActive: \"Open Active\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "processingMethods.trash.restoreConflictBody: \"Another category already uses this slug. Rename or remove it, then restore again.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "processingMethods.trash.restoreFailed: \"Restore failed. Try again.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "processingMethods.trash.permanentDescription: \"This cannot be undone. Type the slug to confirm.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "coffeeVarieties.title: \"Coffee Varieties\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "coffeeVarieties.edit: \"Edit Coffee Variety\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "coffeeVarieties.editTitle: \"Edit Coffee Variety\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "coffeeVarieties.deleteTitle: \"Delete Coffee Variety\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "coffeeVarieties.trash.banner: \"These items are hidden from the store. Restore them, or remove them permanently.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "coffeeVarieties.trash.noResultsInActive: \"No results in Active. {{count}} result in Trash.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "coffeeVarieties.trash.noResultsInTrash: \"No results in Trash. {{count}} result in Active.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "coffeeVarieties.trash.switchToTrash: \"Open Trash\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "coffeeVarieties.trash.switchToActive: \"Open Active\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "coffeeVarieties.trash.restoreConflictBody: \"Another category already uses this slug. Rename or remove it, then restore again.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "coffeeVarieties.trash.restoreFailed: \"Restore failed. Try again.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "coffeeVarieties.trash.permanentDescription: \"This cannot be undone. Type the slug to confirm.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "tastingNotes.title: \"Tasting Notes\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "tastingNotes.edit: \"Edit Tasting Note\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "tastingNotes.editTitle: \"Edit Tasting Note\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "tastingNotes.deleteTitle: \"Delete Tasting Note\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "tastingNotes.trash.banner: \"These items are hidden from the store. Restore them, or remove them permanently.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "tastingNotes.trash.noResultsInActive: \"No results in Active. {{count}} result in Trash.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "tastingNotes.trash.noResultsInTrash: \"No results in Trash. {{count}} result in Active.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "tastingNotes.trash.switchToTrash: \"Open Trash\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "tastingNotes.trash.switchToActive: \"Open Active\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "tastingNotes.trash.restoreConflictBody: \"Another category already uses this slug. Rename or remove it, then restore again.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "tastingNotes.trash.restoreFailed: \"Restore failed. Try again.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "tastingNotes.trash.permanentDescription: \"This cannot be undone. Type the slug to confirm.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "pairings.add: \"Add new Pairing\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "pairings.edit: \"Edit Pairing\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "pairings.editTitle: \"Edit Pairing\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "pairings.deleteTitle: \"Delete Pairing\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "pairings.trash.banner: \"These pairings are hidden from the store. Restore them, or remove them permanently.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "pairings.trash.noResultsInActive: \"No results in Active. {{count}} result in Trash.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "pairings.trash.noResultsInTrash: \"No results in Trash. {{count}} result in Active.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "pairings.trash.switchToTrash: \"Open Trash\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "pairings.trash.switchToActive: \"Open Active\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "pairings.trash.restoreConflictBody: \"Another category already uses this slug. Rename or remove it, then restore again.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "pairings.trash.restoreFailed: \"Restore failed. Try again.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "pairings.trash.permanentDescription: \"This cannot be undone. Type the slug to confirm.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "brewingMethods.title: \"Brewing Methods\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "brewingMethods.edit: \"Edit Brewing Method\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "brewingMethods.editTitle: \"Edit Brewing Method\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "brewingMethods.deleteTitle: \"Delete Brewing Method\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "brewingMethods.trash.banner: \"These brewing methods are hidden from the store. Restore them, or remove them permanently.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "brewingMethods.trash.noResultsInActive: \"No results in Active. {{count}} result in Trash.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "brewingMethods.trash.noResultsInTrash: \"No results in Trash. {{count}} result in Active.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "brewingMethods.trash.switchToTrash: \"Open Trash\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "brewingMethods.trash.switchToActive: \"Open Active\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "brewingMethods.trash.restoreConflictBody: \"Another category already uses this slug. Rename or remove it, then restore again.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "brewingMethods.trash.restoreFailed: \"Restore failed. Try again.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "brewingMethods.trash.permanentDescription: \"This cannot be undone. Type the slug to confirm.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "shippingZones.title: \"Shipping Zones\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "shippingZones.edit: \"Edit Shipping Zone\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "shippingZones.editTitle: \"Edit Shipping Zone\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "shippingZones.deleteTitle: \"Delete Shipping Zone\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "shippingZones.trash.banner: \"These shipping zones are hidden from the store. Restore them, or remove them permanently.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "shippingZones.trash.noResultsInActive: \"No results in Active. {{count}} result in Trash.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "shippingZones.trash.noResultsInTrash: \"No results in Trash. {{count}} result in Active.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "shippingZones.trash.switchToTrash: \"Open Trash\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "shippingZones.trash.switchToActive: \"Open Active\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "shippingZones.trash.restoreConflictBody: \"Another category already uses this slug. Rename or remove it, then restore again.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "shippingZones.trash.restoreFailed: \"Restore failed. Try again.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "shippingZones.trash.permanentDescription: \"This cannot be undone. Type the slug to confirm.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "promoCodes.title: \"Promo Codes\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "promoCodes.editTitle: \"Edit Promo Code\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "promoCodes.deleteTitle: \"Delete Promo Code\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "promoCodes.discountGiven: \"Discount Given\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "promoCodes.activeCodes: \"Enabled Codes\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "promoCodes.trash.banner: \"These promo codes are hidden from the store. Restore them, or remove them permanently.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "promoCodes.trash.noResultsInActive: \"No results in Active. {{count}} result in Trash.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "promoCodes.trash.noResultsInTrash: \"No results in Trash. {{count}} result in Active.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "promoCodes.trash.switchToTrash: \"Open Trash\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "promoCodes.trash.switchToActive: \"Open Active\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "promoCodes.trash.restoreConflictBody: \"Another category already uses this slug. Rename or remove it, then restore again.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "promoCodes.trash.restoreFailed: \"Restore failed. Try again.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "promoCodes.trash.permanentDescription: \"This cannot be undone. Type the slug to confirm.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "reviews.search: \"Search Reviews...\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "reviews.verifiedPurchase: \"Verified Purchase\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "reviews.notVerified: \"Not Verified\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "reviews.minRating: \"Minimum Rating\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "reviews.deleteConfirmNamed: \"The review and its comment will be removed. This cannot be undone.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "reviews.filters.statusAll: \"Status: All\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "users.allRoles: \"All Roles\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "users.allStatus: \"All Status\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "users.edit: \"Edit User\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "users.editTitle: \"Edit User\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "users.deleteTitle: \"Delete User\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "users.confirmPassword: \"Confirm Password\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "users.lastUpdated: \"Last Updated\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "users.rolesPage.noPermissions: \"This role has no permissions. Users with this role can't access anything in the dashboard.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "users.rolesPage.deleteRoleBody: \"Delete the {{name}} role? It must have no users assigned.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "orders.errorState.hint: \"The request failed. Retry to try again.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "orders.detail.totalsMismatch: \"The total the store recorded does not match the items on this order. The recorded total is the one shown.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "orders.detail.activityUnavailable: \"The order's history could not be loaded. The page still shows what it has.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "orders.detail.lifetimeBasis: \"Sum of this customer's paid orders. Unpaid, failed and cancelled orders are excluded.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "orders.detail.noteHint: \"Ctrl/⌘ + Enter to add\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "orders.detail.shipmentFormHint: \"The store records the carrier, the tracking number and the tracking URL. Delivery times are stamped by the store.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "orders.detail.paymentRefundedHint: \"The money was returned. The fulfilment status above is the last stage the order reached.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "notifications.allNotifications: \"All Notifications\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "notifications.unreadOnly: \"Unread Only\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "notifications.deleteMessage: \"Delete {{count}} selected notifications? This cannot be undone.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "notifications.deleteOneMessage: \"Delete this notification? This cannot be undone.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "journal.title: \"Journal Post\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "journal.basicInfo: \"Basic Info\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "journal.relatedProducts: \"Related Products\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "journal.contentEn: \"English Content\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "journal.contentAr: \"Arabic Content\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "journal.summaryEn: \"English Summary\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "journal.summaryAr: \"Arabic Summary\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "journal.contentEnPlaceholder: \"Write your post content in English...\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "journal.contentArPlaceholder: \"Write your post content in Arabic...\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "journal.summaryEnPlaceholder: \"Write a short English summary...\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "journal.summaryArPlaceholder: \"Write a short Arabic summary...\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "journal.newPost: \"New Post\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "journal.savePost: \"Save Post\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "journal.deleteTitle: \"Delete Journal Post\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "journal.coverImage: \"Cover Image\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "journal.publishedAt: \"Published At\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "journal.metaTitle: \"Meta Title\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "journal.metaDescription: \"Meta Description\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "dashboard.metrics.activeSubscriptions: \"Enabled Subscriptions\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "dashboard.listPriceHelp: \"The lowest price of any variant of this product. It is not the price paid, so it does not multiply out to the revenue on the revenue chart.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "dashboard.orderScope.paidHelp: \"Paid orders in the selected period. An order is counted when its payment status is Paid, so pending, failed and refunded orders are not counted.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "dashboard.breakdownNote: \"This chart adds up the line items (price × quantity). It does not include shipping or discounts, so it does not add up to the Total revenue card.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "dashboard.devicesNote: \"The store records one row per observed customer session. Dashboard and automation traffic is excluded.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "layout.sidebar.mainMenu: \"Main Menu\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "appearance.accent: \"Accent Color\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "appearance.accentChange: \"Accent Change\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "appearance.burgundyDesc: \"Bold & Warm\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "appearance.circleRevealAnimation: \"Circle Reveal\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "appearance.emeraldDesc: \"Fresh & Balanced\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "appearance.rippleEffect: \"Ripple Effect\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "appearance.themeTransition: \"Theme Transition\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "productOptions.emptyOption: \"No values yet. Add the first value to start building variants.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "broadcasts.create: \"New Broadcast\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "broadcasts.createTitle: \"Send Broadcast\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "broadcasts.audience: \"This message goes to every customer of the store. The number of recipients is counted when the broadcast is created.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "broadcasts.deleteConfirm: \"The broadcast and its recipient list are removed. Delete\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "unauthorized.title: \"Access Denied\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "unauthorized.message: \"You don't have permission to view this page. Contact your administrator if you believe this is a mistake.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "unauthorized.goBack: \"Back to Dashboard\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "needsAttention.partial: \"One of the queues could not be refreshed. The counts shown are from the last successful read.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "newsletter.audience: \"The audience of a newsletter is the store's customers — the same list a broadcast goes to. The API does not carry a per-address newsletter flag, so an address that unsubscribed is still listed.\""
+  },
+  {
+    "check": "native-dialog",
+    "severity": "P0",
+    "msg": "src/app/features/brewing-method/brewing-method-detail/components/brewing-method-detail.component.ts:263: if (!confirm(`Delete \"${name}\"? This cannot be undone.`)) return;"
+  },
+  {
+    "check": "native-dialog",
+    "severity": "P0",
+    "msg": "src/app/features/categories/category-detail/components/category-detail.component.html:392: Unsaved-changes gate — replaces the old window.confirm() alert."
+  },
+  {
+    "check": "native-dialog",
+    "severity": "P0",
+    "msg": "src/app/features/categories/category-detail/components/category-detail.component.ts:111: /** Escape closes the move-to-trash confirm (dialog parity). */"
+  },
+  {
+    "check": "native-dialog",
+    "severity": "P0",
+    "msg": "src/app/features/categories/category-detail/components/category-detail.component.ts:136: /** Move-to-trash confirm (states the product impact, §10). */"
+  },
+  {
+    "check": "native-dialog",
+    "severity": "P0",
+    "msg": "src/app/features/categories/category-detail/components/category-detail.component.ts:604: * the in-page modal decision instead of a `confirm()` alert. The modal must"
+  },
+  {
+    "check": "native-dialog",
+    "severity": "P0",
+    "msg": "src/app/features/coffee-variety/coffee-variety-detail/components/coffee-variety-detail.component.ts:181: if (!confirm(`Delete \"${name}\"? This cannot be undone.`)) return;"
+  },
+  {
+    "check": "native-dialog",
+    "severity": "P0",
+    "msg": "src/app/features/farms/farm-detail/components/farm-detail.component.ts:346: if (!confirm(`Delete \"${name}\"? This cannot be undone.`)) return;"
+  },
+  {
+    "check": "native-dialog",
+    "severity": "P0",
+    "msg": "src/app/features/orders/components/order-cancel-dialog/order-cancel-dialog.component.html:11: (confirmed)=\"confirm()\""
+  },
+  {
+    "check": "native-dialog",
+    "severity": "P0",
+    "msg": "src/app/features/orders/components/order-cancel-dialog/order-cancel-dialog.component.ts:64: protected confirm(): void {"
+  },
+  {
+    "check": "native-dialog",
+    "severity": "P0",
+    "msg": "src/app/features/orders/components/order-refund-dialog/order-refund-dialog.component.html:11: (confirmed)=\"confirm()\""
+  },
+  {
+    "check": "native-dialog",
+    "severity": "P0",
+    "msg": "src/app/features/orders/components/order-refund-dialog/order-refund-dialog.component.ts:114: protected confirm(): void {"
+  },
+  {
+    "check": "native-dialog",
+    "severity": "P0",
+    "msg": "src/app/features/orders/components/order-status-dialog/order-status-dialog.component.html:10: (confirmed)=\"confirm()\""
+  },
+  {
+    "check": "native-dialog",
+    "severity": "P0",
+    "msg": "src/app/features/orders/components/order-status-dialog/order-status-dialog.component.ts:114: protected confirm(): void {"
+  },
+  {
+    "check": "native-dialog",
+    "severity": "P0",
+    "msg": "src/app/features/pairing/pairing-detail/components/pairing-detail.component.ts:208: if (!confirm(`Delete \"${name}\"? This cannot be undone.`)) return;"
+  },
+  {
+    "check": "native-dialog",
+    "severity": "P0",
+    "msg": "src/app/features/processing-method/processing-method-detail/components/processing-method-detail.component.ts:183: if (!confirm(`Delete \"${name}\"? This cannot be undone.`)) return;"
+  },
+  {
+    "check": "native-dialog",
+    "severity": "P0",
+    "msg": "src/app/features/products/components/product-wizard/product-wizard.component.ts:109: return window.confirm('You have unsaved changes. Leave anyway?');"
+  },
+  {
+    "check": "native-dialog",
+    "severity": "P0",
+    "msg": "src/app/features/products/components/product-wizard/product-wizard.component.ts:376: if (!window.confirm('You have unsaved changes. Leave anyway?')) return;"
+  },
+  {
+    "check": "native-dialog",
+    "severity": "P0",
+    "msg": "src/app/features/products/components/products-list/products-list.component.ts:609: if (!window.confirm('This product is featured. Disabling it will hide it from the storefront. Continue?')) {"
+  },
+  {
+    "check": "native-dialog",
+    "severity": "P0",
+    "msg": "src/app/features/products/components/steps/media-step/media-step.component.ts:112: if (window.confirm('Remove this media?')) {"
+  },
+  {
+    "check": "native-dialog",
+    "severity": "P0",
+    "msg": "src/app/features/products/components/steps/media-step/media-step.component.ts:118: if (window.confirm('Remove this media?')) {"
+  },
+  {
+    "check": "native-dialog",
+    "severity": "P0",
+    "msg": "src/app/features/products/components/steps/variants-step/variants-step.component.ts:251: if (window.confirm('Remove this variant?')) {"
+  },
+  {
+    "check": "native-dialog",
+    "severity": "P0",
+    "msg": "src/app/features/products/product-media/product-media.component.ts:95: if (!confirm('Delete this media?')) return;"
+  },
+  {
+    "check": "native-dialog",
+    "severity": "P0",
+    "msg": "src/app/features/promo-codes/promo-code-detail/components/promo-code-detail.component.ts:255: if (!confirm(`Delete \"${code}\"? This cannot be undone.`)) return;"
+  },
+  {
+    "check": "native-dialog",
+    "severity": "P0",
+    "msg": "src/app/features/roast-level/roast-level-detail/components/roast-level-detail.component.ts:183: if (!confirm(`Delete \"${name}\"? This cannot be undone.`)) return;"
+  },
+  {
+    "check": "native-dialog",
+    "severity": "P0",
+    "msg": "src/app/features/shipping-zone/shipping-zone-detail/components/shipping-zone-detail.component.ts:181: if (!confirm(`Delete \"${name}\"? This cannot be undone.`)) return;"
+  },
+  {
+    "check": "native-dialog",
+    "severity": "P0",
+    "msg": "src/app/features/tasting-note/tasting-note-detail/components/tasting-note-detail.component.ts:181: if (!confirm(`Delete \"${name}\"? This cannot be undone.`)) return;"
+  },
+  {
+    "check": "native-dialog",
+    "severity": "P0",
+    "msg": "src/app/features/users/roles/components/roles-list.component.ts:305: return window.confirm('You have unsaved changes. Leave anyway?');"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/app.html:7: left-side"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/app.html:57: right-side"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/brewing-method/brewing-method-detail/components/brewing-method-detail.component.html:35: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/brewing-method/brewing-method-detail/components/brewing-method-detail.component.html:40: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/brewing-method/brewing-method-detail/components/brewing-method-detail.component.html:42: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/brewing-method/brewing-method-detail/components/brewing-method-detail.component.html:48: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/brewing-method/brewing-method-detail/components/brewing-method-detail.component.html:52: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/brewing-method/brewing-method-detail/components/brewing-method-detail.component.html:64: mr-1"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/brewing-method/brewing-method-detail/components/brewing-method-detail.component.html:156: text-right"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/brewing-method/brewing-method-detail/components/brewing-method-detail.component.html:186: text-right"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/brewing-method/components/brewing-methods-list.component.html:221: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/brewing-method/components/brewing-methods-list.component.html:254: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/brewing-method/components/brewing-methods-list.component.html:282: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/broadcasts/components/broadcast-list.component.html:35: left-3"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/broadcasts/components/broadcast-list.component.html:43: pl-9"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/broadcasts/components/broadcast-list.component.html:280: text-left"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/broadcasts/components/broadcast-list.component.html:351: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/carts/cart-detail/cart-detail.component.html:78: text-left"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/carts/cart-detail/cart-detail.component.html:81: text-right"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/carts/cart-detail/cart-detail.component.html:82: text-right"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/carts/cart-detail/cart-detail.component.html:93: text-right"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/carts/cart-detail/cart-detail.component.html:94: text-right"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/carts/cart-detail/cart-detail.component.html:100: text-right"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/carts/cart-detail/cart-detail.component.html:101: text-right"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/carts/components/carts-list.component.html:86: mr-1"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/carts/components/carts-list.component.html:321: mr-1"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/carts/components/carts-list.component.html:331: mr-1"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/coffee-variety/coffee-variety-detail/components/coffee-variety-detail.component.html:40: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/coffee-variety/coffee-variety-detail/components/coffee-variety-detail.component.html:50: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/coffee-variety/coffee-variety-detail/components/coffee-variety-detail.component.html:52: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/coffee-variety/coffee-variety-detail/components/coffee-variety-detail.component.html:58: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/coffee-variety/coffee-variety-detail/components/coffee-variety-detail.component.html:62: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/coffee-variety/coffee-variety-detail/components/coffee-variety-detail.component.html:81: mr-1"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/coffee-variety/components/coffee-variety-list.component.html:221: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/coffee-variety/components/coffee-variety-list.component.html:254: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/coffee-variety/components/coffee-variety-list.component.html:282: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/contact-messages/components/contact-messages-list.component.html:413: mr-1"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/contact-messages/components/contact-messages-list.component.html:424: mr-1"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/contact-messages/components/contact-messages-list.component.html:428: mr-1"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/farms/components/farms-list.component.html:281: right-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/farms/components/farms-list.component.html:351: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/farms/farm-detail/components/farm-detail.component.html:38: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/farms/farm-detail/components/farm-detail.component.html:43: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/farms/farm-detail/components/farm-detail.component.html:45: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/farms/farm-detail/components/farm-detail.component.html:51: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/farms/farm-detail/components/farm-detail.component.html:55: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/journal/components/journal-form.component.html:11: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/journal/components/journal-form.component.html:13: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/journal/components/journal-list.component.html:20: left-3"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/journal/components/journal-list.component.html:28: pl-9"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/newsletter/components/newsletter-list.component.html:38: left-3"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/newsletter/components/newsletter-list.component.html:46: pl-9"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/origins/components/origins-list.component.html:284: right-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/origins/components/origins-list.component.html:340: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/origins/origin-detail/components/origin-detail.component.html:359: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/pairing/components/pairing-list.component.html:189: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/pairing/components/pairing-list.component.html:209: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/pairing/components/pairing-list.component.html:228: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/pairing/pairing-detail/components/pairing-detail.component.html:40: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/pairing/pairing-detail/components/pairing-detail.component.html:50: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/pairing/pairing-detail/components/pairing-detail.component.html:52: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/pairing/pairing-detail/components/pairing-detail.component.html:58: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/pairing/pairing-detail/components/pairing-detail.component.html:62: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/pairing/pairing-detail/components/pairing-detail.component.html:94: mr-1"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/processing-method/components/processing-method-list.component.html:221: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/processing-method/components/processing-method-list.component.html:254: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/processing-method/components/processing-method-list.component.html:282: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/processing-method/processing-method-detail/components/processing-method-detail.component.html:37: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/processing-method/processing-method-detail/components/processing-method-detail.component.html:47: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/processing-method/processing-method-detail/components/processing-method-detail.component.html:49: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/processing-method/processing-method-detail/components/processing-method-detail.component.html:55: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/processing-method/processing-method-detail/components/processing-method-detail.component.html:59: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/processing-method/processing-method-detail/components/processing-method-detail.component.html:72: mr-1"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/products/components/product-wizard/product-wizard.component.html:37: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/products/components/product-wizard/product-wizard.component.html:60: ml-1"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/products/components/product-wizard/product-wizard.component.html:65: right-1"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/products/components/product-wizard/product-wizard.component.html:110: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/products/components/product-wizard/product-wizard.component.html:112: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/products/components/product-wizard/product-wizard.component.html:128: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/products/components/product-wizard/product-wizard.component.html:142: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/products/components/product-wizard/product-wizard.component.html:144: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/products/components/products-list/products-list.component.html:10: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/products/components/products-list/products-list.component.html:37: left-3"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/products/components/products-list/products-list.component.html:44: pl-9"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/products/components/steps/variants-step/variants-step.component.html:34: mr-1"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/products/components/steps/variants-step/variants-step.component.html:44: mr-1"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/products/components/steps/variants-step/variants-step.component.html:196: mr-1"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/products/components/steps/variants-step/variants-step.component.html:200: mr-1"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/products/product-media/product-media.component.html:39: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/products/product-media/product-media.component.html:41: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/products/product-media/product-media.component.html:70: left-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/products/product-media/product-media.component.html:79: left-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/products/product-media/product-media.component.html:88: right-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/products/product-media/product-media.component.html:123: left-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/products/product-media/product-media.component.html:132: left-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/products/product-media/product-media.component.html:141: right-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/products/product-media/product-media.component.html:152: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/products/product-media/product-media.component.html:154: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/promo-codes/components/promo-codes-list.component.html:311: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/promo-codes/components/promo-codes-list.component.html:343: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/promo-codes/components/promo-codes-list.component.html:363: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/promo-codes/promo-code-detail/components/promo-code-detail.component.html:31: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/promo-codes/promo-code-detail/components/promo-code-detail.component.html:41: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/promo-codes/promo-code-detail/components/promo-code-detail.component.html:43: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/promo-codes/promo-code-detail/components/promo-code-detail.component.html:49: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/promo-codes/promo-code-detail/components/promo-code-detail.component.html:53: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/promo-codes/promo-code-detail/components/promo-code-detail.component.html:66: mr-1"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/roast-level/components/roast-level-list.component.html:248: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/roast-level/components/roast-level-list.component.html:281: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/roast-level/components/roast-level-list.component.html:309: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/roast-level/roast-level-detail/components/roast-level-detail.component.html:40: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/roast-level/roast-level-detail/components/roast-level-detail.component.html:50: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/roast-level/roast-level-detail/components/roast-level-detail.component.html:52: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/roast-level/roast-level-detail/components/roast-level-detail.component.html:58: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/roast-level/roast-level-detail/components/roast-level-detail.component.html:62: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/roast-level/roast-level-detail/components/roast-level-detail.component.html:75: mr-1"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/shipping-zone/components/shipping-zone-list.component.html:197: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/shipping-zone/components/shipping-zone-list.component.html:218: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/shipping-zone/components/shipping-zone-list.component.html:238: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/shipping-zone/shipping-zone-detail/components/shipping-zone-detail.component.html:40: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/shipping-zone/shipping-zone-detail/components/shipping-zone-detail.component.html:50: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/shipping-zone/shipping-zone-detail/components/shipping-zone-detail.component.html:52: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/shipping-zone/shipping-zone-detail/components/shipping-zone-detail.component.html:58: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/shipping-zone/shipping-zone-detail/components/shipping-zone-detail.component.html:62: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/shipping-zone/shipping-zone-detail/components/shipping-zone-detail.component.html:75: mr-1"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/store-settings/components/store-settings-list.component.html:98: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/tasting-note/components/tasting-note-list.component.html:210: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/tasting-note/components/tasting-note-list.component.html:243: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/tasting-note/components/tasting-note-list.component.html:271: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/tasting-note/tasting-note-detail/components/tasting-note-detail.component.html:37: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/tasting-note/tasting-note-detail/components/tasting-note-detail.component.html:47: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/tasting-note/tasting-note-detail/components/tasting-note-detail.component.html:49: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/tasting-note/tasting-note-detail/components/tasting-note-detail.component.html:55: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/tasting-note/tasting-note-detail/components/tasting-note-detail.component.html:59: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/tasting-note/tasting-note-detail/components/tasting-note-detail.component.html:72: mr-1"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/users/components/users-list.component.html:194: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/users/components/users-list.component.html:214: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/users/components/users-list.component.html:234: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/users/user-detail/components/user-detail.component.html:223: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/shared/components/data-table/data-table.component.html:140: ml-1"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/shared/components/multi-select/multi-select.component.html:24: left-0"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/shared/components/multi-select/multi-select.component.html:34: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/shared/ui/user-menu/user-menu.component.html:44: text-left"
+  }
+]
