@@ -1,6 +1,6 @@
-﻿<div [formGroup]="state.form" class="space-y-5">
+﻿<div [formGroup]="state.form" class="space-y-4">
   <!-- Basic information -->
-  <section class="card-surface p-4 sm:p-5">
+  <section class="card-surface p-5">
     <h2 class="mb-4 text-lg font-medium">{{ 'products.basicInformation' | transloco }}</h2>
 
     <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
@@ -82,20 +82,18 @@
       @if (state.isEditMode()) {
         <div class="space-y-1.5 lg:col-span-2">
           <label hlmLabel>Slug</label>
-          <div class="flex items-center gap-2">
+          <div class="relative">
             <input
               hlmInput
               type="text"
               [value]="state.editingSlug() ?? ''"
               [readonly]="!slugUnlocked()"
-              class="w-full"
+              class="w-full pe-10"
               [class.bg-muted]="!slugUnlocked()"
             />
             <button
               type="button"
-              hlmBtn
-              variant="outline"
-              size="icon"
+              class="absolute end-2 top-1/2 -translate-y-1/2 inline-flex size-8 items-center justify-center rounded-md text-muted-foreground hover:text-foreground"
               (click)="slugUnlocked.set(!slugUnlocked())"
               [attr.aria-label]="slugUnlocked() ? 'Lock slug' : 'Unlock slug'"
             >
@@ -109,7 +107,7 @@
 
   <!-- Coffee details -->
   @if (isCoffee) {
-    <section class="card-surface p-4 sm:p-5">
+    <section class="card-surface p-5">
       <h2 class="mb-4 text-lg font-medium">{{ 'products.coffeeDetails' | transloco }}</h2>
 
       <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -197,6 +195,7 @@
           hlmInput
           formControlName="story"
           rows="4"
+          style="field-sizing: content"
           class="w-full"
           [placeholder]="'products.form.storyPlaceholder' | transloco"
         ></textarea>
@@ -205,7 +204,7 @@
   }
 
   <!-- Content -->
-  <section class="card-surface p-4 sm:p-5">
+  <section class="card-surface p-5">
     <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
       <h2 class="text-lg font-medium">{{ 'products.content' | transloco }}</h2>
 
@@ -278,6 +277,7 @@
                     hlmInput
                     formControlName="description"
                     rows="4"
+                    style="field-sizing: content"
                     [dir]="lang.dir"
                     [attr.lang]="lang.code"
                     class="w-full"
@@ -292,7 +292,7 @@
   </section>
 
   <!-- Visibility -->
-  <section class="card-surface p-4 sm:p-5">
+  <section class="card-surface p-5">
     <h2 class="mb-4 text-lg font-medium">{{ 'products.visibility' | transloco }}</h2>
     <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
       <div class="flex items-center justify-between gap-3 rounded-md border border-border p-3">
