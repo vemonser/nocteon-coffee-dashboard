@@ -53,7 +53,7 @@
               class="relative"
             >
               {{ 'products.wizard.steps.' + step.id | transloco }}
-              @if (isTabDirty(step.id)) {
+              @if (isTabDirty(step.id) && hasUnsavedChanges()) {
                 <span class="ms-1.5 inline-block h-1.5 w-1.5 rounded-full bg-primary" style="margin-inline-start: 6px"></span>
               }
               @if (step.count > 0) {
@@ -105,7 +105,7 @@
           </button>
         </div>
         <div class="flex items-center gap-2">
-          <button hlmBtn type="button" (click)="saveAllTabs()" [disabled]="submitting() || !hasUnsavedChanges()">
+          <button hlmBtn type="button" (click)="saveAllTabs()" [disabled]="submitting() || !hasUnsavedChanges() || !isFormValid()">
             @if (submitting()) {
               <ng-icon name="lucideLoader2" class="mr-2 size-4 animate-spin" />
             } @else {

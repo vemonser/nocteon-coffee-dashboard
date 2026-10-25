@@ -10,7 +10,7 @@ GLOBAL-08 [open] Permission-aware UI exists only on Users/Roles; roll it out to 
 GLOBAL-09 [open] Raw i18n keys appeared before (products.viewOnStorefront, products.wizard.saveAll, carts.columns.*). Add the key checker. Evidence: i18n-keys.spec.ts fails with 15 missing keys (e.g. carts.columns.status, dashboard.totalRevenueHelp).
 GLOBAL-10 [fixed] The sidebar scroll area shows native arrow buttons; use a thin scrollbar. Evidence: sidebar uses .thin-scroll with ::-webkit-scrollbar-button display:none.
 GLOBAL-11 [fixed] A large faint watermark appears behind content in browser captures; find the source (report only). Evidence: docs/rbac-pass2-watermark.md confirms SynthID in images, no app CSS/asset.
-PRODUCTS-01 [open] Edit page: tabs show a dirty dot while Save is disabled (dirty tracking contradiction). Evidence: isTabDirty uses raw JSON compare while Save disabled on hasUnsavedChanges().
+PRODUCTS-01 [fixed] Edit page: tabs show a dirty dot while Save is disabled (dirty tracking contradiction). Evidence: dirty dot now gated on hasUnsavedChanges(); Save disabled also on !isFormValid().
 PRODUCTS-02 [fixed] List: the Stock column has a header and empty cells (hide it or fill it; needs totalStock and lowStockVariantCount from the API). Evidence: Stock column gated by hasStockData() in products-list.
 PRODUCTS-03 [fixed] Edit: Description and Story textareas are one line tall. Evidence: textareas use rows="4" with field-sizing content.
 PRODUCTS-04 [open] Tasting notes and Pairings tabs use different UIs; unify with one chip-multiselect component. Evidence: no shared chip-multiselect component; both steps duplicate chip UI.
