@@ -22,7 +22,11 @@
   --search-highlight: color-mix(in srgb, var(--primary) 18%, transparent);
   --control-height: 2.5rem;
   --control-height-compact: 2rem;
+<<<<<<< Updated upstream
   --filter-control-height: 2.375rem;
+=======
+  --filter-control-height: 2.375rem; /* 38px compact filter-row controls */
+>>>>>>> Stashed changes
   --control-font-size: 0.875rem;
   --control-line-height: 1.25rem;
   --control-font-size-mobile: 1rem;
