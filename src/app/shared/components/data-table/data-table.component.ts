@@ -9,6 +9,7 @@ import {
 } from '@tanstack/angular-table';
 
 import { ActionsCellComponent, type RowMenuAction } from '../../ui/actions-cell/actions-cell.component';
+import { PagerComponent } from '../pager/pager.component';
 import { StatusCellComponent } from '../../ui/status-cell/status-cell.component';
 import { DeletedBadgeComponent } from '../../ui/deleted-badge/deleted-badge.component';
 import { TranslocoPipe } from '@jsverse/transloco';
@@ -40,7 +41,7 @@ export interface TableSortEvent {
 
 @Component({
   selector: 'app-data-table',
-  imports: [UserAvatarComponent, ImageCellComponent, ActionsCellComponent, StatusCellComponent, DeletedBadgeComponent, LocalizedDateComponent, ColorCellComponent, MainCellComponent, StatusBadgeComponent, RatingStarsComponent, VerifiedBadgeComponent, NgIcon, TranslocoPipe, RouterModule, MoneyPipe, PluralPipe],
+  imports: [UserAvatarComponent, ImageCellComponent, ActionsCellComponent, StatusCellComponent, DeletedBadgeComponent, LocalizedDateComponent, ColorCellComponent, MainCellComponent, StatusBadgeComponent, RatingStarsComponent, VerifiedBadgeComponent, NgIcon, TranslocoPipe, RouterModule, MoneyPipe, PluralPipe, PagerComponent],
   providers: [provideIcons({ lucideStar, lucideCreditCard, lucideBanknote, lucideBadgeCheck, lucideTriangleAlert, heroStarSolid, heroStar })],
   templateUrl: './data-table.component.html',
   styleUrl: './data-table.component.css',
@@ -305,6 +306,18 @@ export class DataTableComponent {
    * and then does nothing.
    */
   navigableColumn = input<string>('');
+
+  // Optional built-in pagination footer (opt-in).
+  showPagination = input<boolean>(false);
+  page = input<number>(0);
+  size = input<number>(20);
+  totalElements = input<number>(0);
+  totalPages = input<number>(0);
+  first = input<boolean>(true);
+  last = input<boolean>(true);
+  showPageSize = input<boolean>(true);
+  pageChange = output<number>();
+  sizeChange = output<number>();
 
   private readonly language = inject(LanguageService);
   private readonly storeSettings = inject(StoreSettingsService);

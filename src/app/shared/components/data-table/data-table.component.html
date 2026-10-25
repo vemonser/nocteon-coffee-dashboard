@@ -887,3 +887,17 @@
     </tbody>
   </table>
 </div>
+
+@if (showPagination()) {
+  <app-pager
+    [page]="page()"
+    [size]="size()"
+    [totalElements]="totalElements()"
+    [totalPages]="totalPages()"
+    [first]="first()"
+    [last]="last()"
+    [showPageSize]="showPageSize()"
+    (pageChange)="pageChange.emit($event)"
+    (sizeChange)="sizeChange.emit($event)"
+  />
+}

@@ -214,24 +214,18 @@
       (menuAction)="onMenuAction($event)"
       (selectionChange)="onSelectionChange($event)"
       (toggleAllChange)="onToggleAll($event)"
-    />
-  </div>
-
-  <!-- Pagination -->
-  @if (pageData() && !loading() && items().length > 0 && pageData()!.totalPages > 1) {
-    <app-pager
-      [page]="pageData()!.page"
-      [size]="pageData()!.size"
-      [totalElements]="pageData()!.totalElements"
-      [totalPages]="pageData()!.totalPages"
-      [first]="pageData()!.first"
-      [last]="pageData()!.last"
-      [showPageSize]="true"
+      [showPagination]="(pageData()?.totalPages ?? 0) > 1"
+      [page]="pageData()?.page ?? 0"
       [size]="pageSize()"
+      [totalElements]="pageData()?.totalElements ?? 0"
+      [totalPages]="pageData()?.totalPages ?? 0"
+      [first]="pageData()?.first ?? true"
+      [last]="pageData()?.last ?? true"
       (pageChange)="goToPage($event)"
       (sizeChange)="setPageSize($event)"
     />
-  }
+  </div>
+
   }
 </div>
 
