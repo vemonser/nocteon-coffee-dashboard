@@ -53,6 +53,9 @@
               class="relative"
             >
               {{ 'products.wizard.steps.' + step.id | transloco }}
+              @if (isTabDirty(step.id)) {
+                <span class="ms-1.5 inline-block h-1.5 w-1.5 rounded-full bg-primary" style="margin-inline-start: 6px"></span>
+              }
               @if (step.count > 0) {
                 <span class="ml-1 px-1.5 py-0.5 text-xs bg-primary/20 text-primary rounded-full">
                   {{ step.count }}
@@ -60,8 +63,6 @@
               }
               @if (hasTabError(step.id)) {
                 <span class="absolute -top-1 -right-1 w-2 h-2 bg-destructive rounded-full"></span>
-              } @else if (isTabDirty(step.id)) {
-                <span class="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-primary"></span>
               }
             </button>
           }
