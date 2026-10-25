@@ -74,6 +74,19 @@ test('qa audit', async ({ page, context }) => {
 
   async function runChecks(routeId: string, routePath: string, theme: string, locale: string, width = 1440) {
     const rtl = locale === 'ar';
+    const consoleErrors: string[] = [];
+    const slowRequests: string[] = [];
+    const failedRequests: string[] = [];
+    const consoleHandler = (msg: any) => { if (msg.type() === 'error') consoleErrors.push(msg.text().slice(0, 120)); };
+    const responseHandler = async (resp: any) => {
+      try {
+        if (resp.status() >= 400 && resp.status() !== 401 && resp.status() !== 403) failedRequests.push(`${resp.status()} ${resp.url().slice(0, 80)}`);
+        const timing = resp.request().timing();
+        if (timing && timing.responseEnd - timing.requestStart > 2000) slowRequests.push(resp.url().slice(0, 80));
+      } catch {}
+    };
+    page.on('console', consoleHandler);
+    page.on('response', responseHandler);
     await setup(theme, locale, width);
     await page.goto(routePath, { waitUntil: 'domcontentloaded', timeout: 60000 }).catch(() => {});
     await page.waitForTimeout(800);
@@ -172,6 +185,39 @@ test('qa audit', async ({ page, context }) => {
     const h1s = await page.locator('h1').count();
     if (h1s !== 1) {
       issues.push({ id: issueId('structure', pageName), check: 'structure', severity: 'P1', page: pageName, theme, locale, message: `h1 count = ${h1s}` });
+    } else {
+      const h1Text = (await page.locator('h1').first().innerText()).trim().toLowerCase();
+      // route title comparison (best-effort)
+    }
+
+    const isListPage = /list|users$|orders$|carts$|products$|reviews$/.test(pageName);
+    let heightDiff = 0;
+    if (isListPage) heightDiff = await page.evaluate(() => {
+      const inputs = Array.from(document.querySelectorAll('input[type="search"], input[type="text"]')).filter((e:any) => {
+        const r = (e as HTMLElement).getBoundingClientRect();
+        return r.width > 0 && r.height > 0;
+      });
+      // filter row: inputs/selects with filter-control-height? check all visible inputs/selects in first toolbar
+      const controls = Array.from(document.querySelectorAll('input, select, [role="combobox"]')).map((e:any) => (e as HTMLElement).getBoundingClientRect().height).filter(h=>h>0);
+      if (controls.length < 2) return 0;
+      const max = Math.max(...controls), min = Math.min(...controls);
+      return max - min;
+    });
+    if (heightDiff > 1) {
+      issues.push({ id: issueId('ctrlheight', pageName), check: 'ctrlheight', severity: 'P1', page: pageName, theme, locale, message: `filter control height diff ${heightDiff.toFixed(1)}px` });
+    }
+
+    // H2-8 Console & network
+    page.off('console', consoleHandler);
+    page.off('response', responseHandler);
+    for (const e of consoleErrors) {
+      issues.push({ id: issueId('console', pageName), check: 'console', severity: 'P0', page: pageName, theme, locale, message: `console.error: ${e}` });
+    }
+    for (const r of failedRequests.slice(0, 10)) {
+      issues.push({ id: issueId('network', pageName), check: 'network', severity: 'P0', page: pageName, theme, locale, message: `failed request: ${r}` });
+    }
+    for (const r of slowRequests.slice(0, 10)) {
+      issues.push({ id: issueId('slow', pageName), check: 'slow', severity: 'P2', page: pageName, theme, locale, message: `slow request: ${r}` });
     }
 
     // screenshot for evidence (viewport)
