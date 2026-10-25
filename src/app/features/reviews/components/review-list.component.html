@@ -290,6 +290,17 @@
         (menuAction)="onMenuAction($event)"
         (rowClick)="openView($event)"
         (sortChange)="onSort($event)"
+        [showPagination]="totalElements() > 0"
+        [page]="page()"
+        [size]="size()"
+        [totalElements]="totalElements()"
+        [totalPages]="totalPages()"
+        [first]="page() === 0"
+        [last]="page() >= totalPages() - 1"
+        [showPageSize]="true"
+        [sizeOptions]="pageSizeOptions"
+        (pageChange)="goToPage($event)"
+        (sizeChange)="onPageSizeChange($event)"
       />
     </div>
   } @else {
@@ -383,21 +394,6 @@
     </div>
   }
 
-  <!-- Pagination -->
-  @if (!loading() && !error() && totalElements() > 0) {
-    <app-pager
-      [page]="page()"
-      [size]="size()"
-      [totalElements]="totalElements()"
-      [totalPages]="totalPages()"
-      [first]="page() === 0"
-      [last]="page() >= totalPages() - 1"
-      [showPageSize]="true"
-      [sizeOptions]="pageSizeOptions"
-      (pageChange)="goToPage($event)"
-      (sizeChange)="onPageSizeChange($event)"
-    />
-  }
 </div>
 
 <!-- Review details dialog -->

@@ -316,6 +316,7 @@ export class DataTableComponent {
   first = input<boolean>(true);
   last = input<boolean>(true);
   showPageSize = input<boolean>(true);
+  sizeOptions = input<readonly number[]>([10, 20, 50]);
   pageChange = output<number>();
   sizeChange = output<number>();
 

@@ -308,23 +308,19 @@
         (selectionChange)="onSelectionChange($event)"
         (toggleAllChange)="onToggleAll($event)"
         (menuAction)="onMenuAction($event)"
+        [showPagination]="pageTotal() > 0"
+        [page]="page()"
+        [size]="size()"
+        [totalElements]="pageTotal()"
+        [totalPages]="totalPages()"
+        [first]="first()"
+        [last]="last()"
+        [showPageSize]="true"
+        [sizeOptions]="pageSizeOptions"
+        (pageChange)="goToPage($event)"
+        (sizeChange)="onPageSizeChange($event)"
       />
     </div>
   }
 
-  <!-- ── Pagination ─────────────────────────────────────────────────────── -->
-  @if (!error() && pageTotal() > 0) {
-    <app-pager
-      [page]="page()"
-      [size]="size()"
-      [totalElements]="pageTotal()"
-      [totalPages]="totalPages()"
-      [first]="first()"
-      [last]="last()"
-      [showPageSize]="true"
-      [sizeOptions]="pageSizeOptions"
-      (pageChange)="goToPage($event)"
-      (sizeChange)="onPageSizeChange($event)"
-    />
-  }
 </div>
