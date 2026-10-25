@@ -187,7 +187,10 @@ test('qa audit', async ({ page, context }) => {
       issues.push({ id: issueId('structure', pageName), check: 'structure', severity: 'P1', page: pageName, theme, locale, message: `h1 count = ${h1s}` });
     } else {
       const h1Text = (await page.locator('h1').first().innerText()).trim().toLowerCase();
-      // route title comparison (best-effort)
+      const routeTitle = ([...routes, ...paramRoutes].find((r) => r.id === pageName)?.title || '').toLowerCase();
+      if (routeTitle && h1Text !== routeTitle) {
+        issues.push({ id: issueId('structure', pageName), check: 'structure', severity: 'P1', page: pageName, theme, locale, message: `h1 "${h1Text}" != nav label "${routeTitle}"` });
+      }
     }
 
     const isListPage = /list|users$|orders$|carts$|products$|reviews$/.test(pageName);
