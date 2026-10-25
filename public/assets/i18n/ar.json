@@ -2310,6 +2310,7 @@
     "name": "الاسم",
     "sortOrder": "ترتيب",
     "sortOrderHelp": "الأرقام الأصغر تظهر أولاً",
+    "sortChip": "ترتيب {n}",
     "noValues": "لا توجد قيم بعد",
     "valueIn": "القيمة",
     "numericValue": "القيمة الرقمية",

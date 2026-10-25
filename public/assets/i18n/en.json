@@ -2230,6 +2230,7 @@
     "name": "Name",
     "sortOrder": "Sort order",
     "sortOrderHelp": "Lower numbers appear first",
+    "sortChip": "Sort {n}",
     "noValues": "No values yet",
     "valueIn": "Value",
     "numericValue": "Numeric value",
