@@ -1,29 +1,78 @@
-﻿<!-- pairings-step.component.html -->
+<!-- pairings-step.component.html -->
 <div class="space-y-4">
-  <h2 class="text-lg font-medium mb-2">{{ 'products.pairings.title' | transloco }}</h2>
-  <p class="text-sm text-muted-foreground mb-4">{{ 'products.pairings.description' | transloco }}</p>
+  <div class="flex flex-wrap items-start justify-between gap-3">
+    <div>
+      <h2 class="text-lg font-medium">{{ 'products.pairings.title' | transloco }}</h2>
+      <p class="text-sm text-muted-foreground">{{ 'products.pairings.description' | transloco }}</p>
+    </div>
+    <button hlmBtn variant="link" size="sm" type="button" (click)="goManagePairings()">
+      {{ 'products.pairings.manage' | transloco }}
+    </button>
+  </div>
+
+  @if (selectedPairings().length > 0) {
+    <div class="rounded-md border border-border bg-muted/30 p-3">
+      <p class="mb-2 text-xs font-medium text-muted-foreground">
+        {{ selectedPairings().length }} {{ 'products.pairings.selected' | transloco }}
+      </p>
+      <div class="flex flex-wrap gap-2">
+        @for (pairing of selectedPairings(); track pairing.slug) {
+          <span class="inline-flex items-center gap-1 rounded-full border border-primary bg-primary/10 py-1 pe-1 ps-3 text-sm text-primary">
+            {{ pairing.name }}
+            <button
+              type="button"
+              class="inline-flex size-5 items-center justify-center rounded-full hover:bg-primary/20"
+              [attr.aria-label]="'products.pairings.remove' | transloco: { name: pairing.name }"
+              (click)="remove(pairing.slug)"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </span>
+        }
+      </div>
+    </div>
+  }
 
   @if (allPairings().length === 0) {
     <div class="text-center py-12 text-muted-foreground border-2 border-dashed rounded-md">
       {{ 'products.pairings.noPairings' | transloco }}
     </div>
   } @else {
-    <div class="flex items-center justify-between mb-2">
-      <span class="text-sm text-muted-foreground">{{ selectedCount() }} {{ 'products.pairings.selected' | transloco }}</span>
-    </div>
-    <div class="flex flex-wrap gap-2">
-      @for (pairing of allPairings(); track pairing.slug) {
-        <button type="button" (click)="toggle(pairing.slug)"
+    @if (showSearch()) {
+      <div class="relative max-w-sm">
+        <input
+          hlmInput
+          type="search"
+          class="w-full"
+          [placeholder]="'products.pairings.search' | transloco"
+          [value]="search()"
+          (input)="search.set($any($event.target).value)"
+        />
+      </div>
+    }
+
+    <div class="flex flex-wrap gap-2" role="group" [attr.aria-label]="'products.pairings.title' | transloco">
+      @for (pairing of filteredPairings(); track pairing.slug) {
+        <button
+          type="button"
+          (click)="toggle(pairing.slug)"
           [attr.aria-pressed]="isSelected(pairing.slug)"
-          class="px-3 py-1.5 rounded-full text-sm border transition-colors inline-flex items-center gap-1.5"
+          class="inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition-colors"
           [class]="isSelected(pairing.slug)
-            ? 'bg-primary/10 text-primary border-primary'
-            : 'bg-card text-muted-foreground border-border hover:border-input'">
-          @if (isSelected(pairing.slug)) { <span aria-hidden="true">✓</span> }
+            ? 'border-primary bg-primary/10 text-primary'
+            : 'border-border bg-card text-muted-foreground hover:border-input'"
+        >
+          @if (isSelected(pairing.slug)) {
+            <span aria-hidden="true">✓</span>
+          }
           {{ getPairingName(pairing) }}
         </button>
       }
     </div>
+
+    @if (filteredPairings().length === 0) {
+      <p class="text-sm text-muted-foreground">{{ 'products.pairings.noMatches' | transloco }}</p>
+    }
   }
 
   @if (!state.isEditMode()) {

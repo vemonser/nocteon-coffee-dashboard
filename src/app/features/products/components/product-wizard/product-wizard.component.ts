@@ -344,22 +344,24 @@ export class ProductWizardComponent implements CanComponentDeactivate {
   }
 
   isTabDirty(tabId: string): boolean {
+    if (this.state.initialFormValue === null) return false;
+    const cur = this.state.normalize(this.state.form.value);
+    const init = this.state.initialFormValue;
+    const eq = (a: any, b: any) => JSON.stringify(a) === JSON.stringify(b);
     switch (tabId) {
       case 'basic':
-        return (
-          ['categorySlug', 'originSlug', 'farmSlug', 'productType', 'altitude', 'harvestYear',
-            'processingMethodSlug', 'roastLevelSlug', 'coffeeVarietySlug', 'story'].some(
-            (field) => this.state.form.get(field)?.dirty,
-          ) || this.state.translationsArray.dirty
+        return !eq(
+          { ...cur, variants: undefined, brewingMethods: undefined, tastingNoteSlugs: undefined, pairingSlugs: undefined },
+          { ...init, variants: undefined, brewingMethods: undefined, tastingNoteSlugs: undefined, pairingSlugs: undefined },
         );
       case 'variants':
-        return this.state.variantsArray.dirty;
+        return !eq(cur.variants, init.variants) || !eq(cur.brewingMethods, init.brewingMethods);
       case 'media':
-        return this.state.mediaDirty();
+        return this.state.hasMediaChanged();
       case 'tasting-notes':
-        return this.state.tastingNotesArray.dirty;
+        return !eq(cur.tastingNoteSlugs, init.tastingNoteSlugs);
       case 'pairings':
-        return this.state.pairingsArray.dirty;
+        return !eq(cur.pairingSlugs, init.pairingSlugs);
       default:
         return false;
     }

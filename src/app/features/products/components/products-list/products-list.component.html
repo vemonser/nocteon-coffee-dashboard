@@ -41,14 +41,14 @@
         type="text"
         formControlName="search"
         [placeholder]="'products.search' | transloco"
-        class="pl-9 w-full h-9"
+        class="pl-9 w-full h-[var(--filter-control-height)]"
       />
     </div>
 
     <div class="flex items-center gap-1.5">
       <span class="text-xs text-muted-foreground font-medium">{{ 'products.filters.type' | transloco }}</span>
       <hlm-select formControlName="type" class="w-40">
-        <hlm-select-trigger class="w-40 h-9">
+        <hlm-select-trigger class="w-40 h-[var(--filter-control-height)]">
           <hlm-select-value [placeholder]="'products.filters.allTypes' | transloco" />
         </hlm-select-trigger>
         <hlm-select-content *hlmSelectPortal>
@@ -65,7 +65,7 @@
     <div class="flex items-center gap-1.5">
       <span class="text-xs text-muted-foreground font-medium">{{ 'products.filters.status' | transloco }}</span>
       <hlm-select formControlName="status" class="w-40">
-        <hlm-select-trigger class="w-40 h-9">
+        <hlm-select-trigger class="w-40 h-[var(--filter-control-height)]">
           <hlm-select-value [placeholder]="'products.filters.allStatuses' | transloco" />
         </hlm-select-trigger>
         <hlm-select-content *hlmSelectPortal>
@@ -82,7 +82,7 @@
     <div class="flex items-center gap-1.5">
       <span class="text-xs text-muted-foreground font-medium">{{ 'products.filters.featured' | transloco }}</span>
       <hlm-select formControlName="featured" class="w-44">
-        <hlm-select-trigger class="w-44 h-9">
+        <hlm-select-trigger class="w-44 h-[var(--filter-control-height)]">
           <hlm-select-value [placeholder]="'products.filters.allFeatured' | transloco" />
         </hlm-select-trigger>
         <hlm-select-content *hlmSelectPortal>
