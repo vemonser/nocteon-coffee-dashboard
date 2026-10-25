@@ -391,7 +391,7 @@
       "active": "مُفعّل",
       "loadingOptions": "جارٍ تحميل الخيارات...",
       "noOptions": "لا توجد خيارات منتجات متاحة بعد. أضفها من صفحة خيارات المنتجات أولاً.",
-      "optionsLabel": "قيم الخيارات (مثل الحجم: 250 جرام / 500 جرام)",
+      "optionsLabel": "قيم الخيارات",
       "selectOptionValue": "اختر قيمة",
       "optionsRequired": "اختر قيمة خيار واحدة على الأقل لهذا المتغير.",
       "costPrice": "تكلفة الشراء",
@@ -401,6 +401,7 @@
       "table": "جدول",
       "outOfStock": "غير متوفر",
       "lowStock": "منخفض: {{count}}",
+      "lowStockBadge": "مخزون منخفض",
       "inStock": "{{count}} متوفر",
       "duplicate": "نسخ",
       "remove": "إزالة"
@@ -475,6 +476,7 @@
       "actions": "الإجراءات",
       "outOfStock": "غير متوفر",
       "lowStock": "منخفض: {{count}}",
+      "lowStockBadge": "مخزون منخفض",
       "inStock": "{{count}} متوفر",
       "variants": "{{count}} متغيرات",
       "stockNeedsBackend": "واجهة القائمة لا ترجع المخزون أو عدد المتغيرات بعد."
