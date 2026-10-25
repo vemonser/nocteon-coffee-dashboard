@@ -14,7 +14,9 @@
     "test:unit": "ng test",
     "evidence": "node scripts/evidence.mjs",
     "verify:review-dialog": "node scripts/verify-review-dialog-evidence.mjs",
-    "evidence:order": "node scripts/evidence.mjs order-details-v3 --out evidence/order-details/pass1b --widths 1440"
+    "evidence:order": "node scripts/evidence.mjs order-details-v3 --out evidence/order-details/pass1b --widths 1440",
+    "i18n:case-check": "node scripts/i18n-case-check.mjs",
+    "i18n:check": "node scripts/i18n-case-check.mjs"
   },
   "private": true,
   "packageManager": "npm@11.16.0",

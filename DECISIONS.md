@@ -1857,3 +1857,9 @@ and page 2 do not show the same rows.
 - Existing and staged media can be reordered with CDK drag/drop; `sortOrder` is sent
   on save. New files are staged locally and show a readiness bar, not a real bytes-
   uploaded progress stream.
+
+## Products pass 3 notes
+
+- Y4: `GET /api/dashboard/products` (`ProductCardResponse`) does not return `totalStock`, `variantCount`, or `lowStockVariantCount`. The Stock column is hidden entirely until those fields exist. Needs backend: list stock fields.
+- Y6: `ProductTranslationRequest` has no per-language `story` field. Story remains product-level in the Coffee details card. Needs backend: story translations.
+- Y7: Product options have no `appliesTo` field yet. Temporary config file `src/app/features/products/product-option-applicability.ts` keys allowed option slugs by product type (COFFEE: weight, grind; EQUIPMENT: size) with a TODO. Needs backend: option applicability field.
