@@ -2,7 +2,7 @@ import { test } from '@playwright/test';
 import fs from 'node:fs';
 import path from 'node:path';
 import { routes, paramRoutes } from './routes';
-import { dirtyPages } from './dirty-pages';
+import { dirtyPages, skippedDirtyPages } from './dirty-pages';
 
 const QA_USER = process.env['QA_USER'] || process.env['E2E_ADMIN_EMAIL'] || 'admin@aurum.local';
 const QA_PASS = process.env['QA_PASS'] || process.env['E2E_ADMIN_PASSWORD'] || 'Admin@123';
@@ -30,6 +30,7 @@ type Issue = {
   page: string;
   theme: string;
   locale: string;
+  viewport?: string;
   selector?: string;
   message: string;
   screenshot?: string;
@@ -73,7 +74,9 @@ test('qa audit', async ({ page, context }) => {
   }
 
   async function runChecks(routeId: string, routePath: string, theme: string, locale: string, width = 1440) {
+    const viewport = width === 390 ? 'mobile' : 'desktop';
     const rtl = locale === 'ar';
+    for (const c of checkNames.filter(x => x !== 'unsaved')) { coveragePages[c].add(routeId); coverageScenarios[c]++; }
     const consoleErrors: string[] = [];
     const slowRequests: string[] = [];
     const failedRequests: string[] = [];
@@ -107,7 +110,7 @@ test('qa audit', async ({ page, context }) => {
       return [...new Set(out)].slice(0, 20);
     });
     for (const p of placeholders) {
-      issues.push({ id: issueId('placeholder', pageName), check: 'placeholder', severity: 'P0', page: pageName, theme, locale, message: `placeholder text: "${p}"`, screenshot: await shot(`${pageName}-${theme}-${locale}-placeholder`) });
+      issues.push({ id: issueId('placeholder', pageName), check: 'placeholder', severity: 'P0', page: pageName, theme, locale, viewport, message: `placeholder text: "${p}"`, screenshot: await shot(`${pageName}-${theme}-${locale}-placeholder`) });
     }
 
     // 2 Raw keys: visible text equal to flattened en key or namespace.key with no spaces
@@ -124,7 +127,7 @@ test('qa audit', async ({ page, context }) => {
       return [...new Set(out)].slice(0, 20);
     });
     for (const k of rawKeys) {
-      issues.push({ id: issueId('rawkey', pageName), check: 'rawkey', severity: 'P0', page: pageName, theme, locale, message: `raw i18n key: "${k}"` });
+      issues.push({ id: issueId('rawkey', pageName), check: 'rawkey', severity: 'P0', page: pageName, theme, locale, viewport, message: `raw i18n key: "${k}"` });
     }
 
     // 5 Date formats
@@ -142,7 +145,7 @@ test('qa audit', async ({ page, context }) => {
       return [...new Set(out)].slice(0, 20);
     });
     for (const d of badDates) {
-      issues.push({ id: issueId('datefmt', pageName), check: 'datefmt', severity: 'P1', page: pageName, theme, locale, message: `date format: "${d}"` });
+      issues.push({ id: issueId('datefmt', pageName), check: 'datefmt', severity: 'P1', page: pageName, theme, locale, viewport, message: `date format: "${d}"` });
     }
 
     // 7 Overflow
@@ -154,7 +157,7 @@ test('qa audit', async ({ page, context }) => {
       };
     });
     if (overflow.docOverflow) {
-      issues.push({ id: issueId('overflow', pageName), check: 'overflow', severity: 'P0', page: pageName, theme, locale, message: `document scrollWidth ${overflow.scrollW} > clientWidth ${overflow.clientW}` });
+      issues.push({ id: issueId('overflow', pageName), check: 'overflow', severity: 'P0', page: pageName, theme, locale, viewport, message: `document scrollWidth ${overflow.scrollW} > clientWidth ${overflow.clientW}` });
     }
 
     // 9 Images and labels
@@ -176,7 +179,7 @@ test('qa audit', async ({ page, context }) => {
       return [...new Set(out)].slice(0, 20);
     });
     for (const m of imgIssues) {
-      issues.push({ id: issueId('imglabel', pageName), check: 'imglabel', severity: 'P1', page: pageName, theme, locale, message: m });
+      issues.push({ id: issueId('imglabel', pageName), check: 'imglabel', severity: 'P1', page: pageName, theme, locale, viewport, message: m });
     }
 
     // 10 a11y: basic checks already (labels/buttons). axe-core not installed.
@@ -184,18 +187,20 @@ test('qa audit', async ({ page, context }) => {
     // 13 Page structure
     const h1s = await page.locator('h1').count();
     if (h1s !== 1) {
-      issues.push({ id: issueId('structure', pageName), check: 'structure', severity: 'P1', page: pageName, theme, locale, message: `h1 count = ${h1s}` });
+      issues.push({ id: issueId('structure', pageName), check: 'structure', severity: 'P1', page: pageName, theme, locale, viewport, message: `h1 count = ${h1s}` });
     } else {
-      const h1Text = (await page.locator('h1').first().innerText()).trim().toLowerCase();
-      const routeTitle = ([...routes, ...paramRoutes].find((r) => r.id === pageName)?.title || '').toLowerCase();
-      if (routeTitle && h1Text !== routeTitle) {
-        issues.push({ id: issueId('structure', pageName), check: 'structure', severity: 'P1', page: pageName, theme, locale, message: `h1 "${h1Text}" != nav label "${routeTitle}"` });
+      const isParamRoute = paramRoutes.some((pr) => pr.id === pageName);
+      if (!isParamRoute) {
+        const h1Text = (await page.locator('h1').first().innerText()).trim().toLowerCase();
+        const routeTitle = ([...routes, ...paramRoutes].find((r) => r.id === pageName)?.title || '').toLowerCase();
+        if (routeTitle && h1Text !== routeTitle) {
+          issues.push({ id: issueId('structure', pageName), check: 'structure', severity: 'P1', page: pageName, theme, locale, viewport, message: `h1 "${h1Text}" != nav label "${routeTitle}"` });
+        }
       }
     }
 
-    const isListPage = /list|users$|orders$|carts$|products$|reviews$/.test(pageName);
     let heightDiff = 0;
-    if (isListPage) heightDiff = await page.evaluate(() => {
+    heightDiff = await page.evaluate(() => {
       const inputs = Array.from(document.querySelectorAll('input[type="search"], input[type="text"]')).filter((e:any) => {
         const r = (e as HTMLElement).getBoundingClientRect();
         return r.width > 0 && r.height > 0;
@@ -207,20 +212,20 @@ test('qa audit', async ({ page, context }) => {
       return max - min;
     });
     if (heightDiff > 1) {
-      issues.push({ id: issueId('ctrlheight', pageName), check: 'ctrlheight', severity: 'P1', page: pageName, theme, locale, message: `filter control height diff ${heightDiff.toFixed(1)}px` });
+      issues.push({ id: issueId('ctrlheight', pageName), check: 'ctrlheight', severity: 'P1', page: pageName, theme, locale, viewport, message: `filter control height diff ${heightDiff.toFixed(1)}px` });
     }
 
     // H2-8 Console & network
     page.off('console', consoleHandler);
     page.off('response', responseHandler);
     for (const e of consoleErrors) {
-      issues.push({ id: issueId('console', pageName), check: 'console', severity: 'P0', page: pageName, theme, locale, message: `console.error: ${e}` });
+      issues.push({ id: issueId('console', pageName), check: 'console', severity: 'P0', page: pageName, theme, locale, viewport, message: `console.error: ${e}` });
     }
     for (const r of failedRequests.slice(0, 10)) {
-      issues.push({ id: issueId('network', pageName), check: 'network', severity: 'P0', page: pageName, theme, locale, message: `failed request: ${r}` });
+      issues.push({ id: issueId('network', pageName), check: 'network', severity: 'P0', page: pageName, theme, locale, viewport, message: `failed request: ${r}` });
     }
     for (const r of slowRequests.slice(0, 10)) {
-      issues.push({ id: issueId('slow', pageName), check: 'slow', severity: 'P2', page: pageName, theme, locale, message: `slow request: ${r}` });
+      issues.push({ id: issueId('slow', pageName), check: 'slow', severity: 'P2', page: pageName, theme, locale, viewport, message: `slow request: ${r}` });
     }
 
     // H2-12 Dialogs: accessible name check (any open dialogs)
@@ -232,32 +237,42 @@ test('qa audit', async ({ page, context }) => {
       return out;
     });
     for (const m of dialogIssues) {
-      issues.push({ id: issueId('dialog', pageName), check: 'dialog', severity: 'P1', page: pageName, theme, locale, message: m });
+      issues.push({ id: issueId('dialog', pageName), check: 'dialog', severity: 'P1', page: pageName, theme, locale, viewport, message: m });
     }
 
     // screenshot for evidence (viewport)
     await shot(`${pageName}-${theme}-${locale}`);
   }
 
+  const checkNames = ['placeholder','rawkey','datefmt','overflow','imglabel','structure','ctrlheight','console','network','slow','dialog','unsaved'];
+  const coveragePages: Record<string, Set<string>> = Object.fromEntries(checkNames.map(c => [c, new Set<string>()]));
+  const coverageScenarios: Record<string, number> = Object.fromEntries(checkNames.map(c => [c, 0]));
   const allRoutes = [...routes];
+  const skippedRoutes: { id: string; path: string; reason: string }[] = [];
   for (const pr of paramRoutes) {
-    if (pageFilter && !pageFilter.includes(pr.id)) continue;
+    if (pageFilter && !pageFilter.includes(pr.id)) { skippedRoutes.push({ id: pr.id, path: pr.path, reason: 'filtered by --pages' }); continue; }
     try {
       await setup('light', 'en');
       await page.goto(pr.listPath!, { waitUntil: 'domcontentloaded', timeout: 30000 }).catch(() => {});
       await page.waitForTimeout(1000);
       const firstLink = page.locator('table tbody tr:first-child a, table tbody tr:first-child button').first();
-      if (await firstLink.count()) {
-        await firstLink.click().catch(() => {});
-        await page.waitForTimeout(1500);
-        const url = page.url();
-        if (url && url !== (process.env['E2E_BASE_URL'] || 'http://localhost:4200') + pr.listPath) {
-          allRoutes.push({ ...pr, path: new URL(url).pathname });
-        }
+      if (!(await firstLink.count())) { skippedRoutes.push({ id: pr.id, path: pr.path, reason: 'no first row in list' }); continue; }
+      await firstLink.click().catch(() => {});
+      await page.waitForTimeout(1500);
+      const url = page.url();
+      if (url && url !== (process.env['E2E_BASE_URL'] || 'http://localhost:4200') + pr.listPath) {
+        allRoutes.push({ ...pr, path: new URL(url).pathname });
+      } else {
+        skippedRoutes.push({ id: pr.id, path: pr.path, reason: 'navigation did not change URL' });
       }
-    } catch {}
+    } catch (e) {
+      skippedRoutes.push({ id: pr.id, path: pr.path, reason: `error: ${e?.message || 'unknown'}` });
+    }
   }
 
+  if (pageFilter) {
+    for (const r of routes) if (!pageFilter.includes(r.id)) skippedRoutes.push({ id: r.id, path: r.path, reason: 'filtered by --pages' });
+  }
   const filteredRoutes = pageFilter ? allRoutes.filter(r => pageFilter.includes(r.id)) : allRoutes;
 
   for (const r of filteredRoutes) {
@@ -273,6 +288,8 @@ test('qa audit', async ({ page, context }) => {
 
   // Dirty pages check (unsaved changes modal)
   for (const dp of dirtyPages) {
+    coveragePages['unsaved'].add(dp.path);
+    coverageScenarios['unsaved']++;
     try {
       await setup('light', 'en');
       await page.goto(dp.path, { waitUntil: 'domcontentloaded', timeout: 30000 }).catch(() => {});
@@ -285,20 +302,46 @@ test('qa audit', async ({ page, context }) => {
         await page.waitForTimeout(1000);
         const modal = await page.locator('text=Unsaved changes').count();
         if (!modal) {
-          issues.push({ id: issueId('unsaved', dp.path), check: 'unsaved', severity: 'P0', page: dp.path, theme: 'light', locale: 'en', message: 'no "Unsaved changes" modal on navigation' });
+          issues.push({ id: issueId('unsaved', dp.path), check: 'unsaved', severity: 'P0', page: dp.path, theme: 'light', locale: 'en', viewport: 'desktop', message: 'no "Unsaved changes" modal on navigation' });
         }
       }
     } catch {}
   }
 
+  // Dedupe: unique issue key = check + page + selector/text
+  const uniqueMap = new Map();
+  for (const it of issues) {
+    const key = `${it.check}|${it.page}|${it.selector || it.message}`;
+    if (!uniqueMap.has(key)) uniqueMap.set(key, { rep: it, combos: new Set() });
+    uniqueMap.get(key).combos.add(`${it.theme}/${it.locale}/${it.viewport || 'desktop'}`);
+  }
+
   // Write report
   fs.writeFileSync(path.join(reportDir, 'results.json'), JSON.stringify(issues, null, 2));
+  fs.writeFileSync(path.join(reportDir, 'unique-issues.json'), JSON.stringify([...uniqueMap.entries()].map(([k, v]) => ({
+    key: k,
+    check: v.rep.check,
+    severity: v.rep.severity,
+    page: v.rep.page,
+    message: v.rep.message,
+    occurrences: v.combos.size,
+    combos: [...v.combos],
+  })), null, 2));
 
   // report.md
   let md = `# QA Report ${path.basename(reportDir)}\n\n`;
-  md += `Total issues: ${issues.length}\n\n`;
-  md += `## Summary by check x severity\n\n`;
-  const summary: Record<string, Record<string, number>> = {};
+  md += `Total occurrences: ${issues.length}\n`;
+  md += `Total unique issues: ${uniqueMap.size}\n\n`;
+
+  const uniqueBySeverity = { P0: 0, P1: 0, P2: 0 };
+  for (const v of uniqueMap.values()) uniqueBySeverity[v.rep.severity]++;
+  md += `## Unique issues by severity\n\n`;
+  md += `| Severity | Count |\n|---|---|\n`;
+  for (const sev of ['P0','P1','P2']) md += `| ${sev} | ${uniqueBySeverity[sev]} |\n`;
+  md += `\n`;
+
+  md += `## Summary by check x severity (occurrences)\n\n`;
+  const summary = {};
   for (const it of issues) {
     summary[it.check] = summary[it.check] || { P0: 0, P1: 0, P2: 0 };
     summary[it.check][it.severity]++;
@@ -307,8 +350,38 @@ test('qa audit', async ({ page, context }) => {
   for (const [c, v] of Object.entries(summary)) {
     md += `| ${c} | ${v.P0} | ${v.P1} | ${v.P2} |\n`;
   }
-  md += `\n## Issues by page\n\n`;
-  const byPage: Record<string, Issue[]> = {};
+  md += `\n## Coverage matrix\n\n`;
+  md += `| Check | Pages | Scenarios | Unique issues |\n|---|---|---|---|\n`;
+  for (const c of checkNames) {
+    const uniq = [...uniqueMap.values()].filter(v => v.rep.check === c).length;
+    md += `| ${c} | ${coveragePages[c].size} | ${coverageScenarios[c]} | ${uniq} |\n`;
+  }
+  md += `\n`;
+  const zeroPageChecks = checkNames.filter(c => coveragePages[c].size === 0);
+  if (zeroPageChecks.length) {
+    md += `**HARNESS BUG: checks with 0 pages: ${zeroPageChecks.join(', ')}**\n\n`;
+  }
+
+  md += `## Unvisited routes\n\n`;
+  if (skippedRoutes.length === 0) {
+    md += `_none_\n\n`;
+  } else {
+    for (const s of skippedRoutes) md += `- ${s.id} (${s.path}): ${s.reason}\n`;
+    md += `\n`;
+  }
+
+  md += `## Skipped dirty pages\n\n`;
+  for (const s of skippedDirtyPages) md += `- ${s.path}: ${s.reason}\n`;
+  md += `\n`;
+
+  md += `## Unique issues (grouped)\n\n`;
+  for (const [key, v] of uniqueMap) {
+    md += `- [${v.rep.severity}] ${v.rep.check} | ${v.rep.page}: ${v.rep.message} — combos: ${[...v.combos].join(', ')} (${v.combos.size})\n`;
+  }
+  md += `\n`;
+
+  md += `## Issues by page\n\n`;
+  const byPage = {};
   for (const it of issues) { (byPage[it.page] = byPage[it.page] || []).push(it); }
   for (const [p, list] of Object.entries(byPage)) {
     md += `### ${p} (${list.length})\n\n`;
@@ -318,6 +391,8 @@ test('qa audit', async ({ page, context }) => {
     md += `\n`;
   }
   fs.writeFileSync(path.join(reportDir, 'report.md'), md);
+
+  if (zeroPageChecks.length) process.exitCode = 1;
 
   // Compare with previous run
   const reportRoot = path.join(process.cwd(), 'qa', 'report');
@@ -332,6 +407,9 @@ test('qa audit', async ({ page, context }) => {
     still = issues.filter(i => prevKeys.has(i.check + '|' + i.page + '|' + i.message)).length;
     fixed = prevIssues.filter(i => !curKeys.has(i.check + '|' + i.page + '|' + i.message)).length;
   }
+  const uniqueBySev = { P0: 0, P1: 0, P2: 0 };
+  for (const v of uniqueMap.values()) uniqueBySev[v.rep.severity]++;
+  console.log(`QA unique issues: P0=${uniqueBySev.P0} P1=${uniqueBySev.P1} P2=${uniqueBySev.P2} (occurrences=${issues.length})`);
   console.log(`QA: new=${newCount} still_open=${still} fixed=${fixed} total=${issues.length}`);
   console.log(`Report: ${reportDir}`);
 

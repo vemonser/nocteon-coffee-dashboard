@@ -1,0 +1,3242 @@
+[
+  {
+    "key": "console|dashboard|console.error: Failed to load resource: the server responded with a status of 404 ()",
+    "check": "console",
+    "severity": "P0",
+    "page": "dashboard",
+    "message": "console.error: Failed to load resource: the server responded with a status of 404 ()",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "console|dashboard|console.error: Failed to load resource: the server responded with a status of 500 ()",
+    "check": "console",
+    "severity": "P0",
+    "page": "dashboard",
+    "message": "console.error: Failed to load resource: the server responded with a status of 500 ()",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|dashboard|failed request: 404 http://localhost:8080/api/dashboard/nav-counts",
+    "check": "network",
+    "severity": "P0",
+    "page": "dashboard",
+    "message": "failed request: 404 http://localhost:8080/api/dashboard/nav-counts",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|dashboard|failed request: 500 http://localhost:8080/api/dashboard/notifications/unread-count",
+    "check": "network",
+    "severity": "P0",
+    "page": "dashboard",
+    "message": "failed request: 500 http://localhost:8080/api/dashboard/notifications/unread-count",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "structure|dashboard|h1 \"لوحة التحكم\" != nav label \"dashboard\"",
+    "check": "structure",
+    "severity": "P1",
+    "page": "dashboard",
+    "message": "h1 \"لوحة التحكم\" != nav label \"dashboard\"",
+    "occurrences": 2,
+    "combos": [
+      "light/ar/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "ctrlheight|users|filter control height diff 8.0px",
+    "check": "ctrlheight",
+    "severity": "P1",
+    "page": "users",
+    "message": "filter control height diff 8.0px",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "console|users|console.error: Failed to load resource: the server responded with a status of 404 ()",
+    "check": "console",
+    "severity": "P0",
+    "page": "users",
+    "message": "console.error: Failed to load resource: the server responded with a status of 404 ()",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "console|users|console.error: Failed to load resource: the server responded with a status of 500 ()",
+    "check": "console",
+    "severity": "P0",
+    "page": "users",
+    "message": "console.error: Failed to load resource: the server responded with a status of 500 ()",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|users|failed request: 404 http://localhost:8080/api/dashboard/nav-counts",
+    "check": "network",
+    "severity": "P0",
+    "page": "users",
+    "message": "failed request: 404 http://localhost:8080/api/dashboard/nav-counts",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|users|failed request: 500 http://localhost:8080/api/dashboard/notifications/unread-count",
+    "check": "network",
+    "severity": "P0",
+    "page": "users",
+    "message": "failed request: 500 http://localhost:8080/api/dashboard/notifications/unread-count",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "structure|users|h1 \"المستخدمين\" != nav label \"users\"",
+    "check": "structure",
+    "severity": "P1",
+    "page": "users",
+    "message": "h1 \"المستخدمين\" != nav label \"users\"",
+    "occurrences": 2,
+    "combos": [
+      "light/ar/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "imglabel|users-roles|icon button no aria-label",
+    "check": "imglabel",
+    "severity": "P1",
+    "page": "users-roles",
+    "message": "icon button no aria-label",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "structure|users-roles|h1 \"roles & permissions\" != nav label \"roles\"",
+    "check": "structure",
+    "severity": "P1",
+    "page": "users-roles",
+    "message": "h1 \"roles & permissions\" != nav label \"roles\"",
+    "occurrences": 3,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "dark/en/desktop"
+    ]
+  },
+  {
+    "key": "console|users-roles|console.error: Failed to load resource: the server responded with a status of 404 ()",
+    "check": "console",
+    "severity": "P0",
+    "page": "users-roles",
+    "message": "console.error: Failed to load resource: the server responded with a status of 404 ()",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "console|users-roles|console.error: Failed to load resource: the server responded with a status of 500 ()",
+    "check": "console",
+    "severity": "P0",
+    "page": "users-roles",
+    "message": "console.error: Failed to load resource: the server responded with a status of 500 ()",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|users-roles|failed request: 404 http://localhost:8080/api/dashboard/nav-counts",
+    "check": "network",
+    "severity": "P0",
+    "page": "users-roles",
+    "message": "failed request: 404 http://localhost:8080/api/dashboard/nav-counts",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|users-roles|failed request: 500 http://localhost:8080/api/dashboard/notifications/unread-count",
+    "check": "network",
+    "severity": "P0",
+    "page": "users-roles",
+    "message": "failed request: 500 http://localhost:8080/api/dashboard/notifications/unread-count",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "structure|users-roles|h1 \"الأدوار والصلاحيات\" != nav label \"roles\"",
+    "check": "structure",
+    "severity": "P1",
+    "page": "users-roles",
+    "message": "h1 \"الأدوار والصلاحيات\" != nav label \"roles\"",
+    "occurrences": 2,
+    "combos": [
+      "light/ar/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "imglabel|journal|icon button no aria-label",
+    "check": "imglabel",
+    "severity": "P1",
+    "page": "journal",
+    "message": "icon button no aria-label",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "structure|journal|h1 \"journal post\" != nav label \"journal posts\"",
+    "check": "structure",
+    "severity": "P1",
+    "page": "journal",
+    "message": "h1 \"journal post\" != nav label \"journal posts\"",
+    "occurrences": 3,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "dark/en/desktop"
+    ]
+  },
+  {
+    "key": "console|journal|console.error: Failed to load resource: the server responded with a status of 404 ()",
+    "check": "console",
+    "severity": "P0",
+    "page": "journal",
+    "message": "console.error: Failed to load resource: the server responded with a status of 404 ()",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "console|journal|console.error: Failed to load resource: the server responded with a status of 500 ()",
+    "check": "console",
+    "severity": "P0",
+    "page": "journal",
+    "message": "console.error: Failed to load resource: the server responded with a status of 500 ()",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|journal|failed request: 404 http://localhost:8080/api/dashboard/nav-counts",
+    "check": "network",
+    "severity": "P0",
+    "page": "journal",
+    "message": "failed request: 404 http://localhost:8080/api/dashboard/nav-counts",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|journal|failed request: 500 http://localhost:8080/api/dashboard/notifications/unread-count",
+    "check": "network",
+    "severity": "P0",
+    "page": "journal",
+    "message": "failed request: 500 http://localhost:8080/api/dashboard/notifications/unread-count",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "structure|journal|h1 \"مقالة المجلة\" != nav label \"journal posts\"",
+    "check": "structure",
+    "severity": "P1",
+    "page": "journal",
+    "message": "h1 \"مقالة المجلة\" != nav label \"journal posts\"",
+    "occurrences": 2,
+    "combos": [
+      "light/ar/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "imglabel|journal-new|icon button no aria-label",
+    "check": "imglabel",
+    "severity": "P1",
+    "page": "journal-new",
+    "message": "icon button no aria-label",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "ctrlheight|journal-new|filter control height diff 24.0px",
+    "check": "ctrlheight",
+    "severity": "P1",
+    "page": "journal-new",
+    "message": "filter control height diff 24.0px",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "console|journal-new|console.error: Failed to load resource: the server responded with a status of 404 ()",
+    "check": "console",
+    "severity": "P0",
+    "page": "journal-new",
+    "message": "console.error: Failed to load resource: the server responded with a status of 404 ()",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "console|journal-new|console.error: Failed to load resource: the server responded with a status of 500 ()",
+    "check": "console",
+    "severity": "P0",
+    "page": "journal-new",
+    "message": "console.error: Failed to load resource: the server responded with a status of 500 ()",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|journal-new|failed request: 404 http://localhost:8080/api/dashboard/nav-counts",
+    "check": "network",
+    "severity": "P0",
+    "page": "journal-new",
+    "message": "failed request: 404 http://localhost:8080/api/dashboard/nav-counts",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|journal-new|failed request: 500 http://localhost:8080/api/dashboard/notifications/unread-count",
+    "check": "network",
+    "severity": "P0",
+    "page": "journal-new",
+    "message": "failed request: 500 http://localhost:8080/api/dashboard/notifications/unread-count",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "structure|journal-new|h1 \"مقال جديد\" != nav label \"new post\"",
+    "check": "structure",
+    "severity": "P1",
+    "page": "journal-new",
+    "message": "h1 \"مقال جديد\" != nav label \"new post\"",
+    "occurrences": 2,
+    "combos": [
+      "light/ar/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "structure|store-settings|h1 \"store setting\" != nav label \"store settings\"",
+    "check": "structure",
+    "severity": "P1",
+    "page": "store-settings",
+    "message": "h1 \"store setting\" != nav label \"store settings\"",
+    "occurrences": 3,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "dark/en/desktop"
+    ]
+  },
+  {
+    "key": "console|store-settings|console.error: Failed to load resource: the server responded with a status of 404 ()",
+    "check": "console",
+    "severity": "P0",
+    "page": "store-settings",
+    "message": "console.error: Failed to load resource: the server responded with a status of 404 ()",
+    "occurrences": 1,
+    "combos": [
+      "light/en/mobile"
+    ]
+  },
+  {
+    "key": "console|store-settings|console.error: Failed to load resource: the server responded with a status of 500 ()",
+    "check": "console",
+    "severity": "P0",
+    "page": "store-settings",
+    "message": "console.error: Failed to load resource: the server responded with a status of 500 ()",
+    "occurrences": 1,
+    "combos": [
+      "light/en/mobile"
+    ]
+  },
+  {
+    "key": "console|store-settings|console.error: Failed to load resource: the server responded with a status of 429 ()",
+    "check": "console",
+    "severity": "P0",
+    "page": "store-settings",
+    "message": "console.error: Failed to load resource: the server responded with a status of 429 ()",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|store-settings|failed request: 404 http://localhost:8080/api/dashboard/nav-counts",
+    "check": "network",
+    "severity": "P0",
+    "page": "store-settings",
+    "message": "failed request: 404 http://localhost:8080/api/dashboard/nav-counts",
+    "occurrences": 1,
+    "combos": [
+      "light/en/mobile"
+    ]
+  },
+  {
+    "key": "network|store-settings|failed request: 500 http://localhost:8080/api/dashboard/notifications/unread-count",
+    "check": "network",
+    "severity": "P0",
+    "page": "store-settings",
+    "message": "failed request: 500 http://localhost:8080/api/dashboard/notifications/unread-count",
+    "occurrences": 1,
+    "combos": [
+      "light/en/mobile"
+    ]
+  },
+  {
+    "key": "network|store-settings|failed request: 429 http://localhost:8080/api/dashboard/notifications/unread-count",
+    "check": "network",
+    "severity": "P0",
+    "page": "store-settings",
+    "message": "failed request: 429 http://localhost:8080/api/dashboard/notifications/unread-count",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|store-settings|failed request: 429 http://localhost:8080/api/settings",
+    "check": "network",
+    "severity": "P0",
+    "page": "store-settings",
+    "message": "failed request: 429 http://localhost:8080/api/settings",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|store-settings|failed request: 429 http://localhost:8080/api/dashboard/nav-counts",
+    "check": "network",
+    "severity": "P0",
+    "page": "store-settings",
+    "message": "failed request: 429 http://localhost:8080/api/dashboard/nav-counts",
+    "occurrences": 4,
+    "combos": [
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "structure|store-settings|h1 \"إعدادات المتجر\" != nav label \"store settings\"",
+    "check": "structure",
+    "severity": "P1",
+    "page": "store-settings",
+    "message": "h1 \"إعدادات المتجر\" != nav label \"store settings\"",
+    "occurrences": 2,
+    "combos": [
+      "light/ar/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "console|categories|console.error: Failed to load resource: the server responded with a status of 429 ()",
+    "check": "console",
+    "severity": "P0",
+    "page": "categories",
+    "message": "console.error: Failed to load resource: the server responded with a status of 429 ()",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|categories|failed request: 429 http://localhost:8080/api/dashboard/nav-counts",
+    "check": "network",
+    "severity": "P0",
+    "page": "categories",
+    "message": "failed request: 429 http://localhost:8080/api/dashboard/nav-counts",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|categories|failed request: 429 http://localhost:8080/api/dashboard/notifications/unread-count",
+    "check": "network",
+    "severity": "P0",
+    "page": "categories",
+    "message": "failed request: 429 http://localhost:8080/api/dashboard/notifications/unread-count",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|categories|failed request: 429 http://localhost:8080/api/dashboard/categories?page=0&size=20&sort=createdAt&dir",
+    "check": "network",
+    "severity": "P0",
+    "page": "categories",
+    "message": "failed request: 429 http://localhost:8080/api/dashboard/categories?page=0&size=20&sort=createdAt&dir",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|categories|failed request: 429 http://localhost:8080/api/dashboard/categories/deleted?page=0&size=20&sort=creat",
+    "check": "network",
+    "severity": "P0",
+    "page": "categories",
+    "message": "failed request: 429 http://localhost:8080/api/dashboard/categories/deleted?page=0&size=20&sort=creat",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|categories|failed request: 429 http://localhost:8080/api/settings",
+    "check": "network",
+    "severity": "P0",
+    "page": "categories",
+    "message": "failed request: 429 http://localhost:8080/api/settings",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "structure|categories|h1 \"الفئات\" != nav label \"categories\"",
+    "check": "structure",
+    "severity": "P1",
+    "page": "categories",
+    "message": "h1 \"الفئات\" != nav label \"categories\"",
+    "occurrences": 2,
+    "combos": [
+      "light/ar/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "console|shipping-zones|console.error: Failed to load resource: the server responded with a status of 429 ()",
+    "check": "console",
+    "severity": "P0",
+    "page": "shipping-zones",
+    "message": "console.error: Failed to load resource: the server responded with a status of 429 ()",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|shipping-zones|failed request: 429 http://localhost:8080/api/dashboard/nav-counts",
+    "check": "network",
+    "severity": "P0",
+    "page": "shipping-zones",
+    "message": "failed request: 429 http://localhost:8080/api/dashboard/nav-counts",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|shipping-zones|failed request: 429 http://localhost:8080/api/dashboard/notifications/unread-count",
+    "check": "network",
+    "severity": "P0",
+    "page": "shipping-zones",
+    "message": "failed request: 429 http://localhost:8080/api/dashboard/notifications/unread-count",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|shipping-zones|failed request: 429 http://localhost:8080/api/dashboard/shipping-zones?page=0&size=20&sort=createdAt",
+    "check": "network",
+    "severity": "P0",
+    "page": "shipping-zones",
+    "message": "failed request: 429 http://localhost:8080/api/dashboard/shipping-zones?page=0&size=20&sort=createdAt",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|shipping-zones|failed request: 429 http://localhost:8080/api/dashboard/shipping-zones/deleted?page=0&size=20&sort=c",
+    "check": "network",
+    "severity": "P0",
+    "page": "shipping-zones",
+    "message": "failed request: 429 http://localhost:8080/api/dashboard/shipping-zones/deleted?page=0&size=20&sort=c",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|shipping-zones|failed request: 429 http://localhost:8080/api/settings",
+    "check": "network",
+    "severity": "P0",
+    "page": "shipping-zones",
+    "message": "failed request: 429 http://localhost:8080/api/settings",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "structure|shipping-zones|h1 \"مناطق الشحن\" != nav label \"shipping zones\"",
+    "check": "structure",
+    "severity": "P1",
+    "page": "shipping-zones",
+    "message": "h1 \"مناطق الشحن\" != nav label \"shipping zones\"",
+    "occurrences": 2,
+    "combos": [
+      "light/ar/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "console|origins|console.error: Failed to load resource: the server responded with a status of 429 ()",
+    "check": "console",
+    "severity": "P0",
+    "page": "origins",
+    "message": "console.error: Failed to load resource: the server responded with a status of 429 ()",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|origins|failed request: 429 http://localhost:8080/api/dashboard/nav-counts",
+    "check": "network",
+    "severity": "P0",
+    "page": "origins",
+    "message": "failed request: 429 http://localhost:8080/api/dashboard/nav-counts",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|origins|failed request: 429 http://localhost:8080/api/dashboard/notifications/unread-count",
+    "check": "network",
+    "severity": "P0",
+    "page": "origins",
+    "message": "failed request: 429 http://localhost:8080/api/dashboard/notifications/unread-count",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|origins|failed request: 429 http://localhost:8080/api/dashboard/origins?page=0&size=20&sort=createdAt&direct",
+    "check": "network",
+    "severity": "P0",
+    "page": "origins",
+    "message": "failed request: 429 http://localhost:8080/api/dashboard/origins?page=0&size=20&sort=createdAt&direct",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|origins|failed request: 429 http://localhost:8080/api/dashboard/origins/deleted?page=0&size=20&sort=createdA",
+    "check": "network",
+    "severity": "P0",
+    "page": "origins",
+    "message": "failed request: 429 http://localhost:8080/api/dashboard/origins/deleted?page=0&size=20&sort=createdA",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|origins|failed request: 429 http://localhost:8080/api/settings",
+    "check": "network",
+    "severity": "P0",
+    "page": "origins",
+    "message": "failed request: 429 http://localhost:8080/api/settings",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "structure|origins|h1 \"المorigins\" != nav label \"origins\"",
+    "check": "structure",
+    "severity": "P1",
+    "page": "origins",
+    "message": "h1 \"المorigins\" != nav label \"origins\"",
+    "occurrences": 2,
+    "combos": [
+      "light/ar/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "console|farms|console.error: Failed to load resource: the server responded with a status of 429 ()",
+    "check": "console",
+    "severity": "P0",
+    "page": "farms",
+    "message": "console.error: Failed to load resource: the server responded with a status of 429 ()",
+    "occurrences": 1,
+    "combos": [
+      "light/en/mobile"
+    ]
+  },
+  {
+    "key": "console|farms|console.error: ERROR HttpErrorResponse",
+    "check": "console",
+    "severity": "P0",
+    "page": "farms",
+    "message": "console.error: ERROR HttpErrorResponse",
+    "occurrences": 1,
+    "combos": [
+      "light/en/mobile"
+    ]
+  },
+  {
+    "key": "network|farms|failed request: 429 http://localhost:8080/api/dashboard/nav-counts",
+    "check": "network",
+    "severity": "P0",
+    "page": "farms",
+    "message": "failed request: 429 http://localhost:8080/api/dashboard/nav-counts",
+    "occurrences": 1,
+    "combos": [
+      "light/en/mobile"
+    ]
+  },
+  {
+    "key": "network|farms|failed request: 429 http://localhost:8080/api/dashboard/notifications/unread-count",
+    "check": "network",
+    "severity": "P0",
+    "page": "farms",
+    "message": "failed request: 429 http://localhost:8080/api/dashboard/notifications/unread-count",
+    "occurrences": 1,
+    "combos": [
+      "light/en/mobile"
+    ]
+  },
+  {
+    "key": "network|farms|failed request: 429 http://localhost:8080/api/dashboard/farms/deleted?page=0&size=20&sort=createdAt&",
+    "check": "network",
+    "severity": "P0",
+    "page": "farms",
+    "message": "failed request: 429 http://localhost:8080/api/dashboard/farms/deleted?page=0&size=20&sort=createdAt&",
+    "occurrences": 1,
+    "combos": [
+      "light/en/mobile"
+    ]
+  },
+  {
+    "key": "network|farms|failed request: 429 http://localhost:8080/api/dashboard/farms?page=0&size=20&sort=createdAt&directio",
+    "check": "network",
+    "severity": "P0",
+    "page": "farms",
+    "message": "failed request: 429 http://localhost:8080/api/dashboard/farms?page=0&size=20&sort=createdAt&directio",
+    "occurrences": 1,
+    "combos": [
+      "light/en/mobile"
+    ]
+  },
+  {
+    "key": "network|farms|failed request: 429 http://localhost:8080/api/dashboard/origins/options",
+    "check": "network",
+    "severity": "P0",
+    "page": "farms",
+    "message": "failed request: 429 http://localhost:8080/api/dashboard/origins/options",
+    "occurrences": 1,
+    "combos": [
+      "light/en/mobile"
+    ]
+  },
+  {
+    "key": "network|farms|failed request: 429 http://localhost:8080/api/settings",
+    "check": "network",
+    "severity": "P0",
+    "page": "farms",
+    "message": "failed request: 429 http://localhost:8080/api/settings",
+    "occurrences": 1,
+    "combos": [
+      "light/en/mobile"
+    ]
+  },
+  {
+    "key": "ctrlheight|farms|filter control height diff 24.0px",
+    "check": "ctrlheight",
+    "severity": "P1",
+    "page": "farms",
+    "message": "filter control height diff 24.0px",
+    "occurrences": 4,
+    "combos": [
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "console|farms|console.error: Failed to load resource: the server responded with a status of 404 ()",
+    "check": "console",
+    "severity": "P0",
+    "page": "farms",
+    "message": "console.error: Failed to load resource: the server responded with a status of 404 ()",
+    "occurrences": 4,
+    "combos": [
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "console|farms|console.error: Failed to load resource: the server responded with a status of 500 ()",
+    "check": "console",
+    "severity": "P0",
+    "page": "farms",
+    "message": "console.error: Failed to load resource: the server responded with a status of 500 ()",
+    "occurrences": 4,
+    "combos": [
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|farms|failed request: 404 http://localhost:8080/api/dashboard/nav-counts",
+    "check": "network",
+    "severity": "P0",
+    "page": "farms",
+    "message": "failed request: 404 http://localhost:8080/api/dashboard/nav-counts",
+    "occurrences": 4,
+    "combos": [
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|farms|failed request: 500 http://localhost:8080/api/dashboard/notifications/unread-count",
+    "check": "network",
+    "severity": "P0",
+    "page": "farms",
+    "message": "failed request: 500 http://localhost:8080/api/dashboard/notifications/unread-count",
+    "occurrences": 4,
+    "combos": [
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "structure|farms|h1 \"المزارع\" != nav label \"farms\"",
+    "check": "structure",
+    "severity": "P1",
+    "page": "farms",
+    "message": "h1 \"المزارع\" != nav label \"farms\"",
+    "occurrences": 2,
+    "combos": [
+      "light/ar/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "ctrlheight|processing-methods|filter control height diff 24.0px",
+    "check": "ctrlheight",
+    "severity": "P1",
+    "page": "processing-methods",
+    "message": "filter control height diff 24.0px",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "console|processing-methods|console.error: Failed to load resource: the server responded with a status of 404 ()",
+    "check": "console",
+    "severity": "P0",
+    "page": "processing-methods",
+    "message": "console.error: Failed to load resource: the server responded with a status of 404 ()",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "console|processing-methods|console.error: Failed to load resource: the server responded with a status of 500 ()",
+    "check": "console",
+    "severity": "P0",
+    "page": "processing-methods",
+    "message": "console.error: Failed to load resource: the server responded with a status of 500 ()",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|processing-methods|failed request: 404 http://localhost:8080/api/dashboard/nav-counts",
+    "check": "network",
+    "severity": "P0",
+    "page": "processing-methods",
+    "message": "failed request: 404 http://localhost:8080/api/dashboard/nav-counts",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|processing-methods|failed request: 500 http://localhost:8080/api/dashboard/notifications/unread-count",
+    "check": "network",
+    "severity": "P0",
+    "page": "processing-methods",
+    "message": "failed request: 500 http://localhost:8080/api/dashboard/notifications/unread-count",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "structure|processing-methods|h1 \"طرق المعالجة\" != nav label \"processing methods\"",
+    "check": "structure",
+    "severity": "P1",
+    "page": "processing-methods",
+    "message": "h1 \"طرق المعالجة\" != nav label \"processing methods\"",
+    "occurrences": 2,
+    "combos": [
+      "light/ar/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "ctrlheight|roast-levels|filter control height diff 24.0px",
+    "check": "ctrlheight",
+    "severity": "P1",
+    "page": "roast-levels",
+    "message": "filter control height diff 24.0px",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "console|roast-levels|console.error: Failed to load resource: the server responded with a status of 404 ()",
+    "check": "console",
+    "severity": "P0",
+    "page": "roast-levels",
+    "message": "console.error: Failed to load resource: the server responded with a status of 404 ()",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "console|roast-levels|console.error: Failed to load resource: the server responded with a status of 500 ()",
+    "check": "console",
+    "severity": "P0",
+    "page": "roast-levels",
+    "message": "console.error: Failed to load resource: the server responded with a status of 500 ()",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|roast-levels|failed request: 404 http://localhost:8080/api/dashboard/nav-counts",
+    "check": "network",
+    "severity": "P0",
+    "page": "roast-levels",
+    "message": "failed request: 404 http://localhost:8080/api/dashboard/nav-counts",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|roast-levels|failed request: 500 http://localhost:8080/api/dashboard/notifications/unread-count",
+    "check": "network",
+    "severity": "P0",
+    "page": "roast-levels",
+    "message": "failed request: 500 http://localhost:8080/api/dashboard/notifications/unread-count",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "structure|roast-levels|h1 \"درجات التحميص\" != nav label \"roast levels\"",
+    "check": "structure",
+    "severity": "P1",
+    "page": "roast-levels",
+    "message": "h1 \"درجات التحميص\" != nav label \"roast levels\"",
+    "occurrences": 2,
+    "combos": [
+      "light/ar/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "ctrlheight|coffee-varieties|filter control height diff 24.0px",
+    "check": "ctrlheight",
+    "severity": "P1",
+    "page": "coffee-varieties",
+    "message": "filter control height diff 24.0px",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "console|coffee-varieties|console.error: Failed to load resource: the server responded with a status of 404 ()",
+    "check": "console",
+    "severity": "P0",
+    "page": "coffee-varieties",
+    "message": "console.error: Failed to load resource: the server responded with a status of 404 ()",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "console|coffee-varieties|console.error: Failed to load resource: the server responded with a status of 500 ()",
+    "check": "console",
+    "severity": "P0",
+    "page": "coffee-varieties",
+    "message": "console.error: Failed to load resource: the server responded with a status of 500 ()",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|coffee-varieties|failed request: 404 http://localhost:8080/api/dashboard/nav-counts",
+    "check": "network",
+    "severity": "P0",
+    "page": "coffee-varieties",
+    "message": "failed request: 404 http://localhost:8080/api/dashboard/nav-counts",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|coffee-varieties|failed request: 500 http://localhost:8080/api/dashboard/notifications/unread-count",
+    "check": "network",
+    "severity": "P0",
+    "page": "coffee-varieties",
+    "message": "failed request: 500 http://localhost:8080/api/dashboard/notifications/unread-count",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "structure|coffee-varieties|h1 \"أنواع البن\" != nav label \"coffee varieties\"",
+    "check": "structure",
+    "severity": "P1",
+    "page": "coffee-varieties",
+    "message": "h1 \"أنواع البن\" != nav label \"coffee varieties\"",
+    "occurrences": 2,
+    "combos": [
+      "light/ar/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "ctrlheight|tasting-notes|filter control height diff 24.0px",
+    "check": "ctrlheight",
+    "severity": "P1",
+    "page": "tasting-notes",
+    "message": "filter control height diff 24.0px",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "console|tasting-notes|console.error: Failed to load resource: the server responded with a status of 404 ()",
+    "check": "console",
+    "severity": "P0",
+    "page": "tasting-notes",
+    "message": "console.error: Failed to load resource: the server responded with a status of 404 ()",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "console|tasting-notes|console.error: Failed to load resource: the server responded with a status of 500 ()",
+    "check": "console",
+    "severity": "P0",
+    "page": "tasting-notes",
+    "message": "console.error: Failed to load resource: the server responded with a status of 500 ()",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|tasting-notes|failed request: 404 http://localhost:8080/api/dashboard/nav-counts",
+    "check": "network",
+    "severity": "P0",
+    "page": "tasting-notes",
+    "message": "failed request: 404 http://localhost:8080/api/dashboard/nav-counts",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|tasting-notes|failed request: 500 http://localhost:8080/api/dashboard/notifications/unread-count",
+    "check": "network",
+    "severity": "P0",
+    "page": "tasting-notes",
+    "message": "failed request: 500 http://localhost:8080/api/dashboard/notifications/unread-count",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "structure|tasting-notes|h1 \"ملاحظات التذوق\" != nav label \"tasting notes\"",
+    "check": "structure",
+    "severity": "P1",
+    "page": "tasting-notes",
+    "message": "h1 \"ملاحظات التذوق\" != nav label \"tasting notes\"",
+    "occurrences": 2,
+    "combos": [
+      "light/ar/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "console|reviews|console.error: Failed to load resource: the server responded with a status of 404 ()",
+    "check": "console",
+    "severity": "P0",
+    "page": "reviews",
+    "message": "console.error: Failed to load resource: the server responded with a status of 404 ()",
+    "occurrences": 1,
+    "combos": [
+      "light/en/mobile"
+    ]
+  },
+  {
+    "key": "console|reviews|console.error: Failed to load resource: the server responded with a status of 500 ()",
+    "check": "console",
+    "severity": "P0",
+    "page": "reviews",
+    "message": "console.error: Failed to load resource: the server responded with a status of 500 ()",
+    "occurrences": 1,
+    "combos": [
+      "light/en/mobile"
+    ]
+  },
+  {
+    "key": "console|reviews|console.error: Failed to load resource: the server responded with a status of 429 ()",
+    "check": "console",
+    "severity": "P0",
+    "page": "reviews",
+    "message": "console.error: Failed to load resource: the server responded with a status of 429 ()",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|reviews|failed request: 404 http://localhost:8080/api/dashboard/nav-counts",
+    "check": "network",
+    "severity": "P0",
+    "page": "reviews",
+    "message": "failed request: 404 http://localhost:8080/api/dashboard/nav-counts",
+    "occurrences": 1,
+    "combos": [
+      "light/en/mobile"
+    ]
+  },
+  {
+    "key": "network|reviews|failed request: 500 http://localhost:8080/api/dashboard/notifications/unread-count",
+    "check": "network",
+    "severity": "P0",
+    "page": "reviews",
+    "message": "failed request: 500 http://localhost:8080/api/dashboard/notifications/unread-count",
+    "occurrences": 1,
+    "combos": [
+      "light/en/mobile"
+    ]
+  },
+  {
+    "key": "network|reviews|failed request: 429 http://localhost:8080/api/dashboard/reviews?page=0&size=20&sort=createdAt&direct",
+    "check": "network",
+    "severity": "P0",
+    "page": "reviews",
+    "message": "failed request: 429 http://localhost:8080/api/dashboard/reviews?page=0&size=20&sort=createdAt&direct",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|reviews|failed request: 429 http://localhost:8080/api/dashboard/products?page=0&size=100",
+    "check": "network",
+    "severity": "P0",
+    "page": "reviews",
+    "message": "failed request: 429 http://localhost:8080/api/dashboard/products?page=0&size=100",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|reviews|failed request: 429 http://localhost:8080/api/settings",
+    "check": "network",
+    "severity": "P0",
+    "page": "reviews",
+    "message": "failed request: 429 http://localhost:8080/api/settings",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|reviews|failed request: 429 http://localhost:8080/api/dashboard/nav-counts",
+    "check": "network",
+    "severity": "P0",
+    "page": "reviews",
+    "message": "failed request: 429 http://localhost:8080/api/dashboard/nav-counts",
+    "occurrences": 4,
+    "combos": [
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|reviews|failed request: 429 http://localhost:8080/api/dashboard/notifications/unread-count",
+    "check": "network",
+    "severity": "P0",
+    "page": "reviews",
+    "message": "failed request: 429 http://localhost:8080/api/dashboard/notifications/unread-count",
+    "occurrences": 4,
+    "combos": [
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|reviews|failed request: 429 http://localhost:8080/api/dashboard/reviews/stats",
+    "check": "network",
+    "severity": "P0",
+    "page": "reviews",
+    "message": "failed request: 429 http://localhost:8080/api/dashboard/reviews/stats",
+    "occurrences": 4,
+    "combos": [
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "structure|reviews|h1 \"التقييمات\" != nav label \"reviews\"",
+    "check": "structure",
+    "severity": "P1",
+    "page": "reviews",
+    "message": "h1 \"التقييمات\" != nav label \"reviews\"",
+    "occurrences": 2,
+    "combos": [
+      "light/ar/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "console|product-options|console.error: Failed to load resource: the server responded with a status of 429 ()",
+    "check": "console",
+    "severity": "P0",
+    "page": "product-options",
+    "message": "console.error: Failed to load resource: the server responded with a status of 429 ()",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|product-options|failed request: 429 http://localhost:8080/api/dashboard/nav-counts",
+    "check": "network",
+    "severity": "P0",
+    "page": "product-options",
+    "message": "failed request: 429 http://localhost:8080/api/dashboard/nav-counts",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|product-options|failed request: 429 http://localhost:8080/api/dashboard/notifications/unread-count",
+    "check": "network",
+    "severity": "P0",
+    "page": "product-options",
+    "message": "failed request: 429 http://localhost:8080/api/dashboard/notifications/unread-count",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|product-options|failed request: 429 http://localhost:8080/api/dashboard/product-options?page=0&size=20&sort=createdA",
+    "check": "network",
+    "severity": "P0",
+    "page": "product-options",
+    "message": "failed request: 429 http://localhost:8080/api/dashboard/product-options?page=0&size=20&sort=createdA",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "structure|product-options|h1 \"خيارات المنتجات\" != nav label \"product options\"",
+    "check": "structure",
+    "severity": "P1",
+    "page": "product-options",
+    "message": "h1 \"خيارات المنتجات\" != nav label \"product options\"",
+    "occurrences": 2,
+    "combos": [
+      "light/ar/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "console|newsletter|console.error: Failed to load resource: the server responded with a status of 429 ()",
+    "check": "console",
+    "severity": "P0",
+    "page": "newsletter",
+    "message": "console.error: Failed to load resource: the server responded with a status of 429 ()",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|newsletter|failed request: 429 http://localhost:8080/api/dashboard/nav-counts",
+    "check": "network",
+    "severity": "P0",
+    "page": "newsletter",
+    "message": "failed request: 429 http://localhost:8080/api/dashboard/nav-counts",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|newsletter|failed request: 429 http://localhost:8080/api/dashboard/notifications/unread-count",
+    "check": "network",
+    "severity": "P0",
+    "page": "newsletter",
+    "message": "failed request: 429 http://localhost:8080/api/dashboard/notifications/unread-count",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|newsletter|failed request: 429 http://localhost:8080/api/dashboard/users?page=0&size=20&sort=createdAt&directio",
+    "check": "network",
+    "severity": "P0",
+    "page": "newsletter",
+    "message": "failed request: 429 http://localhost:8080/api/dashboard/users?page=0&size=20&sort=createdAt&directio",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|newsletter|failed request: 429 http://localhost:8080/api/settings",
+    "check": "network",
+    "severity": "P0",
+    "page": "newsletter",
+    "message": "failed request: 429 http://localhost:8080/api/settings",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "structure|newsletter|h1 \"النشرة البريدية\" != nav label \"newsletter\"",
+    "check": "structure",
+    "severity": "P1",
+    "page": "newsletter",
+    "message": "h1 \"النشرة البريدية\" != nav label \"newsletter\"",
+    "occurrences": 2,
+    "combos": [
+      "light/ar/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "console|broadcasts|console.error: Failed to load resource: the server responded with a status of 429 ()",
+    "check": "console",
+    "severity": "P0",
+    "page": "broadcasts",
+    "message": "console.error: Failed to load resource: the server responded with a status of 429 ()",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|broadcasts|failed request: 429 http://localhost:8080/api/dashboard/nav-counts",
+    "check": "network",
+    "severity": "P0",
+    "page": "broadcasts",
+    "message": "failed request: 429 http://localhost:8080/api/dashboard/nav-counts",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|broadcasts|failed request: 429 http://localhost:8080/api/dashboard/notifications/unread-count",
+    "check": "network",
+    "severity": "P0",
+    "page": "broadcasts",
+    "message": "failed request: 429 http://localhost:8080/api/dashboard/notifications/unread-count",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|broadcasts|failed request: 429 http://localhost:8080/api/dashboard/users?page=0&size=100&role=CUSTOMER",
+    "check": "network",
+    "severity": "P0",
+    "page": "broadcasts",
+    "message": "failed request: 429 http://localhost:8080/api/dashboard/users?page=0&size=100&role=CUSTOMER",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|broadcasts|failed request: 429 http://localhost:8080/api/dashboard/broadcasts?page=0&size=20&sort=createdAt&dir",
+    "check": "network",
+    "severity": "P0",
+    "page": "broadcasts",
+    "message": "failed request: 429 http://localhost:8080/api/dashboard/broadcasts?page=0&size=20&sort=createdAt&dir",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "structure|broadcasts|h1 \"الرسائل الجماعية\" != nav label \"broadcasts\"",
+    "check": "structure",
+    "severity": "P1",
+    "page": "broadcasts",
+    "message": "h1 \"الرسائل الجماعية\" != nav label \"broadcasts\"",
+    "occurrences": 2,
+    "combos": [
+      "light/ar/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "console|contact-messages|console.error: Failed to load resource: the server responded with a status of 429 ()",
+    "check": "console",
+    "severity": "P0",
+    "page": "contact-messages",
+    "message": "console.error: Failed to load resource: the server responded with a status of 429 ()",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|contact-messages|failed request: 429 http://localhost:8080/api/dashboard/nav-counts",
+    "check": "network",
+    "severity": "P0",
+    "page": "contact-messages",
+    "message": "failed request: 429 http://localhost:8080/api/dashboard/nav-counts",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|contact-messages|failed request: 429 http://localhost:8080/api/dashboard/notifications/unread-count",
+    "check": "network",
+    "severity": "P0",
+    "page": "contact-messages",
+    "message": "failed request: 429 http://localhost:8080/api/dashboard/notifications/unread-count",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|contact-messages|failed request: 429 http://localhost:8080/api/dashboard/contact-messages?page=0&size=20&sort=created",
+    "check": "network",
+    "severity": "P0",
+    "page": "contact-messages",
+    "message": "failed request: 429 http://localhost:8080/api/dashboard/contact-messages?page=0&size=20&sort=created",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|contact-messages|failed request: 429 http://localhost:8080/api/dashboard/contact-messages/stats/summary",
+    "check": "network",
+    "severity": "P0",
+    "page": "contact-messages",
+    "message": "failed request: 429 http://localhost:8080/api/dashboard/contact-messages/stats/summary",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "structure|contact-messages|h1 \"رسائل التواصل\" != nav label \"contact messages\"",
+    "check": "structure",
+    "severity": "P1",
+    "page": "contact-messages",
+    "message": "h1 \"رسائل التواصل\" != nav label \"contact messages\"",
+    "occurrences": 2,
+    "combos": [
+      "light/ar/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "ctrlheight|brewing-methods|filter control height diff 24.0px",
+    "check": "ctrlheight",
+    "severity": "P1",
+    "page": "brewing-methods",
+    "message": "filter control height diff 24.0px",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "console|brewing-methods|console.error: Failed to load resource: the server responded with a status of 404 ()",
+    "check": "console",
+    "severity": "P0",
+    "page": "brewing-methods",
+    "message": "console.error: Failed to load resource: the server responded with a status of 404 ()",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "console|brewing-methods|console.error: Failed to load resource: the server responded with a status of 500 ()",
+    "check": "console",
+    "severity": "P0",
+    "page": "brewing-methods",
+    "message": "console.error: Failed to load resource: the server responded with a status of 500 ()",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|brewing-methods|failed request: 404 http://localhost:8080/api/dashboard/nav-counts",
+    "check": "network",
+    "severity": "P0",
+    "page": "brewing-methods",
+    "message": "failed request: 404 http://localhost:8080/api/dashboard/nav-counts",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|brewing-methods|failed request: 500 http://localhost:8080/api/dashboard/notifications/unread-count",
+    "check": "network",
+    "severity": "P0",
+    "page": "brewing-methods",
+    "message": "failed request: 500 http://localhost:8080/api/dashboard/notifications/unread-count",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "structure|brewing-methods|h1 \"طرق التحضير\" != nav label \"brewing methods\"",
+    "check": "structure",
+    "severity": "P1",
+    "page": "brewing-methods",
+    "message": "h1 \"طرق التحضير\" != nav label \"brewing methods\"",
+    "occurrences": 2,
+    "combos": [
+      "light/ar/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "console|notifications|console.error: Failed to load resource: the server responded with a status of 404 ()",
+    "check": "console",
+    "severity": "P0",
+    "page": "notifications",
+    "message": "console.error: Failed to load resource: the server responded with a status of 404 ()",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "console|notifications|console.error: Failed to load resource: the server responded with a status of 500 ()",
+    "check": "console",
+    "severity": "P0",
+    "page": "notifications",
+    "message": "console.error: Failed to load resource: the server responded with a status of 500 ()",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|notifications|failed request: 404 http://localhost:8080/api/dashboard/nav-counts",
+    "check": "network",
+    "severity": "P0",
+    "page": "notifications",
+    "message": "failed request: 404 http://localhost:8080/api/dashboard/nav-counts",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|notifications|failed request: 500 http://localhost:8080/api/dashboard/notifications/unread-count",
+    "check": "network",
+    "severity": "P0",
+    "page": "notifications",
+    "message": "failed request: 500 http://localhost:8080/api/dashboard/notifications/unread-count",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|notifications|failed request: 500 http://localhost:8080/api/dashboard/notifications?page=0&size=20",
+    "check": "network",
+    "severity": "P0",
+    "page": "notifications",
+    "message": "failed request: 500 http://localhost:8080/api/dashboard/notifications?page=0&size=20",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "structure|notifications|h1 \"الإشعارات\" != nav label \"notifications\"",
+    "check": "structure",
+    "severity": "P1",
+    "page": "notifications",
+    "message": "h1 \"الإشعارات\" != nav label \"notifications\"",
+    "occurrences": 2,
+    "combos": [
+      "light/ar/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "ctrlheight|promo-codes|filter control height diff 24.0px",
+    "check": "ctrlheight",
+    "severity": "P1",
+    "page": "promo-codes",
+    "message": "filter control height diff 24.0px",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "console|promo-codes|console.error: Failed to load resource: the server responded with a status of 404 ()",
+    "check": "console",
+    "severity": "P0",
+    "page": "promo-codes",
+    "message": "console.error: Failed to load resource: the server responded with a status of 404 ()",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "console|promo-codes|console.error: Failed to load resource: the server responded with a status of 500 ()",
+    "check": "console",
+    "severity": "P0",
+    "page": "promo-codes",
+    "message": "console.error: Failed to load resource: the server responded with a status of 500 ()",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|promo-codes|failed request: 404 http://localhost:8080/api/dashboard/nav-counts",
+    "check": "network",
+    "severity": "P0",
+    "page": "promo-codes",
+    "message": "failed request: 404 http://localhost:8080/api/dashboard/nav-counts",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|promo-codes|failed request: 500 http://localhost:8080/api/dashboard/notifications/unread-count",
+    "check": "network",
+    "severity": "P0",
+    "page": "promo-codes",
+    "message": "failed request: 500 http://localhost:8080/api/dashboard/notifications/unread-count",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "structure|promo-codes|h1 \"أكواد الخصم\" != nav label \"promo codes\"",
+    "check": "structure",
+    "severity": "P1",
+    "page": "promo-codes",
+    "message": "h1 \"أكواد الخصم\" != nav label \"promo codes\"",
+    "occurrences": 2,
+    "combos": [
+      "light/ar/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "ctrlheight|pairings|filter control height diff 24.0px",
+    "check": "ctrlheight",
+    "severity": "P1",
+    "page": "pairings",
+    "message": "filter control height diff 24.0px",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "console|pairings|console.error: Failed to load resource: the server responded with a status of 404 ()",
+    "check": "console",
+    "severity": "P0",
+    "page": "pairings",
+    "message": "console.error: Failed to load resource: the server responded with a status of 404 ()",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "console|pairings|console.error: Failed to load resource: the server responded with a status of 500 ()",
+    "check": "console",
+    "severity": "P0",
+    "page": "pairings",
+    "message": "console.error: Failed to load resource: the server responded with a status of 500 ()",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|pairings|failed request: 404 http://localhost:8080/api/dashboard/nav-counts",
+    "check": "network",
+    "severity": "P0",
+    "page": "pairings",
+    "message": "failed request: 404 http://localhost:8080/api/dashboard/nav-counts",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|pairings|failed request: 500 http://localhost:8080/api/dashboard/notifications/unread-count",
+    "check": "network",
+    "severity": "P0",
+    "page": "pairings",
+    "message": "failed request: 500 http://localhost:8080/api/dashboard/notifications/unread-count",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "structure|pairings|h1 \"التوائم\" != nav label \"pairings\"",
+    "check": "structure",
+    "severity": "P1",
+    "page": "pairings",
+    "message": "h1 \"التوائم\" != nav label \"pairings\"",
+    "occurrences": 2,
+    "combos": [
+      "light/ar/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "imglabel|products|broken: https://images.unsplash.com/photo-1521302080334-4bebac2763a6",
+    "check": "imglabel",
+    "severity": "P1",
+    "page": "products",
+    "message": "broken: https://images.unsplash.com/photo-1521302080334-4bebac2763a6",
+    "occurrences": 3,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop"
+    ]
+  },
+  {
+    "key": "imglabel|products|broken: https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=",
+    "check": "imglabel",
+    "severity": "P1",
+    "page": "products",
+    "message": "broken: https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=",
+    "occurrences": 3,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop"
+    ]
+  },
+  {
+    "key": "imglabel|products|broken: https://images.unsplash.com/photo-1495474472287-4d71bcdd2085",
+    "check": "imglabel",
+    "severity": "P1",
+    "page": "products",
+    "message": "broken: https://images.unsplash.com/photo-1495474472287-4d71bcdd2085",
+    "occurrences": 3,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop"
+    ]
+  },
+  {
+    "key": "imglabel|products|broken: https://images.unsplash.com/photo-1587734195503-904fca47e0e9",
+    "check": "imglabel",
+    "severity": "P1",
+    "page": "products",
+    "message": "broken: https://images.unsplash.com/photo-1587734195503-904fca47e0e9",
+    "occurrences": 3,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop"
+    ]
+  },
+  {
+    "key": "ctrlheight|products|filter control height diff 24.0px",
+    "check": "ctrlheight",
+    "severity": "P1",
+    "page": "products",
+    "message": "filter control height diff 24.0px",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "console|products|console.error: Failed to load resource: the server responded with a status of 404 ()",
+    "check": "console",
+    "severity": "P0",
+    "page": "products",
+    "message": "console.error: Failed to load resource: the server responded with a status of 404 ()",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "console|products|console.error: Failed to load resource: the server responded with a status of 500 ()",
+    "check": "console",
+    "severity": "P0",
+    "page": "products",
+    "message": "console.error: Failed to load resource: the server responded with a status of 500 ()",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|products|failed request: 404 http://localhost:8080/api/dashboard/nav-counts",
+    "check": "network",
+    "severity": "P0",
+    "page": "products",
+    "message": "failed request: 404 http://localhost:8080/api/dashboard/nav-counts",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|products|failed request: 500 http://localhost:8080/api/dashboard/notifications/unread-count",
+    "check": "network",
+    "severity": "P0",
+    "page": "products",
+    "message": "failed request: 500 http://localhost:8080/api/dashboard/notifications/unread-count",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "structure|products|h1 \"المنتجات\" != nav label \"products\"",
+    "check": "structure",
+    "severity": "P1",
+    "page": "products",
+    "message": "h1 \"المنتجات\" != nav label \"products\"",
+    "occurrences": 2,
+    "combos": [
+      "light/ar/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "imglabel|products-new|icon button no aria-label",
+    "check": "imglabel",
+    "severity": "P1",
+    "page": "products-new",
+    "message": "icon button no aria-label",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "structure|products-new|h1 \"add product\" != nav label \"new product\"",
+    "check": "structure",
+    "severity": "P1",
+    "page": "products-new",
+    "message": "h1 \"add product\" != nav label \"new product\"",
+    "occurrences": 3,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "dark/en/desktop"
+    ]
+  },
+  {
+    "key": "console|products-new|console.error: Failed to load resource: the server responded with a status of 404 ()",
+    "check": "console",
+    "severity": "P0",
+    "page": "products-new",
+    "message": "console.error: Failed to load resource: the server responded with a status of 404 ()",
+    "occurrences": 2,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop"
+    ]
+  },
+  {
+    "key": "console|products-new|console.error: Failed to load resource: the server responded with a status of 500 ()",
+    "check": "console",
+    "severity": "P0",
+    "page": "products-new",
+    "message": "console.error: Failed to load resource: the server responded with a status of 500 ()",
+    "occurrences": 2,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop"
+    ]
+  },
+  {
+    "key": "network|products-new|failed request: 404 http://localhost:8080/api/dashboard/nav-counts",
+    "check": "network",
+    "severity": "P0",
+    "page": "products-new",
+    "message": "failed request: 404 http://localhost:8080/api/dashboard/nav-counts",
+    "occurrences": 2,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop"
+    ]
+  },
+  {
+    "key": "network|products-new|failed request: 500 http://localhost:8080/api/dashboard/notifications/unread-count",
+    "check": "network",
+    "severity": "P0",
+    "page": "products-new",
+    "message": "failed request: 500 http://localhost:8080/api/dashboard/notifications/unread-count",
+    "occurrences": 2,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop"
+    ]
+  },
+  {
+    "key": "console|products-new|console.error: Failed to load resource: the server responded with a status of 429 ()",
+    "check": "console",
+    "severity": "P0",
+    "page": "products-new",
+    "message": "console.error: Failed to load resource: the server responded with a status of 429 ()",
+    "occurrences": 4,
+    "combos": [
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|products-new|failed request: 429 http://localhost:8080/api/dashboard/coffee-varieties?page=0&size=100",
+    "check": "network",
+    "severity": "P0",
+    "page": "products-new",
+    "message": "failed request: 429 http://localhost:8080/api/dashboard/coffee-varieties?page=0&size=100",
+    "occurrences": 4,
+    "combos": [
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|products-new|failed request: 429 http://localhost:8080/api/dashboard/tasting-notes?page=0&size=100",
+    "check": "network",
+    "severity": "P0",
+    "page": "products-new",
+    "message": "failed request: 429 http://localhost:8080/api/dashboard/tasting-notes?page=0&size=100",
+    "occurrences": 4,
+    "combos": [
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|products-new|failed request: 429 http://localhost:8080/api/dashboard/pairings?page=0&size=100",
+    "check": "network",
+    "severity": "P0",
+    "page": "products-new",
+    "message": "failed request: 429 http://localhost:8080/api/dashboard/pairings?page=0&size=100",
+    "occurrences": 1,
+    "combos": [
+      "light/en/desktop"
+    ]
+  },
+  {
+    "key": "network|products-new|failed request: 429 http://localhost:8080/api/dashboard/product-options?page=0&size=100",
+    "check": "network",
+    "severity": "P0",
+    "page": "products-new",
+    "message": "failed request: 429 http://localhost:8080/api/dashboard/product-options?page=0&size=100",
+    "occurrences": 1,
+    "combos": [
+      "light/en/desktop"
+    ]
+  },
+  {
+    "key": "structure|products-new|h1 \"إضافة منتج\" != nav label \"new product\"",
+    "check": "structure",
+    "severity": "P1",
+    "page": "products-new",
+    "message": "h1 \"إضافة منتج\" != nav label \"new product\"",
+    "occurrences": 2,
+    "combos": [
+      "light/ar/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|products-new|failed request: 429 http://localhost:8080/api/dashboard/nav-counts",
+    "check": "network",
+    "severity": "P0",
+    "page": "products-new",
+    "message": "failed request: 429 http://localhost:8080/api/dashboard/nav-counts",
+    "occurrences": 3,
+    "combos": [
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|products-new|failed request: 429 http://localhost:8080/api/dashboard/notifications/unread-count",
+    "check": "network",
+    "severity": "P0",
+    "page": "products-new",
+    "message": "failed request: 429 http://localhost:8080/api/dashboard/notifications/unread-count",
+    "occurrences": 3,
+    "combos": [
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|products-new|failed request: 429 http://localhost:8080/api/dashboard/categories?page=0&size=100&isActive=true",
+    "check": "network",
+    "severity": "P0",
+    "page": "products-new",
+    "message": "failed request: 429 http://localhost:8080/api/dashboard/categories?page=0&size=100&isActive=true",
+    "occurrences": 3,
+    "combos": [
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|products-new|failed request: 429 http://localhost:8080/api/dashboard/origins/options",
+    "check": "network",
+    "severity": "P0",
+    "page": "products-new",
+    "message": "failed request: 429 http://localhost:8080/api/dashboard/origins/options",
+    "occurrences": 3,
+    "combos": [
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|products-new|failed request: 429 http://localhost:8080/api/dashboard/farms?page=0&size=100",
+    "check": "network",
+    "severity": "P0",
+    "page": "products-new",
+    "message": "failed request: 429 http://localhost:8080/api/dashboard/farms?page=0&size=100",
+    "occurrences": 3,
+    "combos": [
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|products-new|failed request: 429 http://localhost:8080/api/dashboard/roast-levels?page=0&size=100",
+    "check": "network",
+    "severity": "P0",
+    "page": "products-new",
+    "message": "failed request: 429 http://localhost:8080/api/dashboard/roast-levels?page=0&size=100",
+    "occurrences": 3,
+    "combos": [
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|products-new|failed request: 429 http://localhost:8080/api/dashboard/processing-methods?page=0&size=100",
+    "check": "network",
+    "severity": "P0",
+    "page": "products-new",
+    "message": "failed request: 429 http://localhost:8080/api/dashboard/processing-methods?page=0&size=100",
+    "occurrences": 3,
+    "combos": [
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "console|orders|console.error: Failed to load resource: the server responded with a status of 429 ()",
+    "check": "console",
+    "severity": "P0",
+    "page": "orders",
+    "message": "console.error: Failed to load resource: the server responded with a status of 429 ()",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|orders|failed request: 429 http://localhost:8080/api/dashboard/nav-counts",
+    "check": "network",
+    "severity": "P0",
+    "page": "orders",
+    "message": "failed request: 429 http://localhost:8080/api/dashboard/nav-counts",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|orders|failed request: 429 http://localhost:8080/api/dashboard/notifications/unread-count",
+    "check": "network",
+    "severity": "P0",
+    "page": "orders",
+    "message": "failed request: 429 http://localhost:8080/api/dashboard/notifications/unread-count",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|orders|failed request: 429 http://localhost:8080/api/settings",
+    "check": "network",
+    "severity": "P0",
+    "page": "orders",
+    "message": "failed request: 429 http://localhost:8080/api/settings",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|orders|failed request: 429 http://localhost:8080/api/dashboard/orders/stats",
+    "check": "network",
+    "severity": "P0",
+    "page": "orders",
+    "message": "failed request: 429 http://localhost:8080/api/dashboard/orders/stats",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|orders|failed request: 429 http://localhost:8080/api/dashboard/orders?page=0&size=20&sort=createdAt&directi",
+    "check": "network",
+    "severity": "P0",
+    "page": "orders",
+    "message": "failed request: 429 http://localhost:8080/api/dashboard/orders?page=0&size=20&sort=createdAt&directi",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "structure|orders|h1 \"الطلبات\" != nav label \"orders\"",
+    "check": "structure",
+    "severity": "P1",
+    "page": "orders",
+    "message": "h1 \"الطلبات\" != nav label \"orders\"",
+    "occurrences": 2,
+    "combos": [
+      "light/ar/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "console|carts|console.error: Failed to load resource: the server responded with a status of 429 ()",
+    "check": "console",
+    "severity": "P0",
+    "page": "carts",
+    "message": "console.error: Failed to load resource: the server responded with a status of 429 ()",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|carts|failed request: 429 http://localhost:8080/api/dashboard/nav-counts",
+    "check": "network",
+    "severity": "P0",
+    "page": "carts",
+    "message": "failed request: 429 http://localhost:8080/api/dashboard/nav-counts",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|carts|failed request: 429 http://localhost:8080/api/dashboard/notifications/unread-count",
+    "check": "network",
+    "severity": "P0",
+    "page": "carts",
+    "message": "failed request: 429 http://localhost:8080/api/dashboard/notifications/unread-count",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|carts|failed request: 429 http://localhost:8080/api/settings",
+    "check": "network",
+    "severity": "P0",
+    "page": "carts",
+    "message": "failed request: 429 http://localhost:8080/api/settings",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|carts|failed request: 429 http://localhost:8080/api/dashboard/carts/stats",
+    "check": "network",
+    "severity": "P0",
+    "page": "carts",
+    "message": "failed request: 429 http://localhost:8080/api/dashboard/carts/stats",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|carts|failed request: 429 http://localhost:8080/api/dashboard/carts?page=0&size=20&hasItems=true&sort=last",
+    "check": "network",
+    "severity": "P0",
+    "page": "carts",
+    "message": "failed request: 429 http://localhost:8080/api/dashboard/carts?page=0&size=20&hasItems=true&sort=last",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "structure|carts|h1 \"السلات\" != nav label \"carts\"",
+    "check": "structure",
+    "severity": "P1",
+    "page": "carts",
+    "message": "h1 \"السلات\" != nav label \"carts\"",
+    "occurrences": 2,
+    "combos": [
+      "light/ar/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "console|profile|console.error: Failed to load resource: the server responded with a status of 429 ()",
+    "check": "console",
+    "severity": "P0",
+    "page": "profile",
+    "message": "console.error: Failed to load resource: the server responded with a status of 429 ()",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|profile|failed request: 429 http://localhost:8080/api/dashboard/nav-counts",
+    "check": "network",
+    "severity": "P0",
+    "page": "profile",
+    "message": "failed request: 429 http://localhost:8080/api/dashboard/nav-counts",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|profile|failed request: 429 http://localhost:8080/api/dashboard/notifications/unread-count",
+    "check": "network",
+    "severity": "P0",
+    "page": "profile",
+    "message": "failed request: 429 http://localhost:8080/api/dashboard/notifications/unread-count",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "structure|profile|h1 \"الملف الشخصي\" != nav label \"profile\"",
+    "check": "structure",
+    "severity": "P1",
+    "page": "profile",
+    "message": "h1 \"الملف الشخصي\" != nav label \"profile\"",
+    "occurrences": 2,
+    "combos": [
+      "light/ar/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "structure|unauthorized|h1 \"الوصول مرفوض\" != nav label \"access denied\"",
+    "check": "structure",
+    "severity": "P1",
+    "page": "unauthorized",
+    "message": "h1 \"الوصول مرفوض\" != nav label \"access denied\"",
+    "occurrences": 2,
+    "combos": [
+      "light/ar/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "datefmt|category-edit|date format: \"October\"",
+    "check": "datefmt",
+    "severity": "P1",
+    "page": "category-edit",
+    "message": "date format: \"October\"",
+    "occurrences": 3,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "dark/en/desktop"
+    ]
+  },
+  {
+    "key": "imglabel|category-edit|icon button no aria-label",
+    "check": "imglabel",
+    "severity": "P1",
+    "page": "category-edit",
+    "message": "icon button no aria-label",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "ctrlheight|category-edit|filter control height diff 39.0px",
+    "check": "ctrlheight",
+    "severity": "P1",
+    "page": "category-edit",
+    "message": "filter control height diff 39.0px",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "console|category-edit|console.error: Failed to load resource: the server responded with a status of 404 ()",
+    "check": "console",
+    "severity": "P0",
+    "page": "category-edit",
+    "message": "console.error: Failed to load resource: the server responded with a status of 404 ()",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "console|category-edit|console.error: Failed to load resource: the server responded with a status of 500 ()",
+    "check": "console",
+    "severity": "P0",
+    "page": "category-edit",
+    "message": "console.error: Failed to load resource: the server responded with a status of 500 ()",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|category-edit|failed request: 404 http://localhost:8080/api/dashboard/nav-counts",
+    "check": "network",
+    "severity": "P0",
+    "page": "category-edit",
+    "message": "failed request: 404 http://localhost:8080/api/dashboard/nav-counts",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|category-edit|failed request: 500 http://localhost:8080/api/dashboard/notifications/unread-count",
+    "check": "network",
+    "severity": "P0",
+    "page": "category-edit",
+    "message": "failed request: 500 http://localhost:8080/api/dashboard/notifications/unread-count",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "datefmt|origin-edit|date format: \"October\"",
+    "check": "datefmt",
+    "severity": "P1",
+    "page": "origin-edit",
+    "message": "date format: \"October\"",
+    "occurrences": 3,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "dark/en/desktop"
+    ]
+  },
+  {
+    "key": "ctrlheight|origin-edit|filter control height diff 39.0px",
+    "check": "ctrlheight",
+    "severity": "P1",
+    "page": "origin-edit",
+    "message": "filter control height diff 39.0px",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "console|origin-edit|console.error: Failed to load resource: the server responded with a status of 404 ()",
+    "check": "console",
+    "severity": "P0",
+    "page": "origin-edit",
+    "message": "console.error: Failed to load resource: the server responded with a status of 404 ()",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "console|origin-edit|console.error: Failed to load resource: the server responded with a status of 500 ()",
+    "check": "console",
+    "severity": "P0",
+    "page": "origin-edit",
+    "message": "console.error: Failed to load resource: the server responded with a status of 500 ()",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|origin-edit|failed request: 404 http://localhost:8080/api/dashboard/nav-counts",
+    "check": "network",
+    "severity": "P0",
+    "page": "origin-edit",
+    "message": "failed request: 404 http://localhost:8080/api/dashboard/nav-counts",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|origin-edit|failed request: 500 http://localhost:8080/api/dashboard/notifications/unread-count",
+    "check": "network",
+    "severity": "P0",
+    "page": "origin-edit",
+    "message": "failed request: 500 http://localhost:8080/api/dashboard/notifications/unread-count",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "console|farm-edit|console.error: Failed to load resource: the server responded with a status of 404 ()",
+    "check": "console",
+    "severity": "P0",
+    "page": "farm-edit",
+    "message": "console.error: Failed to load resource: the server responded with a status of 404 ()",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "console|farm-edit|console.error: Failed to load resource: the server responded with a status of 500 ()",
+    "check": "console",
+    "severity": "P0",
+    "page": "farm-edit",
+    "message": "console.error: Failed to load resource: the server responded with a status of 500 ()",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|farm-edit|failed request: 404 http://localhost:8080/api/dashboard/nav-counts",
+    "check": "network",
+    "severity": "P0",
+    "page": "farm-edit",
+    "message": "failed request: 404 http://localhost:8080/api/dashboard/nav-counts",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|farm-edit|failed request: 500 http://localhost:8080/api/dashboard/notifications/unread-count",
+    "check": "network",
+    "severity": "P0",
+    "page": "farm-edit",
+    "message": "failed request: 500 http://localhost:8080/api/dashboard/notifications/unread-count",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "console|order-detail|console.error: Failed to load resource: the server responded with a status of 404 ()",
+    "check": "console",
+    "severity": "P0",
+    "page": "order-detail",
+    "message": "console.error: Failed to load resource: the server responded with a status of 404 ()",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "console|order-detail|console.error: Failed to load resource: the server responded with a status of 500 ()",
+    "check": "console",
+    "severity": "P0",
+    "page": "order-detail",
+    "message": "console.error: Failed to load resource: the server responded with a status of 500 ()",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|order-detail|failed request: 404 http://localhost:8080/api/dashboard/nav-counts",
+    "check": "network",
+    "severity": "P0",
+    "page": "order-detail",
+    "message": "failed request: 404 http://localhost:8080/api/dashboard/nav-counts",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "network|order-detail|failed request: 500 http://localhost:8080/api/dashboard/notifications/unread-count",
+    "check": "network",
+    "severity": "P0",
+    "page": "order-detail",
+    "message": "failed request: 500 http://localhost:8080/api/dashboard/notifications/unread-count",
+    "occurrences": 5,
+    "combos": [
+      "light/en/mobile",
+      "light/en/desktop",
+      "light/ar/desktop",
+      "dark/en/desktop",
+      "dark/ar/desktop"
+    ]
+  },
+  {
+    "key": "unsaved|/dashboard/journal/new|no \"Unsaved changes\" modal on navigation",
+    "check": "unsaved",
+    "severity": "P0",
+    "page": "/dashboard/journal/new",
+    "message": "no \"Unsaved changes\" modal on navigation",
+    "occurrences": 1,
+    "combos": [
+      "light/en/desktop"
+    ]
+  },
+  {
+    "key": "unsaved|/dashboard/profile|no \"Unsaved changes\" modal on navigation",
+    "check": "unsaved",
+    "severity": "P0",
+    "page": "/dashboard/profile",
+    "message": "no \"Unsaved changes\" modal on navigation",
+    "occurrences": 1,
+    "combos": [
+      "light/en/desktop"
+    ]
+  }
+]

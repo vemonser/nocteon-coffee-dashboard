@@ -96,7 +96,8 @@
     "addCategory": "Add category",
     "shippingZones": "Shipping zones",
     "contactMessages": "Contact messages",
-    "carts": "Carts"
+    "carts": "Carts",
+    "categories": "Categories"
   },
   "StoreSettingPage": {
     "title": "Store setting"
@@ -240,7 +241,8 @@
       "new": "New",
       "replied": "Replied",
       "archived": "Archived",
-      "blocked": "Blocked"
+      "blocked": "Blocked",
+      "rejected": "Rejected"
     },
     "toggleSidebar": "Toggle sidebar",
     "total": "total",
@@ -293,7 +295,12 @@
     "stock": "Stock",
     "category": "Category",
     "product": "Product",
-    "apply": "Apply"
+    "apply": "Apply",
+    "deletedPermanently": "Deleted permanently",
+    "permanentDeleteFailed": "Could not delete permanently",
+    "restoreConflictTitle": "Cannot restore",
+    "restoreConflictBody": "Another item already uses this slug. Rename or remove it, then restore again.",
+    "restoreNotFound": "This item is no longer in the trash."
   },
   "products": {
     "title": "Products",
@@ -1514,7 +1521,8 @@
       "itemCount": "Count",
       "total": "Total",
       "lastActivity": "Last activity",
-      "actions": "Actions"
+      "actions": "Actions",
+      "status": "Status"
     },
     "sort": {
       "lastActivity": "Last activity",
@@ -1672,7 +1680,8 @@
     "export": {
       "button": "Export CSV",
       "hint": "Exports the {{count}} orders matching the current filters, with the columns shown in the table.",
-      "done": "Orders exported"
+      "done": "Orders exported",
+      "error": "Export failed"
     },
     "actions": {
       "view": "View",
@@ -1682,7 +1691,8 @@
       "refund": "Refund",
       "resendEmail": "Resend email",
       "copy": "Copy",
-      "copyOrderNumber": "Copy order number"
+      "copyOrderNumber": "Copy order number",
+      "copied": "Order number copied"
     },
     "countItems_one": "{{count}} item",
     "countItems_other": "{{count}} items",
@@ -1806,7 +1816,10 @@
       "productsCount_one": "{{count}} product",
       "productsCount_other": "{{count}} products",
       "itemsCount_one": "{{count}} item",
-      "itemsCount_other": "{{count}} items"
+      "itemsCount_other": "{{count}} items",
+      "referenceCopied": "Transaction reference copied",
+      "trackingCopied": "Tracking number copied",
+      "linkCopied": "Order link copied"
     },
     "dialogs": {
       "status": {
@@ -1951,7 +1964,8 @@
         "description": "You have a new system notification."
       }
     },
-    "unreadTab": "Unread"
+    "unreadTab": "Unread",
+    "allMarkedAsRead": "All marked as read"
   },
   "journal": {
     "title": "Journal post",
@@ -1993,7 +2007,8 @@
     "noProducts": "No products found.",
     "excerpt": "Excerpt",
     "metaTitle": "Meta title",
-    "metaDescription": "Meta description"
+    "metaDescription": "Meta description",
+    "editPost": "Edit post"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -2309,7 +2324,8 @@
     "audienceSpecific": "Specific people only",
     "audienceExclude": "Everyone except…",
     "recipientIds": "Send to",
-    "excludeIds": "Exclude"
+    "excludeIds": "Exclude",
+    "sendFailed": "The broadcast could not be sent."
   },
   "contactMessages": {
     "title": "Contact messages",
@@ -2400,7 +2416,9 @@
   "unauthorized": {
     "title": "Access denied",
     "message": "You don't have permission to view this page. contact your administrator if you believe this is a mistake.",
-    "goBack": "Back to dashboard"
+    "goBack": "Back to dashboard",
+    "missingPrefix": "Missing permission:",
+    "missingSuffix": "."
   },
   "profile": {
     "title": "Profile",

@@ -13,7 +13,7 @@ export const routes: QaRoute[] = [
   { id: 'users', path: '/dashboard/users', title: 'Users' },
   { id: 'users-roles', path: '/dashboard/users/roles', title: 'Roles' },
   { id: 'journal', path: '/dashboard/journal', title: 'Journal posts' },
-  { id: 'journal-new', path: '/dashboard/journal/new', title: 'New journal post' },
+  { id: 'journal-new', path: '/dashboard/journal/new', title: 'New post' },
   { id: 'store-settings', path: '/dashboard/store-settings', title: 'Store settings' },
   { id: 'categories', path: '/dashboard/categories', title: 'Categories' },
   { id: 'shipping-zones', path: '/dashboard/shipping-zones', title: 'Shipping zones' },
@@ -43,7 +43,7 @@ export const routes: QaRoute[] = [
 // Param routes resolved at runtime by opening first row of list page.
 export const paramRoutes: QaRoute[] = [
   { id: 'user-view', path: '/dashboard/users/:id', title: 'User', listPath: '/dashboard/users' },
-  { id: 'journal-edit', path: '/dashboard/journal/:slug/edit', title: 'Edit journal post', listPath: '/dashboard/journal' },
+  { id: 'journal-edit', path: '/dashboard/journal/:slug/edit', title: 'Edit post', listPath: '/dashboard/journal' },
   { id: 'category-edit', path: '/dashboard/categories/:slug', title: 'Category', listPath: '/dashboard/categories' },
   { id: 'origin-edit', path: '/dashboard/origins/:slug', title: 'Origin', listPath: '/dashboard/origins' },
   { id: 'farm-edit', path: '/dashboard/farms/:slug', title: 'Farm', listPath: '/dashboard/farms' },

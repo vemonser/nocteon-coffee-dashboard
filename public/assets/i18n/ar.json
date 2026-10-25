@@ -96,7 +96,8 @@
     "addCategory": "إضافة فئة",
     "shippingZones": "مناطق الشحن",
     "contactMessages": "رسائل التواصل",
-    "carts": "السلة"
+    "carts": "السلة",
+    "categories": "الفئات"
   },
   "StoreSettingPage": {
     "title": "إعدادات المتجر"
@@ -240,7 +241,8 @@
       "new": "جديد",
       "replied": "تم الرد",
       "archived": "أرشف",
-      "blocked": "محظور"
+      "blocked": "محظور",
+      "rejected": "مرفوض"
     },
     "toggleSidebar": "إظهار/إخفاء القائمة",
     "total": "إجمالي",
@@ -297,7 +299,12 @@
     "stock": "المخزون",
     "category": "الفئة",
     "product": "المنتج",
-    "apply": "تطبيق"
+    "apply": "تطبيق",
+    "deletedPermanently": "حُذف نهائيًا",
+    "permanentDeleteFailed": "تعذّر الحذف النهائي",
+    "restoreConflictTitle": "تعذّر الاستعادة",
+    "restoreConflictBody": "يوجد عنصر آخر بنفس المعرّف. أعد التسمية أو احذفه ثم استعد.",
+    "restoreNotFound": "لم يعُد هذا العنصر في المهملات."
   },
   "products": {
     "title": "المنتجات",
@@ -1538,7 +1545,8 @@
       "itemCount": "العدد",
       "total": "الإجمالي",
       "lastActivity": "آخر نشاط",
-      "actions": "إجراءات"
+      "actions": "إجراءات",
+      "status": "الحالة"
     },
     "sort": {
       "lastActivity": "آخر نشاط",
@@ -1696,7 +1704,8 @@
     "export": {
       "button": "تصدير CSV",
       "hint": "يصدّر {{count}} طلبًا مطابقًا للفلاتر الحالية، بالأعمدة الظاهرة في الجدول.",
-      "done": "تم تصدير الطلبات"
+      "done": "تم تصدير الطلبات",
+      "error": "تعذّر تصدير الطلبات"
     },
     "actions": {
       "view": "عرض",
@@ -1706,7 +1715,8 @@
       "refund": "استرداد المبلغ",
       "resendEmail": "إعادة إرسال البريد",
       "copy": "نسخ",
-      "copyOrderNumber": "نسخ رقم الطلب"
+      "copyOrderNumber": "نسخ رقم الطلب",
+      "copied": "تم نسخ رقم الطلب"
     },
     "countItems_zero": "لا منتجات",
     "countItems_one": "منتج واحد",
@@ -1850,7 +1860,10 @@
       "itemsCount_zero": "لا منتجات",
       "itemsCount_two": "منتجان",
       "itemsCount_few": "{{count}} منتجات",
-      "itemsCount_many": "{{count}} منتجًا"
+      "itemsCount_many": "{{count}} منتجًا",
+      "referenceCopied": "تم نسخ المرجع",
+      "trackingCopied": "تم نسخ رقم التتبع",
+      "linkCopied": "تم نسخ الرابط"
     },
     "dialogs": {
       "status": {
@@ -1995,7 +2008,8 @@
         "description": "لديك إشعار نظام جديد."
       }
     },
-    "unreadTab": "غير مقروء"
+    "unreadTab": "غير مقروء",
+    "allMarkedAsRead": "تم وضع علامة مقروء على الكل"
   },
   "journal": {
     "title": "مقالة المجلة",
@@ -2037,7 +2051,8 @@
     "noProducts": "لا توجد منتجات.",
     "excerpt": "المقتطف",
     "metaTitle": "عنوان ميتا",
-    "metaDescription": "وصف ميتا"
+    "metaDescription": "وصف ميتا",
+    "editPost": "تعديل المقال"
   },
   "dashboard": {
     "title": "لوحة التحكم",
@@ -2393,7 +2408,8 @@
     "audienceSpecific": "أُناس محددون فقط",
     "audienceExclude": "الجميع ما عدا…",
     "recipientIds": "إرسال إلى",
-    "excludeIds": "استثناء"
+    "excludeIds": "استثناء",
+    "sendFailed": "تعذّر إرسال النشرة."
   },
   "contactMessages": {
     "title": "رسائل التواصل",
@@ -2504,7 +2520,9 @@
   "unauthorized": {
     "title": "الوصول مرفوض",
     "message": "ليس لديك صلاحية لعرض هذه الصفحة. تواصل مع المسؤول إذا كنت تعتقد أن هذا خطأ.",
-    "goBack": "العودة إلى لوحة التحكم"
+    "goBack": "العودة إلى لوحة التحكم",
+    "missingPrefix": "صلاحية مفقودة:",
+    "missingSuffix": "."
   },
   "profile": {
     "title": "الملف الشخصي",
