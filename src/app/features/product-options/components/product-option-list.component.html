@@ -1,9 +1,10 @@
 <div class="page-shell">
   <!-- Header -->
-  <div class="flex items-center justify-between">
-    <div>
+  <div class="flex items-start justify-between gap-4">
+    <div class="min-w-0">
       <h1 class="text-2xl font-medium tracking-tight">{{ 'productOptions.title' | transloco }}</h1>
-      <p class="text-muted-foreground">{{ items().length }} {{ 'common.total' | transloco }}</p>
+      <p class="text-sm text-muted-foreground">{{ 'productOptions.subtitle' | transloco }}</p>
+      <p class="text-sm text-muted-foreground">{{ items().length }} {{ 'productOptions.optionsCount' | transloco }}</p>
     </div>
     <button *hasPermission="'product_option:create'" hlmBtn (click)="openCreateDialog()">
       <ng-icon name="lucidePlus" class="me-2 size-4" />
@@ -12,18 +13,17 @@
   </div>
 
   <!-- Search -->
-  <div class="relative flex-1 max-w-md">
-    <ng-icon
-      name="lucideSearch"
-      class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground"
-    />
+  <div class="relative w-full max-w-64 sm:w-64">
+    <ng-icon name="lucideSearch" class="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
     <input
       hlmInput
-      type="text"
+      type="search"
+      [dir]="language.current() === 'ar' ? 'rtl' : 'ltr'"
       [(ngModel)]="searchQuery"
       (input)="onSearch()"
       [placeholder]="'productOptions.search' | transloco"
-      class="pl-9 w-full"
+      [attr.aria-label]="'productOptions.search' | transloco"
+      class="h-9 w-full ps-9"
     />
   </div>
 
