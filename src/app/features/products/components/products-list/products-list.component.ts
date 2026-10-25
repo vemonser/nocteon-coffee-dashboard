@@ -171,11 +171,7 @@ export class ProductsListComponent {
     });
     const actionsCol = this.columnHelper.display({ id: 'actions', header: 'Actions', meta: { width: '56px' } });
 
-    const cols: ColumnDef<ProductListItem, any>[] = [mainCol, typeCol, categoryCol, priceCol];
-    if (this.hasStockData()) {
-      cols.push(stockCol);
-    }
-    cols.push(statusCol, featuredCol, actionsCol);
+    const cols: ColumnDef<ProductListItem, any>[] = [mainCol, typeCol, categoryCol, priceCol, stockCol, statusCol, featuredCol, actionsCol];
     return cols;
   });
 

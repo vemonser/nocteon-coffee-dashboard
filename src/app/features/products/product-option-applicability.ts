@@ -1,24 +1,31 @@
-// TEMPORARY CONFIG — remove once the backend exposes an `appliesTo` field on
-// ProductOption (see DECISIONS.md "Needs backend"). Until then this is the
-// single source of truth for which product options apply to which product type.
+// Option applicability helper.
 //
-// TODO: delete this file and read option.appliesTo from the API instead.
+// The backend now exposes `ProductOption.appliesTo` (a set of product types,
+// default "all"). Prefer it; fall back to the temporary config below only when
+// the field is absent (older backend). The temporary config can be removed once
+// all backends return appliesTo.
 
-export const PRODUCT_OPTION_APPLICABILITY: Record<string, string[]> = {
+// TEMPORARY CONFIG — remove once every backend returns appliesTo.
+// TODO: delete this fallback and rely on option.appliesTo only.
+const TEMP_APPLICABILITY: Record<string, string[]> = {
   COFFEE: ['weight', 'grind'],
   EQUIPMENT: ['size'],
 };
 
-export function applicableOptionSlugs(productType: string | null | undefined): string[] {
-  if (!productType) return [];
-  return PRODUCT_OPTION_APPLICABILITY[productType] ?? [];
+export function optionAppliesTo(option: { slug: string; appliesTo?: string[] }, productType: string | null | undefined): boolean {
+  const applies = option.appliesTo && option.appliesTo.length ? option.appliesTo : null;
+  if (applies) {
+    return applies.includes('ALL') || applies.includes(productType ?? '') || applies.includes('*');
+  }
+  const allowed = TEMP_APPLICABILITY[productType ?? ''] ?? [];
+  if (allowed.length === 0) return true;
+  return allowed.includes(option.slug);
 }
 
-export function filterOptionsByProductType<T extends { slug: string }>(
+export function filterOptionsByProductType<T extends { slug: string; appliesTo?: string[] }>(
   options: T[],
   productType: string | null | undefined,
 ): T[] {
-  const allowed = new Set(applicableOptionSlugs(productType));
-  if (allowed.size === 0) return options;
-  return options.filter((o) => allowed.has(o.slug));
+  if (!productType) return options;
+  return options.filter((o) => optionAppliesTo(o, productType));
 }

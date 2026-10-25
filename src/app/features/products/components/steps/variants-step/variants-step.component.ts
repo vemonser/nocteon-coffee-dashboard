@@ -169,7 +169,8 @@ export class VariantsStepComponent implements OnInit {
 
   private loadOptions(): void {
     this.loadingOptions.set(true);
-    this.optionService.getAll({ page: 0, size: 100 }).subscribe({
+    const productType = this.state.form.get('productType')?.value;
+    this.optionService.getAll({ page: 0, size: 100, productType }).subscribe({
       next: (res) => {
         const productType = this.state.form.get('productType')?.value;
         this.state.setProductOptions(filterOptionsByProductType(res.data.content, productType));

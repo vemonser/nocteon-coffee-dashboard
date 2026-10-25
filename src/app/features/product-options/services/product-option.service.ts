@@ -21,9 +21,10 @@ export class ProductOptionService extends BaseCrudService<
   protected override basePath = '/api/dashboard/product-options';
 
   getAll(
-    params: BaseListParams = {},
+    params: BaseListParams & { productType?: string } = {},
   ): Observable<ApiResponse<PageResponse<ProductOption>>> {
-    const p = this.buildBaseParams(params);
+    let p = this.buildBaseParams(params);
+    if (params.productType) p = p.set('productType', params.productType);
     return this.http.get<ApiResponse<PageResponse<ProductOption>>>(this.fullUrl, { params: p });
   }
 
