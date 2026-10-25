@@ -7,7 +7,7 @@ GLOBAL-05 [fixed] Unresolved placeholders on screen (Product options shows "Sort
 GLOBAL-06 [fixed] Native alert/confirm/beforeunload usage; no unsaved-changes modal for in-app navigation. Evidence: window.confirm/alert/prompt removed; beforeunload registered globally via DirtyRegistry.
 GLOBAL-07 [needs-backend] Sidebar count badges missing (needs GET nav-counts). Evidence: NavCountsService fetches /api/dashboard/nav-counts and disables badges on 404.
 GLOBAL-08 [open] Permission-aware UI exists only on Users/Roles; roll it out to every page, route guards and a 403 page. Evidence: permissionGuard on routes + 403 page exist, but only ~35 template *appCan usages.
-GLOBAL-09 [open] Raw i18n keys appeared before (products.viewOnStorefront, products.wizard.saveAll, carts.columns.*). Add the key checker. Evidence: i18n-keys.spec.ts fails with 15 missing keys (e.g. carts.columns.status, dashboard.totalRevenueHelp).
+GLOBAL-09 [fixed] Raw i18n keys appeared before (products.viewOnStorefront, products.wizard.saveAll, carts.columns.*). Add the key checker. Evidence: missing keys added; i18n-keys.spec.ts passes.
 GLOBAL-10 [fixed] The sidebar scroll area shows native arrow buttons; use a thin scrollbar. Evidence: sidebar uses .thin-scroll with ::-webkit-scrollbar-button display:none.
 GLOBAL-11 [fixed] A large faint watermark appears behind content in browser captures; find the source (report only). Evidence: docs/rbac-pass2-watermark.md confirms SynthID in images, no app CSS/asset.
 PRODUCTS-01 [fixed] Edit page: tabs show a dirty dot while Save is disabled (dirty tracking contradiction). Evidence: dirty dot now gated on hasUnsavedChanges(); Save disabled also on !isFormValid().

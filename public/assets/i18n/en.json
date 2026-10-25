@@ -292,7 +292,8 @@
     "never": "Never",
     "stock": "Stock",
     "category": "Category",
-    "product": "Product"
+    "product": "Product",
+    "apply": "Apply"
   },
   "products": {
     "title": "Products",
@@ -439,7 +440,11 @@
       "title": "Pairings",
       "description": "Suggest foods or treats that pair well with this coffee.",
       "noPairings": "No pairings available yet. add some in the pairings management page first.",
-      "selected": "selected"
+      "selected": "selected",
+      "manage": "Manage",
+      "remove": "Remove",
+      "search": "Search",
+      "noMatches": "No matches"
     },
     "wizard": {
       "loading": "Loading product...",
@@ -1139,7 +1144,7 @@
     "showAll": "Show all",
     "discountGiven": "Discount given",
     "redemptions": "Redemptions",
-    "activeCodes": "Enabled codes",
+    "activeCodes": "Enabled Codes",
     "code": "Code",
     "codeRequired": "Promo code is required",
     "deleteConfirm": "Delete this promo code?",
@@ -1339,7 +1344,7 @@
   "users": {
     "title": "Users",
     "total": "total",
-    "active": "Active",
+    "active": "Enabled",
     "blocked": "Blocked",
     "unverified": "Unverified",
     "add": "Add user",
@@ -2033,7 +2038,7 @@
       "avgOrderValue": "Avg order value",
       "totalCustomers": "Total customers",
       "newCustomers": "New customers",
-      "activeSubscriptions": "Enabled subscriptions",
+      "activeSubscriptions": "Enabled Subscriptions",
       "newSubscriptions": "New subscriptions",
       "onlineUsers": "Online users"
     },
@@ -2185,7 +2190,15 @@
     "customRange": "Custom date range",
     "welcomeTitle": "Welcome",
     "welcomeMessage": "Explore your dashboard",
-    "welcomeLink": "Go to your first page"
+    "welcomeLink": "Go to your first page",
+    "totalRevenueHelp": "Total revenue from all orders",
+    "ordersHelp": "Number of orders",
+    "aovHelp": "Average order value",
+    "repeatPurchaseRateHelp": "Percentage of customers who purchased more than once",
+    "coffeeSoldHelp": "Total coffee sold",
+    "onlineUsersHelp": "Users currently online",
+    "revenueByOriginProductRevenue": "Product revenue",
+    "revenueByOriginExclShipping": "Excluding shipping"
   },
   "imageCell": {
     "noImage": "No img"
@@ -2240,7 +2253,9 @@
     "numericValueHelp": "Used to calculate total weight sold for coffee products (option code 'weight').",
     "addValue": "Add value",
     "optionsCount": "options",
-    "valuesCount": "values"
+    "valuesCount": "values",
+    "usedBy": "Used by",
+    "variants": "Variants"
   },
   "broadcasts": {
     "title": "Broadcasts",

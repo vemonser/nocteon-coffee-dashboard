@@ -296,7 +296,8 @@
     "never": "أبدًا",
     "stock": "المخزون",
     "category": "الفئة",
-    "product": "المنتج"
+    "product": "المنتج",
+    "apply": "تطبيق"
   },
   "products": {
     "title": "المنتجات",
@@ -443,7 +444,11 @@
       "title": "التوائم",
       "description": "اقترح أطعمة أو حلوى تتناسب جيداً مع هذا القهوة.",
       "noPairings": "لا توجد توائم متاحة بعد. أضف بعضها في صفحة إدارة التوائم أولاً.",
-      "selected": "محدد"
+      "selected": "محدد",
+      "manage": "إدارة",
+      "remove": "إزالة",
+      "search": "بحث",
+      "noMatches": "لا توجد نتائج"
     },
     "wizard": {
       "loading": "جارٍ تحميل المنتج...",
@@ -2265,7 +2270,15 @@
     "customRange": "نطاق تاريخ مخصص",
     "welcomeTitle": "مرحبا",
     "welcomeMessage": "استكشف لوحة التحكم",
-    "welcomeLink": "انتقل إلى صفحتك الأولى"
+    "welcomeLink": "انتقل إلى صفحتك الأولى",
+    "totalRevenueHelp": "إجمالي الإيرادات من جميع الطلبات",
+    "ordersHelp": "عدد الطلبات",
+    "aovHelp": "متوسط قيمة الطلب",
+    "repeatPurchaseRateHelp": "نسبة العملاء الذين اشتروا أكثر من مرة",
+    "coffeeSoldHelp": "إجمالي القهوة المباعة",
+    "onlineUsersHelp": "المستخدمون المتصلون حالياً",
+    "revenueByOriginProductRevenue": "إيرادات المنتج",
+    "revenueByOriginExclShipping": "باستثناء الشحن"
   },
   "imageCell": {
     "noImage": "لا توجد صورة"
@@ -2320,7 +2333,9 @@
     "numericValueHelp": "تُستخدم لحساب إجمالي وزن القهوة المباعة (رمز الخيار 'weight').",
     "addValue": "إضافة قيمة",
     "optionsCount": "خيارات",
-    "valuesCount": "قيم"
+    "valuesCount": "قيم",
+    "usedBy": "مستخدم في",
+    "variants": "المتغيرات"
   },
   "broadcasts": {
     "title": "الرسائل الجماعية",
