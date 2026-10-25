@@ -358,8 +358,8 @@ export class ProductWizardComponent implements CanComponentDeactivate, HasUnsave
   isTabDirty(tabId: string): boolean {
     if (this.state.initialFormValue === null) return false;
     const cur = this.state.normalize(this.state.form.value);
-    const init = this.state.initialFormValue;
-    const eq = (a: any, b: any) => JSON.stringify(a) === JSON.stringify(b);
+    const init = this.state.normalize(this.state.initialFormValue);
+    const eq = (a: any, b: any) => JSON.stringify(this.state.normalize(a)) === JSON.stringify(this.state.normalize(b));
     switch (tabId) {
       case 'basic':
         return !eq(
