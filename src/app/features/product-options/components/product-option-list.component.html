@@ -58,7 +58,7 @@
                 {{ getOptionName(option, currentLang) }}
                 @for (lang of SUPPORTED_LANGUAGES; track lang.code) {
                   @if (lang.code !== currentLang) {
-                    <span class="ms-2 text-xs font-normal text-muted-foreground" dir="auto">
+                    <span class="ms-2 text-xs font-normal text-muted-foreground whitespace-nowrap" dir="auto">
                       {{ getOptionName(option, lang.code) }}
                     </span>
                   }
