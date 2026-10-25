@@ -128,21 +128,26 @@
         (sortChange)="onSortChange($event)"
         (rowClick)="openView($event)"
         (menuAction)="onMenuAction($event)"
-        [showPagination]="(pageData()?.totalElements ?? 0) > 0"
-        [page]="pageData()?.page ?? 0"
-        [size]="pageData()?.size ?? 20"
-        [totalElements]="pageData()?.totalElements ?? 0"
-        [totalPages]="pageData()?.totalPages ?? 0"
-        [first]="pageData()?.first ?? true"
-        [last]="pageData()?.last ?? true"
-        [showPageSize]="true"
-        [sizeOptions]="pageSizeOptions"
-        (pageChange)="goToPage($event)"
-        (sizeChange)="onPageSizeChange($event)"
       />
     </div>
   }
 
+  <!-- Pagination -->
+  @if (pageData() && !loading() && !error() && (pageData()!.totalElements ?? 0) > 0) {
+    <app-pager
+      class="view-fade"
+      [page]="pageData()!.page"
+      [size]="pageData()!.size"
+      [totalElements]="pageData()!.totalElements"
+      [totalPages]="pageData()!.totalPages"
+      [first]="pageData()!.first"
+      [last]="pageData()!.last"
+      [showPageSize]="true"
+      [sizeOptions]="pageSizeOptions"
+      (pageChange)="goToPage($event)"
+      (sizeChange)="onPageSizeChange($event)"
+    />
+  }
 
   <!-- Empty State: handled by the data-table's emptyMessage (see above). -->
 </div>
