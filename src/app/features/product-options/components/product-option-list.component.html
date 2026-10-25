@@ -23,7 +23,7 @@
       (input)="onSearch()"
       [placeholder]="'productOptions.search' | transloco"
       [attr.aria-label]="'productOptions.search' | transloco"
-      class="h-9 w-full ps-9"
+      class="h-[var(--filter-control-height)] w-full ps-9"
     />
   </div>
 
@@ -56,14 +56,14 @@
             <div class="space-y-1 min-w-0">
               <p class="truncate text-lg font-medium" [dir]="translationHelper.getLangDir(currentLang)">
                 {{ getOptionName(option, currentLang) }}
-              </p>
-              @for (lang of SUPPORTED_LANGUAGES; track lang.code) {
-                @if (lang.code !== currentLang) {
-                  <p class="truncate text-xs text-muted-foreground" [dir]="translationHelper.getLangDir(lang.code)">
-                    {{ getOptionName(option, lang.code) }}
-                  </p>
+                @for (lang of SUPPORTED_LANGUAGES; track lang.code) {
+                  @if (lang.code !== currentLang) {
+                    <span class="ms-2 text-xs font-normal text-muted-foreground" dir="auto">
+                      {{ getOptionName(option, lang.code) }}
+                    </span>
+                  }
                 }
-              }
+              </p>
               <div class="flex flex-wrap items-center gap-2 pt-1">
                 <span class="inline-flex items-center rounded-md bg-muted px-2 py-0.5 font-mono text-xs text-muted-foreground">
                   {{ option.slug }}
