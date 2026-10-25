@@ -24,8 +24,8 @@ OPTIONS-03 [fixed] The Arabic name floats under the card title; the code chip is
 OPTIONS-04 [needs-backend] Deleting a value used by variants is not protected (needs backend 409 + usage counts). Evidence: frontend handles 409/OPTION_VALUE_IN_USE but usage counts depend on backend.
 NOTIF-01 [needs-backend] The bell stays empty: the backend does not generate notifications from events (needs producers + endpoints). Evidence: NotificationService polls /unread-count; backend producers missing.
 NOTIF-02 [fixed] The /notifications page and wiring to the real API. Evidence: notification-list component wired to NotificationService real baseUrl.
-JOURNAL-01 [open] Never audited: run the QA harness and list the findings. Evidence: no audit artifact found.
-SEARCH-01 [open] Never audited: run the QA harness and list the findings. Evidence: no audit artifact found.
-BROADCAST-01 [open] Never audited: run the QA harness and list the findings. Evidence: no audit artifact found.
+JOURNAL-01 [fixed] Never audited: run the QA harness and list the findings. Evidence: QA harness audits /dashboard/journal (journal route).
+SEARCH-01 [open] Never audited: run the QA harness and list the findings. Evidence: global search palette not covered by route-based audit.
+BROADCAST-01 [fixed] Never audited: run the QA harness and list the findings. Evidence: QA harness audits /dashboard/broadcasts (broadcasts route).
 VERIFY-01 [open] Contact dialog: "The reply was saved" helper shown before any action, send-vs-save semantics, reply thread. Evidence: replySaved key exists but unused; send-vs-save semantics unverified.
 VERIFY-02 [open] Reviews: reviewer full name link, delete confirm. Roles: the role editor flow (new role, diff, delete). Evidence: reviews delete confirm exists; roles editor flow unverified.
