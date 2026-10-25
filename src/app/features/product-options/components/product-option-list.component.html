@@ -106,33 +106,80 @@
           </div>
 
           <!-- Values -->
-          <div class="flex flex-wrap gap-2">
+          <div class="flex flex-wrap gap-2" cdkDropList cdkDropListOrientation="horizontal" (cdkDropListDropped)="dropValue($event, option)">
             @if (option.values.length === 0) {
               <span class="text-sm text-muted-foreground">{{ 'productOptions.noValues' | transloco }}</span>
             }
             @for (value of option.values; track value.id) {
-              <span
-                class="inline-flex items-center gap-1 rounded-full bg-secondary px-3 py-1 text-sm"
-                [attr.title]="getValueName(value, currentLang === 'en' ? 'ar' : 'en')"
-              >
-                <span [dir]="translationHelper.getLangDir(currentLang)">
-                  {{ getValueName(value, currentLang) }}
-                </span>
-                @if (value.numericValue != null) {
-                  <span class="font-mono text-xs text-muted-foreground">
-                    {{ value.numericValue }}
-                  </span>
-                }
+              <hlm-popover #pop="brnPopover" sideOffset="8" (stateChanged)="onValuePopoverState($event, option, value)">
                 <button
-                  *hasPermission="'product_option:update'"
-                  class="ms-1 text-muted-foreground hover:text-destructive"
-                  (click)="confirmDeleteValue(option, value)"
-                  [attr.aria-label]="'common.delete' | transloco"
-                  [title]="'common.delete' | transloco"
+                  hlmPopoverTrigger
+                  type="button"
+                  cdkDrag
+                  class="inline-flex items-center rounded-full bg-secondary px-3 py-1 text-sm cursor-pointer"
+                  [attr.title]="valueTooltip(value)"
+                  [attr.aria-label]="getValueName(value, currentLang)"
                 >
-                  <ng-icon name="lucideX" class="size-3" />
+                  <span [dir]="translationHelper.getLangDir(currentLang)">
+                    {{ getValueName(value, currentLang) }}
+                  </span>
                 </button>
-              </span>
+                <hlm-popover-content *hlmPopoverPortal class="w-72 space-y-3 p-4">
+                  <form [formGroup]="valueForm" (ngSubmit)="saveValueEdit(pop)" class="space-y-3">
+                    @for (lang of SUPPORTED_LANGUAGES; track lang.code) {
+                      <div class="space-y-1.5">
+                        <label hlmLabel>
+                          {{ lang.code === 'en' ? 'Value (English)' : 'القيمة (عربي)' }}
+                        </label>
+                        <input
+                          hlmInput
+                          [formControlName]="lang.code"
+                          type="text"
+                          [dir]="translationHelper.getLangDir(lang.code)"
+                          class="w-full"
+                        />
+                      </div>
+                    }
+                    <div class="space-y-1.5">
+                      <label hlmLabel>{{ 'productOptions.numericValue' | transloco }}</label>
+                      <input hlmInput formControlName="numericValue" type="number" step="0.01" class="w-full" />
+                      <p class="text-xs text-muted-foreground">{{ 'productOptions.numericValueHelp' | transloco }}</p>
+                    </div>
+                    <div class="space-y-1.5">
+                      <label hlmLabel>{{ 'productOptions.sortOrder' | transloco }}</label>
+                      <input hlmInput formControlName="sortOrder" type="number" class="w-full" />
+                    </div>
+                    <div class="flex gap-2 pt-1">
+                      <button type="button" hlmBtn variant="outline" size="sm" class="flex-1" (click)="pop.close()">
+                        {{ 'common.cancel' | transloco }}
+                      </button>
+                      <button
+                        type="submit"
+                        hlmBtn
+                        size="sm"
+                        class="flex-1"
+                        [disabled]="valueForm.invalid || valueSubmitting()"
+                      >
+                        @if (valueSubmitting()) {
+                          <ng-icon name="lucideLoader2" class="me-2 size-4 animate-spin" />
+                        }
+                        {{ 'common.save' | transloco }}
+                      </button>
+                    </div>
+                    <button
+                      *hasPermission="'product_option:update'"
+                      type="button"
+                      hlmBtn
+                      variant="destructive"
+                      size="sm"
+                      class="w-full"
+                      (click)="deleteValueFromPopover(option, value, pop)"
+                    >
+                      {{ 'productOptions.deleteValue' | transloco }}
+                    </button>
+                  </form>
+                </hlm-popover-content>
+              </hlm-popover>
             }
           </div>
 

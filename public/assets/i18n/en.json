@@ -2222,6 +2222,7 @@
     "addTitle": "Add option",
     "editTitle": "Edit option",
     "deleteTitle": "Delete option",
+    "deleteValue": "Delete value",
     "deleteValueTitle": "Delete value",
     "deleteValueConfirm": "Are you sure you want to delete",
     "search": "Search product options...",

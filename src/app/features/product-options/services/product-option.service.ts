@@ -10,6 +10,7 @@ import {
   ProductOptionRequest,
   ProductOptionValue,
   ProductOptionValueRequest,
+  ProductOptionValuePatchRequest,
 } from '../models/product-option.model';
 
 @Injectable({ providedIn: 'root' })
@@ -39,6 +40,21 @@ export class ProductOptionService extends BaseCrudService<
       `${this.fullUrl}/${optionId}/values`,
       req,
     );
+  }
+
+  updateValue(
+    optionId: number,
+    valueId: number,
+    req: ProductOptionValuePatchRequest,
+  ): Observable<ApiResponse<ProductOptionValue>> {
+    return this.http.patch<ApiResponse<ProductOptionValue>>(
+      `${this.fullUrl}/${optionId}/values/${valueId}`,
+      req,
+    );
+  }
+
+  reorderValues(optionId: number, valueIds: number[]): Observable<void> {
+    return this.http.put<void>(`${this.fullUrl}/${optionId}/values/order`, valueIds);
   }
 
   deleteValue(optionId: number, valueId: number): Observable<ApiResponse<void>> {

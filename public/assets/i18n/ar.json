@@ -2302,6 +2302,7 @@
     "addTitle": "إضافة خيار",
     "editTitle": "تعديل خيار",
     "deleteTitle": "حذف خيار",
+    "deleteValue": "حذف قيمة",
     "deleteValueTitle": "حذف قيمة",
     "deleteValueConfirm": "هل أنت متأكد من حذف",
     "search": "ابحث في خيارات المنتجات...",

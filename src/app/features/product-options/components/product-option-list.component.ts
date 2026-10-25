@@ -1,6 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
 import { Observable, map } from 'rxjs';
 
 // Spartan UI
@@ -10,6 +11,8 @@ import { HlmBadgeImports } from '@spartan-ng/helm/badge';
 import { HlmInputImports } from '@spartan-ng/helm/input';
 import { HlmLabelImports } from '@spartan-ng/helm/label';
 import { HlmDialogImports } from '@spartan-ng/helm/dialog';
+import { HlmPopover, HlmPopoverImports } from '@spartan-ng/helm/popover';
+import { BrnPopover } from '@spartan-ng/brain/popover';
 
 import { TranslocoPipe } from '@jsverse/transloco';
 import { NgIcon, provideIcons } from '@ng-icons/core';
@@ -56,8 +59,10 @@ import { PagerComponent } from '../../../shared/components/pager/pager.component
     HlmInputImports,
     HlmLabelImports,
     HlmDialogImports,
+    HlmPopoverImports,
     NgIcon,
     TranslocoPipe,
+    DragDropModule,
   ],
   providers: [
     provideIcons({ lucideLoader2, lucidePlus,
@@ -89,6 +94,7 @@ export class ProductOptionListComponent extends BaseListComponent<
   valueForm: FormGroup = this.buildValueForm();
   valueSubmitting = signal(false);
   deletingValue = signal<{ option: ProductOption; value: ProductOptionValue; usageCount?: number } | null>(null);
+  editingValue = signal<{ option: ProductOption; value: ProductOptionValue } | null>(null);
 
   // ─── Base contract ────────────────────────────────────────────────────────────
 
@@ -150,6 +156,7 @@ export class ProductOptionListComponent extends BaseListComponent<
       config[lang.code] = ['', Validators.required];
     });
     config['numericValue'] = [null];
+    config['sortOrder'] = [null];
     return this.fb.group(config);
   }
 
@@ -191,6 +198,78 @@ export class ProductOptionListComponent extends BaseListComponent<
         this.valueSubmitting.set(false);
       },
       error: () => this.valueSubmitting.set(false),
+    });
+  }
+
+  // ─── Value edit popover ──────────────────────────────────────────────────────
+
+  onValuePopoverState(state: 'open' | 'closed', option: ProductOption, value: ProductOptionValue): void {
+    if (state === 'open') {
+      this.beginValueEdit(option, value);
+    } else {
+      this.editingValue.set(null);
+    }
+  }
+
+  beginValueEdit(option: ProductOption, value: ProductOptionValue): void {
+    this.editingValue.set({ option, value });
+    const vals: Record<string, any> = {};
+    SUPPORTED_LANGUAGES.forEach((lang) => {
+      vals[lang.code] = this.getValueName(value, lang.code);
+    });
+    vals['numericValue'] = value.numericValue ?? null;
+    vals['sortOrder'] = value.sortOrder ?? null;
+    this.valueForm.reset(vals);
+  }
+
+  valueTooltip(value: ProductOptionValue): string {
+    if (value.numericValue != null) {
+      return `${this.notify.t('productOptions.numericValue', 'Numeric value')}: ${value.numericValue}`;
+    }
+    const otherLang = this.currentLang === 'en' ? 'ar' : 'en';
+    return this.getValueName(value, otherLang);
+  }
+
+  saveValueEdit(pop: any): void {
+    const entry = this.editingValue();
+    if (!entry || this.valueForm.invalid) {
+      this.valueForm.markAllAsTouched();
+      return;
+    }
+    this.valueSubmitting.set(true);
+    const vals = this.valueForm.value as Record<string, any>;
+    const req = {
+      nameEn: vals['en'] as string,
+      nameAr: vals['ar'] as string,
+      numericValue: vals['numericValue'] ?? null,
+      sortOrder: vals['sortOrder'] ?? undefined,
+    };
+    this.optionService.updateValue(entry.option.id, entry.value.id, req).subscribe({
+      next: () => {
+        pop?.close?.();
+        this.editingValue.set(null);
+        this.load();
+        this.valueSubmitting.set(false);
+      },
+      error: (err) => {
+        this.valueSubmitting.set(false);
+        this.notify.apiError(err, 'notify.errorFallback', 'Something went wrong. Please try again.');
+      },
+    });
+  }
+
+  deleteValueFromPopover(option: ProductOption, value: ProductOptionValue, pop: any): void {
+    pop?.close?.();
+    this.confirmDeleteValue(option, value);
+  }
+
+  dropValue(event: CdkDragDrop<ProductOptionValue[]>, option: ProductOption): void {
+    const values = [...option.values];
+    moveItemInArray(values, event.previousIndex, event.currentIndex);
+    const ids = values.map((v) => v.id);
+    this.optionService.reorderValues(option.id, ids).subscribe({
+      next: () => this.load(),
+      error: () => this.load(),
     });
   }
 
