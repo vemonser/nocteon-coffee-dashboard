@@ -214,7 +214,7 @@
       (menuAction)="onMenuAction($event)"
       (selectionChange)="onSelectionChange($event)"
       (toggleAllChange)="onToggleAll($event)"
-      [showPagination]="(pageData()?.totalElements ?? 0) > 0"
+      [showPagination]="(pageData()?.totalPages ?? 0) > 1"
       [page]="pageData()?.page ?? 0"
       [size]="pageSize()"
       [totalElements]="pageData()?.totalElements ?? 0"
