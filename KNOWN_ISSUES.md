@@ -18,7 +18,7 @@ PRODUCTS-05 [needs-decision] Story is not translated (needs a decision: EN/AR?).
 PRODUCTS-06 [open] Variants show options that do not apply to the product type (Size on coffee). Temporary config until the API provides appliesTo. Evidence: product-option-applicability.ts still ships TEMPORARY CONFIG fallback.
 PRODUCTS-07 [open] Media tile hover actions (set cover, alt text, delete, reorder) and the Variants Table view are unverified. Evidence: no test/audit artifact covering these.
 PRODUCTS-08 [open] The Add product wizard was never audited. Evidence: no audit artifact for the wizard found.
-OPTIONS-01 [open] The "Add value" popover is not anchored to its trigger and opens in a page corner. Evidence: uses hlm-popover with trigger; anchoring not verified at runtime.
+OPTIONS-01 [fixed] The "Add value" popover is not anchored to its trigger and opens in a page corner. Evidence: popover uses hlmPopoverTrigger on the button with sideOffset=8.
 OPTIONS-02 [open] A required field shows a red border before being touched. Evidence: hlmInput invalid border driven by data-matches-spartan-invalid without touched gate in value form.
 OPTIONS-03 [fixed] The Arabic name floats under the card title; the code chip is not monospace. Evidence: slug chip uses font-mono; secondary name span uses whitespace-nowrap.
 OPTIONS-04 [needs-backend] Deleting a value used by variants is not protected (needs backend 409 + usage counts). Evidence: frontend handles 409/OPTION_VALUE_IN_USE but usage counts depend on backend.
