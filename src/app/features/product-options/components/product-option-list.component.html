@@ -283,28 +283,23 @@
       </div>
 
       <form [formGroup]="form" (ngSubmit)="onSubmit()" class="p-6 space-y-5">
-        <div formArrayName="translations">
+        <div formArrayName="translations" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           @for (group of translationsArray.controls; track $index; let i = $index) {
-            <div [formGroupName]="i" class="rounded-md border p-4 mb-4">
-              <div class="flex items-center gap-2 mb-3">
-                <hlm-badge variant="outline">
-                  {{ translationHelper.getLangLabel(group.get('language')?.value) }}
-                </hlm-badge>
-              </div>
-              <div class="space-y-1.5">
-                <label hlmLabel>{{ 'productOptions.name' | transloco }} *</label>
-                <input
-                  hlmInput
-                  formControlName="name"
-                  type="text"
-                  [dir]="translationHelper.getLangDir(group.get('language')?.value)"
-                  [placeholder]="group.get('language')?.value === 'ar' ? 'مثال: الحجم' : 'e.g. Weight'"
-                  class="w-full"
-                />
-                @if (group.get('name')?.invalid && group.get('name')?.touched) {
-                  <p class="text-xs text-destructive">{{ 'common.nameRequired' | transloco }}</p>
-                }
-              </div>
+            <div [formGroupName]="i" class="space-y-1.5">
+              <label hlmLabel>
+                {{ i === 0 ? 'Name (English)' : 'الاسم (عربي)' }} *
+              </label>
+              <input
+                hlmInput
+                formControlName="name"
+                type="text"
+                [dir]="translationHelper.getLangDir(group.get('language')?.value)"
+                [placeholder]="group.get('language')?.value === 'ar' ? 'مثال: الحجم' : 'e.g. Weight'"
+                class="w-full"
+              />
+              @if (group.get('name')?.invalid && group.get('name')?.touched) {
+                <p class="text-xs text-destructive">{{ 'common.nameRequired' | transloco }}</p>
+              }
             </div>
           }
         </div>
@@ -312,6 +307,7 @@
         <div class="space-y-2">
           <label hlmLabel>{{ 'productOptions.sortOrder' | transloco }}</label>
           <input hlmInput formControlName="sortOrder" type="number" class="w-full" />
+          <p class="text-xs text-muted-foreground">{{ 'productOptions.sortOrderHelp' | transloco }}</p>
         </div>
 
         <!-- Inline backend/validation error — above the buttons -->
@@ -321,15 +317,15 @@
           </p>
         }
 
-        <div class="flex gap-3 pt-2">
-          <button type="button" hlmBtn variant="outline" class="flex-1" (click)="closeDialog()">
+        <div class="flex items-center justify-between gap-3 pt-2">
+          <button type="button" hlmBtn variant="outline" (click)="closeDialog()">
             {{ 'common.cancel' | transloco }}
           </button>
-          <button type="submit" hlmBtn class="flex-1" [disabled]="form.invalid || submitting()">
+          <button type="submit" hlmBtn [disabled]="form.invalid || submitting()">
             @if (submitting()) {
               <ng-icon name="lucideLoader2" class="me-2 size-4 animate-spin" />
             }
-            {{ submitting() ? ('common.saving' | transloco) : ('common.save' | transloco) }}
+            {{ submitting() ? ('common.saving' | transloco) : (editing() ? ('common.save' | transloco) : ('productOptions.add' | transloco)) }}
           </button>
         </div>
       </form>

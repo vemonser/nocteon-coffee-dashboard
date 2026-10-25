@@ -148,6 +148,12 @@ export class ProductOptionListComponent extends BaseListComponent<
     return this.optionService.delete(id);
   }
 
+  override openCreateDialog(): void {
+    super.openCreateDialog();
+    const next = (this.items().reduce((m, o) => Math.max(m, o.sortOrder ?? 0), 0) || 0) + 1;
+    this.form.patchValue({ sortOrder: next });
+  }
+
   // ─── Value helpers ────────────────────────────────────────────────────────────
 
   private buildValueForm(): FormGroup {
