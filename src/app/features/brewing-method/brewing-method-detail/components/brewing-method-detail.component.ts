@@ -1,5 +1,6 @@
 ﻿import { CommonModule } from '@angular/common';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { ConfirmDialogService } from '../../../../core/services/confirm-dialog.service';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
@@ -85,6 +86,7 @@ type EditMode = 'view' | 'edit';
 })
 export class BrewingMethodDetailComponent implements OnInit {
   private notify = inject(NotifyService);
+  private confirmDialog = inject(ConfirmDialogService);
   route = inject(ActivatedRoute);
   router = inject(Router);
   private fb = inject(FormBuilder);
@@ -258,9 +260,9 @@ export class BrewingMethodDetailComponent implements OnInit {
       });
   }
 
-  deleteBrewingMethod(): void {
+async deleteBrewingMethod(): Promise<void> {
     const name = this.getTranslationName('en');
-    if (!confirm(`Delete "${name}"? This cannot be undone.`)) return;
+    if (!(await this.confirmDialog.confirm({ title: 'Delete', message: `Delete "${name}"? This cannot be undone.`, tone: 'destructive' }))) return;
     const slug = this.brewingMethod()?.slug;
     if (!slug) return;
     this.brewingMethodService.delete(slug).subscribe({

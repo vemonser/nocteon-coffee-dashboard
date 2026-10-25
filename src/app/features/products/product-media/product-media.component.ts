@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
+import { ConfirmDialogService } from '../../../core/services/confirm-dialog.service';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ProductService } from '../services/product.service';
 import { ProductMediaRequest, StagedMedia } from '../models/product.models';
@@ -41,6 +42,7 @@ export class ProductMediaComponent {
   error = signal<string | null>(null);
 
   private notify = inject(NotifyService);
+  private confirmDialog = inject(ConfirmDialogService);
 
   constructor() {
     const slug = this.route.snapshot.paramMap.get('slug');
@@ -90,9 +92,9 @@ export class ProductMediaComponent {
     this.stagedMedia.update((media) => media.filter((_, i) => i !== index));
   }
 
-  removeExisting(index: number): void {
+  async removeExisting(index: number): Promise<void> {
     const media = this.existingMedia()[index];
-    if (!confirm('Delete this media?')) return;
+    if (!(await this.confirmDialog.confirm({ title: 'Delete media', message: 'Delete this media?', tone: 'destructive' }))) return;
 
     this.productService.deleteMedia(media.id).subscribe({
       next: () => {

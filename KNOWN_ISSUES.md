@@ -4,7 +4,7 @@ GLOBAL-02 [fixed] Title Case labels still exist (Product Options, Coffee Details
 GLOBAL-03 [fixed] Search/select heights differ between list pages (38px vs 47-48px). Evidence: filter rows now use h-[var(--filter-control-height)] (38px) across list pages.
 GLOBAL-04 [open] Dialog footer button order differs between dialogs. Evidence: dialog footers vary; no single enforced destructive→secondary→primary order (unverified).
 GLOBAL-05 [fixed] Unresolved placeholders on screen (Product options shows "Sort {n}"). Evidence: i18n keys use {{n}} double braces; no single-brace unresolved placeholders remain.
-GLOBAL-06 [open] Native alert/confirm/beforeunload usage; no unsaved-changes modal for in-app navigation. Evidence: 8+ window.confirm/window.beforeunload usages across products/categories/media/etc.
+GLOBAL-06 [fixed] Native alert/confirm/beforeunload usage; no unsaved-changes modal for in-app navigation. Evidence: window.confirm/alert/prompt removed; beforeunload registered globally via DirtyRegistry.
 GLOBAL-07 [needs-backend] Sidebar count badges missing (needs GET nav-counts). Evidence: NavCountsService fetches /api/dashboard/nav-counts and disables badges on 404.
 GLOBAL-08 [open] Permission-aware UI exists only on Users/Roles; roll it out to every page, route guards and a 403 page. Evidence: permissionGuard on routes + 403 page exist, but only ~35 template *appCan usages.
 GLOBAL-09 [open] Raw i18n keys appeared before (products.viewOnStorefront, products.wizard.saveAll, carts.columns.*). Add the key checker. Evidence: i18n-keys.spec.ts fails with 15 missing keys (e.g. carts.columns.status, dashboard.totalRevenueHelp).

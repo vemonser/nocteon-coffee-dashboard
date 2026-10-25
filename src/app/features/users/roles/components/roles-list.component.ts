@@ -302,7 +302,7 @@ export class RolesListComponent implements OnInit {
     let changed = before.size !== after.size;
     if (!changed) for (const p of before) if (!after.has(p)) { changed = true; break; }
     if (!changed) return true;
-    return window.confirm('You have unsaved changes. Leave anyway?');
+    return true; // global guard handles unsaved changes
   }
 
   /** Guards the "New role" affordance: missing endpoint OR missing authority. */

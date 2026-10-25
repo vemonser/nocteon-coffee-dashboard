@@ -1,5 +1,6 @@
 ﻿import { CommonModule } from '@angular/common';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { ConfirmDialogService } from '../../../../core/services/confirm-dialog.service';
 import {
   FormBuilder,
   FormGroup,
@@ -86,6 +87,7 @@ export class PromoCodeDetailComponent implements OnInit {
   private promoCodeService = inject(PromoCodeService);
   private categoryService = inject(CategoryService);
   private breadcrumbService = inject(BreadcrumbService);
+  private confirmDialog = inject(ConfirmDialogService);
 
   readonly promoCode = signal<PromoCodeResponse | null>(null);
   readonly loading = signal(true);
@@ -250,9 +252,9 @@ export class PromoCodeDetailComponent implements OnInit {
       });
   }
 
-  deletePromoCode(): void {
+async deletePromoCode(): Promise<void> {
     const code = this.promoCode()?.code;
-    if (!confirm(`Delete "${code}"? This cannot be undone.`)) return;
+    if (!(await this.confirmDialog.confirm({ title: 'Delete', message: `Delete "${code}"? This cannot be undone.`, tone: 'destructive' }))) return;
 
     const id = this.promoCode()?.id;
     if (!id) return;

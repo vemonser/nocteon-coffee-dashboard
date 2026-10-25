@@ -1,5 +1,6 @@
 ﻿import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ConfirmDialogService } from '../../../../core/services/confirm-dialog.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { map, switchMap, catchError, of, tap } from 'rxjs';
@@ -68,6 +69,7 @@ export class ShippingZoneDetailComponent implements OnInit {
   private fb = inject(FormBuilder);
   private shippingZoneService = inject(ShippingZoneService);
   private breadcrumbService = inject(BreadcrumbService);
+  private confirmDialog = inject(ConfirmDialogService);
 
   protected readonly Math = Math;
 
@@ -176,9 +178,9 @@ export class ShippingZoneDetailComponent implements OnInit {
       });
   }
 
-  deleteZone(): void {
+async deleteZone(): Promise<void> {
     const name = this.zone()?.name;
-    if (!confirm(`Delete "${name}"? This cannot be undone.`)) return;
+    if (!(await this.confirmDialog.confirm({ title: 'Delete', message: `Delete "${name}"? This cannot be undone.`, tone: 'destructive' }))) return;
 
     const id = this.zone()?.id;
     if (id == null) return;
