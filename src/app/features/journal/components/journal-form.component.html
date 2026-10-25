@@ -39,7 +39,7 @@
             <div class="space-y-1.5">
               <label hlmLabel>{{ 'journal.category' | transloco }} *</label>
               <hlm-select formControlName="categorySlug" class="w-full">
-                <hlm-select-trigger class="w-full">
+                <hlm-select-trigger class="h-[var(--filter-control-height)] w-full">
                   <hlm-select-value placeholder="{{ 'journal.selectCategory' | transloco }}" />
                 </hlm-select-trigger>
                 <hlm-select-content *hlmSelectPortal>
@@ -89,7 +89,7 @@
             <div class="space-y-1.5">
               <label hlmLabel>{{ 'journal.status' | transloco }}</label>
               <hlm-select formControlName="status" class="w-full">
-                <hlm-select-trigger class="w-full">
+                <hlm-select-trigger class="h-[var(--filter-control-height)] w-full">
                   <hlm-select-value placeholder="{{ 'journal.selectStatus' | transloco }}" />
                 </hlm-select-trigger>
                 <hlm-select-content *hlmSelectPortal>

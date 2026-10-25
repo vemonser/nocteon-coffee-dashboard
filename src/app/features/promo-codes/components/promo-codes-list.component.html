@@ -35,7 +35,7 @@
     <div class="flex flex-1 items-center justify-end gap-3">
       <div class="relative w-full max-w-64 sm:w-64">
         <ng-icon name="lucideSearch" class="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-        <input hlmInput type="search" [dir]="language.current() === 'ar' ? 'rtl' : 'ltr'" [ngModel]="searchQuery" (ngModelChange)="searchQuery = $event; onSearch()" [placeholder]="'promoCodes.search' | transloco" [attr.aria-label]="'promoCodes.search' | transloco" class="w-full ps-9" />
+        <input hlmInput type="search" [dir]="language.current() === 'ar' ? 'rtl' : 'ltr'" [ngModel]="searchQuery" (ngModelChange)="searchQuery = $event; onSearch()" [placeholder]="'promoCodes.search' | transloco" [attr.aria-label]="'promoCodes.search' | transloco" class="w-full ps-9 h-[var(--filter-control-height)]" />
       </div>
     </div>
   </div>
@@ -172,7 +172,7 @@
         <div class="space-y-1.5">
           <label hlmLabel>{{ 'promoCodes.discountType' | transloco }} *</label>
           <hlm-select formControlName="discountType" class="rounded-sm! w-full">
-            <hlm-select-trigger class="rounded-sm w-full">
+            <hlm-select-trigger class="h-[var(--filter-control-height)] rounded-sm w-full">
               <hlm-select-value [placeholder]="'promoCodes.selectType' | transloco" />
             </hlm-select-trigger>
             <hlm-select-content *hlmSelectPortal>
@@ -205,7 +205,7 @@
         <div class="space-y-1.5">
           <label hlmLabel>{{ 'promoCodes.scope' | transloco }} *</label>
           <hlm-select formControlName="scopeType" class="rounded-sm! w-full">
-            <hlm-select-trigger class="rounded-sm w-full">
+            <hlm-select-trigger class="h-[var(--filter-control-height)] rounded-sm w-full">
               <hlm-select-value [placeholder]="'promoCodes.selectScope' | transloco" />
             </hlm-select-trigger>
             <hlm-select-content *hlmSelectPortal>

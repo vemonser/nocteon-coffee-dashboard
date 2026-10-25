@@ -97,7 +97,7 @@
               <label hlmLabel>{{ 'common.discountType' | transloco }}</label>
               @if (isEditing()) {
                 <hlm-select formControlName="discountType" class="w-full">
-                  <hlm-select-trigger class="w-full">
+                  <hlm-select-trigger class="h-[var(--filter-control-height)] w-full">
                     <hlm-select-value />
                   </hlm-select-trigger>
                   <hlm-select-content *hlmSelectPortal>
@@ -158,7 +158,7 @@
             <label hlmLabel>{{ 'common.scope' | transloco }}</label>
             @if (isEditing()) {
               <hlm-select formControlName="scopeType" class="w-full">
-                <hlm-select-trigger class="w-full">
+                <hlm-select-trigger class="h-[var(--filter-control-height)] w-full">
                   <hlm-select-value />
                 </hlm-select-trigger>
                 <hlm-select-content *hlmSelectPortal>

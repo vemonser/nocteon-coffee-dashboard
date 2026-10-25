@@ -122,7 +122,7 @@
           [value]="sortField() + ' ' + sortDir()"
           (valueChange)="onSortSelectChange($event)"
         >
-          <hlm-select-trigger class="w-40">
+          <hlm-select-trigger class="h-[var(--filter-control-height)] w-40">
             <hlm-select-value placeholder="{{ 'brewingMethods.detail.sortBy' | transloco }}" />
           </hlm-select-trigger>
           <hlm-select-content *hlmSelectPortal>

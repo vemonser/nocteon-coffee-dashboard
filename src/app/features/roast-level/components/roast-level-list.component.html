@@ -35,7 +35,7 @@
     <div class="flex flex-1 items-center justify-end gap-3">
     <div class="relative w-full max-w-64 sm:w-64">
       <ng-icon name="lucideSearch" class="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-      <input hlmInput type="search" [dir]="language.current() === 'ar' ? 'rtl' : 'ltr'" [ngModel]="searchQuery" (ngModelChange)="searchQuery = $event; onSearch()" [placeholder]="'roastLevels.search' | transloco" [attr.aria-label]="'roastLevels.search' | transloco" class="w-full ps-9" />
+      <input hlmInput type="search" [dir]="language.current() === 'ar' ? 'rtl' : 'ltr'" [ngModel]="searchQuery" (ngModelChange)="searchQuery = $event; onSearch()" [placeholder]="'roastLevels.search' | transloco" [attr.aria-label]="'roastLevels.search' | transloco" class="w-full ps-9 h-[var(--filter-control-height)]" />
     </div>
     <div class="relative">
       <button hlmBtn variant="outline" type="button" (click)="columnsOpen.set(!columnsOpen())" (keydown.escape)="columnsOpen.set(false)" [attr.aria-expanded]="columnsOpen()" [attr.aria-label]="'common.columns' | transloco">
