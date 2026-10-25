@@ -15,7 +15,7 @@ PRODUCTS-02 [fixed] List: the Stock column has a header and empty cells (hide it
 PRODUCTS-03 [fixed] Edit: Description and Story textareas are one line tall. Evidence: textareas use rows="4" with field-sizing content.
 PRODUCTS-04 [open] Tasting notes and Pairings tabs use different UIs; unify with one chip-multiselect component. Evidence: no shared chip-multiselect component; both steps duplicate chip UI.
 PRODUCTS-05 [needs-decision] Story is not translated (needs a decision: EN/AR?). Evidence: CoffeeDetails.story is a single string; ProductTranslation has no story field.
-PRODUCTS-06 [open] Variants show options that do not apply to the product type (Size on coffee). Temporary config until the API provides appliesTo. Evidence: product-option-applicability.ts still ships TEMPORARY CONFIG fallback.
+PRODUCTS-06 [needs-backend] Variants show options that do not apply to the product type (Size on coffee). Temporary config until the API provides appliesTo. Evidence: frontend reads option.appliesTo when present; fallback config remains until backend supplies it.
 PRODUCTS-07 [open] Media tile hover actions (set cover, alt text, delete, reorder) and the Variants Table view are unverified. Evidence: no test/audit artifact covering these.
 PRODUCTS-08 [fixed] The Add product wizard was never audited. Evidence: QA harness audits /dashboard/products/new (products-new route).
 OPTIONS-01 [fixed] The "Add value" popover is not anchored to its trigger and opens in a page corner. Evidence: popover uses hlmPopoverTrigger on the button with sideOffset=8.
