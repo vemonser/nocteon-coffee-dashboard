@@ -98,6 +98,7 @@ export class ProductsListComponent {
   currentPage = signal(0);
   pageSize = signal(20);
   selectedIds = signal<ReadonlySet<number>>(new Set());
+  readonly hasStockData = signal(false);
 
   currentSort = 'createdAt';
   currentDirection: 'asc' | 'desc' = 'desc';
@@ -121,8 +122,9 @@ export class ProductsListComponent {
   readonly bulkBusy = signal(false);
 
   private columnHelper = createColumnHelper<ProductListItem>();
-  columns: ColumnDef<ProductListItem, any>[] = [
-    this.columnHelper.accessor(
+
+  readonly columns = computed<ColumnDef<ProductListItem, any>[]>(() => {
+    const mainCol = this.columnHelper.accessor(
       (row) => ({
         name: row.name,
         slug: row.slug,
@@ -130,48 +132,52 @@ export class ProductsListComponent {
         otherName: row.name,
       }),
       { id: 'main_en', header: 'Product', enableSorting: true, meta: { width: '260px' } },
-    ),
-    this.columnHelper.accessor('productType', {
+    );
+    const typeCol = this.columnHelper.accessor('productType', {
       id: 'productType',
       header: 'Type',
       enableSorting: false,
       meta: { width: '90px' },
-    }),
-    this.columnHelper.accessor((row) => row.categoryName || row.categorySlug, {
+    });
+    const categoryCol = this.columnHelper.accessor((row) => row.categoryName || row.categorySlug, {
       header: 'Category',
       enableSorting: false,
       id: 'category',
       meta: { width: '105px' },
-    }),
-    this.columnHelper.accessor((row) => ({ min: row.minPrice, max: row.maxPrice }), {
+    });
+    const priceCol = this.columnHelper.accessor((row) => ({ min: row.minPrice, max: row.maxPrice }), {
       id: 'productPrice',
       header: 'Price',
       enableSorting: true,
       meta: { width: '175px' },
-    }),
-    this.columnHelper.accessor(
+    });
+    const stockCol = this.columnHelper.accessor(
       (row) => ({
         stock: row.totalStock ?? null,
         variants: row.variantsCount ?? null,
-        level:
-          row.stockStatus === 'in-stock'
-            ? 'ok'
-            : row.stockStatus ?? 'unknown',
+        low: row.lowStockVariantCount ?? null,
       }),
       { id: 'productStock', header: 'Stock', enableSorting: false, meta: { width: '105px' } },
-    ),
-    this.columnHelper.accessor('isActive', {
+    );
+    const statusCol = this.columnHelper.accessor('isActive', {
       header: 'Status',
       enableSorting: false,
       meta: { width: '95px' },
-    }),
-    this.columnHelper.accessor('featured', {
+    });
+    const featuredCol = this.columnHelper.accessor('featured', {
       header: 'Featured',
       enableSorting: false,
       meta: { width: '90px' },
-    }),
-    this.columnHelper.display({ id: 'actions', header: 'Actions', meta: { width: '56px' } }),
-  ];
+    });
+    const actionsCol = this.columnHelper.display({ id: 'actions', header: 'Actions', meta: { width: '56px' } });
+
+    const cols: ColumnDef<ProductListItem, any>[] = [mainCol, typeCol, categoryCol, priceCol];
+    if (this.hasStockData()) {
+      cols.push(stockCol);
+    }
+    cols.push(statusCol, featuredCol, actionsCol);
+    return cols;
+  });
 
   readonly editHref = (row: ProductListItem) => ['/dashboard/products', row.slug, 'edit'];
 
@@ -267,8 +273,11 @@ export class ProductsListComponent {
           // ProductCardResponse does not carry these yet — see DECISIONS.md.
           totalStock: p.totalStock ?? null,
           variantsCount: p.variantsCount ?? null,
+          lowStockVariantCount: p.lowStockVariantCount ?? null,
           stockStatus: 'unknown' as const,
         }));
+
+        this.hasStockData.set(products.some((p: any) => p.totalStock != null || p.variantsCount != null || p.lowStockVariantCount != null));
 
         // Fetch category names for display
         const categorySlugs = [...new Set(products.map((p: any) => p.categorySlug).filter(Boolean))];
@@ -327,8 +336,11 @@ export class ProductsListComponent {
           featured: p.featured ?? false,
           totalStock: null,
           variantsCount: null,
+          lowStockVariantCount: null,
           stockStatus: 'unknown' as const,
         }));
+
+        this.hasStockData.set(products.some((p: any) => p.totalStock != null || p.variantsCount != null || p.lowStockVariantCount != null));
 
         // Fetch category names for display
         const categorySlugs = [...new Set(products.map((p: any) => p.categorySlug).filter(Boolean))];

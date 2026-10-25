@@ -16,7 +16,7 @@
   @if (isTrashAllowed()) {
     <app-lifecycle-tabs
       [selected]="viewMode()"
-      [activeLabel]="'common.active' | transloco"
+      [activeLabel]="'common.all' | transloco"
       [trashLabel]="'common.trash' | transloco"
       [activeCount]="activeCount()"
       [trashCount]="trashCount()"
@@ -30,7 +30,7 @@
   }
 
   <!-- Search + Filters -->
-  <form [formGroup]="filters" class="flex gap-4 items-center">
+  <form [formGroup]="filters" class="flex flex-wrap items-center gap-3">
     <div class="relative flex-1 max-w-md">
       <ng-icon
         name="lucideSearch"
@@ -41,14 +41,14 @@
         type="text"
         formControlName="search"
         [placeholder]="'products.search' | transloco"
-        class="pl-9 w-full pb-1.25 pt-1.25"
+        class="pl-9 w-full h-9"
       />
     </div>
 
-    <div class="flex flex-col gap-1">
+    <div class="flex items-center gap-1.5">
       <span class="text-xs text-muted-foreground font-medium">{{ 'products.filters.type' | transloco }}</span>
       <hlm-select formControlName="type" class="w-40">
-        <hlm-select-trigger class="w-40">
+        <hlm-select-trigger class="w-40 h-9">
           <hlm-select-value [placeholder]="'products.filters.allTypes' | transloco" />
         </hlm-select-trigger>
         <hlm-select-content *hlmSelectPortal>
@@ -62,38 +62,38 @@
       </hlm-select>
     </div>
 
-    <div class="flex flex-col gap-1">
+    <div class="flex items-center gap-1.5">
       <span class="text-xs text-muted-foreground font-medium">{{ 'products.filters.status' | transloco }}</span>
       <hlm-select formControlName="status" class="w-40">
-        <hlm-select-trigger class="w-40">
+        <hlm-select-trigger class="w-40 h-9">
           <hlm-select-value [placeholder]="'products.filters.allStatuses' | transloco" />
         </hlm-select-trigger>
-      <hlm-select-content *hlmSelectPortal>
-        <hlm-select-group>
-          <hlm-select-label>{{ 'products.status.all' | transloco }}</hlm-select-label>
-          <hlm-select-item value="all">{{ 'products.status.all' | transloco }}</hlm-select-item>
-          <hlm-select-item value="active">{{ 'products.status.active' | transloco }}</hlm-select-item>
-          <hlm-select-item value="inactive">{{ 'products.status.inactive' | transloco }}</hlm-select-item>
-        </hlm-select-group>
-      </hlm-select-content>
-    </hlm-select>
+        <hlm-select-content *hlmSelectPortal>
+          <hlm-select-group>
+            <hlm-select-label>{{ 'products.status.all' | transloco }}</hlm-select-label>
+            <hlm-select-item value="all">{{ 'products.status.all' | transloco }}</hlm-select-item>
+            <hlm-select-item value="active">{{ 'products.status.active' | transloco }}</hlm-select-item>
+            <hlm-select-item value="inactive">{{ 'products.status.inactive' | transloco }}</hlm-select-item>
+          </hlm-select-group>
+        </hlm-select-content>
+      </hlm-select>
     </div>
 
-    <div class="flex flex-col gap-1">
+    <div class="flex items-center gap-1.5">
       <span class="text-xs text-muted-foreground font-medium">{{ 'products.filters.featured' | transloco }}</span>
-    <hlm-select formControlName="featured" class="w-44">
-      <hlm-select-trigger class="w-44">
-        <hlm-select-value [placeholder]="'products.filters.allFeatured' | transloco" />
-      </hlm-select-trigger>
-      <hlm-select-content *hlmSelectPortal>
-        <hlm-select-group>
-          <hlm-select-label>{{ 'products.featured.all' | transloco }}</hlm-select-label>
-          <hlm-select-item value="all">{{ 'products.featured.all' | transloco }}</hlm-select-item>
-          <hlm-select-item value="featured">{{ 'products.featured.featuredOnly' | transloco }}</hlm-select-item>
-          <hlm-select-item value="notFeatured">{{ 'products.featured.notFeatured' | transloco }}</hlm-select-item>
-        </hlm-select-group>
-      </hlm-select-content>
-    </hlm-select>
+      <hlm-select formControlName="featured" class="w-44">
+        <hlm-select-trigger class="w-44 h-9">
+          <hlm-select-value [placeholder]="'products.filters.allFeatured' | transloco" />
+        </hlm-select-trigger>
+        <hlm-select-content *hlmSelectPortal>
+          <hlm-select-group>
+            <hlm-select-label>{{ 'products.featured.all' | transloco }}</hlm-select-label>
+            <hlm-select-item value="all">{{ 'products.featured.all' | transloco }}</hlm-select-item>
+            <hlm-select-item value="featured">{{ 'products.featured.featuredOnly' | transloco }}</hlm-select-item>
+            <hlm-select-item value="notFeatured">{{ 'products.featured.notFeatured' | transloco }}</hlm-select-item>
+          </hlm-select-group>
+        </hlm-select-content>
+      </hlm-select>
     </div>
   </form>
 
@@ -188,7 +188,7 @@
       [selectable]="!isTrash()"
       [selectedIds]="selectedIds()"
       [data]="items()"
-      [columns]="columns"
+      [columns]="columns()"
       [loading]="loading()"
       [rowHeight]="'72px'"
       [initialSort]="{ column: currentSort, direction: currentDirection }"

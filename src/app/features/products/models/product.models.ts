@@ -26,6 +26,8 @@ export interface ProductListItem {
   variantsCount?: number | null;
   /** Not currently returned by ProductCardResponse — see DECISIONS.md. */
   totalStock?: number | null;
+  /** Not currently returned by ProductCardResponse — see DECISIONS.md. */
+  lowStockVariantCount?: number | null;
   stockStatus?: 'in-stock' | 'low' | 'out' | 'unknown';
   updatedAt?: string;
 }
