@@ -1,3 +1,9 @@
+# Decisions — product-options-pass-1
+
+## Needs backend
+- Option usage-count endpoint: frontend relies on the server's 409 (`OPTION_IN_USE`) for option delete because no `GET .../usage` endpoint exists for options (only value usage is partially exposed). To support disabling delete with a count tooltip, backend should expose a usage count for options.
+- Value usage-count endpoint (`GET .../values/{id}/usage`) returns 404 in the current backend; frontend no longer calls it and relies on the 409 (`OPTION_VALUE_IN_USE`) with `data.variantCount`.
+
 # Decisions — permissions-ui-1 (C tasks)
 
 ## C1/C2 — Permission slug verification

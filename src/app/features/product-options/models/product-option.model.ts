@@ -36,6 +36,13 @@ export interface ProductOptionValueRequest {
   numericValue?: number | null;
 }
 
+export interface ProductOptionValuePatchRequest {
+  nameEn?: string;
+  nameAr?: string;
+  sortOrder?: number;
+  numericValue?: number | null;
+}
+
 /** Summary shape used inside cart items / product variants. */
 export interface ProductOptionValueSummary {
   optionSlug: string;
