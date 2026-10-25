@@ -12,6 +12,7 @@ import {
 import { ProductWizardStateService } from '../../product-wizard/product-wizard-state.service';
 import { ProductWizardComponent } from '../../product-wizard/product-wizard.component';
 import { ProductOption, ProductOptionValue } from '../../../../product-options/models/product-option.model';
+import { filterOptionsByProductType } from '../../../product-option-applicability';
 import { ProductOptionService } from '../../../../product-options/services/product-option.service';
 import { HlmSelectImports } from '@spartan-ng/helm/select';
 import { HlmInputImports } from '@spartan-ng/helm/input';
@@ -168,9 +169,11 @@ export class VariantsStepComponent implements OnInit {
 
   private loadOptions(): void {
     this.loadingOptions.set(true);
-    this.optionService.getAll({ page: 0, size: 100 }).subscribe({
+    const productType = this.state.form.get('productType')?.value;
+    this.optionService.getAll({ page: 0, size: 100, productType }).subscribe({
       next: (res) => {
-        this.state.setProductOptions(res.data.content);
+        const productType = this.state.form.get('productType')?.value;
+        this.state.setProductOptions(filterOptionsByProductType(res.data.content, productType));
         this.loadingOptions.set(false);
       },
       error: (err) => {

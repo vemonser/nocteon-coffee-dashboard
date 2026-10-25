@@ -133,12 +133,8 @@ export class ProductWizardComponent implements CanComponentDeactivate {
         'translations',
         this.translationHelper.buildArray([], ['description', 'shortDescription']),
       );
+      this.state.captureInitialSnapshot();
     }
-    
-    // Subscribe to form changes to track dirty state
-    this.state.form.valueChanges.subscribe(() => {
-      this.state.form.markAsDirty();
-    });
   }
 
   saveCurrentStep(): void {
@@ -148,7 +144,7 @@ export class ProductWizardComponent implements CanComponentDeactivate {
   }
 
   isCurrentStepDirty(): boolean {
-    return this.state.form.dirty && !this.state.form.pristine;
+    return this.hasUnsavedChanges();
   }
 
   onTabChange(tabId: string): void {
@@ -370,7 +366,7 @@ export class ProductWizardComponent implements CanComponentDeactivate {
   }
 
   hasUnsavedChanges(): boolean {
-    return !!this.state.form.dirty || this.state.mediaDirty();
+    return this.state.hasFormChanged() || this.state.hasMediaChanged();
   }
 
   onBackToList(): void {

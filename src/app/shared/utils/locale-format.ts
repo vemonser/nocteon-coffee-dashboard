@@ -251,6 +251,32 @@ export function formatCurrency(
  * the CSV as invisible control characters. This is the same formatter, the
  * same rules, one wrapper less.
  */
+export function formatPriceRange(
+  min: unknown,
+  max: unknown,
+  lang: Language,
+  currency: string,
+): string {
+  const nMin =
+    typeof min === 'number' ? min : Number.parseFloat(String(min ?? '').replace(/[^0-9.\-]/g, ''));
+  const nMax =
+    typeof max === 'number' ? max : Number.parseFloat(String(max ?? '').replace(/[^0-9.\-]/g, ''));
+  if (!Number.isFinite(nMin) || !Number.isFinite(nMax)) return String(min ?? '');
+  if (nMin === nMax) return formatCurrency(nMin, lang, currency);
+
+  const code = normaliseCurrencyCode(currency);
+
+  if (lang === 'ar') {
+    const fmt = (v: number) =>
+      clean(new Intl.NumberFormat('ar-EG-u-nu-latn', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(v));
+    return `${fmt(nMin)} – ${fmt(nMax)} ${arabicCurrencySymbol(code)}`;
+  }
+
+  const fmt = (v: number) =>
+    clean(new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(v));
+  return `\u2066${code} ${fmt(nMin)} – ${fmt(nMax)}\u2069`;
+}
+
 export function formatCurrencyPlain(
   value: unknown,
   lang: Language,

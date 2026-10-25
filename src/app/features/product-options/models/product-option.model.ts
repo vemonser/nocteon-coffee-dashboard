@@ -21,6 +21,7 @@ export interface ProductOption {
   slug: string;
   sortOrder?: number;
   createdAt?: string;
+  appliesTo?: string[];
   translations: ProductOptionTranslation[];
   values: ProductOptionValue[];
 }

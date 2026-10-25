@@ -109,7 +109,10 @@
                 </div>
                 <div class="space-y-1.5">
                   <label hlmLabel>{{ 'products.variants.price' | transloco }} *</label>
-                  <input hlmInput formControlName="price" type="number" step="0.01" min="0.01" class="w-full" />
+                  <div class="relative">
+                    <span class="pointer-events-none absolute start-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">EGP</span>
+                    <input hlmInput formControlName="price" type="number" step="0.01" min="0.01" class="w-full ps-10" />
+                  </div>
                   @if (group.get('price')?.hasError('required') && group.get('price')?.touched) {
                     <p class="mt-1 text-xs text-destructive">Price is required</p>
                   }
@@ -122,7 +125,10 @@
                     {{ 'products.variants.compareAtPrice' | transloco }}
                     <span class="ms-1 text-xs font-normal text-muted-foreground">({{ 'products.variants.noDiscountHint' | transloco }})</span>
                   </label>
-                  <input hlmInput formControlName="compareAtPrice" type="number" step="0.01" class="w-full" />
+                  <div class="relative">
+                    <span class="pointer-events-none absolute start-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">EGP</span>
+                    <input hlmInput formControlName="compareAtPrice" type="number" step="0.01" class="w-full ps-10" />
+                  </div>
                   @if (group.get('compareAtPrice')?.hasError('compareAtNotGreater') && group.get('compareAtPrice')?.touched) {
                     <p class="mt-1 text-xs text-destructive">Compare-at price must be greater than price</p>
                   }
@@ -132,7 +138,10 @@
                 </div>
                 <div class="space-y-1.5">
                   <label hlmLabel>{{ 'products.variants.costPrice' | transloco }}</label>
-                  <input hlmInput formControlName="costPrice" type="number" step="0.01" class="w-full" />
+                  <div class="relative">
+                    <span class="pointer-events-none absolute start-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">EGP</span>
+                    <input hlmInput formControlName="costPrice" type="number" step="0.01" class="w-full ps-10" />
+                  </div>
                   @if (margin(group); as m) {
                     <p class="mt-1 text-xs text-muted-foreground">Margin: {{ m }}%</p>
                   }
@@ -218,10 +227,10 @@
                 <input hlmInput formControlName="sku" type="text" class="h-8 w-full" [class.border-destructive]="group.get('sku')?.invalid && group.get('sku')?.touched" />
               </td>
               <td class="px-3 py-2">
-                <input hlmInput formControlName="price" type="number" step="0.01" class="h-8 w-28" [class.border-destructive]="group.get('price')?.invalid && group.get('price')?.touched" />
+                <div class="relative"><span class="pointer-events-none absolute start-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">EGP</span><input hlmInput formControlName="price" type="number" step="0.01" class="h-8 w-28 ps-9" [class.border-destructive]="group.get('price')?.invalid && group.get('price')?.touched" /></div>
               </td>
               <td class="px-3 py-2">
-                <input hlmInput formControlName="compareAtPrice" type="number" step="0.01" class="h-8 w-28" [class.border-destructive]="group.get('compareAtPrice')?.invalid && group.get('compareAtPrice')?.touched" />
+                <div class="relative"><span class="pointer-events-none absolute start-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">EGP</span><input hlmInput formControlName="compareAtPrice" type="number" step="0.01" class="h-8 w-28 ps-9" [class.border-destructive]="group.get('compareAtPrice')?.invalid && group.get('compareAtPrice')?.touched" /></div>
               </td>
               <td class="px-3 py-2">
                 <input hlmInput formControlName="stockQuantity" type="number" class="h-8 w-24" [class.border-destructive]="group.get('stockQuantity')?.invalid && group.get('stockQuantity')?.touched" />

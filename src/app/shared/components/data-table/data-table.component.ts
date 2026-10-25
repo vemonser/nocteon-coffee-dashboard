@@ -28,8 +28,10 @@ import { RatingStarsComponent } from '../../ui/rating-stars/rating-stars.compone
 import { VerifiedBadgeComponent } from '../../ui/verified-badge/verified-badge.component';
 import { LocalizedNameService } from '../../../core/i18n/localized-name.service';
 import { LocalizedDateService } from '../../../core/i18n/localized-date.service';
+import { StoreSettingsService } from '../../../core/settings/store-settings.service';
 import { LanguageService } from '../../../core/i18n/language.service';
 import { formatRelativeTime } from '../../../core/i18n/relative-time';
+import { formatPriceRange } from '../../utils/locale-format';
 
 export interface TableSortEvent {
   column: string;
@@ -305,8 +307,13 @@ export class DataTableComponent {
   navigableColumn = input<string>('');
 
   private readonly language = inject(LanguageService);
+  private readonly storeSettings = inject(StoreSettingsService);
   /** The shared localized-name helper — the method label is translated at render time. */
   protected readonly names = inject(LocalizedNameService);
+
+  formatPriceRange(range: { min: number; max: number }): string {
+    return formatPriceRange(range.min, range.max, this.language.language() as any, this.storeSettings.currency());
+  }
   protected readonly dates = inject(LocalizedDateService);
 
   /**
