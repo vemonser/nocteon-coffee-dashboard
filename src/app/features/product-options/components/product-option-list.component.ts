@@ -1,4 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
+import { toast } from '@spartan-ng/brain/sonner';
 import { CommonModule } from '@angular/common';
 import { FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
@@ -284,14 +285,34 @@ export class ProductOptionListComponent extends BaseListComponent<
   }
 
   confirmDeleteValue(option: ProductOption, value: ProductOptionValue): void {
-    // Get usage count before showing confirmation
-    this.optionService.getValueUsageCount(option.id, value.id).subscribe({
-      next: (count: number) => {
-        this.deletingValue.set({ option, value, usageCount: count });
+    this.deletingValue.set({ option, value, usageCount: 0 });
+  }
+
+  override submitDelete(): void {
+    const item = this.deleting();
+    if (!item) return;
+    this.submitting.set(true);
+    this.callDelete(this.getId(item)).subscribe({
+      next: () => {
+        this.deleting.set(null);
+        this.load();
+        this.submitting.set(false);
+        this.notify.success('notify.deleted', 'Deleted successfully');
       },
-      error: () => {
-        this.deletingValue.set({ option, value, usageCount: 0 });
-      }
+      error: (err) => {
+        this.submitting.set(false);
+        const body = (err as any)?.error;
+        const code = body?.code;
+        const count = body?.data?.variantCount ?? body?.variantCount;
+        if (code === 'OPTION_IN_USE' || (err as any)?.status === 409) {
+          this.deleting.set(null);
+          const n = count ?? 0;
+          toast.error(`Used by ${n} variants, it can't be deleted.`);
+          return;
+        }
+        this.deleting.set(null);
+        this.notify.apiError(err, 'notify.errorFallback', 'Something went wrong. Please try again.');
+      },
     });
   }
 
@@ -306,7 +327,19 @@ export class ProductOptionListComponent extends BaseListComponent<
         this.load();
         this.valueSubmitting.set(false);
       },
-      error: () => this.valueSubmitting.set(false),
+      error: (err) => {
+        this.valueSubmitting.set(false);
+        const body = (err as any)?.error;
+        const code = body?.code;
+        const count = body?.data?.variantCount ?? body?.variantCount;
+        if (code === 'OPTION_VALUE_IN_USE' || (err as any)?.status === 409) {
+          this.deletingValue.set(null);
+          const n = count ?? 0;
+          toast.error(`Used by ${n} variants, it can't be deleted.`);
+          return;
+        }
+        this.notify.apiError(err, 'notify.errorFallback', 'Something went wrong. Please try again.');
+      },
     });
   }
 
