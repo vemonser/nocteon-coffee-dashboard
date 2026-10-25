@@ -167,6 +167,7 @@ export class ProductOptionListComponent extends BaseListComponent<
 
   closeAddValue(): void {
     this.addingValueFor.set(null);
+    this.valueForm.reset();
   }
 
   getValueName(value: ProductOptionValue, lang: string): string {
@@ -177,7 +178,7 @@ export class ProductOptionListComponent extends BaseListComponent<
     return option.translations.find((t) => t.language === lang)?.name ?? '—';
   }
 
-  submitValue(): void {
+  submitValue(pop?: any): void {
     const option = this.addingValueFor();
     if (!option || this.valueForm.invalid) return;
 
@@ -189,13 +190,16 @@ export class ProductOptionListComponent extends BaseListComponent<
         name: vals[lang.code] as string,
       })),
       numericValue: vals['numericValue'] ?? undefined,
+      sortOrder: vals['sortOrder'] ?? undefined,
     };
 
     this.optionService.createValue(option.id, req).subscribe({
       next: () => {
+        pop?.close?.();
         this.closeAddValue();
         this.load();
         this.valueSubmitting.set(false);
+        this.valueForm.reset();
       },
       error: () => this.valueSubmitting.set(false),
     });
