@@ -1,4 +1,5 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
+import { ConfirmDialogService } from '../../../../../core/services/confirm-dialog.service';
 import { CommonModule } from '@angular/common';
 import {
   AbstractControl,
@@ -61,6 +62,7 @@ export class VariantsStepComponent implements OnInit {
   private language = inject(LanguageService);
   private notify = inject(NotifyService);
   private wizard = inject(ProductWizardComponent);
+  private confirmDialog = inject(ConfirmDialogService);
 
   loadingOptions = signal(false);
   collapsed = signal<Set<number>>(new Set());
@@ -247,8 +249,8 @@ export class VariantsStepComponent implements OnInit {
     this.state.removeVariant(index);
   }
 
-  confirmRemoveVariant(index: number): void {
-    if (window.confirm('Remove this variant?')) {
+  async confirmRemoveVariant(index: number): Promise<void> {
+    if (await this.confirmDialog.confirm({ title: 'Remove variant', message: 'Remove this variant?', tone: 'destructive' })) {
       this.removeVariant(index);
     }
   }

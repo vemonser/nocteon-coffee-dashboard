@@ -229,7 +229,7 @@
       </p>
       <input hlmInput [(ngModel)]="deleteConfirmText" [placeholder]="deleting()!.username" class="w-full" />
       <div class="flex gap-3">
- fffffffffffffffff       <button hlmBtn variant="outline" class="flex-1" (click)="deleting.set(null)">{{ 'common.cancel' | transloco }}</button>
+       <button hlmBtn variant="outline" class="flex-1" (click)="deleting.set(null)">{{ 'common.cancel' | transloco }}</button>
         <button hlmBtn variant="destructive" class="flex-1" [disabled]="deleteConfirmText() !== deleting()!.username || submitting()" (click)="confirmDeleteUser()">
           @if (submitting()) { <ng-icon name="lucideLoader2" class="mr-2 size-4 animate-spin" /> }
           {{ 'common.delete' | transloco }}

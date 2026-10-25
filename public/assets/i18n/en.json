@@ -2492,5 +2492,12 @@
       "update": "Edit",
       "delete": "Delete"
     }
+  },
+  "unsavedChanges": {
+    "title": "Unsaved changes",
+    "body": "You have changes that haven't been saved. If you leave this page, they will be lost.",
+    "discard": "Discard changes",
+    "stay": "Stay on page",
+    "saveAndLeave": "Save and leave"
   }
 }
