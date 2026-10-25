@@ -37,5 +37,3 @@ test('unsaved guard: product edit', async ({ page }) => {
   // navigated
   await expect(page).toHaveURL(/dashboard$/);
 });
-EOF
-echo done
