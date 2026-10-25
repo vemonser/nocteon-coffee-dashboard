@@ -1,7 +1,7 @@
 # Known issues (verify each one against the code and the UI, then mark [open] / [fixed] / [needs-backend] / [needs-decision] with a one-line evidence note)
 GLOBAL-01 [fixed] Dates use different formats on Reviews, Contact and User view (use formatDateTime: "24 Oct 2026, 7:51 PM"). Evidence: reviews list createdAt now showTime+withComma; user lastActiveAt uses formatDateTime.
 GLOBAL-02 [fixed] Title Case labels still exist (Product Options, Coffee Details, Contact Messages...). Sweep en.json. Evidence: npm run i18n:check now reports 0 offenders.
-GLOBAL-03 [open] Search/select heights differ between list pages (38px vs 47-48px). Evidence: no uniform 38px filter-control token applied across all list pages (unverified).
+GLOBAL-03 [fixed] Search/select heights differ between list pages (38px vs 47-48px). Evidence: filter rows now use h-[var(--filter-control-height)] (38px) across list pages.
 GLOBAL-04 [open] Dialog footer button order differs between dialogs. Evidence: dialog footers vary; no single enforced destructive→secondary→primary order (unverified).
 GLOBAL-05 [fixed] Unresolved placeholders on screen (Product options shows "Sort {n}"). Evidence: i18n keys use {{n}} double braces; no single-brace unresolved placeholders remain.
 GLOBAL-06 [open] Native alert/confirm/beforeunload usage; no unsaved-changes modal for in-app navigation. Evidence: 8+ window.confirm/window.beforeunload usages across products/categories/media/etc.
