@@ -32,6 +32,9 @@ export class ProductWizardStateService {
   stagedMedia = signal<StagedMedia[]>([]);
   /** Media lives outside the reactive form, so it tracks dirty separately. */
   readonly mediaDirty = signal(false);
+  /** Normalized snapshot of the form value captured on load/create, used for dirty comparison. */
+  initialFormValue: any = null;
+  initialMediaSnapshot: string | null = null;
 
   // ─── The single source of truth form, built once ──────────────────────────────
   form: FormGroup = this.fb.group({
@@ -128,6 +131,9 @@ export class ProductWizardStateService {
       }
     });
     this.pendingEditPicks = [];
+    if (this.isEditMode()) {
+      this.captureInitialSnapshot();
+    }
   }
 
   static compareAtGreaterThanPrice(control: AbstractControl): ValidationErrors | null {
@@ -342,7 +348,44 @@ export class ProductWizardStateService {
     detail.pairings.forEach((slug) => {
       if (slug) this.pairingsArray.push(this.fb.control(slug));
     });
+    this.captureInitialSnapshot();
       
+  }
+
+  /** Normalize values (trim strings, empty->null, numbers) for stable comparison. */
+  normalize(value: any): any {
+    if (value === null || value === undefined) return null;
+    if (typeof value === 'string') {
+      const t = value.trim();
+      return t === '' ? null : t;
+    }
+    if (typeof value === 'number') {
+      return Number.isFinite(value) ? value : null;
+    }
+    if (Array.isArray(value)) return value.map((v) => this.normalize(v));
+    if (typeof value === 'object') {
+      const out: Record<string, any> = {};
+      for (const k of Object.keys(value)) {
+        out[k] = this.normalize(value[k]);
+      }
+      return out;
+    }
+    return value;
+  }
+
+  captureInitialSnapshot(): void {
+    this.initialFormValue = this.normalize(this.form.value);
+    this.initialMediaSnapshot = JSON.stringify(this.existingMedia());
+  }
+
+  hasFormChanged(): boolean {
+    if (this.initialFormValue === null) return this.form.dirty;
+    return JSON.stringify(this.normalize(this.form.value)) !== JSON.stringify(this.initialFormValue);
+  }
+
+  hasMediaChanged(): boolean {
+    if (this.initialMediaSnapshot === null) return this.mediaDirty();
+    return this.mediaDirty() || JSON.stringify(this.existingMedia()) !== this.initialMediaSnapshot || this.stagedMedia().length > 0;
   }
 
   /** Resets everything — call when leaving the wizard or starting create mode fresh. */
