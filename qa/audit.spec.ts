@@ -220,6 +220,18 @@ test('qa audit', async ({ page, context }) => {
       issues.push({ id: issueId('slow', pageName), check: 'slow', severity: 'P2', page: pageName, theme, locale, message: `slow request: ${r}` });
     }
 
+    // H2-12 Dialogs: accessible name check (any open dialogs)
+    const dialogIssues = await page.evaluate(() => {
+      const out: string[] = [];
+      document.querySelectorAll('[role="dialog"], [role="alertdialog"]').forEach((d) => {
+        if (!d.getAttribute('aria-label') && !d.getAttribute('aria-labelledby')) out.push('dialog without accessible name');
+      });
+      return out;
+    });
+    for (const m of dialogIssues) {
+      issues.push({ id: issueId('dialog', pageName), check: 'dialog', severity: 'P1', page: pageName, theme, locale, message: m });
+    }
+
     // screenshot for evidence (viewport)
     await shot(`${pageName}-${theme}-${locale}`);
   }
