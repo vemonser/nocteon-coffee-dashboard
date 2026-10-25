@@ -218,7 +218,7 @@
   </div>
 
   <!-- Pagination -->
-  @if (pageData() && !loading() && items().length > 0 && pageData()!.totalPages > 1) {
+  @if (pageData() && !loading() && items().length > 0) {
     <app-pager
       [page]="pageData()!.page"
       [size]="pageData()!.size"
