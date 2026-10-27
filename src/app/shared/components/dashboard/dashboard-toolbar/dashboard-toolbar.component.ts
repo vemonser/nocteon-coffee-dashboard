@@ -16,6 +16,7 @@ import { DashboardStatsService } from '../../../../features/dashboard/services/d
 import { LanguageService } from '../../../../core/i18n/language.service';
 import { LocalizedDateComponent } from '../../../ui/localized-date/localized-date.component';
 import { TabsComponent } from '../../ui/tabs/tabs.component';
+import { formatRelativeTime } from '../../../../core/i18n/relative-time';
 import { TranslocoService } from '@jsverse/transloco';
 
 /**
@@ -42,7 +43,15 @@ import { TranslocoService } from '@jsverse/transloco';
     LocalizedDateComponent,
     TabsComponent,
   ],
-  providers: [provideIcons({ lucideCalendar, lucideDownload, lucideRepeat, lucideRefreshCw, lucideChevronDown })],
+  providers: [
+    provideIcons({
+      lucideCalendar,
+      lucideDownload,
+      lucideRepeat,
+      lucideRefreshCw,
+      lucideChevronDown,
+    }),
+  ],
   templateUrl: './dashboard-toolbar.component.html',
   styleUrl: './dashboard-toolbar.component.css',
 })
@@ -77,20 +86,10 @@ export class DashboardToolbarComponent {
   /** Last updated timestamp. */
   readonly lastUpdated = signal<Date>(new Date());
 
-  /** Relative time since last update. */
+  /** Relative time since last update, in the reader's language. */
   readonly relativeTime = computed(() => {
-    const now = new Date();
-    const diffMs = now.getTime() - this.lastUpdated().getTime();
-    const minutes = Math.round(diffMs / 60000);
-    
-    if (minutes < 1) {
-      return 'just now';
-    } else if (minutes < 60) {
-      return `${minutes} min ago`;
-    } else {
-      const hours = Math.round(minutes / 60);
-      return `${hours} hour${hours > 1 ? 's' : ''} ago`;
-    }
+    this.language.language();
+    return formatRelativeTime(this.lastUpdated(), this.language.language());
   });
 
   /** Refresh all dashboard queries. */
@@ -190,8 +189,7 @@ export class DashboardToolbarComponent {
     this.language.language();
     const from = this.transloco.translate('dashboard.exportTooltip');
     const range = this.transloco.translate(
-      this.options.find((o) => o.days === this.selectedDays())?.key ??
-        'dashboard.last30Days',
+      this.options.find((o) => o.days === this.selectedDays())?.key ?? 'dashboard.last30Days',
     );
     return `${from} (${range})`;
   });

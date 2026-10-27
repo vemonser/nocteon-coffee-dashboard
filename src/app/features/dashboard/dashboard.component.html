@@ -128,7 +128,7 @@
         </hlm-card>
         <hlm-card>
           <hlm-card-header>
-            <app-widget-header [title]="'dashboard.recentOrders.title' | transloco" [rangeScoped]="false" [customScope]="'Latest 5'" [actionLabel]="'dashboard.recentOrders.viewAll' | transloco" actionLink="/dashboard/orders" />
+            <app-widget-header [title]="'dashboard.recentOrders.title' | transloco" [rangeScoped]="false" [customScope]="'dashboard.scopeLatest' | transloco" [actionLabel]="'dashboard.recentOrders.viewAll' | transloco" actionLink="/dashboard/orders" />
           </hlm-card-header>
           <div hlmCardContent class="grow shrink-0">
             <app-recent-orders />
@@ -141,7 +141,7 @@
       <div class="grid gap-4 lg:grid-cols-2">
         <hlm-card [class.lg:col-span-2]="!canOperatingSystem">
           <hlm-card-header>
-            <app-widget-header [title]="'dashboard.lowStockProducts' | transloco" [rangeScoped]="false" [customScope]="'Current'" [actionLabel]="'dashboard.recentOrders.viewAll' | transloco" actionLink="/dashboard/products" />
+            <app-widget-header [title]="'dashboard.lowStockProducts' | transloco" [rangeScoped]="false" [customScope]="'dashboard.scopeCurrent' | transloco" [actionLabel]="'dashboard.recentOrders.viewAll' | transloco" actionLink="/dashboard/products" />
           </hlm-card-header>
           <div hlmCardContent class="grow shrink-0">
             @if (!statsService.loaded() && statsService.loading()) {

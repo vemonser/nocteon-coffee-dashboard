@@ -2304,13 +2304,15 @@
     "welcomeMessage": "استكشف لوحة التحكم",
     "welcomeLink": "انتقل إلى صفحتك الأولى",
     "totalRevenueHelp": "إجمالي الإيرادات من جميع الطلبات",
-    "ordersHelp": "عدد الطلبات",
+    "ordersHelp": "تُحتسب الطلبات حسب حالة الدفع: المدفوعة فقط. الطلبات المستلمة أو الملغاة التي تم استردادها لا تُعدّ مدفوعة، لذا تُستبعد من هذا العدد.",
     "aovHelp": "متوسط قيمة الطلب",
     "repeatPurchaseRateHelp": "نسبة العملاء الذين اشتروا أكثر من مرة",
     "coffeeSoldHelp": "إجمالي القهوة المباعة",
     "onlineUsersHelp": "المستخدمون المتصلون حالياً",
     "revenueByOriginProductRevenue": "إيرادات المنتج",
-    "revenueByOriginExclShipping": "باستثناء الشحن"
+    "revenueByOriginExclShipping": "باستثناء الشحن",
+    "scopeLatest": "أحدث ٥",
+    "scopeCurrent": "الحالي"
   },
   "imageCell": {
     "noImage": "لا توجد صورة"
