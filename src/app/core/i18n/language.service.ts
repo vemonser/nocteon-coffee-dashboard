@@ -63,9 +63,8 @@ export class LanguageService {
       void this.loadDictionary(lang).then(() => this.applyLanguage(lang));
     };
 
-    animate
-      ? this.flip.animate(action)
-      : action();
+    if (animate) void this.flip.animate(action);
+    else action();
   }
 
   /** Load the dictionary for `lang`; resolves even if the fetch fails. */
