@@ -131,7 +131,31 @@
 
         <div class="space-y-1.5">
           <label hlmLabel>{{ 'users.email' | transloco }} *</label>
-          <input hlmInput formControlName="email" type="email" placeholder="john@example.com" class="w-full" autocomplete="off" data-1p-ignore data-lpignore="true" data-bwignore />
+          <div class="relative">
+            <input
+              hlmInput
+              formControlName="email"
+              type="email"
+              placeholder="john@example.com"
+              class="w-full"
+              [readonly]="editing() && !canChangeEmail()"
+              [class.bg-muted/50]="editing() && !canChangeEmail()"
+              autocomplete="off"
+              data-1p-ignore
+              data-lpignore="true"
+              data-bwignore
+            />
+            @if (editing() && !canChangeEmail()) {
+              <ng-icon
+                name="lucideLock"
+                class="absolute end-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground"
+                [attr.title]="'users.emailLocked' | transloco"
+              />
+            }
+          </div>
+          @if (editing() && !canChangeEmail()) {
+            <p class="text-xs text-muted-foreground">{{ 'users.emailLocked' | transloco }}</p>
+          }
           @if (form.get('email')?.invalid && form.get('email')?.touched) {
             <p class="text-xs text-destructive">{{ 'users.emailRequired' | transloco }}</p>
           }

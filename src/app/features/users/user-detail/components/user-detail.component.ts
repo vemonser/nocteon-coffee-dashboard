@@ -98,11 +98,20 @@ export class UserDetailComponent implements OnInit {
     return !!user && user.role === 'ADMIN' && (this.adminCount() ?? 0) <= 1;
   });
 
+  /**
+   * The backend gates an e-mail change on `user:change_role` (an e-mail is the
+   * login identity: change it, reset the password, own the account). The form
+   * must not offer an edit the API will reject.
+   */
+  readonly canChangeEmail = computed(() => this.auth.hasPermission('user:change_role'));
+
   /** Own account and the last admin may not be re-roled. */
   readonly canChangeRole = computed(() => {
     const user = this.user();
     if (!user) return false;
-    return !this.isSelf(user) && !this.isLastAdmin();
+    return (
+      this.auth.hasPermission('user:change_role') && !this.isSelf(user) && !this.isLastAdmin()
+    );
   });
 
   readonly roleChangeBlockedReason = computed(() => {

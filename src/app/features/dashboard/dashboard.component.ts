@@ -1,5 +1,5 @@
 ﻿import { Component, inject, signal, computed } from '@angular/core';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmCardImports } from '@spartan-ng/helm/card';
 import { NgIcon, provideIcons } from '@ng-icons/core';
@@ -30,7 +30,6 @@ import { StoreSettingsService } from '../../core/settings/store-settings.service
   imports: [
     HlmButtonImports,
     HlmCardImports,
-    RouterLink,
     NgIcon,
     DecimalPipe,
     MoneyPipe,

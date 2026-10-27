@@ -1489,7 +1489,8 @@
       "selectToSeeDiff": "Select a role to see what changes.",
       "changed": "Role changed"
     },
-    "thisIsYourAccount": "This is your account"
+    "thisIsYourAccount": "This is your account",
+    "emailLocked": "Only an administrator can change an account's e-mail address."
   },
   "carts": {
     "title": "Carts",
