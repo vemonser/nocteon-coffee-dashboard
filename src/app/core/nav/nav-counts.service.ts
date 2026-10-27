@@ -1,4 +1,4 @@
-import { Injectable, inject, signal } from '@angular/core';
+import { Injectable, effect, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../auth/auth.service';
 import { environment } from '../../../environments/environment';
@@ -31,22 +31,43 @@ export class NavCountsService {
       return;
     }
 
-    if (
-      !this.auth.hasPermission('order:read') &&
-      !this.auth.hasPermission('cart:read_all') &&
-      !this.auth.hasPermission('review:moderate') &&
-      !this.auth.hasPermission('contact:read')
-    ) {
-      return;
-    }
+    // Poll only while a session exists. This is a root service: started at
+    // boot it fetched on the login screen and kept 401-ing every minute after
+    // logout, while the badge kept showing the previous admin's counts.
+    effect(() => {
+      if (this.auth.isLoggedIn() && this.canReadCounts()) this.startPolling();
+      else this.stopPolling();
+    });
 
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') this.fetch();
+    });
+  }
+
+  private canReadCounts(): boolean {
+    return (
+      this.auth.hasPermission('order:read') ||
+      this.auth.hasPermission('cart:read_all') ||
+      this.auth.hasPermission('review:moderate') ||
+      this.auth.hasPermission('contact:read')
+    );
+  }
+
+  private startPolling(): void {
+    if (this.timer) return;
     this.fetch();
     this.timer = setInterval(() => {
       if (document.visibilityState === 'visible') this.fetch();
     }, 60000);
-    document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible') this.fetch();
-    });
+  }
+
+  private stopPolling(): void {
+    if (this.timer) {
+      clearInterval(this.timer);
+      this.timer = null;
+    }
+    this._counts.set(null);
+    this._available.set(false);
   }
 
   private isMock(): boolean {
@@ -59,6 +80,7 @@ export class NavCountsService {
   }
 
   fetch(): void {
+    if (!this.auth.isLoggedIn()) return;
     this.http
       .get<any>(`${environment.apiUrl}/api/dashboard/nav-counts`, { withCredentials: true })
       .subscribe({
