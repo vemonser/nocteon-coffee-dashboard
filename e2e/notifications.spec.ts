@@ -163,6 +163,50 @@ test.describe('Notifications page', () => {
     await expect(page.getByText(/all caught up/i)).toBeVisible();
   });
 
+  test('deleting from the bell asks first, then deletes', async ({ page }) => {
+    await signInAsAdmin(page);
+    await stubNotifications(page, { unreadCount: 2 });
+
+    const deletes: string[] = [];
+    await page.route(/\/api\/dashboard\/notifications\/\d+$/, (route) => {
+      if (route.request().method() === 'DELETE') deletes.push(route.request().url());
+      return route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, message: 'Notification deleted' }),
+      });
+    });
+
+    await page.goto('/dashboard/notifications');
+    await page.getByTestId('notifications-bell').click();
+
+    const panel = page.getByTestId('notifications-popover');
+    await expect(panel).toContainText('Notification 1');
+
+    await panel.getByRole('button', { name: 'More actions' }).first().click();
+    await page.getByRole('menuitem', { name: 'Delete' }).click();
+
+    const dialog = page.getByRole('alertdialog');
+    await expect(dialog).toBeVisible();
+    await page.getByRole('button', { name: 'Cancel' }).click();
+
+    await expect(dialog).toHaveCount(0);
+    expect(deletes, 'cancelling must not delete anything').toEqual([]);
+
+    // The modal takes focus, so the bell reopens before the next action.
+    await page.getByTestId('notifications-bell').click();
+    const reopened = page.getByTestId('notifications-popover');
+    await expect(reopened).toContainText('Notification 1');
+
+    await reopened.getByRole('button', { name: 'More actions' }).first().click();
+    await page.getByRole('menuitem', { name: 'Delete' }).click();
+    await page.getByRole('alertdialog').getByRole('button', { name: 'Delete' }).click();
+
+    await expect.poll(() => deletes.length).toBe(1);
+    // The row leaves the shared store, so it is gone from the page behind too.
+    await expect(page.getByText('Notification 1', { exact: true })).toHaveCount(0);
+  });
+
   test('the bell badge reads the unread count and the panel loads on open', async ({ page }) => {
     await signInAsAdmin(page);
     await stubNotifications(page, { unreadCount: 3 });
