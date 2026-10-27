@@ -26,7 +26,6 @@ import { BreadcrumbService } from '../../../../shared/components/breadcrumb/serv
 import { RoleResponse, UserRequest, UserResponse } from '../../model/user.model';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { LocalizedDateComponent } from '../../../../shared/ui/localized-date/localized-date.component';
-import { FormatRelativePipe } from '../../../../shared/pipes/relative-time.pipe';
 import { FormatDateTimePipe } from '../../../../shared/pipes/date-time.pipe';
 import { PermissionMatrixComponent } from '../../../../shared/components/permission-matrix/permission-matrix.component';
 import {
@@ -42,7 +41,7 @@ import { NotifyService } from '../../../../core/notify/notify.service';
   imports: [
     LocalizedDateComponent, CommonModule, FormsModule, ReactiveFormsModule, RouterModule,
     HlmCardImports, HlmButtonImports, HlmBadgeImports, HlmInputImports, HlmLabelImports,
-    HlmSkeletonImports, HlmSeparatorImports, HlmAvatarImports, HlmNativeSelectImports, HlmDropdownMenuImports, NgIcon, TranslocoPipe, PermissionMatrixComponent, FormatRelativePipe, FormatDateTimePipe,
+    HlmSkeletonImports, HlmSeparatorImports, HlmAvatarImports, HlmNativeSelectImports, HlmDropdownMenuImports, NgIcon, TranslocoPipe, PermissionMatrixComponent, FormatDateTimePipe,
   ],
   providers: [provideIcons({
     lucideArrowLeft, lucidePencil, lucideLock, lucideUnlock, lucideCheck, lucideX, lucideLoader2,
