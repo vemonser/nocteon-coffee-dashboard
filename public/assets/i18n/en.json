@@ -2066,7 +2066,7 @@
       "90d": "90d"
     },
     "metrics": {
-      "totalRevenue": "Total revenue (incl. shipping)",
+      "totalRevenue": "Total revenue",
       "totalOrders": "Total orders",
       "avgOrderValue": "Avg order value",
       "totalCustomers": "Total customers",
@@ -2224,7 +2224,7 @@
     "welcomeTitle": "Welcome",
     "welcomeMessage": "Explore your dashboard",
     "welcomeLink": "Go to your first page",
-    "totalRevenueHelp": "Total revenue from all orders",
+    "totalRevenueHelp": "Includes shipping. Counts paid orders only.",
     "ordersHelp": "Orders counted by payment status: PAID only. Delivered or cancelled orders that were refunded do not count as paid, so they are excluded here.",
     "aovHelp": "Average order value",
     "repeatPurchaseRateHelp": "Percentage of customers who purchased more than once",

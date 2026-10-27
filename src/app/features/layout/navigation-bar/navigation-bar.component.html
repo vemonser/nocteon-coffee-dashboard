@@ -19,6 +19,19 @@
 
   <!-- Right -->
   <div class="flex items-center gap-2 lg:gap-3 ms-auto">
+    <!-- Search: a compact trigger on phones, the full field from sm up. -->
+    <button
+      type="button"
+      hlmBtn
+      variant="ghost"
+      size="icon"
+      class="size-9 sm:hidden"
+      (click)="openPalette()"
+      [attr.aria-label]="'nav.search' | transloco"
+    >
+      <ng-icon name="lucideSearch" class="size-5" aria-hidden="true" />
+    </button>
+
     <!-- Search trigger -->
     <button
       #searchTrigger

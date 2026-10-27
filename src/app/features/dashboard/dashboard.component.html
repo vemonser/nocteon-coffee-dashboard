@@ -34,16 +34,16 @@
     @if (!statsService.overviewError(); as stats) {
       <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4" data-testid="kpi-primary-row">
         @if (canRevenue) {
-          <app-kpi-card icon="lucideWallet" [label]="'dashboard.metrics.totalRevenue' | transloco" [value]="(statsService.overview()?.totalRevenue | money)"  [comparisonLabel]="'dashboard.metrics.totalRevenue' | transloco" [scopeNote]="'dashboard.totalRevenueHelp' | transloco" [link]="'/dashboard/orders'" [currency]="statsService.storeCurrency()" />
+          <app-kpi-card icon="lucideWallet" [label]="'dashboard.metrics.totalRevenue' | transloco" [value]="(statsService.overview()?.totalRevenue | money)" [delta]="revenueDelta()" [metric]="'revenue'" [comparisonLabel]="'dashboard.metrics.totalRevenue' | transloco" [scopeNote]="'dashboard.totalRevenueHelp' | transloco" [link]="'/dashboard/orders'" [currency]="statsService.storeCurrency()" />
         }
         @if (canOrdersKPI) {
-          <app-kpi-card icon="lucideShoppingBag" [label]="'dashboard.orders' | transloco" [value]="statsService.overview()?.totalOrders?.toString() ?? '0'"  [comparisonLabel]="'dashboard.orders' | transloco" [scopeNote]="'dashboard.ordersHelp' | transloco" [link]="'/dashboard/orders'" />
+          <app-kpi-card icon="lucideShoppingBag" [label]="'dashboard.orders' | transloco" [value]="statsService.overview()?.totalOrders?.toString() ?? '0'" [delta]="ordersDelta()" [metric]="'orders'" [comparisonLabel]="'dashboard.orders' | transloco" [scopeNote]="'dashboard.ordersHelp' | transloco" [link]="'/dashboard/orders'" />
         }
         @if (canRecentOrders) {
-          <app-kpi-card icon="lucideUserPlus" [label]="'dashboard.newCustomers' | transloco" [value]="(statsService.overview()?.userGrowth?.currentPeriodCount ?? 0).toString()" [comparisonLabel]="'dashboard.newCustomers' | transloco" [link]="'/dashboard/users'" />
+          <app-kpi-card icon="lucideUserPlus" [label]="'dashboard.newCustomers' | transloco" [value]="(statsService.overview()?.userGrowth?.currentPeriodCount ?? 0).toString()" [delta]="customersDelta()" [newMeansNew]="true" [metric]="'customers'" [comparisonLabel]="'dashboard.newCustomers' | transloco" [link]="'/dashboard/users'" />
         }
         @if (canRevenue) {
-          <app-kpi-card icon="lucideReceipt" [label]="'dashboard.averageOrderValue' | transloco" [value]="(statsService.overview()?.averageOrderValue | money)"  [comparisonLabel]="'dashboard.averageOrderValue' | transloco" [scopeNote]="'dashboard.aovHelp' | transloco" [link]="'/dashboard/orders'" [currency]="statsService.storeCurrency()" />
+          <app-kpi-card icon="lucideReceipt" [label]="'dashboard.averageOrderValue' | transloco" [value]="(statsService.overview()?.averageOrderValue | money)" [delta]="aovDelta()" [metric]="'aov'" [comparisonLabel]="'dashboard.averageOrderValue' | transloco" [scopeNote]="'dashboard.aovHelp' | transloco" [link]="'/dashboard/orders'" [currency]="statsService.storeCurrency()" />
         }
       </div>
     }
