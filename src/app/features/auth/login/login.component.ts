@@ -16,8 +16,7 @@ import { HlmInputImports } from '@spartan-ng/helm/input';
 
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../core/auth/auth.service';
-import { canEnterDashboard } from '../../../core/auth/dashboard-roles';
-import { firstAllowedRouteFor } from '../../../core/auth/permission-routes';
+import { DASHBOARD_ENTRY_PERMISSION } from '../../../core/auth/permission-routes';
 import { LanguageService } from '../../../core/i18n/language.service';
 import type { Language } from '../../../core/i18n/language';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
@@ -91,17 +90,14 @@ export class LoginComponent {
         // too), so the status alone can't gate the dashboard — the role can.
         // Storefront accounts are shown the access-denied copy and dropped
         // back out (no session); authGuard covers deep links/reloads.
-        const user = res.data?.user;
-        if (!canEnterDashboard(user)) {
+        if (!this.auth.hasPermission(DASHBOARD_ENTRY_PERMISSION)) {
           this.error.set(this.trx.translate('unauthorized.message'));
           this.auth.clearSession();
           return;
         }
 
         this.success.set(true);
-        // A MODERATOR may not hold dashboard:read; land them on the first
-        // page their permissions actually open instead of /unauthorized.
-        this.router.navigateByUrl(firstAllowedRouteFor(user));
+        this.router.navigate(['/dashboard']);
       },
       error: (err) => {
         this.error.set(err.error?.message ?? 'Login failed');

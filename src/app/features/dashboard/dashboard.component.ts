@@ -21,7 +21,6 @@ import { TopProductsComponent } from '../../shared/components/dashboard/top-prod
 import { WidgetHeaderComponent } from '../../shared/components/widget-header/widget-header.component';
 import { WidgetStateComponent } from '../../shared/components/widget-state/widget-state.component';
 import { AuthService } from '../../core/auth/auth.service';
-import { firstAllowedRouteFor } from '../../core/auth/permission-routes';
 import { DashboardToolbarComponent } from '../../shared/components/dashboard/dashboard-toolbar/dashboard-toolbar.component';
 import { StoreSettingsService } from '../../core/settings/store-settings.service';
 
@@ -84,11 +83,6 @@ export class DashboardComponent {
     !this.canRecentOrders &&
     !this.canLowStock &&
     !this.canOnlineUsers
-  );
-
-  /** First page the reader may open, used by the welcome state. */
-  readonly welcomeTarget = computed(() =>
-    firstAllowedRouteFor(this.auth.currentUser() as any)
   );
 
   /** 403 page reads the denied slug from the URL (`/unauthorized?permission=<slug>`).

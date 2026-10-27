@@ -3,8 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 
 import { AuthService } from '../../../core/auth/auth.service';
-import { canEnterDashboard } from '../../../core/auth/dashboard-roles';
-import { firstAllowedRouteFor } from '../../../core/auth/permission-routes';
+import { DASHBOARD_ENTRY_PERMISSION } from '../../../core/auth/permission-routes';
 
 type CallbackState = 'processing' | 'error' | 'unauthorized';
 
@@ -75,23 +74,19 @@ export class OAuth2CallbackComponent implements OnInit {
 
     this.auth.exchangeOAuth2Code(code).subscribe({
       next: (res) => {
-        const user = res.data?.user;
-        if (!canEnterDashboard(user)) {
+        if (!this.auth.hasPermission(DASHBOARD_ENTRY_PERMISSION)) {
           this.auth.clearSession();
           this.state.set('unauthorized');
           this.message.set(this.trx.translate('unauthorized.message'));
           return;
         }
-        void this.router.navigateByUrl(firstAllowedRouteFor(user), { replaceUrl: true });
+        void this.router.navigate(['/dashboard'], { replaceUrl: true });
       },
       error: (err) => {
         // The refresh cookie may already have established the session before
         // this component ran; a stale code must not throw away a valid session.
-        if (this.auth.isLoggedIn() && canEnterDashboard(this.auth.currentUser())) {
-          void this.router.navigateByUrl(
-            firstAllowedRouteFor(this.auth.currentUser()),
-            { replaceUrl: true },
-          );
+        if (this.auth.isLoggedIn() && this.auth.hasPermission(DASHBOARD_ENTRY_PERMISSION)) {
+          void this.router.navigate(['/dashboard'], { replaceUrl: true });
           return;
         }
         this.auth.clearSession();
@@ -107,10 +102,8 @@ export class OAuth2CallbackComponent implements OnInit {
   }
 
   private finishMissingCode(): void {
-    if (this.auth.isLoggedIn() && canEnterDashboard(this.auth.currentUser())) {
-      void this.router.navigateByUrl(firstAllowedRouteFor(this.auth.currentUser()), {
-        replaceUrl: true,
-      });
+    if (this.auth.isLoggedIn() && this.auth.hasPermission(DASHBOARD_ENTRY_PERMISSION)) {
+      void this.router.navigate(['/dashboard'], { replaceUrl: true });
       return;
     }
     this.state.set('error');

@@ -29,9 +29,6 @@
       <ng-icon name="lucideInfo" class="size-6 mb-3 text-muted-foreground" />
       <h2>{{ 'dashboard.welcomeTitle' | transloco }}</h2>
       <p>{{ 'dashboard.welcomeMessage' | transloco }}</p>
-      <div class="mt-4 flex gap-2">
-        <button hlmBtn [routerLink]="welcomeTarget()">{{ 'dashboard.welcomeLink' | transloco }}</button>
-      </div>
     </div>
   } @else {
     @if (!statsService.overviewError(); as stats) {

@@ -4,7 +4,6 @@ import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideShieldAlert } from '@ng-icons/lucide';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
-import { firstAllowedRouteFor } from '../../core/auth/permission-routes';
 import { AuthService } from '../../core/auth/auth.service';
 
 @Component({
@@ -41,7 +40,7 @@ export class UnauthorizedComponent {
   }
 
   goBack(): void {
-    const next = firstAllowedRouteFor(this.auth.currentUser()!);
-    this.router.navigateByUrl(next);
+    const target = this.auth.hasPermission('dashboard:read') ? '/dashboard' : '/login';
+    void this.router.navigateByUrl(target);
   }
 }

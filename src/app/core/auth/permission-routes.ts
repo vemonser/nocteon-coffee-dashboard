@@ -3,12 +3,17 @@
  *
  * The KEYS are ROUTES (not permissions): every dashboard route resolves to the
  * permission that must hold for it to be openable. The map is what the sidebar,
- * the 403 page and the post-login redirect all ask "may this person open this?".
+ * the 403 page and the sidebar all ask "may this person open this?".
  *
  * Single source for the permission→page mapping. The RBAC pass (A-tasks) put the
  * permission slugs here; the permission-awareness pass (C) consumes them for UX
  * only — the server stays the source of truth for actual authorization.
  */
+
+/** The permission that opens the dashboard shell itself. Role-agnostic on
+ *  purpose: ADMIN holds every permission, MODERATOR holds this one, and any
+ *  future staff role can be granted it without a code change. */
+export const DASHBOARD_ENTRY_PERMISSION = 'dashboard:read';
 
 export const ROUTE_PERMISSIONS: Record<string, string[]> = {
   '/dashboard': ['dashboard:read'],
@@ -82,43 +87,4 @@ export function permissionForRoute(template: string): string | null {
   }
   if (best) return ROUTE_PERMISSIONS[best][0];
   return null;
-}
-
-/** First dashboard page the user may open, in nav order. */
-export function firstAllowedRouteFor(user: { permissions?: string[]; role?: string } | null): string {
-  if (user?.role === 'ADMIN') return '/dashboard';
-  const perms = user?.permissions ?? [];
-  if (perms.includes('dashboard:read')) return '/dashboard';
-  const ordered = [
-    '/dashboard',
-    '/dashboard/orders',
-    '/dashboard/orders/new',
-    '/dashboard/carts',
-    '/dashboard/users',
-    '/dashboard/users/roles',
-    '/dashboard/reviews',
-    '/dashboard/products',
-    '/dashboard/journal',
-    '/dashboard/newsletter',
-    '/dashboard/product-options',
-    '/dashboard/categories',
-    '/dashboard/broadcasts',
-    '/dashboard/contact-messages',
-    '/dashboard/notifications',
-    '/dashboard/promo-codes',
-    '/dashboard/shipping-zones',
-    '/dashboard/origins',
-    '/dashboard/farms',
-    '/dashboard/roast-levels',
-    '/dashboard/processing-methods',
-    '/dashboard/coffee-varieties',
-    '/dashboard/tasting-notes',
-    '/dashboard/brewing-methods',
-    '/dashboard/pairings',
-  ];
-  for (const r of ordered) {
-    const perm = permissionForRoute(r);
-    if (perm && perms.includes(perm)) return r;
-  }
-  return '/unauthorized';
 }

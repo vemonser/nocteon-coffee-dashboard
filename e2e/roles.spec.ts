@@ -3,8 +3,9 @@ import { test, expect, type Page } from '@playwright/test';
 /**
  * Who gets into the dashboard shell, and what the shell shows them.
  *
- * Product rule: ADMIN and MODERATOR share the shell; the pages inside are
- * permission-gated. Storefront accounts never see it.
+ * Product rule: the shell is opened by the `dashboard:read` PERMISSION, not by
+ * a role. ADMIN holds every permission; MODERATOR holds this one and sees only
+ * the pages its other permissions unlock. Storefront accounts hold none.
  *
  * The API is mocked so this suite tests the client gate, not the backend's.
  */
@@ -15,30 +16,27 @@ function fakeJwt(): string {
   return `header.${payload}.signature`;
 }
 
-const MODERATOR = {
-  id: 7,
-  email: 'moderator@example.com',
-  username: 'moderator',
-  role: 'MODERATOR',
-  firstName: 'Mod',
-  lastName: 'Erator',
-  avatarUrl: null,
-  // No notification:read, no user:read.
-  permissions: ['dashboard:read', 'order:read', 'review:read', 'contact:read'],
-};
+function user(role: string, permissions: string[]) {
+  return {
+    id: 7,
+    email: `${role.toLowerCase()}@example.com`,
+    username: role.toLowerCase(),
+    role,
+    firstName: 'Test',
+    lastName: role,
+    avatarUrl: null,
+    permissions,
+  };
+}
 
-const CUSTOMER = {
-  id: 9,
-  email: 'customer@example.com',
-  username: 'customer',
-  role: 'CUSTOMER',
-  firstName: 'Cus',
-  lastName: 'Tomer',
-  avatarUrl: null,
-  permissions: ['order:create', 'order:read'],
-};
+const MODERATOR = user('MODERATOR', ['dashboard:read', 'order:read', 'review:read']);
 
-async function signInAs(page: Page, user: Record<string, unknown>) {
+/** A role that does not exist in the seed: proof the gate is the permission. */
+const SUPPORT = user('SUPPORT', ['dashboard:read']);
+
+const CUSTOMER = user('CUSTOMER', ['order:create', 'order:read']);
+
+async function signInAs(page: Page, sessionUser: Record<string, unknown>) {
   await page.route('**/api/**', (route) => {
     const url = route.request().url();
     if (url.includes('/api/auth/refresh')) {
@@ -47,7 +45,7 @@ async function signInAs(page: Page, user: Record<string, unknown>) {
         contentType: 'application/json',
         body: JSON.stringify({
           success: true,
-          data: { accessToken: fakeJwt(), expiresIn: 900, user },
+          data: { accessToken: fakeJwt(), expiresIn: 900, user: sessionUser },
         }),
       });
     }
@@ -61,8 +59,8 @@ async function signInAs(page: Page, user: Record<string, unknown>) {
   });
 }
 
-test.describe('dashboard roles', () => {
-  test('a moderator reaches the dashboard and sees no notification bell', async ({ page }) => {
+test.describe('dashboard entry', () => {
+  test('a moderator reaches /dashboard and sees no notification bell', async ({ page }) => {
     await signInAs(page, MODERATOR);
 
     await page.goto('/dashboard');
@@ -73,21 +71,29 @@ test.describe('dashboard roles', () => {
     await expect(page.getByTestId('notifications-bell')).toHaveCount(0);
   });
 
-  test('a moderator hitting a page they lack permission for is sent to /unauthorized', async ({
-    page,
-  }) => {
-    await signInAs(page, MODERATOR);
+  test('any role that holds dashboard:read gets in', async ({ page }) => {
+    // SUPPORT is not a seeded role; only the permission is checked.
+    await signInAs(page, SUPPORT);
 
-    await page.goto('/dashboard/notifications');
+    await page.goto('/dashboard');
 
-    await expect(page).toHaveURL(/\/unauthorized$/);
+    await expect(page).toHaveURL(/\/dashboard$/);
   });
 
-  test('a storefront account still never reaches the dashboard', async ({ page }) => {
+  test('a moderator without dashboard:read is sent to /unauthorized', async ({ page }) => {
+    await signInAs(page, user('MODERATOR', ['order:read', 'review:read']));
+
+    await page.goto('/dashboard');
+
+    await expect(page).toHaveURL(/\/unauthorized/);
+    await expect(page.getByTestId('unauthorized-slug')).toHaveText('dashboard:read');
+  });
+
+  test('a storefront account never reaches the dashboard', async ({ page }) => {
     await signInAs(page, CUSTOMER);
 
     await page.goto('/dashboard');
 
-    await expect(page).toHaveURL(/\/login/);
+    await expect(page).toHaveURL(/\/unauthorized/);
   });
 });
