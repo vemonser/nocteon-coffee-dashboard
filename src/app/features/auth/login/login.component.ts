@@ -71,6 +71,10 @@ export class LoginComponent {
     this.showPassword.update((v) => !v);
   }
 
+  loginWithGoogle(): void {
+    this.auth.startGoogleLogin();
+  }
+
   onSubmit() {
     if (this.form.invalid || this.loading()) return;
     this.loading.set(true);

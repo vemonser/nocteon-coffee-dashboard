@@ -100,6 +100,34 @@ export class AuthService {
       );
   }
 
+  /**
+   * Starts the backend OAuth2 authorization-code flow. The browser leaves the
+   * SPA; the backend redirects back to /:locale/oauth2/callback?code=...
+   */
+  startGoogleLogin() {
+    window.location.href = `${this.base}/oauth2/authorization/google`;
+  }
+
+  /**
+   * Exchanges the short-lived, single-use code from the OAuth2 callback for an
+   * access token. The refresh cookie is already set by the redirect response.
+   */
+  exchangeOAuth2Code(code: string) {
+    return this.http
+      .post<any>(
+        `${this.base}/api/auth/oauth2/exchange`,
+        { code },
+        {
+          withCredentials: true,
+        },
+      )
+      .pipe(
+        tap((res) => {
+          this.setSession(res.data.accessToken, res.data.user);
+        }),
+      );
+  }
+
   logout() {
     return this.http
       .post<any>(
