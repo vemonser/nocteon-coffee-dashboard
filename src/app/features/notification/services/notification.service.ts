@@ -1,10 +1,22 @@
-import { Injectable, signal, inject, isDevMode } from '@angular/core';
+import { Injectable, signal, inject, isDevMode, effect } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { interval, switchMap, startWith, of, catchError, Subject, takeUntil } from 'rxjs';
+import {
+  interval,
+  switchMap,
+  startWith,
+  of,
+  catchError,
+  forkJoin,
+  map,
+  Subscription,
+  fromEvent,
+  filter as rxFilter,
+} from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { ApiResponse, PageResponse } from '../../../core/models/api-response.model';
 import { NotificationItem, NotificationFilter } from '../models/notification.model';
 import { NotifyService } from '../../../core/notify/notify.service';
+import { AuthService } from '../../../core/auth/auth.service';
 import {
   MOCK_NOTIFICATION_ITEMS,
   MOCK_NOTIFICATION_PARAM,
@@ -15,6 +27,7 @@ import {
 export class NotificationService {
   private http = inject(HttpClient);
   private notify = inject(NotifyService);
+  private auth = inject(AuthService);
 
   private baseUrl = `${environment.apiUrl}/api/dashboard/notifications`;
 
@@ -29,7 +42,8 @@ export class NotificationService {
   readonly totalPages = signal(0);
   readonly filter = signal<NotificationFilter>('all');
 
-  private destroy$ = new Subject<void>();
+  private polling?: Subscription;
+  private visibility?: Subscription;
   private mockMode = false;
   private mockItems: NotificationItem[] = [];
 
@@ -44,14 +58,28 @@ export class NotificationService {
       this.totalPages.set(1);
       return;
     }
-    this.startPolling();
-    this.refreshUnreadCount();
+
+    // Poll only while a session exists. At boot (login screen) and after
+    // logout there is nothing to count, and a 401 every minute is noise.
+    // `startPolling` also fires the first fetch, so no second call here.
+    effect(() => {
+      if (this.auth.isLoggedIn()) this.startPolling();
+      else this.stopPolling();
+    });
+
+    // Returning to the tab should not wait for the next 60s tick.
+    this.visibility = fromEvent(document, 'visibilitychange')
+      .pipe(rxFilter(() => document.visibilityState === 'visible'))
+      .subscribe(() => this.refreshUnreadCount());
   }
 
   private isMockEnabled(): boolean {
     if (!isDevMode()) return false;
     try {
-      return !!MOCK_NOTIFICATION_PARAM && new URLSearchParams(window.location.search).has(MOCK_NOTIFICATION_PARAM);
+      return (
+        !!MOCK_NOTIFICATION_PARAM &&
+        new URLSearchParams(window.location.search).has(MOCK_NOTIFICATION_PARAM)
+      );
     } catch {
       return false;
     }
@@ -62,7 +90,8 @@ export class NotificationService {
   }
 
   private startPolling(): void {
-    interval(60000)
+    if (this.polling) return;
+    this.polling = interval(60000)
       .pipe(
         startWith(0),
         switchMap(() => {
@@ -71,11 +100,15 @@ export class NotificationService {
             .get<ApiResponse<number>>(`${this.baseUrl}/unread-count`)
             .pipe(catchError(() => of(null)));
         }),
-        takeUntil(this.destroy$),
       )
       .subscribe((res) => {
         if (res) this.unreadCount.set(res.data ?? 0);
       });
+  }
+
+  private stopPolling(): void {
+    this.polling?.unsubscribe();
+    this.polling = undefined;
   }
 
   refreshUnreadCount(): void {
@@ -83,12 +116,11 @@ export class NotificationService {
       this.unreadCount.set(this.notifications().filter((n) => !n.read).length);
       return;
     }
-    this.http
-      .get<ApiResponse<number>>(`${this.baseUrl}/unread-count`)
-      .subscribe({
-        next: (res) => this.unreadCount.set(res.data ?? 0),
-        error: () => {},
-      });
+    if (!this.auth.isLoggedIn()) return;
+    this.http.get<ApiResponse<number>>(`${this.baseUrl}/unread-count`).subscribe({
+      next: (res) => this.unreadCount.set(res.data ?? 0),
+      error: () => {},
+    });
   }
 
   loadItems(reset = true): void {
@@ -119,30 +151,26 @@ export class NotificationService {
   private fetch(mode: 'replace' | 'append'): void {
     this.loading.set(true);
     this.error.set(null);
-    let params = new HttpParams()
-      .set('page', String(this.page()))
-      .set('size', String(this.size));
+    let params = new HttpParams().set('page', String(this.page())).set('size', String(this.size));
     if (this.filter() === 'unread') params = params.set('unreadOnly', 'true');
 
-    this.http
-      .get<ApiResponse<PageResponse<NotificationItem>>>(this.baseUrl, { params })
-      .subscribe({
-        next: (res) => {
-          const content = res.data?.content ?? [];
-          const current = mode === 'append' ? this.notifications() : [];
-          this.notifications.set([...current, ...content]);
-          this.hasMore.set(!(res.data?.last ?? true));
-          this.totalElements.set(res.data?.totalElements ?? content.length);
-          this.totalPages.set(res.data?.totalPages ?? 1);
-          if (mode === 'append') this.page.update((p) => p + 1);
-          this.loading.set(false);
-        },
-        error: (err) => {
-          this.loading.set(false);
-          this.error.set(err?.message || 'load_failed');
-          this.notify.apiError(err, 'notify.errorFallback', 'Could not load notifications');
-        },
-      });
+    this.http.get<ApiResponse<PageResponse<NotificationItem>>>(this.baseUrl, { params }).subscribe({
+      next: (res) => {
+        const content = res.data?.content ?? [];
+        const current = mode === 'append' ? this.notifications() : [];
+        this.notifications.set([...current, ...content]);
+        this.hasMore.set(!(res.data?.last ?? true));
+        this.totalElements.set(res.data?.totalElements ?? content.length);
+        this.totalPages.set(res.data?.totalPages ?? 1);
+        if (mode === 'append') this.page.update((p) => p + 1);
+        this.loading.set(false);
+      },
+      error: (err) => {
+        this.loading.set(false);
+        this.error.set(this.notify.backendMessage(err) ?? 'load_failed');
+        this.notify.apiError(err, 'notify.errorFallback', 'Could not load notifications');
+      },
+    });
   }
 
   private applyMockFilter(): void {
@@ -168,11 +196,16 @@ export class NotificationService {
 
   markAsRead(item: NotificationItem, silent = false): void {
     if (item.read) return;
-    const prev = item.read;
-    this.notifications.update((list) =>
-      list.map((n) => (n.id === item.id ? { ...n, read: true } : n)),
-    );
+    const index = this.notifications().findIndex((n) => n.id === item.id);
     const prevCount = this.unreadCount();
+    // A read item must leave the "Unread" view immediately.
+    const leavesUnreadView = this.filter() === 'unread';
+
+    this.notifications.update((list) => {
+      const next = list.map((n) => (n.id === item.id ? { ...n, read: true } : n));
+      return leavesUnreadView ? next.filter((n) => n.id !== item.id) : next;
+    });
+    if (leavesUnreadView) this.totalElements.update((t) => Math.max(0, t - 1));
     this.unreadCount.set(Math.max(0, prevCount - 1));
 
     if (this.mockMode) {
@@ -186,9 +219,15 @@ export class NotificationService {
         if (!silent) this.notify.success('notifications.markedRead', 'Marked as read');
       },
       error: (err) => {
-        this.notifications.update((list) =>
-          list.map((n) => (n.id === item.id ? { ...n, read: prev } : n)),
-        );
+        this.notifications.update((list) => {
+          const restored = list.map((n) => (n.id === item.id ? { ...n, read: false } : n));
+          if (!leavesUnreadView) return restored;
+          if (restored.some((n) => n.id === item.id)) return restored;
+          const copy = [...restored];
+          copy.splice(Math.max(0, Math.min(index, copy.length)), 0, { ...item, read: false });
+          return copy;
+        });
+        if (leavesUnreadView) this.totalElements.update((t) => t + 1);
         this.unreadCount.set(prevCount);
         this.notify.apiError(err, 'notify.errorFallback', 'Could not mark as read');
       },
@@ -198,7 +237,12 @@ export class NotificationService {
   markAllAsRead(): void {
     const prevItems = this.notifications();
     const prevCount = this.unreadCount();
-    this.notifications.update((list) => list.map((n) => ({ ...n, read: true })));
+    const prevTotal = this.totalElements();
+    const unreadIds = new Set(prevItems.filter((n) => !n.read).map((n) => n.id));
+    const leavesUnreadView = this.filter() === 'unread';
+
+    this.notifications.set(leavesUnreadView ? [] : prevItems.map((n) => ({ ...n, read: true })));
+    if (leavesUnreadView) this.totalElements.set(0);
     this.unreadCount.set(0);
 
     if (this.mockMode) {
@@ -214,7 +258,12 @@ export class NotificationService {
         this.notify.success('notifications.allMarkedAsRead', 'All marked as read');
       },
       error: (err) => {
-        this.notifications.set(prevItems);
+        // Restore only what was unread: a whole-list snapshot would resurrect
+        // items deleted while this request was in flight.
+        this.notifications.set(
+          prevItems.map((n) => (unreadIds.has(n.id) ? { ...n, read: false } : n)),
+        );
+        this.totalElements.set(prevTotal);
         this.unreadCount.set(prevCount);
         this.notify.apiError(err, 'notify.errorFallback', 'Could not mark all as read');
       },
@@ -222,7 +271,10 @@ export class NotificationService {
   }
 
   markAsUnread(item: NotificationItem): void {
-    const prev = item.read;
+    // Already unread: the old code incremented the badge anyway.
+    if (!item.read) return;
+    const prevCount = this.unreadCount();
+
     this.notifications.update((list) =>
       list.map((n) => (n.id === item.id ? { ...n, read: false } : n)),
     );
@@ -238,50 +290,99 @@ export class NotificationService {
       next: () => {},
       error: (err) => {
         this.notifications.update((list) =>
-          list.map((n) => (n.id === item.id ? { ...n, read: prev } : n)),
+          list.map((n) => (n.id === item.id ? { ...n, read: true } : n)),
         );
-        this.unreadCount.update((c) => Math.max(0, c - 1));
+        this.unreadCount.set(prevCount);
         this.notify.apiError(err, 'notify.errorFallback', 'Could not mark as unread');
       },
     });
   }
 
-  delete(item: NotificationItem): void {
-    const prevItems = this.notifications();
+  delete(item: NotificationItem, silent = false): void {
+    const index = this.notifications().findIndex((n) => n.id === item.id);
     const wasUnread = !item.read;
+    const prevCount = this.unreadCount();
+
     this.notifications.update((list) => list.filter((n) => n.id !== item.id));
     if (wasUnread) this.unreadCount.update((c) => Math.max(0, c - 1));
 
     if (this.mockMode) {
       this.mockItems = this.mockItems.filter((n) => n.id !== item.id);
       this.applyMockFilter();
-      this.notify.success('notifications.deleted', 'Deleted');
+      if (!silent) this.notify.success('notifications.deleted', 'Deleted');
       return;
     }
 
     this.http.delete(`${this.baseUrl}/${item.id}`).subscribe({
       next: () => {
-        this.notify.success('notifications.deleted', 'Deleted');
+        if (!silent) this.notify.success('notifications.deleted', 'Deleted');
       },
       error: (err) => {
-        this.notifications.set(prevItems);
-        if (wasUnread) this.unreadCount.update((c) => c + 1);
+        this.restoreDeleted(item, index);
+        if (wasUnread) this.unreadCount.set(prevCount);
         this.notify.apiError(err, 'notify.errorFallback', 'Could not delete');
       },
     });
   }
 
+  /** One request per item (the API has no bulk delete), one toast for all. */
   deleteMany(items: NotificationItem[]): void {
-    items.forEach((i) => this.delete(i));
+    const targets = items.filter((i) => this.notifications().some((n) => n.id === i.id));
+    if (targets.length === 0) return;
+
+    if (this.mockMode) {
+      targets.forEach((i) => this.delete(i, true));
+      this.notify.success('notifications.deleted', 'Deleted');
+      return;
+    }
+
+    const snapshots = targets.map((item) => ({
+      item,
+      index: this.notifications().findIndex((n) => n.id === item.id),
+      wasUnread: !item.read,
+    }));
+    const prevCount = this.unreadCount();
+    const ids = new Set(targets.map((i) => i.id));
+
+    this.notifications.update((list) => list.filter((n) => !ids.has(n.id)));
+    this.unreadCount.set(Math.max(0, prevCount - snapshots.filter((s) => s.wasUnread).length));
+
+    forkJoin(
+      targets.map((item) =>
+        this.http.delete(`${this.baseUrl}/${item.id}`).pipe(
+          map(() => true),
+          catchError(() => of(false)),
+        ),
+      ),
+    ).subscribe((results) => {
+      const failed = snapshots.filter((_, i) => !results[i]);
+      if (failed.length > 0) {
+        // Restore only the items that failed, not a whole-list snapshot.
+        failed
+          .sort((a, b) => a.index - b.index)
+          .forEach((s) => this.restoreDeleted(s.item, s.index));
+        if (failed.some((s) => s.wasUnread)) this.unreadCount.set(prevCount);
+        this.notify.apiError(null, 'notify.errorFallback', 'Could not delete some notifications');
+      }
+      if (results.some(Boolean)) {
+        this.notify.success('notifications.deleted', 'Deleted');
+      }
+    });
   }
 
   markManyAsRead(items: NotificationItem[]): void {
-    items.forEach((i) => this.markAsRead(i, true));
+    const targets = items.filter((i) => !i.read);
+    if (targets.length === 0) return;
+    targets.forEach((i) => this.markAsRead(i, true));
     this.notify.success('notifications.markedRead', 'Marked as read');
   }
 
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
+  private restoreDeleted(item: NotificationItem, index: number): void {
+    this.notifications.update((list) => {
+      if (list.some((n) => n.id === item.id)) return list;
+      const copy = [...list];
+      copy.splice(Math.max(0, Math.min(index, copy.length)), 0, item);
+      return copy;
+    });
   }
 }

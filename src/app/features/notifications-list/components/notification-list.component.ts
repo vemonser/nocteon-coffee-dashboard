@@ -88,7 +88,10 @@ export class NotificationListComponent {
     return list.length > 0 && list.every((n) => this.selected().has(n.id));
   });
 
-  currentPage = computed(() => Math.max(0, this.pageData() - 1));
+  // `page` is the 0-based page index the store last loaded; the UI labels
+  // pages from 1. Subtracting 1 here made page 2 render as "Page 1" and
+  // disabled Prev, so paging past page 2 kept reloading the same page.
+  currentPage = computed(() => Math.max(0, this.pageData()));
 
   typeLabel(type: string): string {
     const config = NOTIFICATION_TYPE_REGISTRY[type];
