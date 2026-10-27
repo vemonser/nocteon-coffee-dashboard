@@ -12,9 +12,12 @@ import { AuthService } from './auth.service';
  * message there.
  *
  * Security boundary — do not over-claim this. The backend authenticates any
- * valid account, so `/api/dashboard/*` remains reachable by an authenticated
- * non-admin who calls the API directly. Real authorization must be enforced
- * server-side; this guard is defence-in-depth and correct UX, not the boundary.
+ * valid account and authorises each dashboard endpoint by permission
+ * (`dashboard:read`, `notification:read`, …), not by role: a CUSTOMER holds
+ * none of them and gets 403, but a MODERATOR does hold `dashboard:read`.
+ * This guard is therefore STRICTER than the API (ADMIN only), and it is the
+ * only thing keeping a moderator out of the UI. Decide that product rule
+ * deliberately; the API will not enforce it for you.
  */
 export const authGuard: CanActivateFn = () => {
   const auth = inject(AuthService);
