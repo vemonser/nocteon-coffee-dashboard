@@ -100,23 +100,34 @@ export class ProfileComponent {
     const { currentPassword, newPassword, confirmPassword } = this.passwordForm.value;
 
     if (newPassword !== confirmPassword) {
+      this.notify.warning('profile.passwordMismatch', 'Passwords do not match');
       return;
     }
 
     this.saving.set(true);
     this.successMessage.set('');
 
-    this.auth.changePassword({ currentPassword, newPassword }).subscribe({
-      next: () => {
-        this.saving.set(false);
-        this.successMessage.set('Password changed successfully');
-        this.passwordForm.reset();
-      },
-      error: (err) => {
-        this.saving.set(false);
-        this.notify.apiError(err, 'notify.errorFallback', 'Could not change password');
-      },
-    });
+    this.auth
+      .changePassword({
+        oldPassword: currentPassword,
+        newPassword,
+        confirmPassword,
+      })
+      .subscribe({
+        next: () => {
+          this.saving.set(false);
+          this.passwordForm.reset();
+          // The backend bumps tokenVersion and revokes refresh tokens, so the
+          // current session is intentionally dead; force a clean re-login.
+          this.auth.clearSession();
+          this.notify.success('profile.passwordChanged', 'Password changed. Please sign in again.');
+          void this.router.navigate(['/login'], { replaceUrl: true });
+        },
+        error: (err) => {
+          this.saving.set(false);
+          this.notify.apiError(err, 'notify.errorFallback', 'Could not change password');
+        },
+      });
   }
 
   protected onAvatarUpload(): void {

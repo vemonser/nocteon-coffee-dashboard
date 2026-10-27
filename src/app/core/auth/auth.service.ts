@@ -173,7 +173,11 @@ export class AuthService {
     );
   }
 
-  changePassword(data: { currentPassword: string; newPassword: string }): Observable<any> {
+  changePassword(data: {
+    oldPassword: string;
+    newPassword: string;
+    confirmPassword: string;
+  }): Observable<any> {
     return this.http.put<any>(`${this.base}/api/users/me/password`, data);
   }
 
