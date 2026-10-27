@@ -44,9 +44,7 @@ export class NotificationComponent {
   focusedIndex = signal(-1);
 
   /** Keep the 380px panel inside the viewport on both sides of the bell. */
-  align = computed<'start' | 'end'>(() =>
-    this.language.language() === 'ar' ? 'start' : 'end',
-  );
+  align = computed<'start' | 'end'>(() => (this.language.language() === 'ar' ? 'start' : 'end'));
 
   canRead = () => this.perm.has('notification:read');
   canUpdate = () => this.perm.has('notification:update');
@@ -81,6 +79,9 @@ export class NotificationComponent {
     if (state === 'open') {
       this.focusedIndex.set(-1);
       this.notificationService.loadItems(true);
+      // The badge polls once a minute; opening the panel is a user asking
+      // "what's new?", so get the current count now.
+      this.notificationService.refreshUnreadCount();
     }
   }
 
@@ -127,9 +128,7 @@ export class NotificationComponent {
   private focusItem(): void {
     setTimeout(() => {
       const idx = this.focusedIndex();
-      const el = document.querySelector(
-        `[data-idx="${idx}"] .item-main`,
-      ) as HTMLElement | null;
+      const el = document.querySelector(`[data-idx="${idx}"] .item-main`) as HTMLElement | null;
       el?.focus();
       el?.scrollIntoView({ block: 'nearest' });
     }, 0);

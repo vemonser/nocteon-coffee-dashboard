@@ -76,7 +76,13 @@
         </button>
       }
       @if (canDelete()) {
-        <button hlmBtn variant="outline" size="sm" class="text-destructive" (click)="deleteSelected()">
+        <button
+          hlmBtn
+          variant="outline"
+          size="sm"
+          class="text-destructive"
+          (click)="deleteSelected()"
+        >
           {{ 'notifications.deleteSelected' | transloco }}
         </button>
       }
@@ -124,7 +130,9 @@
           [attr.aria-label]="'notifications.selectAll' | transloco"
           (change)="toggleAll()"
         />
-        <span class="text-xs text-muted-foreground">{{ 'notifications.selectAll' | transloco }}</span>
+        <span class="text-xs text-muted-foreground">{{
+          'notifications.selectAll' | transloco
+        }}</span>
       </div>
       <div role="list">
         @for (n of visibleItems(); track n.id) {
@@ -164,6 +172,7 @@
           variant="outline"
           size="sm"
           [disabled]="currentPage() === 0"
+          [attr.aria-label]="'common.previousPage' | transloco"
           (click)="goToPage(currentPage() - 1)"
         >
           <ng-icon name="lucideChevronLeft" class="size-4" aria-hidden="true" />
@@ -173,6 +182,7 @@
           variant="outline"
           size="sm"
           [disabled]="currentPage() + 1 >= totalPages()"
+          [attr.aria-label]="'common.nextPage' | transloco"
           (click)="goToPage(currentPage() + 1)"
         >
           <ng-icon name="lucideChevronRight" class="size-4" aria-hidden="true" />
