@@ -23,6 +23,7 @@ import { WidgetStateComponent } from '../../shared/components/widget-state/widge
 import { AuthService } from '../../core/auth/auth.service';
 import { DashboardToolbarComponent } from '../../shared/components/dashboard/dashboard-toolbar/dashboard-toolbar.component';
 import { StoreSettingsService } from '../../core/settings/store-settings.service';
+import { computeDelta } from '../../core/dashboard/delta';
 
 @Component({
   selector: 'app-dashboard',
@@ -71,6 +72,42 @@ export class DashboardComponent {
   readonly canOpenOrders = this.auth.hasPermission('order:read');
   readonly canUnreadMessages = this.auth.hasPermission('contact:read');
   readonly canReviewsAwaiting = this.auth.hasPermission('review:read');
+
+  /**
+   * Period-over-period deltas. The stats service already derives the previous
+   * window (span - current) for revenue, orders, AOV and coffee, and the
+   * overview carries the previous customer count — the cards only had to be
+   * wired. `computeDelta` decides the tone; a zero baseline stays "no prior
+   * data" unless the card opts in with newMeansNew (new customers).
+   */
+  readonly revenueDelta = computed(() =>
+    computeDelta(
+      this.statsService.overview()?.totalRevenue ?? Number.NaN,
+      this.statsService.overview()?.previousTotalRevenue,
+      'revenue',
+    ),
+  );
+  readonly ordersDelta = computed(() =>
+    computeDelta(
+      this.statsService.overview()?.totalOrders ?? Number.NaN,
+      this.statsService.overview()?.previousTotalOrders,
+      'orders',
+    ),
+  );
+  readonly aovDelta = computed(() =>
+    computeDelta(
+      this.statsService.overview()?.averageOrderValue ?? Number.NaN,
+      this.statsService.overview()?.previousAverageOrderValue,
+      'aov',
+    ),
+  );
+  readonly customersDelta = computed(() =>
+    computeDelta(
+      this.statsService.overview()?.userGrowth?.currentPeriodCount ?? Number.NaN,
+      this.statsService.overview()?.userGrowth?.previousPeriodCount,
+      'customers',
+    ),
+  );
 
   /** Welcome state: shown when the user has dashboard:read but no widget
       permission is true.  Links go to the first page they can open. */
