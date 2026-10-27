@@ -23,7 +23,7 @@
   "src/app/features/contact-messages/components/contact-messages-list.component.html": {
     "input": 1,
     "select": 0,
-    "button": 1
+    "button": 3
   },
   "src/app/features/dashboard/dashboard-state/components/dashboard-overview.component.html": {
     "input": 0,
@@ -53,12 +53,12 @@
   "src/app/features/notification/components/notification.component.html": {
     "input": 0,
     "select": 0,
-    "button": 1
+    "button": 2
   },
   "src/app/features/notifications-list/components/notification-list.component.html": {
-    "input": 0,
-    "select": 0,
-    "button": 3
+    "input": 2,
+    "select": 1,
+    "button": 2
   },
   "src/app/features/orders/order-detail/order-detail.component.html": {
     "input": 0,
@@ -90,6 +90,11 @@
     "select": 0,
     "button": 1
   },
+  "src/app/features/products/components/steps/basic-info-step/basic-info-step.component.html": {
+    "input": 0,
+    "select": 0,
+    "button": 2
+  },
   "src/app/features/products/components/steps/media-step/media-step.component.html": {
     "input": 3,
     "select": 0,
@@ -98,7 +103,7 @@
   "src/app/features/products/components/steps/pairings-step/pairings-step.component.html": {
     "input": 0,
     "select": 0,
-    "button": 1
+    "button": 2
   },
   "src/app/features/products/components/steps/tasting-notes-step/tasting-notes-step.component.html": {
     "input": 0,
@@ -219,10 +224,5 @@
     "input": 0,
     "select": 0,
     "button": 5
-  },
-  "src/app/features/products/components/steps/basic-info-step/basic-info-step.component.html": {
-    "input": 0,
-    "select": 0,
-    "button": 1
   }
 }

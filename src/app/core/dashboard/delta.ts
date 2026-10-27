@@ -4,7 +4,7 @@
  * The rule set is fixed by the product decision:
  *
  *   - previous = 0, current > 0  -> "New"   (no baseline to compare against)
- *   - previous = 0, current = 0  -> "—"     (nothing happened, and no baseline)
+ *   - previous = 0, current = 0  -> "No change" (nothing happened, no baseline)
  *   - current = previous         -> "No change" (neutral gray, no arrow)
  *   - current > previous         -> "+x%"  (positive)
  *   - current < previous         -> "-x%"  (negative)
@@ -20,11 +20,12 @@
  *   'up'      positive change  -> success colour, up arrow
  *   'down'    negative change  -> destructive colour, down arrow
  *   'flat'    no change        -> muted colour, NO arrow
- *   'new'     no baseline      -> neutral colour, NO arrow
+ *   'new'     no baseline      -> neutral colour, NO arrow. Only cards that
+ *                                 opt in with `newMeansNew` render the badge.
  *   'none'    not computable   -> muted, NO arrow
  */
 
-export type DeltaTone = 'up' | 'down' | 'flat' | 'none';
+export type DeltaTone = 'up' | 'down' | 'flat' | 'new' | 'none';
 
 export interface DeltaResult {
   /** Raw percentage change, rounded to 1 decimal. `null` when not computable. */
@@ -64,9 +65,29 @@ export function computeDelta(
   if (previous === undefined || previous === null) return none;
   if (!Number.isFinite(current) || !Number.isFinite(previous)) return none;
 
-  // T1: If previous is 0 -> "No prior data" (none, not new)
+  // No baseline. "New" is real information only where newness is the news,
+  // so the tone carries it and `deltaDisplay` decides whether to show it.
   if (previous === 0) {
-    return none;
+    if (current > 0) {
+      return {
+        percent: null,
+        isNew: true,
+        isFlat: false,
+        isUp: false,
+        isDown: false,
+        tone: 'new',
+        metric,
+      };
+    }
+    return {
+      percent: null,
+      isNew: false,
+      isFlat: true,
+      isUp: false,
+      isDown: false,
+      tone: 'flat',
+      metric,
+    };
   }
 
   const pct = ((current - previous) / previous) * 100;
@@ -119,6 +140,8 @@ export function deltaDisplay(
 ): DeltaDisplay {
   if (!result) return 'none';
   switch (result.tone) {
+    case 'new':
+      return newMeansNew ? 'new' : 'none';
     case 'flat':
       return 'flat';
     case 'up':

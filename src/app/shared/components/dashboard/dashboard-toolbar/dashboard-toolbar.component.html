@@ -96,7 +96,7 @@
   <!-- Custom date range popover -->
   @if (customRangeOpen()) {
     <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50" (click)="closeCustomRange()">
-      <div class="bg-card p-4 rounded-lg shadow-lg" (click)="$event.stopPropagation()">
+      <div class="dialog-surface p-4" (click)="$event.stopPropagation()">
         <h3 class="text-sm font-medium mb-3">{{ 'dashboard.customRange' | transloco }}</h3>
         <div class="flex gap-2 mb-3">
           <input type="date" [(ngModel)]="customStart" class="rounded border px-2 py-1 text-sm" />
