@@ -159,7 +159,8 @@ export class KpiCardComponent {
   readonly deltaText = computed(() => {
     const d = this.delta();
     this.language.language();
-    const display = deltaDisplay(d);
+    const display = deltaDisplay(d, this.newMeansNew());
+    if (display === 'new') return this.transloco.translate('dashboard.delta.new');
     if (display === 'flat') return this.transloco.translate('dashboard.delta.noChange');
     if (display !== 'percent') return '';
     return formatSignedPercent(d?.percent ?? 0, this.language.language());

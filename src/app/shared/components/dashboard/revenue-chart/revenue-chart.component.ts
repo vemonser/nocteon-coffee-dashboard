@@ -309,6 +309,7 @@ export class RevenueChartComponent {
     if (!delta) return 'No prior data';
     if (delta.tone === 'flat') return 'No change';
     if (delta.tone === 'none') return 'No prior data';
+    if (delta.tone === 'new') return 'No prior data';
     const pct = formatSignedPercent(delta.percent ?? 0, this.language.language());
     return pct;
   });
@@ -354,6 +355,7 @@ export class RevenueChartComponent {
     if (!delta) return 'No prior data';
     if (delta.tone === 'flat') return 'No change';
     if (delta.tone === 'none') return 'No prior data';
+    if (delta.tone === 'new') return 'No prior data';
     return formatSignedPercent(delta.percent ?? 0, this.language.language());
   };
 
