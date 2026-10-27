@@ -10,7 +10,38 @@ import { creds, fillLoginForm, gotoLogin, submitLogin } from './helpers/auth';
  * each case watches the network response and fails on any 5xx during load.
  */
 
-const CASES = [
+const CASES: Array<{ name: string; path: string; api: RegExp | null }> = [
+  { name: 'users', path: '/dashboard/users', api: /\/api\/dashboard\/users\?/ },
+  {
+    name: 'roles',
+    path: '/dashboard/users/roles',
+    api: /\/api\/dashboard\/roles(\?|$)/,
+  },
+  { name: 'journal', path: '/dashboard/journal', api: /\/api\/dashboard\/journal\?/ },
+  {
+    name: 'store settings',
+    path: '/dashboard/store-settings',
+    api: /\/api\/settings(\?|$)/,
+  },
+  {
+    name: 'newsletter',
+    path: '/dashboard/newsletter',
+    api: /\/api\/dashboard\/users\?/,
+  },
+  {
+    name: 'broadcasts',
+    path: '/dashboard/broadcasts',
+    api: /\/api\/dashboard\/broadcasts\?/,
+  },
+  {
+    name: 'promo codes',
+    path: '/dashboard/promo-codes',
+    api: /\/api\/dashboard\/promo-codes\?/,
+  },
+  { name: 'products', path: '/dashboard/products', api: /\/api\/dashboard\/products\?/ },
+  { name: 'carts', path: '/dashboard/carts', api: /\/api\/dashboard\/carts\?/ },
+  // The profile page reads the session, no list call: it only has to render.
+  { name: 'profile', path: '/dashboard/profile', api: null },
   { name: 'orders', path: '/dashboard/orders', api: /\/api\/dashboard\/orders\?/ },
   { name: 'reviews', path: '/dashboard/reviews', api: /\/api\/dashboard\/reviews\?/ },
   {
@@ -107,14 +138,17 @@ test.describe('catalogue consoles', () => {
       };
       page.on('response', onResponse);
 
-      const listResponse = page.waitForResponse(
-        (r) => c.api.test(r.url()) && r.request().method() === 'GET',
-        { timeout: 30_000 },
-      );
+      const listResponse = c.api
+        ? page.waitForResponse((r) => c.api!.test(r.url()) && r.request().method() === 'GET', {
+            timeout: 30_000,
+          })
+        : null;
 
       await page.goto(c.path, { waitUntil: 'domcontentloaded' });
-      const response = await listResponse;
-      expect(response.status(), `${c.name} list endpoint`).toBe(200);
+      if (listResponse) {
+        const response = await listResponse;
+        expect(response.status(), `${c.name} list endpoint`).toBe(200);
+      }
 
       await expect(page.locator('h1, h2').first()).toBeVisible({ timeout: 20_000 });
       // A failed widget says so; a working page never shows the error copy.
