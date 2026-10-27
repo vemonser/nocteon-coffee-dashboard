@@ -15,6 +15,7 @@ import { NotificationItem } from '../models/notification.model';
 import { NotificationItemComponent } from './notification-item.component';
 import { notificationRoute } from '../notification-type.registry';
 import { LanguageService } from '../../../core/i18n/language.service';
+import { DialogShellComponent } from '../../../shared/ui/dialog-shell/dialog-shell.component';
 
 @Component({
   selector: 'app-notification',
@@ -28,6 +29,7 @@ import { LanguageService } from '../../../core/i18n/language.service';
     HlmSeparatorImports,
     TranslocoPipe,
     NotificationItemComponent,
+    DialogShellComponent,
   ],
   providers: [provideIcons({ lucideBell, lucideBellOff, lucideMailOpen })],
   templateUrl: './notification.component.html',
@@ -42,6 +44,8 @@ export class NotificationComponent {
 
   isOpen = signal(false);
   focusedIndex = signal(-1);
+  /** The row waiting for a delete confirmation — never deleted on one click. */
+  pendingDelete = signal<NotificationItem | null>(null);
 
   /** Keep the 380px panel inside the viewport on both sides of the bell. */
   align = computed<'start' | 'end'>(() => (this.language.language() === 'ar' ? 'start' : 'end'));
@@ -159,7 +163,21 @@ export class NotificationComponent {
   }
 
   onDelete(item: NotificationItem): void {
+    // Close the panel first: the popover is portaled above the dialog, so an
+    // open panel covers the dialog's own actions.
+    this.close();
+    this.pendingDelete.set(item);
+  }
+
+  confirmDelete(): void {
+    const item = this.pendingDelete();
+    if (!item) return;
     this.notificationService.delete(item);
+    this.pendingDelete.set(null);
+  }
+
+  cancelDelete(): void {
+    this.pendingDelete.set(null);
   }
 
   loadMore(): void {

@@ -205,4 +205,20 @@
       </hlm-popover-content>
     </hlm-popover>
   </div>
+
+  <app-dialog-shell
+    [open]="pendingDelete() !== null"
+    [title]="'notifications.deleteTitle' | transloco"
+    panelRole="alertdialog"
+    size="sm"
+    (closed)="cancelDelete()"
+  >
+    <p class="text-sm text-muted-foreground">{{ 'notifications.deleteOneMessage' | transloco }}</p>
+    <button dialog-footer-end hlmBtn variant="outline" (click)="cancelDelete()">
+      {{ 'common.cancel' | transloco }}
+    </button>
+    <button dialog-footer-end hlmBtn variant="destructive" (click)="confirmDelete()">
+      {{ 'notifications.kebab.delete' | transloco }}
+    </button>
+  </app-dialog-shell>
 }
