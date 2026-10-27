@@ -135,7 +135,7 @@
         <input
           hlmInput
           type="search"
-          class="!h-8 w-full ps-9"
+          class="!h-8 w-full ps-9 h-[var(--filter-control-height)]"
           [ngModel]="search()"
           (ngModelChange)="onSearch($event)"
           [placeholder]="'reviews.search' | transloco"
@@ -323,7 +323,7 @@
                 <app-verified-badge [verified]="item.verified" />
               </div>
               <p class="text-xs text-muted-foreground">
-                <app-localized-date [value]="item.createdAt" />
+                <app-localized-date [value]="item.createdAt" [showTime]="true" [withComma]="true" />
               </p>
               <div class="mt-1 flex items-center gap-1.5">
                 <app-rating-stars [rating]="item.rating" />

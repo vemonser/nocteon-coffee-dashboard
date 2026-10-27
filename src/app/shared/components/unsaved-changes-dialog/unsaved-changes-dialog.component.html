@@ -1,0 +1,15 @@
+@if (svc.openState(); as opts) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm" (click)="svc.close('stay')" (keydown.escape)="svc.close('stay')">
+    <div role="alertdialog" aria-modal="true" aria-labelledby="uc-title" aria-describedby="uc-body" class="dialog-surface w-full max-w-md p-6" (click)="$event.stopPropagation()">
+      <h2 id="uc-title" class="text-lg font-medium">{{ 'unsavedChanges.title' | transloco }}</h2>
+      <p id="uc-body" class="mt-2 text-sm text-muted-foreground">{{ 'unsavedChanges.body' | transloco }}</p>
+      <div class="mt-6 flex items-center justify-end gap-2">
+        <button hlmBtn variant="destructive" (click)="svc.close('discard')">{{ 'unsavedChanges.discard' | transloco }}</button>
+        <button hlmBtn variant="outline" (click)="svc.close('stay')" autofocus>{{ 'unsavedChanges.stay' | transloco }}</button>
+        @if (opts.canSave) {
+          <button hlmBtn (click)="svc.close('save')">{{ 'unsavedChanges.saveAndLeave' | transloco }}</button>
+        }
+      </div>
+    </div>
+  </div>
+}

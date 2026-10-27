@@ -1,5 +1,6 @@
 ﻿import { Component, inject, OnInit, signal, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ConfirmDialogService } from '../../../../core/services/confirm-dialog.service';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { map, switchMap, catchError, of, tap } from 'rxjs';
@@ -59,6 +60,7 @@ type EditMode = 'view' | 'edit';
 })
 export class FarmDetailComponent implements OnInit {
   private notify = inject(NotifyService);
+  private confirmDialog = inject(ConfirmDialogService);
   route = inject(ActivatedRoute);
   router = inject(Router);
   private fb = inject(FormBuilder);
@@ -341,9 +343,9 @@ export class FarmDetailComponent implements OnInit {
       });
   }
 
-  deleteFarm(): void {
+async deleteFarm(): Promise<void> {
     const name = this.getTranslationName('en');
-    if (!confirm(`Delete "${name}"? This cannot be undone.`)) return;
+    if (!(await this.confirmDialog.confirm({ title: 'Delete', message: `Delete "${name}"? This cannot be undone.`, tone: 'destructive' }))) return;
 
     const slug = this.farm()?.slug;
     if (!slug) return;

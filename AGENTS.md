@@ -1,138 +1,23 @@
-# AGENTS.md — NocteonDash
+# Nocteon admin dashboard: rules for every task
 
-## Stack
+## Workflow
+- One branch per task; commit per sub-task "area: <ID> <title>"; run build + lint before each commit; paste `git diff --stat` in the report.
+- Never mark a task Done without evidence (a viewport screenshot, a measured value in results.json, or a passing test). Report table: Task | Done/Partial/Skipped | files | evidence | notes.
+- Screenshots are VIEWPORT captures (1440x900). Full-page captures of tall pages show fake clipped text at fixed screen heights (around y=880 and y=1530): that is a capture artifact, not a bug.
+- Never invent backend endpoints or fields. Write what is missing under "Needs backend" in DECISIONS.md and build a safe fallback. Never run seeds or migrations against production data.
+- Source of truth for tokens and components: design.md.
 
-- **Angular 22** (standalone components, signals, functional guards/interceptors)
-- **TypeScript ~6.0** with strict options (`noImplicitOverride`, `noPropertyAccessFromIndexSignature`, `noImplicitReturns`, `noFallthroughCasesInSwitch`)
-- **Tailwind CSS 4** via PostCSS plugin (`@tailwindcss/postcss`) — NOT the old `tailwind.config.js` approach
-- **Spartan NG UI** (`@spartan-ng/helm/*`) — headless component library, components live in `libs/ui/`
-- **TanStack Angular Table** for data tables
-- **Vitest** (test runner, configured in `angular.json` architect, no separate vitest config file)
-- **GSAP** for animations (color ripples, Flip transitions)
-- **Transloco** (`@jsverse/transloco`) for i18n
-- **ApexCharts** via `ng-apexcharts` (loaded as global script in `angular.json`)
-- **Quill** via `ngx-quill` (rich text editor)
-
-## Commands
-
-```bash
-npm start              # ng serve (dev server on :4200)
-npm run build          # ng build (production)
-npm run build -- --configuration development  # dev build
-npm test               # Playwright E2E (auth suite) — needs dev server + backend + .env.local
-npm run test:e2e       # same as npm test
-npm run test:unit      # ng test (Vitest)
-npm run test:e2e:headed # E2E with a visible browser
-npm run test:report    # open the last HTML report
-ng generate component <name>  # scaffold component
-```
-
-**Testing:** `npm test` runs **Playwright E2E**, not Vitest. Unit tests moved to
-`npm run test:unit`. The E2E suite hits a live stack (dev server `:4200` +
-backend `:8080`) and reads credentials from a gitignored `.env.local`
-(`cp .env.example .env.local`). See `e2e/README.md` for the requirement map,
-known app defects, and the credential-in-traces warning.
-
-**No linter or formatter command is configured** — Prettier is installed but has no npm script. Use `npx prettier --write <file>` if needed.
-
-## Project Structure
-
-```
-src/
-  app/
-    core/           # Singleton services, guards, interceptors, models, providers
-    features/       # Feature modules (one dir per domain entity)
-    shared/         # Reusable components, pipes, utils, data
-  environments/     # environment.ts (apiUrl: http://localhost:8080)
-  styles/           # Global CSS: theme tokens, typography, radius, shadows
-  public/assets/i18n/  # Translation JSONs (en.json, ar.json)
-libs/ui/            # Spartan UI components (path-mapped via tsconfig.json)
-```
-
-## Architecture Patterns
-
-### Base CRUD pattern
-
-Most list pages extend `BaseListComponent<TResponse, TRequest, TId>` (`core/crud/base-list.component.ts`) which provides:
-- Paginated data loading, search debounce, sorting
-- Create/edit/delete dialog lifecycle
-- Image upload preview
-- Grid/list view toggle
-
-Services extend `BaseCrudService<TResponse, TRequest, TId>` (`core/crud/base-crud.service.ts`) which provides `create()`, `update()`, `delete()` with multipart/json auto-detection.
-
-To add a new CRUD feature:
-1. Create model in `features/<name>/models/`
-2. Create service extending `BaseCrudService` in `features/<name>/services/`
-3. Create list component extending `BaseListComponent` — implement `getId()`, `loadPage()`, `buildForm()`, `toRequest()`, `callCreate()`, `callUpdate()`, `callDelete()`, `onEditOpen()`
-4. Add route in `app.routes.ts` with `permissionGuard('<entity>:read')`
-
-### Product Wizard
-
-Products use a multi-step wizard (`product-wizard.component.ts`) with a shared state service (`product-wizard-state.service.ts`) provided at the route level (NOT root). Steps: Basic Info → Variants → Media → Tasting Notes → Pairings. The service holds a single `FormGroup` shared across all step components.
-
-### i18n / Translations
-
-- **Two languages**: English (`en`) and Arabic (`ar`)
-- **Transloco** for UI translations — JSON files in `public/assets/i18n/`
-- **Entity translations** are stored in API models as `translations: Array<{language, name, description?, ...}>` — NOT in Transloco JSON
-- **TranslationFormHelper** (`shared/utils/translation.utils.ts`) builds FormArrays for bilingual entity forms — use `buildArray()` for create, `patchArray()` for edit
-- **Language interceptor** adds `Accept-Language` header to all HTTP requests
-- **RTL support**: `LanguageService` toggles `dir="rtl"` on `<html>` — CSS in `styles/index.css` handles font switching automatically
-- **Navigation labels** are hardcoded in `shared/i18n/nav-i18n.ts` (not in Transloco) — update both `en` and `ar` when adding nav items
-
-### Theming
-
-- **Light/dark** mode via `ThemeService` — toggles `.dark` class on `<html>`
-- **Accent colors**: `emerald` (default) and `burgundy` — toggled via `data-theme="burgundy"` attribute
-- Theme CSS variables defined in `src/styles/themes/emerald.css` and `burgundy.css`
-- Dark variants use `:root.dark` and `:root.dark[data-theme="burgundy"]` selectors
-- **Fonts**: Inter (body) + Cormorant Garamond (headings) for English; Cairo + Almarai for Arabic — auto-switched via `[dir="rtl"]` CSS rules
-
-### Auth & Permissions
-
-- JWT-based auth with httpOnly cookie refresh
-- `authGuard` protects all `/dashboard/*` routes
-- `permissionGuard('entity:action')` checks route-level permissions
-- `HasPermissionDirective` (`[hasPermission]="..."`) conditionally renders template blocks
-- Admin role bypasses all permission checks
-- Auth interceptor handles 401 → automatic token refresh with request queuing
-
-### API Conventions
-
-- All API responses wrapped in `ApiResponse<T>`: `{ success, message, data, errors, timestamp }`
-- Paginated responses use `PageResponse<T>`: `{ content, page, size, totalElements, totalPages, first, last }`
-- Base URL from `environment.apiUrl` (`http://localhost:8080`)
-- Dashboard API prefix: `/api/dashboard/<entity>`
-- Public API prefix: `/api/<entity>`
-- Multipart uploads: JSON blob in `data` field + file in separate field
-
-### Styling
-
-- **Tailwind 4** — no `tailwind.config.js`, configured via `.postcssrc.json` and `@import "tailwindcss"` in `styles.css`
-- **Spartan HLM preset** imported in `styles.css`: `@import "@spartan-ng/brain/hlm-tailwind-preset.css"`
-- Component styles use Tailwind utility classes — most components use `styleUrl` or inline styles
-- `ViewEncapsulation.None` used in layout components (sidebar, navigation)
-- CSS custom properties for all theme tokens (colors, borders, etc.)
-
-## Conventions
-
-- All components are **standalone** (no NgModules)
-- Prefer **signals** over RxJS for component state
-- **Inject pattern**: `private service = inject(Service)` over constructor injection
-- Icons imported per-component via `provideIcons()` in component `providers` array — use Lucide icon set (`@ng-icons/lucide`)
-- Spartan UI imports use `HlmXxxImports` barrel imports (e.g., `HlmCardImports`, `HlmButtonImports`)
-- Entity identifiers: `slug` for most catalog entities, numeric `id` for users/orders
-- Default sort: `createdAt` desc
-- Default page size: 20
-
-## Gotchas
-
-- `angular.json` includes `apexcharts.min.js` as a global script — ApexCharts must be loaded this way, not as an ES import
-- `tsconfig.json` has ~60 path aliases for `@spartan-ng/helm/*` pointing to `libs/ui/*/src/index.ts` — the actual Spartan source lives in `libs/ui/`
-- No unit `.spec.ts` files exist yet — the test infrastructure is set up (Vitest) but no unit tests are written
-- **No admin gate on `/dashboard`.** `authGuard` checks only `!!currentUser()`, never the role, and the `profile` child route has no guard. The backend authenticates *any* valid account (a `CUSTOMER` gets `200` + a valid JWT), so the dashboard is currently un-gated in the UI. `e2e/auth.spec.ts::AC-2a` fails on purpose to prove this — see `e2e/README.md`. Do not "fix" the guard and assume authorization is then correct; `/api/dashboard/*` authorization is server-side and untested.
-- The dev server has `allowedHosts: ["account-unpopular-parakeet.ngrok-free.dev"]` for external tunnel access
-- `ProductService` does NOT extend `BaseCrudService` — it has its own `buildFormData` for multi-file uploads
-- `CategoryService` overrides `update()` because the dashboard endpoint returns a different response type than the base CRUD
-- Transloco JSON files (`public/assets/i18n/`) are for UI chrome only — entity translations (names, descriptions) are in the API response and managed via `TranslationFormHelper`
+## UI rules (the QA harness checks these)
+1. i18n: every visible string goes through en + ar translations. No raw keys on screen, no hardcoded text, no unresolved placeholders like {n}, correct plural forms (Arabic has all forms). `npm run i18n:check` must pass.
+2. Sentence case for page titles, labels, buttons, menu items, table headers and nav items ("Contact messages", not "Contact Messages"). Proper nouns are the only exception.
+3. Dates, numbers and money use the shared helpers only (formatDate, formatDateTime, formatRelative, the currency formatter "EGP 650.00"). No ad-hoc formats.
+4. Layout: logical CSS only (ms/me/ps/pe/text-start/text-end), colors from tokens, check light, dark and RTL.
+5. Filter rows: the search input and the selects share one compact height (38px). Row actions live in a kebab menu (no always-visible red trash icon). Icon-only buttons have an aria-label and a tooltip.
+6. Lists: fixed row height (72px), a bulk bar when rows are selected, loading skeleton, empty state and error state with a retry.
+7. Dialogs: footer order = destructive at the start, then secondary, then primary at the end. The primary button names the action ("Add option", not "Save changes" when creating). Esc closes, focus is trapped and returns to the trigger.
+8. Forms: Save is disabled until the form is dirty and valid; one Save per page (sticky footer bar); dirty = deep-compare of a normalized snapshot (trim, number formatting, null vs empty); errors appear only after blur or a submit attempt. Leaving a dirty form shows the app's "Unsaved changes" modal. window.alert, window.confirm and window.prompt are forbidden (the no-alert lint rule is an error): use ConfirmDialogService.
+9. No developer text on screen ("Needs backend", TODO, undefined, null, NaN, {placeholder}).
+10. Permissions: gate the UI with PermissionService (has('x:y'), *appCan). The server stays the source of truth; handle 403 with one de-duplicated toast.
+11. One shared selector per metric (open orders, low stock, pending reviews, unread messages...). Never duplicate the logic.
+12. Seeds are deterministic: timestamps are never in the future and always in order, numbers increase with time, every order has at least one line.
+13. Status vocabulary: Active / Blocked, Verified / Unverified, Enabled / Disabled (products), order statuses from the shared map, one badge component.

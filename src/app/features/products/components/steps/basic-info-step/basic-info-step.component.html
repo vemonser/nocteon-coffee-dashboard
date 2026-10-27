@@ -7,7 +7,7 @@
       <div class="space-y-1.5">
         <label hlmLabel>{{ 'products.form.productType' | transloco }} *</label>
         <hlm-select formControlName="productType" [itemToString]="productTypeLabel" class="w-full">
-          <hlm-select-trigger class="w-full">
+          <hlm-select-trigger class="h-[var(--filter-control-height)] w-full">
             <hlm-select-value [placeholder]="'products.form.selectType' | transloco" />
           </hlm-select-trigger>
           <hlm-select-content *hlmSelectPortal>
@@ -29,7 +29,7 @@
       <div class="space-y-1.5">
         <label hlmLabel>{{ 'products.form.category' | transloco }} *</label>
         <hlm-select formControlName="categorySlug" [itemToString]="categoryLabel" class="w-full">
-          <hlm-select-trigger class="w-full">
+          <hlm-select-trigger class="h-[var(--filter-control-height)] w-full">
             <hlm-select-value [placeholder]="'products.form.selectCategory' | transloco" />
           </hlm-select-trigger>
           <hlm-select-content *hlmSelectPortal>
@@ -48,7 +48,7 @@
       <div class="space-y-1.5">
         <label hlmLabel>{{ 'products.form.origin' | transloco }}</label>
         <hlm-select formControlName="originSlug" [itemToString]="originLabel" class="w-full">
-          <hlm-select-trigger class="w-full">
+          <hlm-select-trigger class="h-[var(--filter-control-height)] w-full">
             <hlm-select-value [placeholder]="'products.form.noOrigin' | transloco" />
           </hlm-select-trigger>
           <hlm-select-content *hlmSelectPortal>
@@ -65,7 +65,7 @@
       <div class="space-y-1.5">
         <label hlmLabel>{{ 'products.form.farm' | transloco }}</label>
         <hlm-select formControlName="farmSlug" [itemToString]="farmLabel" class="w-full">
-          <hlm-select-trigger class="w-full">
+          <hlm-select-trigger class="h-[var(--filter-control-height)] w-full">
             <hlm-select-value [placeholder]="'products.form.noFarm' | transloco" />
           </hlm-select-trigger>
           <hlm-select-content *hlmSelectPortal>
@@ -127,7 +127,7 @@
         <div class="space-y-1.5">
           <label hlmLabel>{{ 'products.form.harvestYear' | transloco }}</label>
           <hlm-select formControlName="harvestYear" class="w-full">
-            <hlm-select-trigger class="w-full">
+            <hlm-select-trigger class="h-[var(--filter-control-height)] w-full">
               <hlm-select-value [placeholder]="'products.form.harvestYearPlaceholder' | transloco" />
             </hlm-select-trigger>
             <hlm-select-content *hlmSelectPortal>
@@ -143,7 +143,7 @@
         <div class="space-y-1.5">
           <label hlmLabel>{{ 'products.form.processingMethod' | transloco }}</label>
           <hlm-select formControlName="processingMethodSlug" [itemToString]="processingMethodLabel" class="w-full">
-            <hlm-select-trigger class="w-full">
+            <hlm-select-trigger class="h-[var(--filter-control-height)] w-full">
               <hlm-select-value [placeholder]="'products.form.selectMethod' | transloco" />
             </hlm-select-trigger>
             <hlm-select-content *hlmSelectPortal>
@@ -159,7 +159,7 @@
         <div class="space-y-1.5">
           <label hlmLabel>{{ 'products.form.roastLevel' | transloco }}</label>
           <hlm-select formControlName="roastLevelSlug" [itemToString]="roastLevelLabel" class="w-full">
-            <hlm-select-trigger class="w-full">
+            <hlm-select-trigger class="h-[var(--filter-control-height)] w-full">
               <hlm-select-value [placeholder]="'products.form.selectRoastLevel' | transloco" />
             </hlm-select-trigger>
             <hlm-select-content *hlmSelectPortal>
@@ -175,7 +175,7 @@
         <div class="space-y-1.5">
           <label hlmLabel>{{ 'products.form.coffeeVariety' | transloco }}</label>
           <hlm-select formControlName="coffeeVarietySlug" [itemToString]="coffeeVarietyLabel" class="w-full">
-            <hlm-select-trigger class="w-full">
+            <hlm-select-trigger class="h-[var(--filter-control-height)] w-full">
               <hlm-select-value [placeholder]="'products.form.selectVariety' | transloco" />
             </hlm-select-trigger>
             <hlm-select-content *hlmSelectPortal>

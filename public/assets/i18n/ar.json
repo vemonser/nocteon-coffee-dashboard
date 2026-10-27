@@ -55,6 +55,23 @@
     "notUser": "ليس لديك حساب؟",
     "signup": "إنشاء حساب"
   },
+  "forgotPassword": {
+    "title": "هل نسيت كلمة المرور؟",
+    "subtitle": "أدخل البريد المرتبط بحسابك. إذا كان موجودًا، سنرسل كودًا مكوّنًا من ستة أرقام.",
+    "email": "البريد الإلكتروني",
+    "sendCode": "إرسال كود الاستعادة",
+    "sending": "جارٍ الإرسال…",
+    "codeSent": "تم إرسال كود الاستعادة. تحقق من بريدك.",
+    "resetTitle": "إعادة تعيين كلمة المرور",
+    "otp": "الكود المكوّن من ستة أرقام",
+    "newPassword": "كلمة المرور الجديدة",
+    "confirmPassword": "تأكيد كلمة المرور الجديدة",
+    "reset": "إعادة تعيين كلمة المرور",
+    "resetting": "جارٍ إعادة التعيين…",
+    "success": "تمت إعادة تعيين كلمة المرور. يرجى تسجيل الدخول.",
+    "mismatch": "كلمتا المرور غير متطابقتين",
+    "backToLogin": "العودة لتسجيل الدخول"
+  },
   "navigationBar": {
     "accountMenu": {
       "logout": "تسجيل الخروج",
@@ -96,7 +113,8 @@
     "addCategory": "إضافة فئة",
     "shippingZones": "مناطق الشحن",
     "contactMessages": "رسائل التواصل",
-    "carts": "السلة"
+    "carts": "السلة",
+    "categories": "الفئات"
   },
   "StoreSettingPage": {
     "title": "إعدادات المتجر"
@@ -240,7 +258,8 @@
       "new": "جديد",
       "replied": "تم الرد",
       "archived": "أرشف",
-      "blocked": "محظور"
+      "blocked": "محظور",
+      "rejected": "مرفوض"
     },
     "toggleSidebar": "إظهار/إخفاء القائمة",
     "total": "إجمالي",
@@ -296,7 +315,13 @@
     "never": "أبدًا",
     "stock": "المخزون",
     "category": "الفئة",
-    "product": "المنتج"
+    "product": "المنتج",
+    "apply": "تطبيق",
+    "deletedPermanently": "حُذف نهائيًا",
+    "permanentDeleteFailed": "تعذّر الحذف النهائي",
+    "restoreConflictTitle": "تعذّر الاستعادة",
+    "restoreConflictBody": "يوجد عنصر آخر بنفس المعرّف. أعد التسمية أو احذفه ثم استعد.",
+    "restoreNotFound": "لم يعُد هذا العنصر في المهملات."
   },
   "products": {
     "title": "المنتجات",
@@ -443,7 +468,11 @@
       "title": "التوائم",
       "description": "اقترح أطعمة أو حلوى تتناسب جيداً مع هذا القهوة.",
       "noPairings": "لا توجد توائم متاحة بعد. أضف بعضها في صفحة إدارة التوائم أولاً.",
-      "selected": "محدد"
+      "selected": "محدد",
+      "manage": "إدارة",
+      "remove": "إزالة",
+      "search": "بحث",
+      "noMatches": "لا توجد نتائج"
     },
     "wizard": {
       "loading": "جارٍ تحميل المنتج...",
@@ -1533,7 +1562,8 @@
       "itemCount": "العدد",
       "total": "الإجمالي",
       "lastActivity": "آخر نشاط",
-      "actions": "إجراءات"
+      "actions": "إجراءات",
+      "status": "الحالة"
     },
     "sort": {
       "lastActivity": "آخر نشاط",
@@ -1691,7 +1721,8 @@
     "export": {
       "button": "تصدير CSV",
       "hint": "يصدّر {{count}} طلبًا مطابقًا للفلاتر الحالية، بالأعمدة الظاهرة في الجدول.",
-      "done": "تم تصدير الطلبات"
+      "done": "تم تصدير الطلبات",
+      "error": "تعذّر تصدير الطلبات"
     },
     "actions": {
       "view": "عرض",
@@ -1701,7 +1732,8 @@
       "refund": "استرداد المبلغ",
       "resendEmail": "إعادة إرسال البريد",
       "copy": "نسخ",
-      "copyOrderNumber": "نسخ رقم الطلب"
+      "copyOrderNumber": "نسخ رقم الطلب",
+      "copied": "تم نسخ رقم الطلب"
     },
     "countItems_zero": "لا منتجات",
     "countItems_one": "منتج واحد",
@@ -1845,7 +1877,10 @@
       "itemsCount_zero": "لا منتجات",
       "itemsCount_two": "منتجان",
       "itemsCount_few": "{{count}} منتجات",
-      "itemsCount_many": "{{count}} منتجًا"
+      "itemsCount_many": "{{count}} منتجًا",
+      "referenceCopied": "تم نسخ المرجع",
+      "trackingCopied": "تم نسخ رقم التتبع",
+      "linkCopied": "تم نسخ الرابط"
     },
     "dialogs": {
       "status": {
@@ -1990,7 +2025,8 @@
         "description": "لديك إشعار نظام جديد."
       }
     },
-    "unreadTab": "غير مقروء"
+    "unreadTab": "غير مقروء",
+    "allMarkedAsRead": "تم وضع علامة مقروء على الكل"
   },
   "journal": {
     "title": "مقالة المجلة",
@@ -2032,7 +2068,8 @@
     "noProducts": "لا توجد منتجات.",
     "excerpt": "المقتطف",
     "metaTitle": "عنوان ميتا",
-    "metaDescription": "وصف ميتا"
+    "metaDescription": "وصف ميتا",
+    "editPost": "تعديل المقال"
   },
   "dashboard": {
     "title": "لوحة التحكم",
@@ -2265,7 +2302,15 @@
     "customRange": "نطاق تاريخ مخصص",
     "welcomeTitle": "مرحبا",
     "welcomeMessage": "استكشف لوحة التحكم",
-    "welcomeLink": "انتقل إلى صفحتك الأولى"
+    "welcomeLink": "انتقل إلى صفحتك الأولى",
+    "totalRevenueHelp": "إجمالي الإيرادات من جميع الطلبات",
+    "ordersHelp": "عدد الطلبات",
+    "aovHelp": "متوسط قيمة الطلب",
+    "repeatPurchaseRateHelp": "نسبة العملاء الذين اشتروا أكثر من مرة",
+    "coffeeSoldHelp": "إجمالي القهوة المباعة",
+    "onlineUsersHelp": "المستخدمون المتصلون حالياً",
+    "revenueByOriginProductRevenue": "إيرادات المنتج",
+    "revenueByOriginExclShipping": "باستثناء الشحن"
   },
   "imageCell": {
     "noImage": "لا توجد صورة"
@@ -2320,7 +2365,9 @@
     "numericValueHelp": "تُستخدم لحساب إجمالي وزن القهوة المباعة (رمز الخيار 'weight').",
     "addValue": "إضافة قيمة",
     "optionsCount": "خيارات",
-    "valuesCount": "قيم"
+    "valuesCount": "قيم",
+    "usedBy": "مستخدم في",
+    "variants": "المتغيرات"
   },
   "broadcasts": {
     "title": "الرسائل الجماعية",
@@ -2378,7 +2425,8 @@
     "audienceSpecific": "أُناس محددون فقط",
     "audienceExclude": "الجميع ما عدا…",
     "recipientIds": "إرسال إلى",
-    "excludeIds": "استثناء"
+    "excludeIds": "استثناء",
+    "sendFailed": "تعذّر إرسال النشرة."
   },
   "contactMessages": {
     "title": "رسائل التواصل",
@@ -2495,7 +2543,9 @@
   "unauthorized": {
     "title": "الوصول مرفوض",
     "message": "ليس لديك صلاحية لعرض هذه الصفحة. تواصل مع المسؤول إذا كنت تعتقد أن هذا خطأ.",
-    "goBack": "العودة إلى لوحة التحكم"
+    "goBack": "العودة إلى لوحة التحكم",
+    "missingPrefix": "صلاحية مفقودة:",
+    "missingSuffix": "."
   },
   "profile": {
     "title": "الملف الشخصي",
@@ -2509,6 +2559,8 @@
     "currentPassword": "كلمة المرور الحالية",
     "newPassword": "كلمة المرور الجديدة",
     "confirmPassword": "تأكيد كلمة المرور الجديدة",
+    "passwordMismatch": "كلمتا المرور غير متطابقتين",
+    "passwordChanged": "تم تغيير كلمة المرور. يرجى تسجيل الدخول مرة أخرى.",
     "save": "حفظ التغييرات"
   },
   "needsAttention": {
@@ -2606,5 +2658,12 @@
       "update": "تعديل",
       "delete": "حذف"
     }
+  },
+  "unsavedChanges": {
+    "title": "تغييرات غير محفوظة",
+    "body": "لديك تغييرات لم يتم حفظها. إذا غادرت هذه الصفحة، فستفقد.",
+    "discard": "تجاهل التغييرات",
+    "stay": "البقاء في الصفحة",
+    "saveAndLeave": "حفظ ومغادرة"
   }
 }

@@ -1,5 +1,6 @@
 ﻿import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ConfirmDialogService } from '../../../../core/services/confirm-dialog.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { map, switchMap, catchError, of, tap } from 'rxjs';
@@ -89,6 +90,7 @@ export class PairingDetailComponent implements OnInit {
   private fb = inject(FormBuilder);
   private pairingService = inject(PairingService);
   private breadcrumbService = inject(BreadcrumbService);
+  private confirmDialog = inject(ConfirmDialogService);
   protected translationHelper = inject(TranslationFormHelper);
 
   // For template access
@@ -203,9 +205,9 @@ export class PairingDetailComponent implements OnInit {
       });
   }
 
-  deletePairing(): void {
+async deletePairing(): Promise<void> {
     const name = this.getTranslationName('en');
-    if (!confirm(`Delete "${name}"? This cannot be undone.`)) return;
+    if (!(await this.confirmDialog.confirm({ title: 'Delete', message: `Delete "${name}"? This cannot be undone.`, tone: 'destructive' }))) return;
 
     const slug = this.pairing()?.slug;
     if (!slug) return;

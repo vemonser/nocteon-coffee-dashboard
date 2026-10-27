@@ -16,8 +16,10 @@ import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { NotifyService } from '../../../../core/notify/notify.service';
+import { ConfirmDialogService } from '../../../../core/services/confirm-dialog.service';
 import { LanguageService } from '../../../../core/i18n/language.service';
 import { CanComponentDeactivate } from '../../../../core/guards/unsaved-changes.guard';
+import { HasUnsavedChanges } from '../../../../core/guards/has-unsaved-changes';
 import {
   lucideArrowLeft,
   lucideArrowRight,
@@ -64,7 +66,16 @@ import {
   ],
   templateUrl: './product-wizard.component.html',
 })
-export class ProductWizardComponent implements CanComponentDeactivate {
+export class ProductWizardComponent implements CanComponentDeactivate, HasUnsavedChanges {
+  isDirty(): boolean { return this.hasUnsavedChanges(); }
+  async saveAll(): Promise<{ ok: boolean; firstInvalidTab?: string }> {
+    if (!this.isFormValid()) {
+      const firstInvalid = this.stepTabs.find((t) => this.hasTabError(t.id));
+      return { ok: false, firstInvalidTab: firstInvalid?.id };
+    }
+    this.onSubmit();
+    return { ok: true };
+  }
   protected state = inject(ProductWizardStateService);
   private productService = inject(ProductService);
   private translationHelper = inject(TranslationFormHelper);
@@ -72,6 +83,7 @@ export class ProductWizardComponent implements CanComponentDeactivate {
   private router = inject(Router);
   private notify = inject(NotifyService);
   private language = inject(LanguageService);
+  private confirmDialog = inject(ConfirmDialogService);
 
   loadingDetail = signal(false);
   submitting = signal(false);
@@ -106,7 +118,7 @@ export class ProductWizardComponent implements CanComponentDeactivate {
 
   canDeactivate(): boolean {
     if (this.hasUnsavedChanges() && !this.submitting()) {
-      return window.confirm('You have unsaved changes. Leave anyway?');
+      return true; // handled by global guard/dialog service
     }
     return true;
   }
@@ -346,8 +358,8 @@ export class ProductWizardComponent implements CanComponentDeactivate {
   isTabDirty(tabId: string): boolean {
     if (this.state.initialFormValue === null) return false;
     const cur = this.state.normalize(this.state.form.value);
-    const init = this.state.initialFormValue;
-    const eq = (a: any, b: any) => JSON.stringify(a) === JSON.stringify(b);
+    const init = this.state.normalize(this.state.initialFormValue);
+    const eq = (a: any, b: any) => JSON.stringify(this.state.normalize(a)) === JSON.stringify(this.state.normalize(b));
     switch (tabId) {
       case 'basic':
         return !eq(
@@ -372,9 +384,6 @@ export class ProductWizardComponent implements CanComponentDeactivate {
   }
 
   onBackToList(): void {
-    if (this.hasUnsavedChanges() && !this.submitting()) {
-      if (!window.confirm('You have unsaved changes. Leave anyway?')) return;
-    }
     this.router.navigate(['/dashboard/products']);
   }
 

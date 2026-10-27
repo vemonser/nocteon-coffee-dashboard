@@ -106,7 +106,7 @@
               <div class="flex items-start justify-between gap-4">
                 <dt class="text-sm text-muted-foreground">{{ 'common.lastActive' | transloco }}</dt>
                 <dd class="text-sm" [attr.title]="u.lastActiveAt ? (u.lastActiveAt | formatDateTime) : null">
-                  @if (u.lastActiveAt) { {{ u.lastActiveAt | formatRelative }} } @else { — }
+                  @if (u.lastActiveAt) { {{ u.lastActiveAt | formatDateTime }} } @else { — }
                 </dd>
               </div>
             </dl>

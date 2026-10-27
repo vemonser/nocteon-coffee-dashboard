@@ -1,4 +1,5 @@
 import { Component, computed, inject, signal } from '@angular/core';
+import { ConfirmDialogService } from '../../../../core/services/confirm-dialog.service';
 import { CommonModule } from '@angular/common';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -78,6 +79,7 @@ export class ProductsListComponent {
   /** The low-stock drill-down: the products LIST api has no stock filter. */
   readonly lowStockOnly = signal(false);
   private notify = inject(NotifyService);
+  private confirmDialog = inject(ConfirmDialogService);
 
   readonly canManageTrash = this.authService.hasPermission('product:delete');
   readonly isTrashAllowed = computed(() => this.authService.hasPermission('product:delete'));
@@ -603,10 +605,10 @@ export class ProductsListComponent {
     this.deleting.set(product);
   }
 
-  onToggleStatus(product: ProductListItem): void {
+  async onToggleStatus(product: ProductListItem): Promise<void> {
     const newActive = !product.isActive;
     if (!newActive && product.featured) {
-      if (!window.confirm('This product is featured. Disabling it will hide it from the storefront. Continue?')) {
+      if (!(await this.confirmDialog.confirm({ title: 'Disable featured product', message: 'This product is featured. Disabling it will hide it from the storefront. Continue?', tone: 'destructive' }))) {
         return;
       }
     }

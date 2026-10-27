@@ -1,4 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
+import { ConfirmDialogService } from '../../../../../core/services/confirm-dialog.service';
 import { CommonModule } from '@angular/common';
 import { CdkDragDrop, DragDropModule } from '@angular/cdk/drag-drop';
 import { ProductWizardStateService } from '../../product-wizard/product-wizard-state.service';
@@ -33,6 +34,7 @@ interface MediaFileError {
 export class MediaStepComponent {
   protected state = inject(ProductWizardStateService);
   private wizard = inject(ProductWizardComponent);
+  private confirmDialog = inject(ConfirmDialogService);
 
   readonly fileErrors = signal<MediaFileError[]>([]);
   readonly videoDurations = signal<Record<string, string>>({});
@@ -108,14 +110,14 @@ export class MediaStepComponent {
     video.src = url;
   }
 
-  removeStaged(index: number): void {
-    if (window.confirm('Remove this media?')) {
+  async removeStaged(index: number): Promise<void> {
+    if (await this.confirmDialog.confirm({ title: 'Remove media', message: 'Remove this media?', tone: 'destructive' })) {
       this.state.removeStagedMedia(index);
     }
   }
 
-  removeExisting(index: number): void {
-    if (window.confirm('Remove this media?')) {
+  async removeExisting(index: number): Promise<void> {
+    if (await this.confirmDialog.confirm({ title: 'Remove media', message: 'Remove this media?', tone: 'destructive' })) {
       this.state.removeExistingMedia(index);
     }
   }

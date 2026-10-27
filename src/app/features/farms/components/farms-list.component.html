@@ -42,7 +42,7 @@
           (ngModelChange)="searchQuery = $event; onSearch()"
           [placeholder]="'farms.search' | transloco"
           [attr.aria-label]="'farms.search' | transloco"
-          class="w-full ps-9"
+          class="w-full ps-9 h-[var(--filter-control-height)]"
         />
       </div>
 
@@ -289,7 +289,7 @@
           <div class="space-y-1.5 w-full">
             <label hlmLabel>{{ 'farms.originSlug' | transloco }} *</label>
             <hlm-select formControlName="originSlug" class="w-full">
-              <hlm-select-trigger class="w-full">
+              <hlm-select-trigger class="h-[var(--filter-control-height)] w-full">
                 <hlm-select-value [placeholder]="'farms.originSlug' | transloco" />
               </hlm-select-trigger>
               <hlm-select-content *hlmSelectPortal>
