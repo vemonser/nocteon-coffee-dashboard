@@ -55,6 +55,23 @@
     "notUser": "Don't have account?",
     "signup": "Sign up"
   },
+  "forgotPassword": {
+    "title": "Forgot password?",
+    "subtitle": "Enter the email linked to your account. If it exists, we'll send a six-digit code.",
+    "email": "Email",
+    "sendCode": "Send reset code",
+    "sending": "Sending…",
+    "codeSent": "A reset code has been sent. Check your inbox.",
+    "resetTitle": "Reset your password",
+    "otp": "Six-digit code",
+    "newPassword": "New password",
+    "confirmPassword": "Confirm new password",
+    "reset": "Reset password",
+    "resetting": "Resetting…",
+    "success": "Password reset. Please sign in.",
+    "mismatch": "Passwords do not match",
+    "backToLogin": "Back to login"
+  },
   "navigationBar": {
     "accountMenu": {
       "logout": "Log out",

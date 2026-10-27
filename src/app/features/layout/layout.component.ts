@@ -76,8 +76,9 @@ export class LayoutComponent {
   }
 
   onLogout() {
-    // Fire the POST; on failure the session stays alive — say so instead of
-    // navigating the user into the logged-out state as if it worked.
+    // AuthService.logout clears the local session and returns to /login in a
+    // finalize(), so a failed POST still leaves this device signed out. The
+    // toast matters: the server session could not be revoked.
     this.auth.logout().subscribe({
       error: (err) => this.notify.apiError(err, 'notify.logoutFailed', 'Logout failed'),
     });
