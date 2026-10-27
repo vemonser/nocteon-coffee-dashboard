@@ -2224,13 +2224,15 @@
     "welcomeMessage": "Explore your dashboard",
     "welcomeLink": "Go to your first page",
     "totalRevenueHelp": "Total revenue from all orders",
-    "ordersHelp": "Number of orders",
+    "ordersHelp": "Orders counted by payment status: PAID only. Delivered or cancelled orders that were refunded do not count as paid, so they are excluded here.",
     "aovHelp": "Average order value",
     "repeatPurchaseRateHelp": "Percentage of customers who purchased more than once",
     "coffeeSoldHelp": "Total coffee sold",
     "onlineUsersHelp": "Users currently online",
     "revenueByOriginProductRevenue": "Product revenue",
-    "revenueByOriginExclShipping": "Excluding shipping"
+    "revenueByOriginExclShipping": "Excluding shipping",
+    "scopeLatest": "Latest 5",
+    "scopeCurrent": "Current"
   },
   "imageCell": {
     "noImage": "No img"
@@ -2455,8 +2457,8 @@
     "currentPassword": "Current password",
     "newPassword": "New password",
     "confirmPassword": "Confirm new password",
-      "passwordMismatch": "Passwords do not match",
-      "passwordChanged": "Password changed. Please sign in again.",
+    "passwordMismatch": "Passwords do not match",
+    "passwordChanged": "Password changed. Please sign in again.",
     "save": "Save changes"
   },
   "needsAttention": {

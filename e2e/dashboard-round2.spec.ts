@@ -58,6 +58,10 @@ const ALLOWED_LATIN = new Set([
   // The brand.
   'Nocteon',
   'Coffee',
+  // Keyboard hints are Latin on every keyboard layout.
+  'Ctrl',
+  'Enter',
+  'Esc',
 ]);
 
 /** Data, not UI chrome: an order number, an e-mail, a SKU, a number. */
