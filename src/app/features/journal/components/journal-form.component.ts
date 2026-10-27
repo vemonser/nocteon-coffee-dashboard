@@ -27,6 +27,7 @@ import { ProductService } from '../../products/services/product.service';
 import { CategoryResponse } from '../../categories/models/category.model';
 import { JournalPostRequest, JournalPostResponse } from '../models/journal.model';
 import { QuillEditorComponent, QuillModule } from 'ngx-quill';
+import { QUILL_CONFIG_TOKEN } from 'ngx-quill/config';
 
 import { TranslocoPipe } from '@jsverse/transloco';
 import { NotifyService } from '../../../core/notify/notify.service';
@@ -51,7 +52,25 @@ type Lang = 'en' | 'ar';
     NgIcon,
     TranslocoPipe,
   ],
-  providers: [provideIcons({ lucideArrowLeft, lucideCheck, lucideLoader2, lucideUpload })],
+  providers: [
+    // The editor config lives with the only page that has an editor:
+    // `provideQuillConfig` in app.config pulled Quill into the initial bundle.
+    {
+      provide: QUILL_CONFIG_TOKEN,
+      useValue: {
+        modules: {
+          toolbar: [
+            ['bold', 'italic', 'underline'],
+            [{ header: [1, 2, 3, false] }],
+            ['link', 'blockquote'],
+            [{ list: 'ordered' }, { list: 'bullet' }],
+            ['clean'],
+          ],
+        },
+      },
+    },
+    provideIcons({ lucideArrowLeft, lucideCheck, lucideLoader2, lucideUpload }),
+  ],
   templateUrl: './journal-form.component.html',
 })
 export class JournalFormComponent implements OnInit {
