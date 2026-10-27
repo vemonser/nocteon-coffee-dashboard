@@ -173,17 +173,38 @@ describe('NotificationService', () => {
     http.expectNone((r) => r.method === 'PATCH');
   });
 
-  it('sends one request per row for bulk delete, with one toast', () => {
+  it('deletes the whole selection in one request', () => {
     service.loadItems(true);
     http.expectOne((r) => r.url === BASE).flush(page([item(1), item(2), item(3)], true));
 
     service.deleteMany(service.notifications().slice(0, 2));
 
-    const reqs = http.match((r) => r.method === 'DELETE');
-    expect(reqs.length).toBe(2);
-    reqs.forEach((r) => r.flush({ success: true }));
-
+    const req = http.expectOne(
+      (r) => r.method === 'POST' && r.url === `${BASE}/bulk-delete`,
+    );
+    expect(req.request.body).toEqual({ ids: [1, 2] });
     expect(service.notifications().map((n) => n.id)).toEqual([3]);
+
+    req.flush({ success: true });
+    expect(notify.success).toHaveBeenCalledTimes(1);
+    http.expectNone((r) => r.method === 'DELETE');
+  });
+
+  it('marks the whole selection in one request and empties the unread view', () => {
+    service.setFilter('unread');
+    http.expectOne((r) => r.url === BASE).flush(page([item(1), item(2)], true));
+    service.unreadCount.set(2);
+
+    service.markManyAsRead(service.notifications());
+
+    const req = http.expectOne(
+      (r) => r.method === 'PATCH' && r.url === `${BASE}/bulk-read`,
+    );
+    expect(req.request.body).toEqual({ ids: [1, 2] });
+    expect(service.notifications()).toEqual([]);
+    expect(service.unreadCount()).toBe(0);
+
+    req.flush({ success: true });
     expect(notify.success).toHaveBeenCalledTimes(1);
   });
 

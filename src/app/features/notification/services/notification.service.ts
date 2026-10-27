@@ -325,7 +325,7 @@ export class NotificationService {
     });
   }
 
-  /** One request per item (the API has no bulk delete), one toast for all. */
+  /** One request for the whole selection (the API has a bulk delete). */
   deleteMany(items: NotificationItem[]): void {
     const targets = items.filter((i) => this.notifications().some((n) => n.id === i.id));
     if (targets.length === 0) return;
@@ -336,45 +336,62 @@ export class NotificationService {
       return;
     }
 
-    const snapshots = targets.map((item) => ({
-      item,
-      index: this.notifications().findIndex((n) => n.id === item.id),
-      wasUnread: !item.read,
-    }));
-    const prevCount = this.unreadCount();
-    const ids = new Set(targets.map((i) => i.id));
+    const ids = targets.map((i) => i.id);
+    const unreadRemoved = targets.filter((i) => !i.read).length;
+    const prevTotal = this.totalElements();
 
-    this.notifications.update((list) => list.filter((n) => !ids.has(n.id)));
-    this.unreadCount.set(Math.max(0, prevCount - snapshots.filter((s) => s.wasUnread).length));
+    this.notifications.update((list) =>
+      list.filter((n) => !ids.includes(n.id)),
+    );
+    this.unreadCount.update((c) => Math.max(0, c - unreadRemoved));
+    this.totalElements.update((total) => Math.max(0, total - targets.length));
 
-    forkJoin(
-      targets.map((item) =>
-        this.http.delete(`${this.baseUrl}/${item.id}`).pipe(
-          map(() => true),
-          catchError(() => of(false)),
-        ),
-      ),
-    ).subscribe((results) => {
-      const failed = snapshots.filter((_, i) => !results[i]);
-      if (failed.length > 0) {
-        // Restore only the items that failed, not a whole-list snapshot.
-        failed
-          .sort((a, b) => a.index - b.index)
-          .forEach((s) => this.restoreDeleted(s.item, s.index));
-        if (failed.some((s) => s.wasUnread)) this.unreadCount.set(prevCount);
-        this.notify.apiError(null, 'notify.errorFallback', 'Could not delete some notifications');
-      }
-      if (results.some(Boolean)) {
-        this.notify.success('notifications.deleted', 'Deleted');
-      }
+    this.http.post(`${this.baseUrl}/bulk-delete`, { ids }).subscribe({
+      next: () => this.notify.success('notifications.deleted', 'Deleted'),
+      error: (err) => {
+        // The server is the truth after a failed batch: reload rather than
+        // guess which rows survived.
+        this.totalElements.set(prevTotal);
+        this.loadItems(true);
+        this.refreshUnreadCount();
+        this.notify.apiError(err, 'notify.errorFallback', 'Could not delete');
+      },
     });
   }
 
+  /** One request for the whole selection (the API has a bulk mark-read). */
   markManyAsRead(items: NotificationItem[]): void {
     const targets = items.filter((i) => !i.read);
     if (targets.length === 0) return;
-    targets.forEach((i) => this.markAsRead(i, true));
-    this.notify.success('notifications.markedRead', 'Marked as read');
+
+    if (this.mockMode) {
+      targets.forEach((i) => this.markAsRead(i, true));
+      this.notify.success('notifications.markedRead', 'Marked as read');
+      return;
+    }
+
+    const ids = targets.map((i) => i.id);
+    const removedByFilter = this.filter() === 'unread';
+    const prevCount = this.unreadCount();
+
+    this.notifications.update((list) => {
+      const next = list.map((n) => (ids.includes(n.id) ? { ...n, read: true } : n));
+      return removedByFilter ? next.filter((n) => !ids.includes(n.id)) : next;
+    });
+    if (removedByFilter) {
+      this.totalElements.update((t) => Math.max(0, t - targets.length));
+    }
+    this.unreadCount.update((c) => Math.max(0, c - targets.length));
+
+    this.http.patch(`${this.baseUrl}/bulk-read`, { ids }).subscribe({
+      next: () => this.notify.success('notifications.markedRead', 'Marked as read'),
+      error: (err) => {
+        this.unreadCount.set(prevCount);
+        this.loadItems(true);
+        this.refreshUnreadCount();
+        this.notify.apiError(err, 'notify.errorFallback', 'Could not mark as read');
+      },
+    });
   }
 
   private restoreDeleted(item: NotificationItem, index: number): void {
