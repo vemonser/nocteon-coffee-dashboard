@@ -1,14 +1,17 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
 import { AuthService } from './auth.service';
-import { canEnterDashboard } from './dashboard-roles';
+import { DASHBOARD_ENTRY_PERMISSION } from './permission-routes';
 
 /**
- * Dashboard entry gate: ADMIN or MODERATOR (see `canEnterDashboard`).
+ * Dashboard entry gate: the session must hold `dashboard:read`.
+ *
+ * Permission, not role: ADMIN holds every permission, MODERATOR holds this
+ * one, and a future role can be granted it without touching this file.
  *
  * The login/refresh response carries `user.role`, and the app initializer
- * refreshes the session before routing, so the role is available client-side
- * by the time this guard runs. This covers deep links / reloads; the login
+ * refreshes the session before routing, so permissions are available
+ * client-side by the time this guard runs. This covers deep links / reloads; the login
  * component also checks the role at submit time and shows the explanatory
  * message there.
  *
@@ -27,8 +30,10 @@ export const authGuard: CanActivateFn = () => {
     return router.createUrlTree(['/login']);
   }
 
-  if (!canEnterDashboard(auth.currentUser())) {
-    return router.createUrlTree(['/login']);
+  if (!auth.hasPermission(DASHBOARD_ENTRY_PERMISSION)) {
+    return router.createUrlTree(['/unauthorized'], {
+      queryParams: { permission: DASHBOARD_ENTRY_PERMISSION },
+    });
   }
 
   return true;
