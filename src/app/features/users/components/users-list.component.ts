@@ -68,6 +68,9 @@ export class UsersListComponent extends BaseListComponent<UserResponse, UserRequ
   private auth = inject(AuthService);
   private i18n = inject(TranslocoService);
 
+  /** An e-mail change needs `user:change_role` on the backend; do not offer it otherwise. */
+  readonly canChangeEmail = computed(() => this.auth.hasPermission('user:change_role'));
+
   roleOptions = signal<string[]>([]);
   /** The roles endpoint, in its own order — the source of the count chips. */
   roleCounts = signal<RoleResponse[]>([]);

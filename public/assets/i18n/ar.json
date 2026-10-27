@@ -1513,7 +1513,8 @@
       "selectToSeeDiff": "اختر دورًا لعرض التغييرات.",
       "changed": "تم تغيير الدور"
     },
-    "thisIsYourAccount": "هذا هو حسابك"
+    "thisIsYourAccount": "هذا هو حسابك",
+    "emailLocked": "تغيير بريد الحساب متاح للمدير فقط."
   },
   "carts": {
     "title": "السلات",
