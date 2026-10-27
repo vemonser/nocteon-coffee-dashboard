@@ -1,7 +1,7 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/auth/auth.guard';
 import { permissionGuard } from './core/auth/permission.guard';
-import { UnsavedChangesGuard } from './core/guards/unsaved-changes.guard';
+import { unsavedChangesGuard } from './core/guards/unsaved-changes.guard';
 import { NotificationListComponent } from './features/notifications-list/components/notification-list.component';
 
 // app.routes.ts
@@ -10,6 +10,22 @@ export const routes: Routes = [
     path: 'login',
     loadComponent: () =>
       import('./features/auth/login/login.component').then((m) => m.LoginComponent),
+  },
+  {
+    // The backend redirects to /{locale}/oauth2/callback?code=...; support the
+    // unprefixed form too for direct/local callbacks.
+    path: ':locale/oauth2/callback',
+    loadComponent: () =>
+      import('./features/auth/oauth2-callback/oauth2-callback.component').then(
+        (m) => m.OAuth2CallbackComponent,
+      ),
+  },
+  {
+    path: 'oauth2/callback',
+    loadComponent: () =>
+      import('./features/auth/oauth2-callback/oauth2-callback.component').then(
+        (m) => m.OAuth2CallbackComponent,
+      ),
   },
   {
     // The product spec calls the full page "/notifications"; the dashboard
@@ -56,7 +72,7 @@ export const routes: Routes = [
             path: 'roles/:roleName',
             data: { breadcrumb: 'roles' },
             canActivate: [permissionGuard('user:read')],
-            canDeactivate: [UnsavedChangesGuard],
+            canDeactivate: [unsavedChangesGuard],
             loadComponent: () =>
               import('./features/users/roles/components/roles-list.component').then(
                 (m) => m.RolesListComponent,
@@ -126,7 +142,7 @@ export const routes: Routes = [
           {
             path: ':slug',
             data: { breadcrumb: 'categoryDetail' },
-            canDeactivate: [UnsavedChangesGuard],
+            canDeactivate: [unsavedChangesGuard],
             loadComponent: () =>
               import('./features/categories/category-detail/components/category-detail.component').then(
                 (m) => m.CategoryDetailComponent,
@@ -173,7 +189,7 @@ export const routes: Routes = [
           {
             path: 'new',
             data: { breadcrumb: 'newOrigin' },
-            canDeactivate: [UnsavedChangesGuard],
+            canDeactivate: [unsavedChangesGuard],
             loadComponent: () =>
               import('./features/origins/origin-detail/components/origin-detail.component').then(
                 (m) => m.OriginDetailComponent,
@@ -182,7 +198,7 @@ export const routes: Routes = [
           {
             path: ':slug',
             data: { breadcrumb: 'originDetail' },
-            canDeactivate: [UnsavedChangesGuard],
+            canDeactivate: [unsavedChangesGuard],
             loadComponent: () =>
               import('./features/origins/origin-detail/components/origin-detail.component').then(
                 (m) => m.OriginDetailComponent,
@@ -205,7 +221,7 @@ export const routes: Routes = [
           {
             path: 'new',
             data: { breadcrumb: 'newFarm' },
-            canDeactivate: [UnsavedChangesGuard],
+            canDeactivate: [unsavedChangesGuard],
             loadComponent: () =>
               import('./features/farms/farm-detail/components/farm-detail.component').then(
                 (m) => m.FarmDetailComponent,
@@ -214,7 +230,7 @@ export const routes: Routes = [
           {
             path: ':slug',
             data: { breadcrumb: 'farmDetail' },
-            canDeactivate: [UnsavedChangesGuard],
+            canDeactivate: [unsavedChangesGuard],
             loadComponent: () =>
               import('./features/farms/farm-detail/components/farm-detail.component').then(
                 (m) => m.FarmDetailComponent,
@@ -478,7 +494,7 @@ export const routes: Routes = [
         path: 'products/new',
         data: { breadcrumb: 'newProduct' },
         canActivate: [permissionGuard('product:create')],
-        canDeactivate: [UnsavedChangesGuard],
+        canDeactivate: [unsavedChangesGuard],
         loadComponent: () =>
           import('./features/products/components/product-wizard/product-wizard.component').then(
             (m) => m.ProductWizardComponent,
@@ -488,7 +504,7 @@ export const routes: Routes = [
         path: 'products/:slug/edit',
         data: { breadcrumb: 'products' },
         canActivate: [permissionGuard('product:update')],
-        canDeactivate: [UnsavedChangesGuard],
+        canDeactivate: [unsavedChangesGuard],
         loadComponent: () =>
           import('./features/products/components/product-wizard/product-wizard.component').then(
             (m) => m.ProductWizardComponent,

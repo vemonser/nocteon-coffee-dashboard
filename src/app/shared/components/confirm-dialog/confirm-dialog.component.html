@@ -1,0 +1,17 @@
+@if (svc.state(); as opts) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm" (click)="svc.resolve(false)" (keydown.escape)="svc.resolve(false)">
+    <div role="dialog" aria-modal="true" class="dialog-surface w-full max-w-md p-6" (click)="$event.stopPropagation()">
+      <h2 class="text-lg font-medium">{{ opts.title }}</h2>
+      <p class="mt-2 text-sm text-muted-foreground">{{ opts.message }}</p>
+      @if (opts.requireText) {
+        <input hlmInput class="mt-4 w-full" [placeholder]="opts.requireText" [(ngModel)]="typed" />
+      }
+      <div class="mt-6 flex items-center justify-end gap-2">
+        <button hlmBtn variant="outline" (click)="svc.resolve(false)">{{ opts.cancelLabel || 'Cancel' }}</button>
+        <button hlmBtn [variant]="opts.tone === 'destructive' ? 'destructive' : 'default'"
+          [disabled]="opts.requireText && typed !== opts.requireText"
+          (click)="svc.resolve(true)">{{ opts.confirmLabel || 'Confirm' }}</button>
+      </div>
+    </div>
+  </div>
+}

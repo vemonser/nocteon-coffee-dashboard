@@ -82,10 +82,10 @@
                 }
               </span>
               <div class="flex items-center gap-1">
-                <button hlmBtn variant="ghost" size="icon" class="size-8" (click)="goToEdit(item)">
+                <button hlmBtn variant="ghost" size="icon" class="size-8" (click)="goToEdit(item)" [attr.aria-label]="'common.edit' | transloco" [attr.title]="'common.edit' | transloco">
                   <ng-icon name="lucidePencil" class="size-4" />
                 </button>
-                <button hlmBtn variant="ghost" size="icon" class="size-8 text-destructive" (click)="confirmDelete(item)">
+                <button hlmBtn variant="ghost" size="icon" class="size-8 text-destructive" (click)="confirmDelete(item)" [attr.aria-label]="'common.delete' | transloco" [attr.title]="'common.delete' | transloco">
                   <ng-icon name="lucideTrash2" class="size-4" />
                 </button>
               </div>

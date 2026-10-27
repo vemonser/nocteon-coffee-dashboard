@@ -60,7 +60,7 @@ import { DataTableComponent } from '../../../../shared/components/data-table/dat
 import { CategoryFormComponent } from '../../components/category-form/category-form.component';
 import { StatusCellComponent } from '../../../../shared/ui/status-cell/status-cell.component';
 import { HasPermissionDirective } from '../../../../core/auth/permission.directive';
-import { UnsavedChangesGuard, CanComponentDeactivate } from '../../../../core/guards/unsaved-changes.guard';
+import { CanComponentDeactivate } from '../../../../core/guards/unsaved-changes.guard';
 
 @Component({
   selector: 'app-category-detail',

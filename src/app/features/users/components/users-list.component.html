@@ -72,7 +72,7 @@
 
     <div class="relative w-full sm:w-56">
       <ng-icon name="lucideSearch" class="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
-      <input hlmInput type="search" class="!h-8 min-w-[320px] w-full ps-9" [(ngModel)]="searchQuery" (input)="onSearch()" [placeholder]="'users.search' | transloco" [attr.aria-label]="'users.search' | transloco" />
+      <input hlmInput type="search" class="!h-8 min-w-[320px] w-full ps-9 h-[var(--filter-control-height)]" [(ngModel)]="searchQuery" (input)="onSearch()" [placeholder]="'users.search' | transloco" [attr.aria-label]="'users.search' | transloco" />
     </div>
   </div>
 
@@ -229,11 +229,11 @@
       </p>
       <input hlmInput [(ngModel)]="deleteConfirmText" [placeholder]="deleting()!.username" class="w-full" />
       <div class="flex gap-3">
- fffffffffffffffff       <button hlmBtn variant="outline" class="flex-1" (click)="deleting.set(null)">{{ 'common.cancel' | transloco }}</button>
         <button hlmBtn variant="destructive" class="flex-1" [disabled]="deleteConfirmText() !== deleting()!.username || submitting()" (click)="confirmDeleteUser()">
           @if (submitting()) { <ng-icon name="lucideLoader2" class="mr-2 size-4 animate-spin" /> }
           {{ 'common.delete' | transloco }}
         </button>
+        <button hlmBtn variant="outline" class="flex-1" (click)="deleting.set(null)">{{ 'common.cancel' | transloco }}</button>
       </div>
     </div>
   </div>

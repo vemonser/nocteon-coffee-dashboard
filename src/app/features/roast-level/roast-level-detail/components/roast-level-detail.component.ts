@@ -1,5 +1,6 @@
 ﻿import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ConfirmDialogService } from '../../../../core/services/confirm-dialog.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { map, switchMap, catchError, of, tap } from 'rxjs';
@@ -69,6 +70,7 @@ export class RoastLevelDetailComponent implements OnInit {
   private fb = inject(FormBuilder);
   private roastLevelService = inject(RoastLevelService);
   private breadcrumbService = inject(BreadcrumbService);
+  private confirmDialog = inject(ConfirmDialogService);
   protected translationHelper = inject(TranslationFormHelper);
 
   protected readonly Math = Math;
@@ -178,9 +180,9 @@ export class RoastLevelDetailComponent implements OnInit {
       });
   }
 
-  deleteLevel(): void {
+async deleteLevel(): Promise<void> {
     const name = this.getTranslationName('en');
-    if (!confirm(`Delete "${name}"? This cannot be undone.`)) return;
+    if (!(await this.confirmDialog.confirm({ title: 'Delete', message: `Delete "${name}"? This cannot be undone.`, tone: 'destructive' }))) return;
 
     const slug = this.level()?.slug;
     if (!slug) return;
