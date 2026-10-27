@@ -2438,6 +2438,8 @@
     "currentPassword": "Current password",
     "newPassword": "New password",
     "confirmPassword": "Confirm new password",
+      "passwordMismatch": "Passwords do not match",
+      "passwordChanged": "Password changed. Please sign in again.",
     "save": "Save changes"
   },
   "needsAttention": {

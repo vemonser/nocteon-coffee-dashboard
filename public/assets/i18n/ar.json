@@ -2542,6 +2542,8 @@
     "currentPassword": "كلمة المرور الحالية",
     "newPassword": "كلمة المرور الجديدة",
     "confirmPassword": "تأكيد كلمة المرور الجديدة",
+    "passwordMismatch": "كلمتا المرور غير متطابقتين",
+    "passwordChanged": "تم تغيير كلمة المرور. يرجى تسجيل الدخول مرة أخرى.",
     "save": "حفظ التغييرات"
   },
   "needsAttention": {
