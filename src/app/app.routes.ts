@@ -12,6 +12,20 @@ export const routes: Routes = [
       import('./features/auth/login/login.component').then((m) => m.LoginComponent),
   },
   {
+    path: 'forgot-password',
+    loadComponent: () =>
+      import('./features/auth/password-reset/password-reset.component').then(
+        (m) => m.PasswordResetComponent,
+      ),
+  },
+  {
+    path: 'reset-password',
+    loadComponent: () =>
+      import('./features/auth/password-reset/password-reset.component').then(
+        (m) => m.PasswordResetComponent,
+      ),
+  },
+  {
     // The backend redirects to /{locale}/oauth2/callback?code=...; support the
     // unprefixed form too for direct/local callbacks.
     path: ':locale/oauth2/callback',
@@ -541,9 +555,7 @@ export const routes: Routes = [
         path: 'profile',
         data: { breadcrumb: 'profile' },
         loadComponent: () =>
-          import('./features/profile/components/profile.component').then(
-            (m) => m.ProfileComponent,
-          ),
+          import('./features/profile/components/profile.component').then((m) => m.ProfileComponent),
       },
     ],
   },

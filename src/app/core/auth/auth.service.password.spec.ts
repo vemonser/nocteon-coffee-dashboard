@@ -25,7 +25,37 @@ describe('AuthService change password', () => {
     http.verify();
   });
 
-  it('sends the backend contract: oldPassword, newPassword, confirmPassword', () => {
+  it('posts the forgot-password email', () => {
+    service.forgotPassword('user@example.com').subscribe();
+
+    const req = http.expectOne(`${environment.apiUrl}/api/auth/forgot-password`);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({ email: 'user@example.com' });
+    req.flush({ success: true });
+  });
+
+  it('posts the reset-password contract', () => {
+    service
+      .resetPassword({
+        email: 'user@example.com',
+        otp: '123456',
+        newPassword: 'new-password-456',
+        confirmPassword: 'new-password-456',
+      })
+      .subscribe();
+
+    const req = http.expectOne(`${environment.apiUrl}/api/auth/reset-password`);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({
+      email: 'user@example.com',
+      otp: '123456',
+      newPassword: 'new-password-456',
+      confirmPassword: 'new-password-456',
+    });
+    req.flush({ success: true });
+  });
+
+  it('sends the change-password backend contract: oldPassword, newPassword, confirmPassword', () => {
     service
       .changePassword({
         oldPassword: 'old-password-123',

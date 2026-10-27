@@ -100,6 +100,19 @@ export class AuthService {
       );
   }
 
+  forgotPassword(email: string) {
+    return this.http.post<any>(`${this.base}/api/auth/forgot-password`, { email });
+  }
+
+  resetPassword(data: {
+    email: string;
+    otp: string;
+    newPassword: string;
+    confirmPassword: string;
+  }) {
+    return this.http.post<any>(`${this.base}/api/auth/reset-password`, data);
+  }
+
   /**
    * Starts the backend OAuth2 authorization-code flow. The browser leaves the
    * SPA; the backend redirects back to /:locale/oauth2/callback?code=...
@@ -138,9 +151,9 @@ export class AuthService {
         },
       )
       .pipe(
-        tap(() => {
+        finalize(() => {
           this.clearSession();
-          this.router.navigate(['/login']);
+          void this.router.navigate(['/login']);
         }),
       );
   }
@@ -228,7 +241,12 @@ export class AuthService {
 
     this.refreshTimeout = window.setTimeout(
       () => {
-        this.refresh().subscribe();
+        this.refresh().subscribe({
+          error: () => {
+            this.clearSession();
+            void this.router.navigate(['/login']);
+          },
+        });
       },
       Math.max(timeout, 0),
     );
