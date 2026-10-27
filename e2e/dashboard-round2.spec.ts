@@ -337,11 +337,9 @@ test.describe('dashboard — round 2', () => {
   test('the donut centre is readable and stays inside the ring', async () => {
     await switchLanguage(page, 'en');
     // A language switch makes ApexCharts re-render; measuring during the
-    // transition read one card before the second donut existed.
-    await expect(page.locator('[data-testid="donut-center-label"]')).toHaveCount(2, {
-      timeout: 20_000,
-    });
-    const donuts = await page.evaluate(() => {
+    // transition read one card before the second chart existed.
+    await expect(page.locator('app-chart-card')).toHaveCount(2, { timeout: 20_000 });
+    const charts = await page.evaluate(() => {
       const rgb = (value: string) => {
         const m = value.match(/rgba?\(([^)]+)\)/);
         if (!m) return null;
@@ -365,10 +363,11 @@ test.describe('dashboard — round 2', () => {
         return { r: 255, g: 255, b: 255 };
       };
       return Array.from(document.querySelectorAll('app-chart-card')).map((card) => {
+        const slices = card.querySelectorAll('li').length;
         const svg = card.querySelector('svg');
         const label = card.querySelector('[data-testid="donut-center-label"]');
         const value = card.querySelector('[data-testid="donut-center-value"]');
-        if (!svg || !label || !value) return null;
+        if (!svg || !label || !value) return { slices, donut: null };
         const surface = surfaceOf(card.closest('hlm-card') ?? card);
         const fill = rgb(getComputedStyle(label).fill);
         const l1 = lum(fill ?? surface);
@@ -387,39 +386,58 @@ test.describe('dashboard — round 2', () => {
           ) -
           hole / 2;
         return {
-          label: (label.textContent || '').trim(),
-          value: (value.textContent || '').trim(),
-          contrast,
-          overflow: Math.round(overflow * 10) / 10,
-          diameter: Math.round(svgBox.width),
+          slices,
+          donut: {
+            label: (label.textContent || '').trim(),
+            value: (value.textContent || '').trim(),
+            contrast,
+            overflow: Math.round(overflow * 10) / 10,
+            diameter: Math.round(svgBox.width),
+          },
         };
       });
     });
 
-    for (const donut of donuts) {
-      if (!donut) continue;
-      expect(donut.contrast, `the centre of "${donut.label}" must be readable`).toBeGreaterThanOrEqual(4.5);
-      expect(donut.overflow, `the centre of "${donut.label}" must stay inside the ring`).toBeLessThan(0);
-      expect(donut.diameter, 'every donut has the same diameter').toBe(180);
+    // A donut is only legal for 3-5 slices (and a wide enough card, which is
+    // why the positive direction is not asserted here — two order statuses
+    // legitimately render as bars). The absence side is the contract.
+    for (const chart of charts) {
+      if (chart.slices < 3 || chart.slices > 5) {
+        expect(
+          chart.donut,
+          `a ${chart.slices}-slice chart must not be a donut`,
+        ).toBeNull();
+      }
+      if (!chart.donut) continue;
+      expect(
+        chart.donut.contrast,
+        `the centre of "${chart.donut.label}" must be readable`,
+      ).toBeGreaterThanOrEqual(4.5);
+      expect(
+        chart.donut.overflow,
+        `the centre of "${chart.donut.label}" must stay inside the ring`,
+      ).toBeLessThan(0);
+      expect(chart.donut.diameter, 'every donut has the same diameter').toBe(180);
     }
-    const labels = donuts.filter(Boolean).map((d) => d!.label);
+
+    const labels = charts.map((c) => c.donut?.label).filter((l): l is string => !!l);
+    expect(labels.length, 'the wide 3-5 slice card renders a donut').toBeGreaterThanOrEqual(1);
     expect(labels, 'the centre says what the number is').toContain('Revenue');
-    expect(labels, 'the centre says what the number is').toContain('Orders');
   });
 
   test('the legend is one column, below the chart, with aligned columns', async () => {
     await switchLanguage(page, 'en');
-    await expect(page.locator('[data-testid="chart-legend"]')).toHaveCount(2, {
-      timeout: 20_000,
-    });
+    await expect(page.locator('app-chart-card')).toHaveCount(2, { timeout: 20_000 });
     const measure = () =>
       page.evaluate(() =>
       Array.from(document.querySelectorAll('app-chart-card')).map((card) => {
         const legend = card.querySelector('[data-testid="chart-legend"]');
         const svg = card.querySelector('svg');
-        if (!legend) return null;
+        // Bars also carry a legend but have no ring; "below the chart" is a
+        // statement about donuts only.
+        if (!legend || !svg) return null;
         const legendBox = legend.getBoundingClientRect();
-        const svgBox = svg?.getBoundingClientRect();
+        const svgBox = svg.getBoundingClientRect();
         const rows = Array.from(legend.querySelectorAll('li')).map((li) =>
           Array.from(li.children).map((c) => Math.round(c.getBoundingClientRect().left)),
         );
@@ -429,7 +447,7 @@ test.describe('dashboard — round 2', () => {
           aligned: rows.every(
             (row) => row.every((left, i) => Math.abs(left - (rows[0]?.[i] ?? 0)) <= 1),
           ),
-          below: svgBox ? legendBox.top >= svgBox.bottom - 1 : false,
+          below: legendBox.top >= svgBox.bottom - 1,
         };
       }),
     );
@@ -440,7 +458,8 @@ test.describe('dashboard — round 2', () => {
       })
       .toBe(true);
 
-    const legends = await measure();
+    const legends = (await measure()).filter((l) => l !== null);
+    expect(legends.length, 'the donut cards carry a legend').toBeGreaterThanOrEqual(1);
     for (const legend of legends) {
       if (!legend) continue;
       expect(legend.columns, 'the legend row has dot, name, value and percent').toBe(4);
