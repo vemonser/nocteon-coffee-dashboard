@@ -56,6 +56,7 @@ export const routes: Routes = [
     children: [
       {
         path: '',
+        canActivate: [permissionGuard('dashboard:read')],
         loadComponent: () =>
           import('./features/dashboard/dashboard.component').then((m) => m.DashboardComponent),
       },
