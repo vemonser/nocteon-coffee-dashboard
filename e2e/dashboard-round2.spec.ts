@@ -336,6 +336,11 @@ test.describe('dashboard — round 2', () => {
 
   test('the donut centre is readable and stays inside the ring', async () => {
     await switchLanguage(page, 'en');
+    // A language switch makes ApexCharts re-render; measuring during the
+    // transition read one card before the second donut existed.
+    await expect(page.locator('[data-testid="donut-center-label"]')).toHaveCount(2, {
+      timeout: 20_000,
+    });
     const donuts = await page.evaluate(() => {
       const rgb = (value: string) => {
         const m = value.match(/rgba?\(([^)]+)\)/);
@@ -404,7 +409,11 @@ test.describe('dashboard — round 2', () => {
 
   test('the legend is one column, below the chart, with aligned columns', async () => {
     await switchLanguage(page, 'en');
-    const legends = await page.evaluate(() =>
+    await expect(page.locator('[data-testid="chart-legend"]')).toHaveCount(2, {
+      timeout: 20_000,
+    });
+    const measure = () =>
+      page.evaluate(() =>
       Array.from(document.querySelectorAll('app-chart-card')).map((card) => {
         const legend = card.querySelector('[data-testid="chart-legend"]');
         const svg = card.querySelector('svg');
@@ -424,6 +433,14 @@ test.describe('dashboard — round 2', () => {
         };
       }),
     );
+    // The legend settles only after the chart's entry animation.
+    await expect
+      .poll(async () => (await measure()).every((l) => !l || (l.below && l.aligned)), {
+        timeout: 20_000,
+      })
+      .toBe(true);
+
+    const legends = await measure();
     for (const legend of legends) {
       if (!legend) continue;
       expect(legend.columns, 'the legend row has dot, name, value and percent').toBe(4);
