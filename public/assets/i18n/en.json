@@ -2382,6 +2382,12 @@
     "selectMessage": "Select message",
     "replyHistory": "Reply history will appear here once the API returns it."
   },
+  "oauth2Callback": {
+    "processing": "Signing you in…",
+    "failed": "We couldn't complete Google sign-in.",
+    "missingCode": "The sign-in code is missing or expired. Please try again.",
+    "backToLogin": "Back to login"
+  },
   "unauthorized": {
     "title": "Access Denied",
     "message": "You don't have permission to view this page. Contact your administrator if you believe this is a mistake.",

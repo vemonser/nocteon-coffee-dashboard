@@ -12,6 +12,22 @@ export const routes: Routes = [
       import('./features/auth/login/login.component').then((m) => m.LoginComponent),
   },
   {
+    // The backend redirects to /{locale}/oauth2/callback?code=...; support the
+    // unprefixed form too for direct/local callbacks.
+    path: ':locale/oauth2/callback',
+    loadComponent: () =>
+      import('./features/auth/oauth2-callback/oauth2-callback.component').then(
+        (m) => m.OAuth2CallbackComponent,
+      ),
+  },
+  {
+    path: 'oauth2/callback',
+    loadComponent: () =>
+      import('./features/auth/oauth2-callback/oauth2-callback.component').then(
+        (m) => m.OAuth2CallbackComponent,
+      ),
+  },
+  {
     // The product spec calls the full page "/notifications"; the dashboard
     // shell owns the real route, so keep one canonical URL.
     path: 'notifications',
