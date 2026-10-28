@@ -11,6 +11,25 @@ import { creds, fillLoginForm, gotoLogin, submitLogin } from './helpers/auth';
 const VIEWPORT = { width: 1440, height: 900 };
 
 /**
+ * Open the wizard and get past the autosave prompt.
+ *
+ * Every reload after a save finds a draft: the response never returns here (the post-commit AI
+ * reindex has no quota), so the wizard never marks the form saved. Discarding the draft is what
+ * an admin would do; the write already landed, which is what the assertions read back.
+ */
+async function gotoProduct(page: Page, url: string): Promise<void> {
+  await page.goto(url);
+  const discard = page.getByRole('button', { name: /Discard draft|تجاهل المسودة/ });
+  try {
+    await discard.waitFor({ state: 'visible', timeout: 5_000 });
+    await discard.click();
+  } catch {
+    // No draft: the normal case on a first visit.
+  }
+  await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 30_000 });
+}
+
+/**
  * Click Save and come back with a fresh load.
  *
  * The save is not awaited: the product write commits, but the response only returns after the
@@ -20,7 +39,7 @@ const VIEWPORT = { width: 1440, height: 900 };
 async function saveAndReload(page: Page, url: string): Promise<void> {
   await page.getByRole('button', { name: /Save changes|حفظ التغييرات/ }).first().click();
   await page.waitForTimeout(4_000);
-  await page.goto(url);
+  await gotoProduct(page, url);
 }
 
 async function login(page: Page) {
@@ -65,7 +84,7 @@ test.describe('FE-10 product tags', () => {
     await page.screenshot({ path: 'evidence/fe-10/tags-1440.png' });
 
     // ── 2. The wizard assigns it to a product and saves ──────────────────────
-    await page.goto(`${productUrl}?step=basic`);
+    await gotoProduct(page, `${productUrl}?step=basic`);
     const tagChip = page.getByRole('button', { name: new RegExp(nameEn) });
     await expect(tagChip).toBeVisible({ timeout: 30_000 });
     await expect(tagChip).toHaveAttribute('aria-pressed', 'false');
@@ -101,7 +120,7 @@ test.describe('FE-10 product tags', () => {
     await expect(page.getByText(/used by 1 product/i)).toBeVisible({ timeout: 20_000 });
 
     // ── 5. Cleanup: detach the tag, then the delete succeeds ─────────────────
-    await page.goto(`${productUrl}?step=basic`);
+    await gotoProduct(page, `${productUrl}?step=basic`);
     const attachedChip = page.getByRole('button', { name: new RegExp(nameEn) });
     await expect(attachedChip).toHaveAttribute('aria-pressed', 'true', { timeout: 30_000 });
     await attachedChip.click();
@@ -138,9 +157,15 @@ test.describe('FE-09 variant images', () => {
     // "Failed to ping image", so the fixture is generated rather than inlined.
     await fileChooser.setFiles('/tmp/opencode/variant.png');
 
-    // The tile renders the uploaded picture (Cloudinary URL) once the API answers.
+    // The tile renders the uploaded picture once the API answers. "Visible" is not enough for
+    // an <img>: it can be laid out while broken, so the assertion is that it actually decoded.
     const tile = page.locator('img[src*="cloudinary"]').first();
     await expect(tile).toBeVisible({ timeout: 45_000 });
+    await expect
+      .poll(() => tile.evaluate((el: HTMLImageElement) => el.complete && el.naturalWidth > 0), {
+        timeout: 45_000,
+      })
+      .toBe(true);
     await page.screenshot({ path: 'evidence/fe-09/variant-image-1440.png' });
   });
 });
