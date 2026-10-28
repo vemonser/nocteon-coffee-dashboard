@@ -39,6 +39,7 @@ export const icons: Record<NavKey, string> = {
   pairings: 'lucideUtensilsCrossed',
   carts: 'lucideShoppingCart',
   productOptions: 'lucideSlidersHorizontal',
+  productTags: 'lucideTag',
   broadcasts: 'lucideMegaphone',
   newsletter: 'lucideMailPlus',
   contactMessages: 'lucideMail',

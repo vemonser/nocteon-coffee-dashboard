@@ -67,6 +67,9 @@ export class ProductWizardStateService {
     // Step 4 — Tasting Notes (slugs only, simplified)
     tastingNoteSlugs: this.fb.array([]),
 
+    // Merchandising tags (slugs only). Optional; assigned from the tag vocabulary.
+    tagSlugs: this.fb.array([]),
+
     // Step 5 — Pairings (slugs only)
     pairingSlugs: this.fb.array([]),
   });
@@ -87,6 +90,20 @@ export class ProductWizardStateService {
   }
   get tastingNotesArray(): FormArray {
     return this.form.get('tastingNoteSlugs') as FormArray;
+  }
+  /** FE-10: the merchandising tags this product carries, by slug. */
+  get tagSlugsArray(): FormArray {
+    return this.form.get('tagSlugs') as FormArray;
+  }
+
+  hasTag(slug: string): boolean {
+    return this.tagSlugsArray.value.includes(slug);
+  }
+
+  toggleTag(slug: string): void {
+    const index = (this.tagSlugsArray.value as string[]).indexOf(slug);
+    if (index === -1) this.tagSlugsArray.push(this.fb.control(slug));
+    else this.tagSlugsArray.removeAt(index);
   }
   get pairingsArray(): FormArray {
     return this.form.get('pairingSlugs') as FormArray;
@@ -346,6 +363,11 @@ export class ProductWizardStateService {
       if (slug) this.tastingNotesArray.push(this.fb.control(slug));
     });
 
+    this.tagSlugsArray.clear();
+    (detail.tags ?? []).forEach((tag) => {
+      if (tag?.slug) this.tagSlugsArray.push(this.fb.control(tag.slug));
+    });
+
     this.pairingsArray.clear();
     detail.pairings.forEach((slug) => {
       if (slug) this.pairingsArray.push(this.fb.control(slug));
@@ -401,6 +423,7 @@ export class ProductWizardStateService {
     this.variantsArray.clear();
     this.brewingMethodsArray.clear();
     this.tastingNotesArray.clear();
+    this.tagSlugsArray.clear();
     this.pairingsArray.clear();
     this.translationsArray.clear();
     this.productOptions.set([]);

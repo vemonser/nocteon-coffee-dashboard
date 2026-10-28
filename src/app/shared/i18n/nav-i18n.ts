@@ -32,6 +32,7 @@ export type NavKey =
   | 'pairings'
   | 'carts'
   | 'productOptions'
+  | 'productTags'
   | 'broadcasts'
   | 'newsletter'
   | 'contactMessages'
@@ -69,6 +70,7 @@ export const navI18n: Record<Language, Record<NavKey, string>> = {
     pairings: 'Pairings',
     carts: 'Carts',
     productOptions: 'Product options',
+    productTags: 'Tags',
     broadcasts: 'Broadcasts',
     newsletter: 'Newsletter',
     contactMessages: 'Contact messages',
@@ -105,6 +107,7 @@ export const navI18n: Record<Language, Record<NavKey, string>> = {
     pairings: 'التوافقات',
     carts: 'السلة',
     productOptions: 'خيارات المنتجات',
+    productTags: 'الوسوم',
     broadcasts: 'الرسائل الجماعية',
     newsletter: 'النشرة البريدية',
     contactMessages: 'رسائل التواصل',

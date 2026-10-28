@@ -45,3 +45,42 @@ describe('ProductWizardStateService — dirty state for SEO fields', () => {
     expect(state.hasFormChanged()).toBe(false);
   });
 });
+
+/**
+ * FE-10: the tag chips toggle one slug in and out of the request, and the change must reach the
+ * unsaved-changes guard — a tag added and dropped again is not a change.
+ */
+describe('ProductWizardStateService — tags', () => {
+  let state: ProductWizardStateService;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({ providers: [ProductWizardStateService] });
+    state = TestBed.inject(ProductWizardStateService);
+    state.captureInitialSnapshot();
+  });
+
+  it('adds and removes a tag slug', () => {
+    state.toggleTag('new-arrivals');
+    expect(state.hasTag('new-arrivals')).toBe(true);
+    expect(state.tagSlugsArray.value).toEqual(['new-arrivals']);
+
+    state.toggleTag('new-arrivals');
+    expect(state.hasTag('new-arrivals')).toBe(false);
+    expect(state.tagSlugsArray.value).toEqual([]);
+  });
+
+  it('counts an added tag as an unsaved change, and dropping it again as no change', () => {
+    state.toggleTag('gift-boxes');
+    expect(state.hasFormChanged()).toBe(true);
+
+    state.toggleTag('gift-boxes');
+    expect(state.hasFormChanged()).toBe(false);
+  });
+
+  it('does not repeat a slug that is already selected', () => {
+    state.toggleTag('new-arrivals');
+    state.toggleTag('new-arrivals');
+    state.toggleTag('new-arrivals');
+    expect(state.tagSlugsArray.value).toEqual(['new-arrivals']);
+  });
+});

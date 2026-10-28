@@ -514,6 +514,15 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'product-tags',
+        data: { breadcrumb: 'productTags' },
+        canActivate: [permissionGuard('product:read')],
+        loadComponent: () =>
+          import('./features/product-tags/components/product-tags.component').then(
+            (m) => m.ProductTagsComponent,
+          ),
+      },
+      {
         path: 'products/new',
         data: { breadcrumb: 'newProduct' },
         canActivate: [permissionGuard('product:create')],

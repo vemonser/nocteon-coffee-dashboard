@@ -51,6 +51,7 @@ export class ProductService {
     if (params.maxPrice !== undefined) p = p.set('maxPrice', params.maxPrice);
     if (params.minRating !== undefined) p = p.set('minRating', params.minRating);
     if (params.brewingMethodSlug) p = p.set('brewingMethodSlug', params.brewingMethodSlug);
+    if (params.tagSlug) p = p.set('tagSlug', params.tagSlug);
     if (params.optionValueIds?.length) {
       params.optionValueIds.forEach((id) => p = p.append('optionValueIds', id));
     }

@@ -338,6 +338,7 @@ export class ProductWizardComponent implements CanComponentDeactivate, HasUnsave
 
       tastingNoteSlugs: this.state.tastingNotesArray.value,
       pairingSlugs: this.state.pairingsArray.value,
+      tagSlugs: this.state.tagSlugsArray.value,
 
       media: [
         ...this.state.existingMedia().map((m, index) => ({

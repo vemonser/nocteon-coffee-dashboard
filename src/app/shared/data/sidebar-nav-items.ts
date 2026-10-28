@@ -42,6 +42,7 @@ const icons: Record<NavKey, string> = {
   pairings: 'lucideUtensilsCrossed',
   carts: 'lucideShoppingCart',
   productOptions: 'lucideSlidersHorizontal',
+  productTags: 'lucideTag',
   broadcasts: 'lucideMegaphone',
   newsletter: 'lucideMailPlus',
   contactMessages: 'lucideMail',
@@ -142,6 +143,7 @@ export function getNavItems(lang: Language) {
     'product:read',
     [
       { label: t.products, icon: icons.products, route: '/dashboard/products', permission: 'product:read' },
+      { label: t.productTags, icon: icons.productTags, route: '/dashboard/product-tags', permission: 'product:read' },
       { label: t.productOptions, icon: icons.productOptions, route: '/dashboard/product-options', permission: 'product_option:read' },
       { label: t.categories, icon: icons.categories, route: '/dashboard/categories', permission: 'category:read' },
     ],

@@ -401,7 +401,14 @@
       "metaDescriptionPlaceholder": "Defaults to the short description",
       "metaDescriptionHint": "The line under the title in search results. Keep it under 160 characters.",
       "uploadingImage": "Uploading image…",
-      "imageUploadFailed": "Could not upload the image."
+      "imageUploadFailed": "Could not upload the image.",
+      "tags": "Tags",
+      "tagsHint": "Merchandising labels such as “New arrivals” or “Gift boxes”. They power the tag filter in the products list.",
+      "noTags": "No tags exist yet.",
+      "manageTags": "Create one on the tags page",
+      "slug": "Slug",
+      "lockSlug": "Lock slug",
+      "unlockSlug": "Unlock slug"
     },
     "variants": {
       "title": "Variants",
@@ -562,10 +569,12 @@
       "status": "Status",
       "featured": "Featured",
       "type": "Type",
+      "tag": "Tag",
       "all": "All",
       "allTypes": "All types",
       "allStatuses": "All statuses",
-      "allFeatured": "All featured"
+      "allFeatured": "All featured",
+      "allTags": "All tags"
     },
     "actions": {
       "duplicate": "Duplicate",
@@ -2341,6 +2350,27 @@
     "theme": "Theme",
     "themeTransition": "Theme transition",
     "title": "Appearance"
+  },
+  "productTags": {
+    "title": "Tags",
+    "subtitle": "Merchandising labels that cut across categories. The products list filters by them.",
+    "add": "Add tag",
+    "edit": "Edit tag",
+    "nameEn": "Name (English)",
+    "nameAr": "Name (Arabic)",
+    "nameRequired": "Enter a name of at least 2 characters.",
+    "slugHint": "The slug is created from the English name once and never changes, so existing links and filters keep working.",
+    "saveName": "Save name",
+    "created": "Tag created",
+    "renamed": "Tag renamed",
+    "deleted": "Tag deleted",
+    "saveFailed": "Could not save the tag",
+    "deleteFailed": "Could not delete the tag",
+    "deleteTitle": "Delete tag",
+    "deleteMessage": "Delete “{{name}}”? It is removed from the products list filter.",
+    "loadFailed": "Could not load tags.",
+    "empty": "No tags yet",
+    "emptyHint": "Tags group products across categories, for example “New arrivals” or “Gift boxes”."
   },
   "productOptions": {
     "title": "Product options",

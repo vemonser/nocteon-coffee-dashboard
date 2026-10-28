@@ -64,6 +64,25 @@
     </div>
 
     <div class="flex items-center gap-1.5">
+      <span class="text-xs text-muted-foreground font-medium">{{ 'products.filters.tag' | transloco }}</span>
+      <hlm-select formControlName="tag" class="w-44">
+        <hlm-select-trigger class="h-[var(--filter-control-height)] w-44">
+          <hlm-select-value class="sr-only" [placeholder]="'products.filters.allTags' | transloco" />
+          <span class="line-clamp-1">{{ tagLabel(filters.controls.tag.value ?? '') }}</span>
+        </hlm-select-trigger>
+        <hlm-select-content *hlmSelectPortal>
+          <hlm-select-group>
+            <hlm-select-label>{{ 'products.filters.allTags' | transloco }}</hlm-select-label>
+            <hlm-select-item value="">{{ 'products.filters.allTags' | transloco }}</hlm-select-item>
+            @for (tag of productTags(); track tag.id) {
+              <hlm-select-item [value]="tag.slug">{{ tagName(tag) }}</hlm-select-item>
+            }
+          </hlm-select-group>
+        </hlm-select-content>
+      </hlm-select>
+    </div>
+
+    <div class="flex items-center gap-1.5">
       <span class="text-xs text-muted-foreground font-medium">{{ 'products.filters.status' | transloco }}</span>
       <hlm-select formControlName="status" class="w-40">
         <hlm-select-trigger class="h-[var(--filter-control-height)] w-40">

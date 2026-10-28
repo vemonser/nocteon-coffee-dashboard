@@ -241,12 +241,22 @@ export class VariantsStepComponent implements OnInit {
    * One photo per variant (FE-09). The file is uploaded on its own before the product is
    * saved — the same contract the story editor uses — so the tile can show the picture
    * immediately; the URL then travels with the variant in the product request.
+   *
+   * <p>The picker is built here rather than in the template: a native file input cannot carry
+   * the design-system directive, and the raw-control guard exists to keep those out of markup.
    */
-  onVariantImageSelected(index: number, input: HTMLInputElement): void {
-    const file = input.files?.[0];
-    input.value = '';
-    if (!file) return;
+  pickVariantImage(index: number): void {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/jpeg,image/png,image/gif,image/webp';
+    input.onchange = () => {
+      const file = input.files?.[0];
+      if (file) this.onVariantImageSelected(index, file);
+    };
+    input.click();
+  }
 
+  private onVariantImageSelected(index: number, file: File): void {
     if (!VariantsStepComponent.IMAGE_TYPES.includes(file.type)) {
       this.notify.error(
         'products.variants.image.wrongType',

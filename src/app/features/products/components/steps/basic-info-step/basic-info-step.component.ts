@@ -24,6 +24,7 @@ import { HlmSelectImports } from '@spartan-ng/helm/select';
 import { HlmInputImports } from '@spartan-ng/helm/input';
 import { HlmLabel } from '@spartan-ng/helm/label';
 import { HlmCheckboxImports } from '@spartan-ng/helm/checkbox';
+import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmSwitchImports } from '@spartan-ng/helm/switch';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { NgIcon, provideIcons } from '@ng-icons/core';
@@ -37,6 +38,9 @@ import { finalize } from 'rxjs';
 import { RICH_TEXT_QUILL_CONFIG } from '../../../../../shared/quill/rich-text.config';
 import { RichTextVideoDialogComponent } from '../../../../../shared/ui/rich-text-video-dialog/rich-text-video-dialog.component';
 import { ProductService } from '../../../services/product.service';
+import { ProductTagService } from '../../../../product-tags/services/product-tag.service';
+import { ProductTag } from '../../../../product-tags/models/product-tag.model';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-basic-info-step',
@@ -48,11 +52,13 @@ import { ProductService } from '../../../services/product.service';
     HlmInputImports,
     HlmLabel,
     HlmCheckboxImports,
+    HlmButtonImports,
     HlmSwitchImports,
     TranslocoPipe,
     NgIcon,
     QuillEditorComponent,
     RichTextVideoDialogComponent,
+    RouterLink,
   ],
   providers: [
     { provide: QUILL_CONFIG_TOKEN, useValue: RICH_TEXT_QUILL_CONFIG },
@@ -80,6 +86,7 @@ export class BasicInfoStepComponent {
   private coffeeVarietyService = inject(CoffeeVarietyService);
   private notify = inject(NotifyService);
   private productService = inject(ProductService);
+  private productTagService = inject(ProductTagService);
   private destroyRef = inject(DestroyRef);
   private readonly toolbarActions: { button: HTMLButtonElement; key: string }[] = [];
 
@@ -92,6 +99,8 @@ export class BasicInfoStepComponent {
   roastLevels = signal<RoastLevelResponse[]>([]);
   processingMethods = signal<ProcessingMethodResponse[]>([]);
   coffeeVarieties = signal<CoffeeVarietyResponse[]>([]);
+  /** FE-10: the tag vocabulary, assigned by toggling chips. */
+  readonly productTags = signal<ProductTag[]>([]);
 
   readonly harvestYears: number[] = Array.from({ length: 15 }, (_, i) => new Date().getFullYear() - i);
 
@@ -167,6 +176,31 @@ export class BasicInfoStepComponent {
       next: (r) => this.coffeeVarieties.set(r.data.content),
       error: onErr('coffee varieties'),
     });
+
+    this.productTagService.getAll().subscribe({
+      next: (r) => this.productTags.set(r.data),
+      error: onErr('tags'),
+    });
+  }
+
+  // ── Tags (FE-10) ────────────────────────────────────────────────────────────
+
+  tagName(tag: ProductTag): string {
+    const lang = this.language.current();
+    return (
+      tag.translations.find((t) => t.language === lang)?.title ??
+      tag.translations.find((t) => t.language === 'en')?.title ??
+      tag.slug
+    );
+  }
+
+  /** A chip is a toggle; the FormArray is the single source of truth for the selection. */
+  isTagSelected(slug: string): boolean {
+    return this.state.hasTag(slug);
+  }
+
+  toggleTag(slug: string): void {
+    this.state.toggleTag(slug);
   }
 
   get isCoffee(): boolean {

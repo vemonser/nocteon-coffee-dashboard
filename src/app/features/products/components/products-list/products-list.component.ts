@@ -24,6 +24,8 @@ import {
 import { PageResponse } from '../../../../core/models/api-response.model';
 import { ProductListItem, ProductListParams, ProductType } from '../../models/product.models';
 import { ProductService } from '../../services/product.service';
+import { ProductTagService } from '../../../product-tags/services/product-tag.service';
+import { ProductTag } from '../../../product-tags/models/product-tag.model';
 import { CategoryTranslationService } from '../../../../shared/services/category-translation.service';
 import { HasPermissionDirective } from '../../../../core/auth/permission.directive';
 import { AuthService } from '../../../../core/auth/auth.service';
@@ -81,6 +83,10 @@ export class ProductsListComponent {
   private notify = inject(NotifyService);
   private confirmDialog = inject(ConfirmDialogService);
   private readonly transloco = inject(TranslocoService);
+  private readonly productTagService = inject(ProductTagService);
+
+  /** FE-10: the tag vocabulary for the filter, loaded once. */
+  readonly productTags = signal<ProductTag[]>([]);
 
   /** Mirrors the search box so the empty-state copy can react to it. */
   private readonly searchText = signal('');
@@ -117,6 +123,22 @@ export class ProductsListComponent {
           ? 'products.featured.notFeatured'
           : 'products.filters.allFeatured',
     );
+
+  /** The tag select trigger reads the tag's name, never its slug. */
+  readonly tagLabel = (value: string): string => {
+    if (!value) return this.transloco.translate('products.filters.allTags');
+    const tag = this.productTags().find((t) => t.slug === value);
+    return tag ? this.tagName(tag) : value;
+  };
+
+  tagName(tag: ProductTag): string {
+    const language = this.transloco.getActiveLang();
+    return (
+      tag.translations.find((t) => t.language === language)?.title ??
+      tag.translations.find((t) => t.language === 'en')?.title ??
+      tag.slug
+    );
+  }
 
   /** What the empty state says — and what it offers as the next step (#5). */
   readonly emptyMessage = computed(() => {
@@ -171,6 +193,8 @@ export class ProductsListComponent {
     status: new FormControl(''),
     featured: new FormControl(''),
     type: new FormControl(''),
+    /** FE-10: '' = every tag. */
+    tag: new FormControl(''),
   });
 
   readonly loadError = signal(false);
@@ -281,6 +305,12 @@ export class ProductsListComponent {
     this.loadedState = JSON.stringify(this.currentState());
     this.load();
 
+    this.productTagService.getAll().subscribe({
+      next: (res) => this.productTags.set(res.data ?? []),
+      // A failed tag preload must not break the list; the filter simply has no options.
+      error: () => this.productTags.set([]),
+    });
+
     this.route.queryParamMap.subscribe((params) => {
       const next = this.stateFromParams(params);
       if (JSON.stringify(next) !== this.loadedState) {
@@ -333,6 +363,7 @@ export class ProductsListComponent {
       status: `${this.filters.value.status ?? 'all'}`,
       featured: `${this.filters.value.featured ?? 'all'}`,
       type: `${this.filters.value.type ?? 'all'}`,
+      tag: `${this.filters.value.tag ?? ''}`,
       category: this.categorySlug(),
       lowStock: this.lowStockOnly(),
       sort: this.currentSort,
@@ -355,6 +386,7 @@ export class ProductsListComponent {
       status: pick('status', ['', 'active', 'inactive'], ''),
       featured: pick('featured', ['', 'featured', 'notFeatured'], ''),
       type: pick('type', ['', 'COFFEE', 'EQUIPMENT'], ''),
+      tag: params.get('tag') ?? '',
       category: params.get('category'),
       lowStock: params.get('stock') === 'low',
       sort: params.get('sort') ?? 'createdAt',
@@ -380,7 +412,7 @@ export class ProductsListComponent {
     // emitEvent: false — applying the URL must not write the URL back.
     this.searchText.set(state.search);
     this.filters.setValue(
-      { search: state.search, status: state.status, featured: state.featured, type: state.type },
+      { search: state.search, status: state.status, featured: state.featured, type: state.type, tag: state.tag },
       { emitEvent: false },
     );
   }
@@ -395,6 +427,7 @@ export class ProductsListComponent {
     if (f.status && f.status !== 'all') params['status'] = f.status;
     if (f.featured && f.featured !== 'all') params['featured'] = f.featured;
     if (f.type && f.type !== 'all') params['type'] = f.type;
+    if (f.tag) params['tag'] = f.tag;
     if (this.currentSort !== 'createdAt') params['sort'] = this.currentSort;
     if (this.currentDirection !== 'desc') params['direction'] = this.currentDirection;
     if (this.currentPage() > 0) params['page'] = `${this.currentPage()}`;
@@ -427,6 +460,7 @@ export class ProductsListComponent {
       isActive: !f.status || f.status === 'all' ? undefined : f.status === 'active',
       featured: !f.featured || f.featured === 'all' ? undefined : f.featured === 'featured',
       productType: !f.type || f.type === 'all' ? undefined : (f.type as ProductType),
+      tagSlug: f.tag || undefined,
       sort: this.currentSort,
       direction: this.currentDirection,
     };

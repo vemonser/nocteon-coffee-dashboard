@@ -119,21 +119,13 @@
                   <p class="text-sm font-medium">{{ 'products.variants.image.title' | transloco }}</p>
                   <p class="text-xs text-muted-foreground">{{ 'products.variants.image.hint' | transloco }}</p>
                   <div class="flex flex-wrap gap-2">
-                    <input
-                      #variantImageInput
-                      type="file"
-                      class="sr-only"
-                      accept="image/jpeg,image/png,image/gif,image/webp"
-                      [attr.aria-label]="'products.variants.image.upload' | transloco"
-                      (change)="onVariantImageSelected(i, variantImageInput)"
-                    />
                     <button
                       hlmBtn
                       variant="outline"
                       size="sm"
                       type="button"
                       [disabled]="uploadingIndex() === i"
-                      (click)="variantImageInput.click()"
+                      (click)="pickVariantImage(i)"
                     >
                       @if (uploadingIndex() === i) {
                         <ng-icon name="lucideLoader2" class="me-1 size-4 animate-spin" aria-hidden="true" />

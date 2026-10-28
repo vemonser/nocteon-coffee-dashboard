@@ -5,6 +5,9 @@
 // `findAllDashboard` query maps to.
 // ════════════════════════════════════════════════════════════════════════════
 import { ProductOptionValueSummary } from '../../product-options/models/product-option.model';
+import { ProductTagSummary } from '../../product-tags/models/product-tag.model';
+
+export type { ProductTagSummary };
 
 export interface ProductListItem {
   id: number;
@@ -52,6 +55,8 @@ export interface ProductListParams {
   optionValueIds?: number[];
   inStockOnly?: boolean;
   onSaleOnly?: boolean;
+  /** FE-10: only products carrying this tag. */
+  tagSlug?: string;
   sort?: string;
   direction?: 'asc' | 'desc';
 }
@@ -154,6 +159,8 @@ export interface ProductDetail {
   tastingNotes: TastingNote[];
   pairings: ProductPairing[];
   brewingMethods: ProductBrewingMethod[];
+  /** Merchandising tags (FE-10): slug + localized name, as the API returns them. */
+  tags?: ProductTagSummary[];
   /** The product's own social card; empty means "use the primary image". */
   ogImageUrl?: string | null;
 }
@@ -177,6 +184,8 @@ export interface ProductRequest {
   tastingNoteSlugs: string[];
   pairingSlugs: string[];
   brewingMethods: ProductBrewingMethod[];
+  /** Merchandising tags by slug (FE-10). Omitted means "no tags". */
+  tagSlugs?: string[];
   /** Omitted means "use the primary image" — the API stores null, not an empty string. */
   ogImageUrl?: string;
 }
