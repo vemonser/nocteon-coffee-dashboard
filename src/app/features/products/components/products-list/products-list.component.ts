@@ -213,27 +213,135 @@ export class ProductsListComponent {
   ];
 
   constructor() {
-    this.categorySlug.set(this.route.snapshot.queryParamMap.get('category'));
-    // The dashboard's low-stock drill-down asks for the low-stock set.
-    this.lowStockOnly.set(this.route.snapshot.queryParamMap.get('stock') === 'low');
-    this.filters.valueChanges.subscribe(() => {
-      this.currentPage.set(0);
-      this.load();
-    });
+    // The URL is the request. Read it first, remember what the first load
+    // answers, then let every control WRITE the URL and let the subscription
+    // below do the loading — the same contract the orders list follows.
+    this.readUrl();
+    this.loadedState = JSON.stringify(this.currentState());
     this.load();
+
+    this.route.queryParamMap.subscribe((params) => {
+      const next = this.stateFromParams(params);
+      if (JSON.stringify(next) !== this.loadedState) {
+        this.applyState(next);
+        this.load();
+      }
+    });
+
+    // A control never loads directly: it writes the URL. Typing is debounced
+    // (350ms) and always replaces the history entry, so Back steps between
+    // pages rather than between keystrokes.
+    let previousSearch = `${this.filters.value.search ?? ''}`;
+    this.filters.valueChanges.subscribe((value) => {
+      const search = `${value.search ?? ''}`;
+      const searchChanged = search !== previousSearch;
+      previousSearch = search;
+      if (this.urlDebounce) clearTimeout(this.urlDebounce);
+      if (searchChanged) {
+        this.urlDebounce = setTimeout(() => this.syncUrl(true), 350);
+      } else {
+        this.currentPage.set(0);
+        this.syncUrl(true);
+      }
+    });
   }
 
   clearCategoryFilter(): void {
     this.categorySlug.set(null);
     this.currentPage.set(0);
-    this.router.navigate([], { queryParams: {}, relativeTo: this.route });
-    this.load();
+    this.syncUrl(true);
   }
 
   setListView(mode: 'active' | 'trash'): void {
     this.viewMode.set(mode);
     this.currentPage.set(0);
-    this.load();
+    this.syncUrl(true);
+  }
+
+  // ── URL state ────────────────────────────────────────────────────────────
+
+  /** The state the rows on screen were loaded with (see orders-list). */
+  private loadedState = '';
+
+  private urlDebounce: ReturnType<typeof setTimeout> | null = null;
+
+  private currentState() {
+    return {
+      search: `${this.filters.value.search ?? ''}`,
+      status: `${this.filters.value.status ?? 'all'}`,
+      featured: `${this.filters.value.featured ?? 'all'}`,
+      type: `${this.filters.value.type ?? 'all'}`,
+      category: this.categorySlug(),
+      lowStock: this.lowStockOnly(),
+      sort: this.currentSort,
+      direction: this.currentDirection,
+      page: this.currentPage(),
+      size: this.pageSize(),
+      view: this.viewMode(),
+    };
+  }
+
+  private stateFromParams(params: import('@angular/router').ParamMap) {
+    const pick = (key: string, allowed: readonly string[], fallback: string): string => {
+      const value = params.get(key) ?? '';
+      return allowed.includes(value) ? value : fallback;
+    };
+    const size = Number(params.get('size') ?? 20);
+
+    return {
+      search: params.get('q') ?? '',
+      status: pick('status', ['all', 'active', 'inactive'], 'all'),
+      featured: pick('featured', ['all', 'featured', 'notFeatured'], 'all'),
+      type: pick('type', ['all', 'COFFEE', 'EQUIPMENT'], 'all'),
+      category: params.get('category'),
+      lowStock: params.get('stock') === 'low',
+      sort: params.get('sort') ?? 'createdAt',
+      direction: (params.get('direction') === 'asc' ? 'asc' : 'desc') as 'asc' | 'desc',
+      page: Math.max(0, Number(params.get('page') ?? 0) || 0),
+      size: [10, 20, 50].includes(size) ? size : 20,
+      view: (params.get('view') === 'trash' ? 'trash' : 'active') as 'active' | 'trash',
+    };
+  }
+
+  private readUrl(): void {
+    this.applyState(this.stateFromParams(this.route.snapshot.queryParamMap));
+  }
+
+  private applyState(state: ReturnType<ProductsListComponent['stateFromParams']>): void {
+    this.viewMode.set(state.view);
+    this.categorySlug.set(state.category);
+    this.lowStockOnly.set(state.lowStock);
+    this.currentSort = state.sort;
+    this.currentDirection = state.direction;
+    this.currentPage.set(state.page);
+    this.pageSize.set(state.size);
+    // emitEvent: false — applying the URL must not write the URL back.
+    this.filters.setValue(
+      { search: state.search, status: state.status, featured: state.featured, type: state.type },
+      { emitEvent: false },
+    );
+  }
+
+  private syncUrl(replace: boolean): void {
+    const f = this.filters.value;
+    const params: Record<string, string> = {};
+    if (this.categorySlug()) params['category'] = this.categorySlug()!;
+    if (this.lowStockOnly()) params['stock'] = 'low';
+    if (this.isTrash()) params['view'] = 'trash';
+    if (f.search?.trim()) params['q'] = f.search.trim();
+    if (f.status && f.status !== 'all') params['status'] = f.status;
+    if (f.featured && f.featured !== 'all') params['featured'] = f.featured;
+    if (f.type && f.type !== 'all') params['type'] = f.type;
+    if (this.currentSort !== 'createdAt') params['sort'] = this.currentSort;
+    if (this.currentDirection !== 'desc') params['direction'] = this.currentDirection;
+    if (this.currentPage() > 0) params['page'] = `${this.currentPage()}`;
+    if (this.pageSize() !== 20) params['size'] = `${this.pageSize()}`;
+
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: params,
+      replaceUrl: replace,
+    });
   }
 
   load(): void {
@@ -541,13 +649,13 @@ export class ProductsListComponent {
 
   goToPage(page: number): void {
     this.currentPage.set(page);
-    this.load();
+    this.syncUrl(true);
   }
 
   setPageSize(size: number): void {
     this.pageSize.set(size);
     this.currentPage.set(0);
-    this.load();
+    this.syncUrl(true);
   }
 
   onSortChange(event: TableSortEvent | null): void {
@@ -562,7 +670,7 @@ export class ProductsListComponent {
     this.currentSort = sortFieldMap[col] || col;
     this.currentDirection = event?.direction ?? 'desc';
     this.currentPage.set(0);
-    this.load();
+    this.syncUrl(true);
   }
 
   goToCreate(): void {
