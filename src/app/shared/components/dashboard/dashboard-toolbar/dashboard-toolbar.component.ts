@@ -89,7 +89,8 @@ export class DashboardToolbarComponent {
   /** Relative time since last update, in the reader's language. */
   readonly relativeTime = computed(() => {
     this.language.language();
-    return formatRelativeTime(this.lastUpdated(), this.language.language());
+    // Composed after the "Updated" label → sentence case ("Updated just now").
+    return formatRelativeTime(this.lastUpdated(), this.language.language(), { lowercase: true });
   });
 
   /** Refresh all dashboard queries. */
