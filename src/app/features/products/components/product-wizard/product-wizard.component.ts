@@ -21,6 +21,7 @@ import { LanguageService } from '../../../../core/i18n/language.service';
 import { CanComponentDeactivate } from '../../../../core/guards/unsaved-changes.guard';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { formatRelativeTime } from '../../../../core/i18n/relative-time';
+import { clearProductDraft, loadProductDraft, saveProductDraft } from './product-draft';
 import { HasUnsavedChanges } from '../../../../core/guards/has-unsaved-changes';
 import {
   lucideArrowLeft,
@@ -139,54 +140,25 @@ export class ProductWizardComponent implements CanComponentDeactivate, HasUnsave
       });
   }
 
-  // ── Draft storage ──────────────────────────────────────────────────────
+  // ── Draft storage (rules live in product-draft.ts, unit-tested) ────────
 
-  private draftKey(): string {
-    const id = this.state.isEditMode() ? (this.state.editingSlug() ?? 'edit') : 'new';
-    return `products.wizard.draft.v1:${id}`;
+  private draftSlug(): string | null {
+    return this.state.isEditMode() ? this.state.editingSlug() : null;
   }
 
   private saveDraft(): void {
     if (!this.hasUnsavedChanges()) return;
-    try {
-      localStorage.setItem(
-        this.draftKey(),
-        JSON.stringify({ value: this.state.form.getRawValue(), savedAt: new Date().toISOString() }),
-      );
-    } catch {
-      /* storage full / private mode: the draft is a convenience, never a blocker */
-    }
+    saveProductDraft(this.draftSlug(), this.state.form.getRawValue());
   }
 
   private clearDraft(): void {
-    try {
-      localStorage.removeItem(this.draftKey());
-    } catch {
-      /* nothing to clean */
-    }
+    clearProductDraft(this.draftSlug());
   }
 
   /** Offers the draft found for this product; restoring re-dirties the form on purpose. */
   private async offerDraftRestore(): Promise<void> {
-    let raw: string | null = null;
-    try {
-      raw = localStorage.getItem(this.draftKey());
-    } catch {
-      return;
-    }
-    if (!raw) return;
-
-    let draft: { value?: unknown; savedAt?: string } | null = null;
-    try {
-      draft = JSON.parse(raw);
-    } catch {
-      this.clearDraft();
-      return;
-    }
-    if (!draft?.value) {
-      this.clearDraft();
-      return;
-    }
+    const draft = loadProductDraft(this.draftSlug());
+    if (!draft) return;
 
     const when = formatRelativeTime(draft.savedAt, this.language.language(), { lowercase: true });
     const restore = await this.confirmDialog.confirm({
