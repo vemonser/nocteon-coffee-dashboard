@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, signal } from '@angular/core';
+import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { ProductRequest, ProductTranslation } from '../../models/product.models';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -19,6 +19,9 @@ import { NotifyService } from '../../../../core/notify/notify.service';
 import { ConfirmDialogService } from '../../../../core/services/confirm-dialog.service';
 import { LanguageService } from '../../../../core/i18n/language.service';
 import { CanComponentDeactivate } from '../../../../core/guards/unsaved-changes.guard';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { formatRelativeTime } from '../../../../core/i18n/relative-time';
+import { clearProductDraft, loadProductDraft, saveProductDraft } from './product-draft';
 import { HasUnsavedChanges } from '../../../../core/guards/has-unsaved-changes';
 import {
   lucideArrowLeft,
@@ -123,6 +126,62 @@ export class ProductWizardComponent implements CanComponentDeactivate, HasUnsave
     return true;
   }
 
+  constructor() {
+    // ── Draft autosave (UX_AUDIT_products.md #7b) ──────────────────────────
+    // The 5-step form is long enough to lose on a stray refresh. Everything
+    // that is serialisable is saved a beat after typing stops; files staged
+    // for upload live outside the form and are deliberately NOT drafted.
+    let saveTimer: ReturnType<typeof setTimeout> | null = null;
+    this.state.form.valueChanges
+      .pipe(takeUntilDestroyed())
+      .subscribe(() => {
+        if (saveTimer) clearTimeout(saveTimer);
+        saveTimer = setTimeout(() => this.saveDraft(), 1200);
+      });
+  }
+
+  // ── Draft storage (rules live in product-draft.ts, unit-tested) ────────
+
+  private draftSlug(): string | null {
+    return this.state.isEditMode() ? this.state.editingSlug() : null;
+  }
+
+  private saveDraft(): void {
+    if (!this.hasUnsavedChanges()) return;
+    saveProductDraft(this.draftSlug(), this.state.form.getRawValue());
+  }
+
+  private clearDraft(): void {
+    clearProductDraft(this.draftSlug());
+  }
+
+  /** Offers the draft found for this product; restoring re-dirties the form on purpose. */
+  private async offerDraftRestore(): Promise<void> {
+    const draft = loadProductDraft(this.draftSlug());
+    if (!draft) return;
+
+    const when = formatRelativeTime(draft.savedAt, this.language.language(), { lowercase: true });
+    const restore = await this.confirmDialog.confirm({
+      title: this.notify.t('products.draft.title', 'Restore unsaved draft?'),
+      message: this.notify
+        .t('products.draft.message', 'There is an unsaved draft from {{time}}. Restore it?')
+        .replace('{{time}}', when),
+      confirmLabel: this.notify.t('products.draft.restore', 'Restore draft'),
+      cancelLabel: this.notify.t('products.draft.discard', 'Discard draft'),
+    });
+
+    if (!restore) {
+      this.clearDraft();
+      return;
+    }
+    try {
+      this.state.form.patchValue(draft.value as never, { emitEvent: false });
+    } catch {
+      // The draft no longer matches the form shape (schema change) — drop it.
+      this.clearDraft();
+    }
+  }
+
   ngOnInit(): void {
     const slug = this.route.snapshot.paramMap.get('slug');
 
@@ -131,9 +190,17 @@ export class ProductWizardComponent implements CanComponentDeactivate, HasUnsave
       this.productService.getBySlug(slug).subscribe({
         next: (res) => {
           this.state.loadFromDetail(res.data, (existing: ProductTranslation[]) =>
-            this.translationHelper.buildArray(existing, ['description', 'shortDescription', 'story']),
+            this.translationHelper.buildArray(existing, [
+              'description',
+              'shortDescription',
+              'story',
+              'metaTitle',
+              'metaDescription',
+            ]),
           );
           this.loadingDetail.set(false);
+          this.applyStepFromUrl();
+          void this.offerDraftRestore();
         },
         error: () => {
           this.loadError.set('Could not load product. It may have been deleted.');
@@ -143,9 +210,17 @@ export class ProductWizardComponent implements CanComponentDeactivate, HasUnsave
     } else {
       this.state.form.setControl(
         'translations',
-        this.translationHelper.buildArray([], ['description', 'shortDescription', 'story']),
+        this.translationHelper.buildArray([], [
+          'description',
+          'shortDescription',
+          'story',
+          'metaTitle',
+          'metaDescription',
+        ]),
       );
       this.state.captureInitialSnapshot();
+      this.applyStepFromUrl();
+      void this.offerDraftRestore();
     }
   }
 
@@ -178,12 +253,14 @@ export class ProductWizardComponent implements CanComponentDeactivate, HasUnsave
       }
       this.activeTab.set(tabId);
     }
+    this.syncStepUrl();
   }
 
   onNext(): void {
     if (this.state.isCurrentStepValid()) {
       this.state.goNext();
       this.activeTab.set(this.stepTabs[this.state.currentStep()].id);
+      this.syncStepUrl();
     } else {
       this.markCurrentStepTouched();
     }
@@ -193,7 +270,36 @@ export class ProductWizardComponent implements CanComponentDeactivate, HasUnsave
     if (this.state.currentStep() > 0) {
       this.state.goBack();
       this.activeTab.set(this.stepTabs[this.state.currentStep()].id);
+      this.syncStepUrl();
     }
+  }
+
+  /**
+   * The step lives in the URL (?step=media): a refresh keeps the reader on
+   * the step they were on instead of restarting at Basic info
+   * (UX_AUDIT_products.md #7). The gate is the same as a tab click — a step
+   * that does not validate cannot be deep-linked past.
+   */
+  private syncStepUrl(): void {
+    const id = this.stepTabs[this.state.currentStep()]?.id;
+    if (!id) return;
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { step: id },
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
+  }
+
+  private applyStepFromUrl(): void {
+    const id = this.route.snapshot.queryParamMap.get('step');
+    if (!id) return;
+    if (!this.stepTabs.some((t) => t.id === id)) return;
+    if (id === this.stepTabs[this.state.currentStep()]?.id) {
+      this.activeTab.set(id);
+      return;
+    }
+    this.onTabChange(id);
   }
 
   private markCurrentStepTouched(): void {
@@ -229,6 +335,10 @@ export class ProductWizardComponent implements CanComponentDeactivate, HasUnsave
         this.submitting.set(false);
         this.state.mediaDirty.set(false);
         this.state.form.markAsPristine();
+        // The guard compares against the load snapshot, not form.dirty: refresh it, or the
+        // redirect after a successful save asks the admin to discard the save they just made.
+        this.state.captureInitialSnapshot();
+        this.clearDraft();
         this.notify.success(wasEdit ? 'notify.updated' : 'notify.created', wasEdit ? 'Updated successfully' : 'Created successfully');
         this.router.navigate(['/dashboard/products']);
       },
@@ -258,7 +368,11 @@ export class ProductWizardComponent implements CanComponentDeactivate, HasUnsave
         description: t.description || undefined,
         shortDescription: t.shortDescription || undefined,
         story: t.story || undefined,
+        metaTitle: t.metaTitle || undefined,
+        metaDescription: t.metaDescription || undefined,
       })),
+
+      ogImageUrl: v.ogImageUrl || undefined,
 
       coffeeDetails: isCoffee
         ? {
@@ -275,6 +389,7 @@ export class ProductWizardComponent implements CanComponentDeactivate, HasUnsave
         price: v.price,
         compareAtPrice: v.compareAtPrice || undefined,
         costPrice: v.costPrice || undefined,
+        imageUrl: v.imageUrl || undefined,
         stockQuantity: v.stockQuantity,
         reorderThreshold: v.reorderThreshold ?? undefined,
         isActive: v.isActive,
@@ -285,6 +400,7 @@ export class ProductWizardComponent implements CanComponentDeactivate, HasUnsave
 
       tastingNoteSlugs: this.state.tastingNotesArray.value,
       pairingSlugs: this.state.pairingsArray.value,
+      tagSlugs: this.state.tagSlugsArray.value,
 
       media: [
         ...this.state.existingMedia().map((m, index) => ({

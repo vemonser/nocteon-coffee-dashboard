@@ -335,7 +335,7 @@
                     }
                     @if (stock.variants != null) {
                       <span class="text-[11px] text-muted-foreground">
-                        {{ 'products.table.variants' | transloco: { count: stock.variants } }}
+                        {{ stock.variants | plural: 'products.table.variantCount' }}
                       </span>
                     }
                   </span>

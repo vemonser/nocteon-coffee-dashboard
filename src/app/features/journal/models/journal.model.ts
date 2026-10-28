@@ -36,6 +36,18 @@ export interface JournalPostResponse {
   metaTitle?: string | null;
   metaDescription?: string | null;
   relatedProductSlugs?: string[];
+  /**
+   * The dashboard detail endpoint returns every language at once. The form must
+   * read these; the flattened `title`/`content` fields do not exist on that DTO.
+   */
+  translations?: {
+    language: string;
+    title: string;
+    excerpt?: string;
+    content?: string;
+    metaTitle?: string;
+    metaDescription?: string;
+  }[];
 }
 
 export interface JournalFilterParams {
@@ -46,4 +58,15 @@ export interface JournalFilterParams {
   search?: string;
   categorySlug?: string;
   featured?: boolean;
+}
+/** A journal category, as the post form's picker reads it. */
+export interface JournalCategory {
+  id: number;
+  slug: string;
+  translations: { language: string; title: string }[];
+}
+
+/** Create/rename payload for a journal category. */
+export interface JournalCategoryRequest {
+  translations: { language: 'en' | 'ar'; name: string }[];
 }

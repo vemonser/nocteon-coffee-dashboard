@@ -1,4 +1,5 @@
-import { Component, inject } from '@angular/core';
+import { Component, DestroyRef, effect, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 import { signal } from '@angular/core';
@@ -23,11 +24,23 @@ import { HlmSelectImports } from '@spartan-ng/helm/select';
 import { HlmInputImports } from '@spartan-ng/helm/input';
 import { HlmLabel } from '@spartan-ng/helm/label';
 import { HlmCheckboxImports } from '@spartan-ng/helm/checkbox';
+import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmSwitchImports } from '@spartan-ng/helm/switch';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucidePencil } from '@ng-icons/lucide';
 import { LanguageService } from '../../../../../core/i18n/language.service';
+import { QuillEditorComponent } from 'ngx-quill';
+import { QUILL_CONFIG_TOKEN } from 'ngx-quill/config';
+import Quill from 'quill';
+import '../../../../../shared/quill/divider.blot';
+import { finalize } from 'rxjs';
+import { RICH_TEXT_QUILL_CONFIG } from '../../../../../shared/quill/rich-text.config';
+import { RichTextVideoDialogComponent } from '../../../../../shared/ui/rich-text-video-dialog/rich-text-video-dialog.component';
+import { ProductService } from '../../../services/product.service';
+import { ProductTagService } from '../../../../product-tags/services/product-tag.service';
+import { ProductTag } from '../../../../product-tags/models/product-tag.model';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-basic-info-step',
@@ -39,14 +52,28 @@ import { LanguageService } from '../../../../../core/i18n/language.service';
     HlmInputImports,
     HlmLabel,
     HlmCheckboxImports,
+    HlmButtonImports,
     HlmSwitchImports,
     TranslocoPipe,
     NgIcon,
+    QuillEditorComponent,
+    RichTextVideoDialogComponent,
+    RouterLink,
   ],
-  providers: [provideIcons({ lucidePencil })],
+  providers: [
+    { provide: QUILL_CONFIG_TOKEN, useValue: RICH_TEXT_QUILL_CONFIG },
+    provideIcons({ lucidePencil }),
+  ],
   templateUrl: './basic-info-step.component.html',
 })
 export class BasicInfoStepComponent {
+  /** Store the editor's real HTML (semantic HTML would turn a video into a link). */
+  readonly htmlValueGetter = (editor: Quill): string => editor.root.innerHTML;
+  readonly uploadingStory = signal(false);
+  readonly storyVideoOpen = signal(false);
+  private storyVideoEditor: Quill | null = null;
+  private storyVideoRange: { index: number; length: number } | null = null;
+
   protected state = inject(ProductWizardStateService);
   protected translationHelper = inject(TranslationFormHelper);
   private wizard = inject(ProductWizardComponent);
@@ -58,6 +85,11 @@ export class BasicInfoStepComponent {
   private processingMethodService = inject(ProcessingMethodService);
   private coffeeVarietyService = inject(CoffeeVarietyService);
   private notify = inject(NotifyService);
+  private productService = inject(ProductService);
+  private productTagService = inject(ProductTagService);
+  private destroyRef = inject(DestroyRef);
+  private readonly toolbarActions: { button: HTMLButtonElement; key: string }[] = [];
+
   private transloco = inject(TranslocoService);
   private language = inject(LanguageService);
 
@@ -67,6 +99,8 @@ export class BasicInfoStepComponent {
   roastLevels = signal<RoastLevelResponse[]>([]);
   processingMethods = signal<ProcessingMethodResponse[]>([]);
   coffeeVarieties = signal<CoffeeVarietyResponse[]>([]);
+  /** FE-10: the tag vocabulary, assigned by toggling chips. */
+  readonly productTags = signal<ProductTag[]>([]);
 
   readonly harvestYears: number[] = Array.from({ length: 15 }, (_, i) => new Date().getFullYear() - i);
 
@@ -100,6 +134,15 @@ export class BasicInfoStepComponent {
   }
 
   constructor() {
+    effect(() => {
+      this.language.current();
+      for (const { button, key } of this.toolbarActions) {
+        const label = this.transloco.translate(key);
+        button.title = label;
+        button.setAttribute('aria-label', label);
+      }
+    });
+
     // A failed preload must not look like an empty catalog: toast on error.
     const onErr = (what: string) => (err: unknown) =>
       this.notify.apiError(err, 'notify.errorFallback', `Could not load ${what}`);
@@ -133,6 +176,31 @@ export class BasicInfoStepComponent {
       next: (r) => this.coffeeVarieties.set(r.data.content),
       error: onErr('coffee varieties'),
     });
+
+    this.productTagService.getAll().subscribe({
+      next: (r) => this.productTags.set(r.data ?? []),
+      error: onErr('tags'),
+    });
+  }
+
+  // ── Tags (FE-10) ────────────────────────────────────────────────────────────
+
+  tagName(tag: ProductTag): string {
+    const lang = this.language.current();
+    return (
+      tag.translations.find((t) => t.language === lang)?.title ??
+      tag.translations.find((t) => t.language === 'en')?.title ??
+      tag.slug
+    );
+  }
+
+  /** A chip is a toggle; the FormArray is the single source of truth for the selection. */
+  isTagSelected(slug: string): boolean {
+    return this.state.hasTag(slug);
+  }
+
+  toggleTag(slug: string): void {
+    this.state.toggleTag(slug);
   }
 
   get isCoffee(): boolean {
@@ -145,6 +213,86 @@ export class BasicInfoStepComponent {
 
   onCancel(): void {
     this.wizard.onCancel();
+  }
+
+  onStoryEditorCreated(editor: Quill): void {
+    const toolbar = editor.getModule('toolbar') as { addHandler: (name: string, fn: () => void) => void };
+    toolbar.addHandler('image', () => this.pickStoryImage(editor));
+    this.addToolbarAction(editor, '↶', 'journal.undo', () => editor.history.undo());
+    this.addToolbarAction(editor, '↷', 'journal.redo', () => editor.history.redo());
+    this.addToolbarAction(editor, '―', 'journal.horizontalRule', () => {
+      const range = editor.getSelection(true) ?? { index: editor.getLength(), length: 0 };
+      editor.insertEmbed(range.index, 'divider', true, 'user');
+      editor.setSelection(range.index + 1, 0);
+    });
+    toolbar.addHandler('video', () => {
+      this.storyVideoEditor = editor;
+      this.storyVideoRange = editor.getSelection(true) ?? { index: editor.getLength(), length: 0 };
+      this.storyVideoOpen.set(true);
+    });
+  }
+
+  private addToolbarAction(editor: Quill, label: string, titleKey: string, action: () => void): void {
+    const container = (editor.getModule('toolbar') as { container: HTMLElement }).container;
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.textContent = label;
+    button.title = this.transloco.translate(titleKey);
+    button.setAttribute('aria-label', this.transloco.translate(titleKey));
+    button.className = 'ql-toolbar-action';
+    button.addEventListener('click', (event) => {
+      event.preventDefault();
+      action();
+    });
+    container.appendChild(button);
+    this.toolbarActions.push({ button, key: titleKey });
+  }
+
+  closeStoryVideo(): void {
+    this.storyVideoOpen.set(false);
+    this.storyVideoEditor = null;
+    this.storyVideoRange = null;
+  }
+
+  onStoryVideoInserted(url: string): void {
+    const editor = this.storyVideoEditor;
+    if (!editor) return;
+    const range = this.storyVideoRange ?? editor.getSelection(true) ?? { index: editor.getLength(), length: 0 };
+    editor.insertEmbed(range.index, 'video', url, 'user');
+    editor.setSelection(range.index + 1, 0);
+    this.closeStoryVideo();
+  }
+
+  private pickStoryImage(editor: Quill): void {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = () => {
+      const file = input.files?.[0];
+      if (file) this.uploadStoryImage(editor, file);
+    };
+    input.click();
+  }
+
+  private uploadStoryImage(editor: Quill, file: File): void {
+    if (this.uploadingStory()) return;
+    const range = editor.getSelection(true) ?? { index: editor.getLength(), length: 0 };
+    this.uploadingStory.set(true);
+    this.productService
+      .uploadStoryImage(file)
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => this.uploadingStory.set(false)),
+      )
+      .subscribe({
+        next: (res) => {
+          editor.insertEmbed(range.index, 'image', res.data.url, 'user');
+          editor.setSelection(range.index + 1, 0);
+        },
+        error: () => {
+          this.notify.apiError(null, 'products.form.imageUploadFailed', 'Could not upload the image');
+        },
+      });
   }
 
   isCurrentStepDirty(): boolean {

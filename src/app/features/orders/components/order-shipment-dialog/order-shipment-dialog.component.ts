@@ -5,6 +5,7 @@ import { HlmInputImports } from '@spartan-ng/helm/input';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 
 import { DialogShellComponent } from '../../../../shared/ui/dialog-shell/dialog-shell.component';
+import { toLocalInputValue } from '../../../../shared/utils/date-input';
 import type { OrderShipment } from '../../models/order-activity.model';
 
 export interface ShipmentDraft {
@@ -105,20 +106,3 @@ export class OrderShipmentDialogComponent {
   }
 }
 
-/**
- * An ISO instant as the value of a `datetime-local` input.
- *
- * <p>The input speaks LOCAL time (`YYYY-MM-DDTHH:mm`), so the ISO instant
- * is converted into the browser's own zone — the store's zone. An instant
- * that cannot be parsed becomes an empty field rather than an invalid one.
- */
-export function toLocalInputValue(iso: string | null | undefined): string {
-  if (!iso) return '';
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return '';
-  const pad = (value: number) => `${value}`.padStart(2, '0');
-  return (
-    `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}` +
-    `T${pad(date.getHours())}:${pad(date.getMinutes())}`
-  );
-}

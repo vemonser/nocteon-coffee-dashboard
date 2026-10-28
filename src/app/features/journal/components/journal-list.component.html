@@ -60,9 +60,14 @@
           </a>
           <div class="p-4 flex flex-col gap-2 flex-1">
             <div class="flex items-center justify-between gap-2">
-              <hlm-badge [variant]="item.status === 'PUBLISHED' ? 'default' : item.status === 'ARCHIVED' ? 'outline' : 'secondary'">
-                {{ item.status }}
-              </hlm-badge>
+              <div class="flex flex-wrap items-center gap-1.5">
+                <hlm-badge [variant]="item.status === 'PUBLISHED' ? 'default' : item.status === 'ARCHIVED' ? 'outline' : 'secondary'">
+                  {{ 'journal.' + item.status.toLowerCase() | transloco }}
+                </hlm-badge>
+                @if (isScheduled(item)) {
+                  <hlm-badge variant="outline">{{ 'journal.scheduled' | transloco }}</hlm-badge>
+                }
+              </div>
               <span class="text-xs text-muted-foreground">{{ item.authorUsername }}</span>
             </div>
             <h3 class="font-semibold line-clamp-2">

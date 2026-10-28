@@ -1,4 +1,6 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { finalize } from 'rxjs';
 import { ConfirmDialogService } from '../../../../../core/services/confirm-dialog.service';
 import { CommonModule } from '@angular/common';
 import {
@@ -15,6 +17,7 @@ import { ProductWizardComponent } from '../../product-wizard/product-wizard.comp
 import { ProductOption, ProductOptionValue } from '../../../../product-options/models/product-option.model';
 import { filterOptionsByProductType } from '../../../product-option-applicability';
 import { ProductOptionService } from '../../../../product-options/services/product-option.service';
+import { ProductService } from '../../../services/product.service';
 import { HlmSelectImports } from '@spartan-ng/helm/select';
 import { HlmInputImports } from '@spartan-ng/helm/input';
 import { HlmLabel } from '@spartan-ng/helm/label';
@@ -22,7 +25,7 @@ import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmCheckboxImports } from '@spartan-ng/helm/checkbox';
 import { HlmSwitchImports } from '@spartan-ng/helm/switch';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucidePlus, lucideX, lucideChevronDown, lucideChevronUp, lucideMoreVertical, lucideTrash2, lucideCopy } from '@ng-icons/lucide';
+import { lucidePlus, lucideX, lucideChevronDown, lucideChevronUp, lucideMoreVertical, lucideTrash2, lucideCopy, lucideImage, lucideUpload, lucideLoader2 } from '@ng-icons/lucide';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { MoneyPipe } from '../../../../../shared/pipes/money.pipe';
 import { LanguageService } from '../../../../../core/i18n/language.service';
@@ -46,7 +49,7 @@ import { stockLevel as resolveStockLevel } from '../../../../../shared/utils/sto
     MoneyPipe,
   ],
   providers: [
-    provideIcons({ lucidePlus, lucideX, lucideChevronDown, lucideChevronUp, lucideMoreVertical, lucideTrash2, lucideCopy }),
+    provideIcons({ lucidePlus, lucideX, lucideChevronDown, lucideChevronUp, lucideMoreVertical, lucideTrash2, lucideCopy, lucideImage, lucideUpload, lucideLoader2 }),
   ],
   templateUrl: './variants-step.component.html',
   viewProviders: [
@@ -59,14 +62,22 @@ import { stockLevel as resolveStockLevel } from '../../../../../shared/utils/sto
 export class VariantsStepComponent implements OnInit {
   protected state = inject(ProductWizardStateService);
   private optionService = inject(ProductOptionService);
+  private productService = inject(ProductService);
   private language = inject(LanguageService);
   private notify = inject(NotifyService);
   private wizard = inject(ProductWizardComponent);
   private confirmDialog = inject(ConfirmDialogService);
+  private destroyRef = inject(DestroyRef);
 
   loadingOptions = signal(false);
   collapsed = signal<Set<number>>(new Set());
   readonly view = signal<'cards' | 'table'>('cards');
+
+  /** Index of the variant whose photo is uploading, so only that tile shows progress. */
+  readonly uploadingIndex = signal<number | null>(null);
+
+  private static readonly MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+  private static readonly IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
 
   stockLevel(group: AbstractControl): 'out' | 'low' | 'ok' {
     return resolveStockLevel(
@@ -145,7 +156,7 @@ export class VariantsStepComponent implements OnInit {
     }
     
     // Fallback to SKU if no options selected
-    return sku || 'Variant';
+    return sku || this.notify.t('products.variants.unnamed', 'Variant');
   }
 
   getEnhancedValueName(option: ProductOption, valueId: string | number | null): string {
@@ -229,6 +240,66 @@ export class VariantsStepComponent implements OnInit {
     this.state.addVariant();
   }
 
+  /**
+   * One photo per variant (FE-09). The file is uploaded on its own before the product is
+   * saved — the same contract the story editor uses — so the tile can show the picture
+   * immediately; the URL then travels with the variant in the product request.
+   *
+   * <p>The picker is built here rather than in the template: a native file input cannot carry
+   * the design-system directive, and the raw-control guard exists to keep those out of markup.
+   */
+  pickVariantImage(index: number): void {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/jpeg,image/png,image/gif,image/webp';
+    input.onchange = () => {
+      const file = input.files?.[0];
+      if (file) this.onVariantImageSelected(index, file);
+    };
+    input.click();
+  }
+
+  private onVariantImageSelected(index: number, file: File): void {
+    if (!VariantsStepComponent.IMAGE_TYPES.includes(file.type)) {
+      this.notify.error(
+        'products.variants.image.wrongType',
+        'Use a JPEG, PNG, GIF or WebP image.',
+      );
+      return;
+    }
+    if (file.size > VariantsStepComponent.MAX_IMAGE_BYTES) {
+      this.notify.error('products.variants.image.tooLarge', 'The image must be 5 MB or smaller.');
+      return;
+    }
+
+    const group = this.state.variantsArray.at(index) as FormGroup;
+    this.uploadingIndex.set(index);
+    this.productService
+      .uploadVariantImage(file)
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => this.uploadingIndex.set(null)),
+      )
+      .subscribe({
+        next: (res) => {
+          const url = res.data?.url;
+          if (!url) return;
+          const control = group.get('imageUrl');
+          control?.setValue(url);
+          control?.markAsDirty();
+        },
+        error: (err) => {
+          this.notify.apiError(err, 'products.variants.image.failed', 'Could not upload the image');
+        },
+      });
+  }
+
+  removeVariantImage(group: AbstractControl): void {
+    const control = group.get('imageUrl');
+    control?.setValue('');
+    control?.markAsDirty();
+  }
+
   saveCurrentStep(): void {
     this.wizard.saveCurrentStep();
   }
@@ -250,7 +321,18 @@ export class VariantsStepComponent implements OnInit {
   }
 
   async confirmRemoveVariant(index: number): Promise<void> {
-    if (await this.confirmDialog.confirm({ title: 'Remove variant', message: 'Remove this variant?', tone: 'destructive' })) {
+    if (
+      await this.confirmDialog.confirm({
+        title: this.notify.t('products.variants.removeTitle', 'Remove variant'),
+        message: this.notify.t(
+          'products.variants.removeMessage',
+          'Remove this variant? Its stock and price settings go with it.',
+        ),
+        confirmLabel: this.notify.t('products.variants.remove', 'Remove'),
+        cancelLabel: this.notify.t('common.cancel', 'Cancel'),
+        tone: 'destructive',
+      })
+    ) {
       this.removeVariant(index);
     }
   }

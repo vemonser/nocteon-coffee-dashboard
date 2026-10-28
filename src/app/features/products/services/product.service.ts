@@ -51,6 +51,7 @@ export class ProductService {
     if (params.maxPrice !== undefined) p = p.set('maxPrice', params.maxPrice);
     if (params.minRating !== undefined) p = p.set('minRating', params.minRating);
     if (params.brewingMethodSlug) p = p.set('brewingMethodSlug', params.brewingMethodSlug);
+    if (params.tagSlug) p = p.set('tagSlug', params.tagSlug);
     if (params.optionValueIds?.length) {
       params.optionValueIds.forEach((id) => p = p.append('optionValueIds', id));
     }
@@ -117,6 +118,20 @@ export class ProductService {
     fd.append('media', new Blob([JSON.stringify(media)], { type: 'application/json' }));
     files.forEach((file) => fd.append('files', file));
     return this.http.post<ApiResponse<void>>(`${this.base}/${slug}/media`, fd);
+  }
+
+  /** POST /story-images — one image for the rich-text story. */
+  uploadStoryImage(file: File): Observable<ApiResponse<{ url: string }>> {
+    const fd = new FormData();
+    fd.append('file', file);
+    return this.http.post<ApiResponse<{ url: string }>>(`${this.base}/story-images`, fd);
+  }
+
+  /** POST /variant-images — one photo for one variant, uploaded before the product is saved. */
+  uploadVariantImage(file: File): Observable<ApiResponse<{ url: string }>> {
+    const fd = new FormData();
+    fd.append('file', file);
+    return this.http.post<ApiResponse<{ url: string }>>(`${this.base}/variant-images`, fd);
   }
 
   /** DELETE /media/{mediaId} — remove a product media record. */

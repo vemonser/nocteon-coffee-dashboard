@@ -79,9 +79,43 @@
         </hlm-select>
       </div>
 
+      <!-- Merchandising tags (FE-10): a product can carry several; optional. -->
+      <div class="space-y-1.5 lg:col-span-2">
+        <label hlmLabel>{{ 'products.form.tags' | transloco }}</label>
+        <p class="text-xs text-muted-foreground">{{ 'products.form.tagsHint' | transloco }}</p>
+        @if (productTags().length === 0) {
+          <p class="text-sm text-muted-foreground">
+            {{ 'products.form.noTags' | transloco }}
+            <a routerLink="/dashboard/product-tags" class="text-primary underline-offset-2 hover:underline">
+              {{ 'products.form.manageTags' | transloco }}
+            </a>
+          </p>
+        } @else {
+          <div class="flex flex-wrap gap-2" role="group" [attr.aria-label]="'products.form.tags' | transloco">
+            @for (tag of productTags(); track tag.id) {
+              <button
+                hlmBtn
+                type="button"
+                size="sm"
+                variant="outline"
+                class="rounded-full"
+                [class.bg-primary]="isTagSelected(tag.slug)"
+                [class.text-primary-foreground]="isTagSelected(tag.slug)"
+                [class.border-primary]="isTagSelected(tag.slug)"
+                [class.text-muted-foreground]="!isTagSelected(tag.slug)"
+                [attr.aria-pressed]="isTagSelected(tag.slug)"
+                (click)="toggleTag(tag.slug)"
+              >
+                {{ tagName(tag) }}
+              </button>
+            }
+          </div>
+        }
+      </div>
+
       @if (state.isEditMode()) {
         <div class="space-y-1.5 lg:col-span-2">
-          <label hlmLabel>Slug</label>
+          <label hlmLabel>{{ 'products.form.slug' | transloco }}</label>
           <div class="relative">
             <input
               hlmInput
@@ -95,7 +129,7 @@
               type="button"
               class="absolute end-2 top-1/2 -translate-y-1/2 inline-flex size-8 items-center justify-center rounded-md text-muted-foreground hover:text-foreground"
               (click)="slugUnlocked.set(!slugUnlocked())"
-              [attr.aria-label]="slugUnlocked() ? 'Lock slug' : 'Unlock slug'"
+              [attr.aria-label]="(slugUnlocked() ? 'products.form.lockSlug' : 'products.form.unlockSlug') | transloco"
             >
               <ng-icon name="lucidePencil" class="size-4" />
             </button>
@@ -275,17 +309,50 @@
 
                 <div class="space-y-1.5">
                   <label hlmLabel>{{ 'products.form.story' | transloco }}</label>
-                  <textarea
-                    hlmInput
+                  <quill-editor
                     formControlName="story"
-                    rows="5"
-                    style="field-sizing: content"
+                    class="block h-40"
                     [dir]="lang.dir"
                     [attr.lang]="lang.code"
-                    class="w-full"
-                    [placeholder]="'products.form.storyPlaceholder' | transloco"
-                  ></textarea>
+                    [valueGetter]="htmlValueGetter"
+                    (onEditorCreated)="onStoryEditorCreated($event)"
+                  />
+                  @if (uploadingStory()) {
+                    <p class="text-xs text-muted-foreground">{{ 'products.form.uploadingImage' | transloco }}</p>
+                  }
                   <p class="text-xs text-muted-foreground">{{ 'products.form.storyHint' | transloco }}</p>
+                </div>
+
+                <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <div class="space-y-1.5">
+                    <label hlmLabel>{{ 'products.form.metaTitle' | transloco }}</label>
+                    <input
+                      hlmInput
+                      formControlName="metaTitle"
+                      type="text"
+                      maxlength="200"
+                      [dir]="lang.dir"
+                      [attr.lang]="lang.code"
+                      class="w-full"
+                      [placeholder]="'products.form.metaTitlePlaceholder' | transloco"
+                    />
+                    <p class="text-xs text-muted-foreground">{{ 'products.form.metaTitleHint' | transloco }}</p>
+                  </div>
+
+                  <div class="space-y-1.5">
+                    <label hlmLabel>{{ 'products.form.metaDescription' | transloco }}</label>
+                    <input
+                      hlmInput
+                      formControlName="metaDescription"
+                      type="text"
+                      maxlength="500"
+                      [dir]="lang.dir"
+                      [attr.lang]="lang.code"
+                      class="w-full"
+                      [placeholder]="'products.form.metaDescriptionPlaceholder' | transloco"
+                    />
+                    <p class="text-xs text-muted-foreground">{{ 'products.form.metaDescriptionHint' | transloco }}</p>
+                  </div>
                 </div>
               </div>
             }

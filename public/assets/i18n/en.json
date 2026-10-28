@@ -120,6 +120,7 @@
     "title": "Store setting"
   },
   "common": {
+    "loadFailedHint": "Check your connection and try again.",
     "accountSettings": "Account settings",
     "actionCannotBeUndone": "This action cannot be undone.",
     "actions": "Actions",
@@ -320,6 +321,7 @@
     "restoreNotFound": "This item is no longer in the trash."
   },
   "products": {
+    "draft": {"title":"Restore unsaved draft?","message":"There is an unsaved draft from {{time}}. Restore it?","restore":"Restore draft","discard":"Discard draft"},
     "title": "Products",
     "total": "total",
     "add": "Add product",
@@ -392,7 +394,22 @@
         "COFFEE": "Coffee",
         "EQUIPMENT": "Equipment"
       },
-      "storyHint": "Saved for this language only — it is the editorial block on the product page."
+      "storyHint": "Rich text for this language — bold, headings, images and video.",
+      "metaTitle": "SEO title",
+      "metaTitlePlaceholder": "Defaults to the product name",
+      "metaTitleHint": "The title search results and link previews show. Keep it under 60 characters.",
+      "metaDescription": "SEO description",
+      "metaDescriptionPlaceholder": "Defaults to the short description",
+      "metaDescriptionHint": "The line under the title in search results. Keep it under 160 characters.",
+      "uploadingImage": "Uploading image…",
+      "imageUploadFailed": "Could not upload the image.",
+      "tags": "Tags",
+      "tagsHint": "Merchandising labels such as “New arrivals” or “Gift boxes”. They power the tag filter in the products list.",
+      "noTags": "No tags exist yet.",
+      "manageTags": "Create one on the tags page",
+      "slug": "Slug",
+      "lockSlug": "Lock slug",
+      "unlockSlug": "Unlock slug"
     },
     "variants": {
       "title": "Variants",
@@ -427,7 +444,28 @@
       "lowStockBadge": "Low stock",
       "inStock": "{{count}} in stock",
       "duplicate": "Duplicate",
-      "remove": "Remove"
+      "remove": "Remove",
+      "unnamed": "Variant",
+      "removeTitle": "Remove variant",
+      "removeMessage": "Remove this variant? Its stock and price settings go with it.",
+      "image": {
+        "title": "Variant image",
+        "hint": "Shown instead of the product gallery when this variant is selected. JPG, PNG, GIF or WebP, up to 5 MB.",
+        "upload": "Upload image",
+        "replace": "Replace image",
+        "remove": "Remove image",
+        "uploading": "Uploading…",
+        "failed": "Could not upload the image",
+        "wrongType": "Use a JPEG, PNG, GIF or WebP image.",
+        "tooLarge": "The image must be 5 MB or smaller."
+      },
+      "validation": {
+        "skuRequired": "SKU is required",
+        "priceRequired": "Price is required",
+        "priceMin": "Price must be greater than 0",
+        "compareAtGreater": "Compare-at price must be greater than the price",
+        "margin": "Margin: {{value}}%"
+      }
     },
     "media": {
       "title": "Media gallery",
@@ -449,7 +487,12 @@
       "delete": "Delete",
       "altTextPlaceholder": "Describe the image",
       "noAltText": "No alt text",
-      "readyToUpload": "Ready to upload"
+      "readyToUpload": "Ready to upload",
+      "socialImage": "Social share image",
+      "socialImageHint": "Used in search results and link previews. Defaults to the cover image.",
+      "useCoverImage": "Use the cover image",
+      "imageNumber": "Image {{n}}",
+      "customSocialImage": "Custom image"
     },
     "tastingNotes": {
       "title": "Tasting notes",
@@ -492,6 +535,8 @@
       "variantsCount": "{{count}} variants"
     },
     "table": {
+      "variantCount_one": "{{count}} variant",
+      "variantCount_other": "{{count}} variants",
       "image": "Image",
       "name": "Name",
       "price": "Price",
@@ -509,6 +554,10 @@
       "stockNeedsBackend": "The list API does not return stock or variant counts yet."
     },
     "empty": {
+      "none": "No products yet",
+      "search": "No products match “{{q}}”",
+      "clear": "Clear search",
+      "trash": "Trash is empty",
       "category": "No products in this category",
       "origin": "No products for this origin",
       "farm": "No products for this farm",
@@ -521,10 +570,12 @@
       "status": "Status",
       "featured": "Featured",
       "type": "Type",
+      "tag": "Tag",
       "all": "All",
       "allTypes": "All types",
       "allStatuses": "All statuses",
-      "allFeatured": "All"
+      "allFeatured": "All featured",
+      "allTags": "All tags"
     },
     "actions": {
       "duplicate": "Duplicate",
@@ -1169,7 +1220,7 @@
     "showAll": "Show all",
     "discountGiven": "Discount given",
     "redemptions": "Redemptions",
-    "activeCodes": "Enabled Codes",
+    "activeCodes": "Enabled codes",
     "code": "Code",
     "codeRequired": "Promo code is required",
     "deleteConfirm": "Delete this promo code?",
@@ -2000,6 +2051,8 @@
     "status": "Status",
     "draft": "Draft",
     "published": "Published",
+    "scheduled": "Scheduled",
+    "archived": "Archived",
     "contentEn": "English content",
     "contentAr": "Arabic content",
     "summaryEn": "English summary",
@@ -2027,7 +2080,40 @@
     "excerpt": "Excerpt",
     "metaTitle": "Meta title",
     "metaDescription": "Meta description",
-    "editPost": "Edit post"
+    "preview": "Preview",
+    "untitled": "Untitled post",
+    "sections": "Post sections",
+    "uploadingImage": "Uploading image…",
+    "imageUploadFailed": "Could not upload the image.",
+    "editPost": "Edit post",
+    "categories": {
+      "title": "Journal categories",
+      "subtitle": "Posts are filed under these",
+      "add": "Add category",
+      "edit": "Rename category",
+      "nameEn": "English name",
+      "nameAr": "Arabic name",
+      "saveName": "Save name",
+      "empty": "No journal categories yet.",
+      "emptyHint": "Add the first category to file posts under it.",
+      "loadFailed": "Could not load the categories.",
+      "created": "Category created",
+      "renamed": "Category renamed",
+      "deleted": "Category deleted",
+      "saveFailed": "Could not save the category",
+      "deleteFailed": "Could not delete the category",
+      "deleteTitle": "Delete category",
+      "deleteMessage": "Delete \"{{name}}\"? Posts using it must be moved first.",
+      "nameRequired": "Name is required"
+    },
+    "undo": "Undo",
+    "redo": "Redo",
+    "horizontalRule": "Horizontal rule",
+    "insertVideo": "Insert video",
+    "videoUrl": "Video URL",
+    "videoUrlHint": "YouTube or Vimeo link",
+    "videoInsert": "Insert",
+    "videoUrlInvalid": "Enter a YouTube or Vimeo link."
   },
   "dashboard": {
     "title": "Dashboard",
@@ -2072,7 +2158,7 @@
       "avgOrderValue": "Avg order value",
       "totalCustomers": "Total customers",
       "newCustomers": "New customers",
-      "activeSubscriptions": "Enabled Subscriptions",
+      "activeSubscriptions": "Enabled subscriptions",
       "newSubscriptions": "New subscriptions",
       "onlineUsers": "Online users"
     },
@@ -2265,6 +2351,27 @@
     "theme": "Theme",
     "themeTransition": "Theme transition",
     "title": "Appearance"
+  },
+  "productTags": {
+    "title": "Tags",
+    "subtitle": "Merchandising labels that cut across categories. The products list filters by them.",
+    "add": "Add tag",
+    "edit": "Edit tag",
+    "nameEn": "Name (English)",
+    "nameAr": "Name (Arabic)",
+    "nameRequired": "Enter a name of at least 2 characters.",
+    "slugHint": "The slug is created from the English name once and never changes, so existing links and filters keep working.",
+    "saveName": "Save name",
+    "created": "Tag created",
+    "renamed": "Tag renamed",
+    "deleted": "Tag deleted",
+    "saveFailed": "Could not save the tag",
+    "deleteFailed": "Could not delete the tag",
+    "deleteTitle": "Delete tag",
+    "deleteMessage": "Delete “{{name}}”? It is removed from the products list filter.",
+    "loadFailed": "Could not load tags.",
+    "empty": "No tags yet",
+    "emptyHint": "Tags group products across categories, for example “New arrivals” or “Gift boxes”."
   },
   "productOptions": {
     "title": "Product options",
@@ -2557,9 +2664,16 @@
   },
   "unsavedChanges": {
     "title": "Unsaved changes",
-    "body": "You have changes that haven't been saved. if you leave this page, they will be lost.",
+    "body": "You have changes that haven't been saved. If you leave this page, they will be lost.",
     "discard": "Discard changes",
     "stay": "Stay on page",
     "saveAndLeave": "Save and leave"
+  },
+  "richText": {
+    "insertVideo": "Insert video",
+    "videoUrl": "Video URL",
+    "videoUrlHint": "YouTube or Vimeo link",
+    "videoInsert": "Insert",
+    "videoUrlInvalid": "Enter a YouTube or Vimeo link."
   }
 }

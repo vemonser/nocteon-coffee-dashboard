@@ -31,23 +31,53 @@
       <p>{{ 'dashboard.welcomeMessage' | transloco }}</p>
     </div>
   } @else {
-    @if (!statsService.overviewError(); as stats) {
-      <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4" data-testid="kpi-primary-row">
+    @if (!statsService.overviewError()) {
+      @if (!statsService.loaded() && statsService.loading()) {
+        <!-- First load: card-shaped skeletons, so no fake "0" / "No prior
+             data" answer flashes before the real numbers land. A refetch
+             keeps the previous numbers on screen (loaded() is true), the
+             same policy the attention panel follows. -->
+        <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4" data-testid="kpi-primary-skeleton" aria-hidden="true">
+          @for (card of [].constructor(4); track $index) {
+            <div class="flex h-full min-h-[112px] flex-col justify-center gap-3 rounded-[var(--radius-control)] border bg-card p-5">
+              <div class="h-3 w-1/3 rounded bg-muted kpi-skeleton"></div>
+              <div class="h-7 w-1/2 rounded bg-muted kpi-skeleton"></div>
+              <div class="h-3 w-1/4 rounded bg-muted kpi-skeleton"></div>
+            </div>
+          }
+        </div>
+        <span class="sr-only" role="status" aria-live="polite">{{ 'common.loading' | transloco }}</span>
+      } @else {
+        <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4" data-testid="kpi-primary-row">
         @if (canRevenue) {
-          <app-kpi-card icon="lucideWallet" [label]="'dashboard.metrics.totalRevenue' | transloco" [value]="(statsService.overview()?.totalRevenue | money)" [delta]="revenueDelta()" [metric]="'revenue'" [comparisonLabel]="'dashboard.metrics.totalRevenue' | transloco" [scopeNote]="'dashboard.totalRevenueHelp' | transloco" [link]="'/dashboard/orders'" [currency]="statsService.storeCurrency()" />
+          <app-kpi-card icon="lucideWallet" [label]="'dashboard.metrics.totalRevenue' | transloco" [value]="(statsService.overview()?.totalRevenue | money)" [delta]="revenueDelta()" [metric]="'revenue'" [comparisonLabel]="'dashboard.metrics.totalRevenue' | transloco" [scopeNote]="'dashboard.totalRevenueHelp' | transloco" [link]="'/dashboard/orders'" [linkParams]="ordersKpiLinkParams()" [currency]="statsService.storeCurrency()" />
         }
         @if (canOrdersKPI) {
-          <app-kpi-card icon="lucideShoppingBag" [label]="'dashboard.orders' | transloco" [value]="statsService.overview()?.totalOrders?.toString() ?? '0'" [delta]="ordersDelta()" [metric]="'orders'" [comparisonLabel]="'dashboard.orders' | transloco" [scopeNote]="'dashboard.ordersHelp' | transloco" [link]="'/dashboard/orders'" />
+          <app-kpi-card icon="lucideShoppingBag" [label]="'dashboard.orders' | transloco" [value]="statsService.overview()?.totalOrders?.toString() ?? '0'" [delta]="ordersDelta()" [metric]="'orders'" [comparisonLabel]="'dashboard.orders' | transloco" [scopeNote]="'dashboard.ordersHelp' | transloco" [link]="'/dashboard/orders'" [linkParams]="ordersKpiLinkParams()" />
         }
         @if (canRecentOrders) {
           <app-kpi-card icon="lucideUserPlus" [label]="'dashboard.newCustomers' | transloco" [value]="(statsService.overview()?.userGrowth?.currentPeriodCount ?? 0).toString()" [delta]="customersDelta()" [newMeansNew]="true" [metric]="'customers'" [comparisonLabel]="'dashboard.newCustomers' | transloco" [link]="'/dashboard/users'" />
         }
         @if (canRevenue) {
-          <app-kpi-card icon="lucideReceipt" [label]="'dashboard.averageOrderValue' | transloco" [value]="(statsService.overview()?.averageOrderValue | money)" [delta]="aovDelta()" [metric]="'aov'" [comparisonLabel]="'dashboard.averageOrderValue' | transloco" [scopeNote]="'dashboard.aovHelp' | transloco" [link]="'/dashboard/orders'" [currency]="statsService.storeCurrency()" />
+          <app-kpi-card icon="lucideReceipt" [label]="'dashboard.averageOrderValue' | transloco" [value]="(statsService.overview()?.averageOrderValue | money)" [delta]="aovDelta()" [metric]="'aov'" [comparisonLabel]="'dashboard.averageOrderValue' | transloco" [scopeNote]="'dashboard.aovHelp' | transloco" [link]="'/dashboard/orders'" [linkParams]="ordersKpiLinkParams()" [currency]="statsService.storeCurrency()" />
         }
-      </div>
+        </div>
+      }
     }
 
+    @if (!statsService.loaded() && statsService.loading()) {
+      <!-- Same first-load policy as the primary row: skeletons instead of
+           "—" placeholders that read like a real (wrong) answer. -->
+      <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4" data-testid="kpi-secondary-skeleton" aria-hidden="true">
+        @for (card of [].constructor(4); track $index) {
+          <div class="flex h-full min-h-[112px] flex-col justify-center gap-3 rounded-[var(--radius-control)] border bg-card p-5">
+            <div class="h-3 w-1/3 rounded bg-muted kpi-skeleton"></div>
+            <div class="h-7 w-1/2 rounded bg-muted kpi-skeleton"></div>
+            <div class="h-3 w-1/4 rounded bg-muted kpi-skeleton"></div>
+          </div>
+        }
+      </div>
+    } @else {
     <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4" data-testid="kpi-secondary-strip">
       @if (canTopSelling) {
         @if (statsService.repeatPurchaseRate(); as r) {
@@ -66,12 +96,17 @@
       }
 
       @if (canTopSelling) {
-        <app-kpi-card icon="lucideCoffee" [label]="'dashboard.coffeeSold' | transloco" [value]="(statsService.overview()?.coffeeSoldKg | number:'1.2-2') + ' ' + ('dashboard.kg' | transloco)" [caption]="'dashboard.coffeeSoldHint' | transloco" [scopeNote]="'dashboard.coffeeSoldHelp' | transloco"  />
+        @if (statsService.overview(); as o) {
+          <app-kpi-card icon="lucideCoffee" [label]="'dashboard.coffeeSold' | transloco" [value]="(o.coffeeSoldKg | number:'1.2-2') + ' ' + ('dashboard.kg' | transloco)" [caption]="'dashboard.coffeeSoldHint' | transloco" [scopeNote]="'dashboard.coffeeSoldHelp' | transloco"  />
+        } @else {
+          <app-kpi-card icon="lucideCoffee" [label]="'dashboard.coffeeSold' | transloco" value="—" />
+        }
       }
       @if (canOnlineUsers) {
         <app-kpi-card icon="lucideGlobe" [label]="'dashboard.onlineUsers' | transloco" [value]="statsService.onlineUsers().toString()" [caption]="'dashboard.onlineUsersCaption' | transloco" [scopeNote]="'dashboard.onlineUsersHelp' | transloco" [live]="true" [metric]="'onlineUsers'" />
       }
     </div>
+    }
 
     <app-needs-attention-panel />
 

@@ -25,6 +25,7 @@ export const ROUTE_PERMISSIONS: Record<string, string[]> = {
   '/dashboard/reviews/:id': ['review:moderate'],
   '/dashboard/journal': ['journal:read'],
   '/dashboard/products': ['product:read'],
+  '/dashboard/product-tags': ['product:read'],
   '/dashboard/products/new': ['product:create'],
   '/dashboard/products/:slug/edit': ['product:update'],
   '/dashboard/newsletter': ['user:read'],

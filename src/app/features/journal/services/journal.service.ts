@@ -3,7 +3,13 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { ApiResponse, PageResponse } from '../../../core/models/api-response.model';
 import { environment } from '../../../../environments/environment';
-import { JournalFilterParams, JournalPostRequest, JournalPostResponse } from '../models/journal.model';
+import {
+  JournalCategory,
+  JournalCategoryRequest,
+  JournalFilterParams,
+  JournalPostRequest,
+  JournalPostResponse,
+} from '../models/journal.model';
 
 @Injectable({ providedIn: 'root' })
 export class JournalService {
@@ -24,6 +30,33 @@ export class JournalService {
     return this.http.get<ApiResponse<PageResponse<JournalPostResponse>>>(this.fullUrl, {
       params: httpParams,
     });
+  }
+
+  createCategory(request: JournalCategoryRequest): Observable<ApiResponse<JournalCategory>> {
+    return this.http.post<ApiResponse<JournalCategory>>(
+      `${environment.apiUrl}/api/dashboard/journal-categories`,
+      request,
+    );
+  }
+
+  renameCategory(id: number, request: JournalCategoryRequest): Observable<ApiResponse<JournalCategory>> {
+    return this.http.put<ApiResponse<JournalCategory>>(
+      `${environment.apiUrl}/api/dashboard/journal-categories/${id}`,
+      request,
+    );
+  }
+
+  deleteCategory(id: number): Observable<ApiResponse<void>> {
+    return this.http.delete<ApiResponse<void>>(
+      `${environment.apiUrl}/api/dashboard/journal-categories/${id}`,
+    );
+  }
+
+  /** The categories a post can be filed under (not the product catalogue's). */
+  getCategories(): Observable<ApiResponse<JournalCategory[]>> {
+    return this.http.get<ApiResponse<JournalCategory[]>>(
+      `${environment.apiUrl}/api/dashboard/journal-categories`,
+    );
   }
 
   getBySlug(slug: string): Observable<ApiResponse<JournalPostResponse>> {
@@ -47,6 +80,19 @@ export class JournalService {
 
   remove(slug: string): Observable<ApiResponse<void>> {
     return this.http.delete<ApiResponse<void>>(`${this.fullUrl}/${slug}`);
+  }
+
+  /**
+   * POST /api/dashboard/journal/images — upload one image for the editor body.
+   * The toolbar inserts the returned URL; nothing is embedded as base64.
+   */
+  uploadInlineImage(file: File): Observable<ApiResponse<{ url: string }>> {
+    const fd = new FormData();
+    fd.append('file', file);
+    return this.http.post<ApiResponse<{ url: string }>>(
+      `${environment.apiUrl}/api/dashboard/journal/images`,
+      fd,
+    );
   }
 
   /** POST /{slug}/cover — upload/replace a journal post cover image. */

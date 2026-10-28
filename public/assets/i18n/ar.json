@@ -120,6 +120,7 @@
     "title": "إعدادات المتجر"
   },
   "common": {
+    "loadFailedHint": "تحقق من اتصالك وحاول مرة أخرى.",
     "accountSettings": "إعدادات الحساب",
     "actionCannotBeUndone": "لا يمكن التراجع عن هذا الإجراء.",
     "actions": "الإجراءات",
@@ -324,6 +325,7 @@
     "restoreNotFound": "لم يعُد هذا العنصر في المهملات."
   },
   "products": {
+    "draft": {"title":"استعادة المسودة غير المحفوظة؟","message":"توجد مسودة غير محفوظة من {{time}}. هل تريد استعادتها؟","restore":"استعادة المسودة","discard":"تجاهل المسودة"},
     "title": "المنتجات",
     "total": "إجمالي",
     "add": "إضافة منتج",
@@ -396,7 +398,22 @@
         "COFFEE": "قهوة",
         "EQUIPMENT": "معدات"
       },
-      "storyHint": "تُحفظ لهذه اللغة فقط — وهي الفقرة التحريرية في صفحة المنتج."
+      "storyHint": "نص منسّق لهذه اللغة — عريض وعناوين وصور وفيديو.",
+      "metaTitle": "عنوان SEO",
+      "metaTitlePlaceholder": "يُستخدم اسم المنتج افتراضيًا",
+      "metaTitleHint": "العنوان الظاهر في نتائج البحث ومعاينات الروابط. اجعله أقل من 60 حرفًا.",
+      "metaDescription": "وصف SEO",
+      "metaDescriptionPlaceholder": "يُستخدم الوصف المختصر افتراضيًا",
+      "metaDescriptionHint": "السطر الظاهر تحت العنوان في نتائج البحث. اجعله أقل من 160 حرفًا.",
+      "uploadingImage": "جارٍ رفع الصورة…",
+      "imageUploadFailed": "تعذّر رفع الصورة.",
+      "tags": "الوسوم",
+      "tagsHint": "تسميات تسويقية مثل «وصل حديثاً» أو «علب الهدايا». تُستخدم في فلتر الوسوم بصفحة المنتجات.",
+      "noTags": "لا توجد وسوم بعد.",
+      "manageTags": "أنشئ وسماً من صفحة الوسوم",
+      "slug": "الرابط المختصر",
+      "lockSlug": "تثبيت الرابط",
+      "unlockSlug": "تحرير الرابط"
     },
     "variants": {
       "title": "المتغيرات",
@@ -431,7 +448,28 @@
       "lowStockBadge": "مخزون منخفض",
       "inStock": "{{count}} متوفر",
       "duplicate": "نسخ",
-      "remove": "إزالة"
+      "remove": "إزالة",
+      "unnamed": "متغير",
+      "removeTitle": "إزالة المتغير",
+      "removeMessage": "هل تريد إزالة هذا المتغير؟ سيذهب معه إعدادا المخزون والسعر.",
+      "image": {
+        "title": "صورة المتغير",
+        "hint": "تُعرض بدلاً من معرض المنتج عند اختيار هذا المتغير. JPG أو PNG أو GIF أو WebP، بحد أقصى 5 ميجابايت.",
+        "upload": "رفع صورة",
+        "replace": "استبدال الصورة",
+        "remove": "إزالة الصورة",
+        "uploading": "جارٍ الرفع…",
+        "failed": "تعذر رفع الصورة",
+        "wrongType": "استخدم صورة بصيغة JPG أو PNG أو GIF أو WebP.",
+        "tooLarge": "يجب ألا يزيد حجم الصورة عن 5 ميجابايت."
+      },
+      "validation": {
+        "skuRequired": "رمز المنتج مطلوب",
+        "priceRequired": "السعر مطلوب",
+        "priceMin": "يجب أن يكون السعر أكبر من صفر",
+        "compareAtGreater": "يجب أن يكون سعر المقارنة أعلى من السعر",
+        "margin": "هامش الربح: {{value}}%"
+      }
     },
     "media": {
       "title": "معرض الوسائط",
@@ -453,7 +491,12 @@
       "delete": "حذف",
       "altTextPlaceholder": "صف الصورة",
       "noAltText": "لا يوجد نص بديل",
-      "readyToUpload": "جاهز للرفع"
+      "readyToUpload": "جاهز للرفع",
+      "socialImage": "صورة المشاركة",
+      "socialImageHint": "تُستخدم في نتائج البحث ومعاينات الروابط. الافتراضي هو صورة الغلاف.",
+      "useCoverImage": "استخدام صورة الغلاف",
+      "imageNumber": "صورة {{n}}",
+      "customSocialImage": "صورة مخصصة"
     },
     "tastingNotes": {
       "title": "ملاحظات التذوق",
@@ -496,6 +539,12 @@
       "variantsCount": "{{count}} متغيرات"
     },
     "table": {
+      "variantCount_zero": "بدون متغيرات",
+      "variantCount_one": "متغير واحد",
+      "variantCount_two": "متغيران",
+      "variantCount_few": "{{count}} متغيرات",
+      "variantCount_many": "{{count}} متغيّرًا",
+      "variantCount_other": "{{count}} متغير",
       "image": "الصورة",
       "name": "الاسم",
       "price": "السعر",
@@ -513,6 +562,10 @@
       "stockNeedsBackend": "واجهة القائمة لا ترجع المخزون أو عدد المتغيرات بعد."
     },
     "empty": {
+      "none": "لا توجد منتجات بعد",
+      "search": "لا توجد منتجات تطابق «{{q}}»",
+      "clear": "مسح البحث",
+      "trash": "سلة المحذوفات فارغة",
       "category": "لا توجد منتجات في هذه الفئة",
       "origin": "لا توجد منتجات لهذا المنشأ",
       "farm": "لا توجد منتجات لهذه المزرعة",
@@ -525,10 +578,12 @@
       "status": "الحالة",
       "featured": "مميز",
       "type": "النوع",
+      "tag": "الوسم",
       "all": "الكل",
       "allTypes": "كل الأنواع",
       "allStatuses": "كل الحالات",
-      "allFeatured": "الكل"
+      "allFeatured": "كل المميزة",
+      "allTags": "كل الوسوم"
     },
     "actions": {
       "duplicate": "نسخ",
@@ -2044,6 +2099,8 @@
     "status": "الحالة",
     "draft": "مسودة",
     "published": "منشور",
+    "scheduled": "مجدول",
+    "archived": "مؤرشف",
     "contentEn": "المحتوى بالإنجليزية",
     "contentAr": "المحتوى بالعربية",
     "summaryEn": "الملخص بالإنجليزية",
@@ -2071,7 +2128,40 @@
     "excerpt": "المقتطف",
     "metaTitle": "عنوان ميتا",
     "metaDescription": "وصف ميتا",
-    "editPost": "تعديل المقال"
+    "preview": "معاينة",
+    "untitled": "مقال بدون عنوان",
+    "sections": "أقسام المقال",
+    "uploadingImage": "جارٍ رفع الصورة…",
+    "imageUploadFailed": "تعذّر رفع الصورة.",
+    "editPost": "تعديل المقال",
+    "categories": {
+      "title": "فئات الجورنال",
+      "subtitle": "تُصنَّف المقالات تحت هذه الفئات",
+      "add": "إضافة فئة",
+      "edit": "تغيير اسم الفئة",
+      "nameEn": "الاسم بالإنجليزية",
+      "nameAr": "الاسم بالعربية",
+      "saveName": "حفظ الاسم",
+      "empty": "لا توجد فئات بعد.",
+      "emptyHint": "أضف أول فئة لتصنيف المقالات تحتها.",
+      "loadFailed": "تعذّر تحميل الفئات.",
+      "created": "تم إنشاء الفئة",
+      "renamed": "تم تغيير اسم الفئة",
+      "deleted": "تم حذف الفئة",
+      "saveFailed": "تعذّر حفظ الفئة",
+      "deleteFailed": "تعذّر حذف الفئة",
+      "deleteTitle": "حذف الفئة",
+      "deleteMessage": "حذف \"{{name}}\"؟ يجب نقل المقالات المستخدمة لها أولًا.",
+      "nameRequired": "الاسم مطلوب"
+    },
+    "undo": "تراجع",
+    "redo": "إعادة",
+    "horizontalRule": "خط فاصل",
+    "insertVideo": "إدراج فيديو",
+    "videoUrl": "رابط الفيديو",
+    "videoUrlHint": "رابط يوتيوب أو فيميو",
+    "videoInsert": "إدراج",
+    "videoUrlInvalid": "أدخل رابط يوتيوب أو فيميو."
   },
   "dashboard": {
     "title": "لوحة التحكم",
@@ -2345,6 +2435,27 @@
     "theme": "المظهر",
     "themeTransition": "انتقال المظهر",
     "title": "المظهر"
+  },
+  "productTags": {
+    "title": "الوسوم",
+    "subtitle": "تسميات تسويقية تقطع الفئات. تستخدمها صفحة المنتجات كفلتر.",
+    "add": "إضافة وسم",
+    "edit": "تعديل الوسم",
+    "nameEn": "الاسم (بالإنجليزية)",
+    "nameAr": "الاسم (بالعربية)",
+    "nameRequired": "أدخل اسماً لا يقل عن حرفين.",
+    "slugHint": "يُنشأ الرابط المختصر من الاسم الإنجليزي مرة واحدة ولا يتغير، لتبقى الروابط والفلاتر الحالية تعمل.",
+    "saveName": "حفظ الاسم",
+    "created": "تم إنشاء الوسم",
+    "renamed": "تم تعديل اسم الوسم",
+    "deleted": "تم حذف الوسم",
+    "saveFailed": "تعذّر حفظ الوسم",
+    "deleteFailed": "تعذّر حذف الوسم",
+    "deleteTitle": "حذف الوسم",
+    "deleteMessage": "هل تريد حذف «{{name}}»؟ سيختفي من فلتر صفحة المنتجات.",
+    "loadFailed": "تعذّر تحميل الوسوم.",
+    "empty": "لا توجد وسوم بعد",
+    "emptyHint": "تجمّع الوسوم منتجات من فئات مختلفة، مثل «وصل حديثاً» أو «علب الهدايا»."
   },
   "productOptions": {
     "title": "خيارات المنتجات",
@@ -2669,5 +2780,12 @@
     "discard": "تجاهل التغييرات",
     "stay": "البقاء في الصفحة",
     "saveAndLeave": "حفظ ومغادرة"
+  },
+  "richText": {
+    "insertVideo": "إدراج فيديو",
+    "videoUrl": "رابط الفيديو",
+    "videoUrlHint": "رابط يوتيوب أو فيميو",
+    "videoInsert": "إدراج",
+    "videoUrlInvalid": "أدخل رابط يوتيوب أو فيميو."
   }
 }

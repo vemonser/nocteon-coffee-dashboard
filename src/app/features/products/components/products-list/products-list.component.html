@@ -49,14 +49,34 @@
       <span class="text-xs text-muted-foreground font-medium">{{ 'products.filters.type' | transloco }}</span>
       <hlm-select formControlName="type" class="w-40">
         <hlm-select-trigger class="h-[var(--filter-control-height)] w-40">
-          <hlm-select-value [placeholder]="'products.filters.allTypes' | transloco" />
+          <hlm-select-value class="sr-only" [placeholder]="'products.filters.allTypes' | transloco" />
+          <span class="line-clamp-1">{{ typeLabel(filters.controls.type.value ?? '') }}</span>
         </hlm-select-trigger>
         <hlm-select-content *hlmSelectPortal>
           <hlm-select-group>
             <hlm-select-label>{{ 'products.filters.type' | transloco }}</hlm-select-label>
-            <hlm-select-item value="all">{{ 'products.filters.all' | transloco }}</hlm-select-item>
+            <hlm-select-item value="">{{ 'products.filters.allTypes' | transloco }}</hlm-select-item>
             <hlm-select-item value="COFFEE">{{ 'products.form.productTypes.COFFEE' | transloco }}</hlm-select-item>
             <hlm-select-item value="EQUIPMENT">{{ 'products.form.productTypes.EQUIPMENT' | transloco }}</hlm-select-item>
+          </hlm-select-group>
+        </hlm-select-content>
+      </hlm-select>
+    </div>
+
+    <div class="flex items-center gap-1.5">
+      <span class="text-xs text-muted-foreground font-medium">{{ 'products.filters.tag' | transloco }}</span>
+      <hlm-select formControlName="tag" class="w-44">
+        <hlm-select-trigger class="h-[var(--filter-control-height)] w-44">
+          <hlm-select-value class="sr-only" [placeholder]="'products.filters.allTags' | transloco" />
+          <span class="line-clamp-1">{{ tagLabel(filters.controls.tag.value ?? '') }}</span>
+        </hlm-select-trigger>
+        <hlm-select-content *hlmSelectPortal>
+          <hlm-select-group>
+            <hlm-select-label>{{ 'products.filters.allTags' | transloco }}</hlm-select-label>
+            <hlm-select-item value="">{{ 'products.filters.allTags' | transloco }}</hlm-select-item>
+            @for (tag of productTags(); track tag.id) {
+              <hlm-select-item [value]="tag.slug">{{ tagName(tag) }}</hlm-select-item>
+            }
           </hlm-select-group>
         </hlm-select-content>
       </hlm-select>
@@ -66,12 +86,13 @@
       <span class="text-xs text-muted-foreground font-medium">{{ 'products.filters.status' | transloco }}</span>
       <hlm-select formControlName="status" class="w-40">
         <hlm-select-trigger class="h-[var(--filter-control-height)] w-40">
-          <hlm-select-value [placeholder]="'products.filters.allStatuses' | transloco" />
+          <hlm-select-value class="sr-only" [placeholder]="'products.filters.allStatuses' | transloco" />
+          <span class="line-clamp-1">{{ statusLabel(filters.controls.status.value ?? '') }}</span>
         </hlm-select-trigger>
         <hlm-select-content *hlmSelectPortal>
           <hlm-select-group>
             <hlm-select-label>{{ 'products.status.all' | transloco }}</hlm-select-label>
-            <hlm-select-item value="all">{{ 'products.status.all' | transloco }}</hlm-select-item>
+            <hlm-select-item value="">{{ 'products.filters.allStatuses' | transloco }}</hlm-select-item>
             <hlm-select-item value="active">{{ 'products.status.active' | transloco }}</hlm-select-item>
             <hlm-select-item value="inactive">{{ 'products.status.inactive' | transloco }}</hlm-select-item>
           </hlm-select-group>
@@ -83,12 +104,13 @@
       <span class="text-xs text-muted-foreground font-medium">{{ 'products.filters.featured' | transloco }}</span>
       <hlm-select formControlName="featured" class="w-44">
         <hlm-select-trigger class="h-[var(--filter-control-height)] w-44">
-          <hlm-select-value [placeholder]="'products.filters.allFeatured' | transloco" />
+          <hlm-select-value class="sr-only" [placeholder]="'products.filters.allFeatured' | transloco" />
+          <span class="line-clamp-1">{{ featuredLabel(filters.controls.featured.value ?? '') }}</span>
         </hlm-select-trigger>
         <hlm-select-content *hlmSelectPortal>
           <hlm-select-group>
             <hlm-select-label>{{ 'products.featured.all' | transloco }}</hlm-select-label>
-            <hlm-select-item value="all">{{ 'products.featured.all' | transloco }}</hlm-select-item>
+            <hlm-select-item value="">{{ 'products.filters.allFeatured' | transloco }}</hlm-select-item>
             <hlm-select-item value="featured">{{ 'products.featured.featuredOnly' | transloco }}</hlm-select-item>
             <hlm-select-item value="notFeatured">{{ 'products.featured.notFeatured' | transloco }}</hlm-select-item>
           </hlm-select-group>
@@ -123,18 +145,18 @@
       class="rounded-lg border border-destructive/40 bg-destructive-soft px-4 py-6 text-center"
     >
       <p class="font-medium text-destructive">{{ 'notify.loadFailed' | transloco }}</p>
+      <p class="mt-1 text-sm text-muted-foreground">{{ 'common.loadFailedHint' | transloco }}</p>
       <button hlmBtn variant="outline" size="sm" class="mt-3" (click)="load()">
         {{ 'common.retry' | transloco }}
       </button>
     </div>
   }
 
-  <!-- Loading State -->
-  @if (loading()) {
-    <div class="rounded-md border">
-      <div class="h-12 border-b bg-muted/50 animate-pulse" *ngFor="let _ of [1, 2, 3, 4, 5]"></div>
-    </div>
-  }
+  <!-- No standalone skeleton: the data table renders its own in-tbody
+       skeleton (same header, same row count, same heights). Two skeletons
+       stacked slid the page by ~360px when the data landed
+       (CLS 0.1048 → see UX_AUDIT_products.md #3). -->
+
 
   <!-- Table -->
   @if (!loadError()) {
@@ -203,7 +225,7 @@
       [navigableHref]="editHref"
       [clickableRows]="!isTrash()"
       (sortChange)="onSortChange($event)"
-      (delete)="confirmDelete($event)"
+      (delete)="trashProduct($event)"
       (restore)="restore($event)"
       (permanentDelete)="openPermanentDelete($event)"
       (rowClick)="goToEdit($event)"
@@ -211,6 +233,8 @@
       (featuredToggle)="onFeaturedToggle($event)"
       [menuActionsFor]="isTrash() ? null : menuActionsFor"
       [menuActions]="[]"
+      [emptyMessage]="emptyMessage()"
+      [emptyAction]="emptyAction()"
       (menuAction)="onMenuAction($event)"
       (selectionChange)="onSelectionChange($event)"
       (toggleAllChange)="onToggleAll($event)"
@@ -235,27 +259,3 @@
   }
 </div>
 
-<!-- Delete Dialog -->
-@if (deleting()) {
-  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-    <div class="dialog-surface w-full max-w-sm p-6">
-      <h2 class="text-lg font-medium mb-2">{{ 'products.deleteTitle' | transloco }}</h2>
-      <p class="text-muted-foreground mb-6">
-        {{ 'products.deleteConfirm' | transloco }} <strong>{{ deleting()!.slug }}</strong
-        >? {{ 'products.deleteWarning' | transloco }}
-      </p>
-      <div class="flex gap-3">
-        <button hlmBtn variant="outline" class="flex-1" (click)="deleting.set(null)">{{ 'products.cancel' | transloco }}</button>
-        <button
-          hlmBtn
-          variant="destructive"
-          class="flex-1"
-          (click)="submitDeleteOrPermanent()"
-          [disabled]="submitting()"
-        >
-          {{ submitting() ? ('products.deleting' | transloco) : ('products.delete' | transloco) }}
-        </button>
-      </div>
-    </div>
-  </div>
-}

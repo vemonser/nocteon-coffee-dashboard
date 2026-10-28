@@ -31,7 +31,7 @@ Scope tags: **FE** the Angular dashboard, **BE** Spring API, **FS** both.
 
 ## Wave 1 — Security and the blog authoring loop
 
-### FE-01 · Sanitize journal HTML (security)
+### FE-01 · Sanitize journal HTML (security) — done 28 Oct 2026
 **Why** The journal body is admin-authored HTML from Quill, stored and rendered
 verbatim. No sanitizer exists anywhere in the backend. Stored XSS if an admin
 account is compromised or a role is added later.
@@ -45,8 +45,12 @@ account is compromised or a role is added later.
 - Rendering uses `innerHTML` only on sanitized content (document the contract).
 **Files** `JournalService`, a new `HtmlSanitizer` service, `journal-form` preview.
 **Effort** 0.5 day. **Deps** none.
+**Shipped** Backend `common/service/HtmlSanitizer` wired into `JournalService.create` /
+`update` (and both read paths for pre-existing rows). Contract recorded in
+DECISIONS.md ("The API stores only allowlisted HTML"). Evidence: `HtmlSanitizerTest`,
+`JournalServiceSanitizationTest`, full backend suite.
 
-### FE-02 · Journal inline images
+### FE-02 · Journal inline images — done 28 Oct 2026
 **Why** A blog post needs images inside the body, not only a cover.
 **Scope** FS.
 **Acceptance**
@@ -57,8 +61,13 @@ account is compromised or a role is added later.
 **Files** `journal-form.component.ts`, `QUILL_CONFIG_TOKEN`, backend upload
 endpoint (reuse Cloudinary service).
 **Effort** 1 day. **Deps** FE-01 (sanitizer must allow own-CDN img src).
+**Shipped** Toolbar image button uploads through `POST /api/dashboard/journal/images`
+(magic-byte validation, 5 MB, jpeg/png/gif/webp only) and inserts the returned URL;
+one handler per editor; upload failure keeps the content and shows a toast.
+Rejected files and the sanitizer round-trip are covered by `JournalInlineImageTest`.
+Verified live against Cloudinary. Evidence: `evidence/fe-02/` + Gate.
 
-### FE-03 · Scheduled publishing
+### FE-03 · Scheduled publishing — done 28 Oct 2026
 **Why** `publishedAt` exists but the public query only checks `status =
 PUBLISHED`, so a future-dated post is live immediately.
 **Scope** FS.
@@ -70,8 +79,19 @@ PUBLISHED`, so a future-dated post is live immediately.
   dashboard.
 **Files** `JournalPostRepository`, journal list/row component.
 **Effort** 0.5 day. **Deps** none.
+**Shipped** The public queries filter on the date; create/update now store the
+date the editor chose (it was ignored, so the form could not schedule at all);
+the list shows a "Scheduled" badge. Two defects blocked the flow and are fixed
+here: the journal list/detail 500 when serializing lazy tags, and the form
+filling its category picker from the product catalogue.
+Evidence: `JournalScheduledPublishingIntegrationTest` (8 tests, real database),
+live Playwright run (post dated tomorrow → badge, public 404 + absent from the
+list, editor reopens with its content), screenshots
+`evidence/fe-03/scheduled-badge-1440.png` and `scheduled-edit-1440.png`.
+Review fixes in the same branch: dashboard tags serialization, blank edit form,
+timezone-stable schedule date, translated statuses.
 
-### FE-04 · Journal preview
+### FE-04 · Journal preview — done 28 Oct 2026
 **Why** Editors publish blind today.
 **Scope** FE.
 **Acceptance** A preview action renders the draft (title, cover, body, tags,
@@ -79,8 +99,12 @@ related products) in a full-screen dialog using the same styles as the public
 post, without changing status.
 **Files** `journal-form`, a preview dialog component.
 **Effort** 0.5 day. **Deps** FE-01.
+**Shipped** Preview dialog (cover, tags, title, excerpt, sanitized body, related
+products) reading the form rather than the saved row. Body via `[innerHTML]` on
+sanitized content only. Language fallback skips empty groups.
+Evidence: `evidence/fe-04/preview-1440.png` + Gate.
 
-### FE-05 · Journal categories CRUD
+### FE-05 · Journal categories CRUD — done 28 Oct 2026
 **Why** Categories are seed-only; the editor can pick one but nobody can create
 or rename them.
 **Scope** FS.
@@ -88,8 +112,13 @@ or rename them.
 unused categories; the journal form's category select reads the same endpoint;
 deleting a category in use is refused with the count.
 **Effort** 0.5 day. **Deps** none.
+**Shipped** Page at `journal/categories` (list/add/rename/delete) with a kebab
+row menu, normalized dirty snapshot, discard guard, and the 409 post count shown
+on refusal. Backend refuses deleting an in-use category (trashed posts count),
+generates the slug once, and guards slug reuse/restore.
+Evidence: `evidence/fe-05/categories-1440.png` + Gate.
 
-### FE-06 · Rich text toolbar upgrade
+### FE-06 · Rich text toolbar upgrade — done 28 Oct 2026
 **Why** Current toolbar: bold/italic/underline, h1-h3, link, quote, lists,
 clean. A blog needs more.
 **Scope** FE.
@@ -97,42 +126,84 @@ clean. A blog needs more.
 block, horizontal rule, undo/redo, and h4. Every addition survives FE-01's
 allowlist.
 **Effort** 0.5 day. **Deps** FE-01, FE-02.
+**Shipped** h4, code block, horizontal rule, undo/redo and YouTube/Vimeo embeds.
+The sanitizer allows only https embed iframes on the allowlist and rewrites
+Quill code blocks to `pre>code`. ngx-quill's semantic HTML turned videos into
+anchors, so the editor stores the raw root HTML. `quill.snow.css` was missing
+from `angular.json` and is now included.
+Evidence: `evidence/fe-06/toolbar-1440.png` + Gate.
 
 ---
 
 ## Wave 2 — Products
 
-### FE-07 · Product SEO per language
+### FE-07 · Product SEO per language — done 28 Oct 2026
 **Why** No meta title/description/OG image; product links share poorly.
 **Scope** FS.
 **Acceptance** `product_translations` gains `meta_title`, `meta_description`,
 plus a product-level `og_image_url` (defaults to the primary media); the wizard
 edits them per language; the public product endpoint exposes them.
 **Effort** 1 day. **Deps** none.
+**Shipped** `V16__product_seo.sql`, entity/request/response fields, mapper
+fallback (title → name, description → short description, OG image → first image,
+never a video), wizard fields under each language plus a social-image picker in
+the media step. Evidence: `ProductSeoWriteTest`, `ProductSeoResponseMapperTest`,
+`ng build`, 294 unit tests, `npm run i18n:check`, plus 1440x900 viewport
+captures (`evidence/fe-07/`) and a live end-to-end check: values saved through
+the wizard, returned by `GET /api/products/{slug}`, and visible again after
+reopening the wizard.
 
-### FE-08 · Rich story (reuse the journal editor)
+### FE-08 · Rich story (reuse the journal editor) — done 28 Oct 2026
 **Why** Story is a plain textarea; the blog gets rich text first.
 **Scope** FE.
 **Acceptance** The story field uses the same Quill component and toolbar as the
 journal, stores HTML, renders on the product page; assistant/legacy plain
 stories still render as paragraphs.
 **Effort** 0.5 day. **Deps** FE-01 (sanitize story too), FE-02.
+**Shipped** The per-language story is the shared Quill editor (same toolbar,
+config and video dialog as the journal). Product-scoped image upload
+(`products/story-images`, product:create|update) shares `RichTextImageService`
+with the journal. The story is sanitized on write and read; legacy plain text
+passes through unchanged.
+Evidence: `evidence/fe-08/story-editor-1440.png`, `ProductStorySanitizationTest`,
+`RichTextImageServiceTest` + Gate.
 
-### FE-09 · Variant images
+### FE-09 · Variant images — done 28 Oct 2026
 **Why** A 250 g bag and a 1 kg bag cannot show different photos.
 **Scope** FS.
 **Acceptance** `product_variants` gains `image_url`; the variants step uploads
 one image per variant; the product page swaps the gallery image on variant
 selection.
 **Effort** 1 day. **Deps** none.
+**Shipped** `V17` adds `product_variants.image_url`; the variant request and
+response carry it, so `GET /api/products/{slug}` exposes
+`variants[].imageUrl`. Uploads go to
+`POST /api/dashboard/products/variant-images`, which reuses
+`RichTextImageService` (format allowlist, magic bytes, 5 MB). The variants step
+uploads, replaces and removes the photo per variant and shows a thumbnail in
+the collapsed summary; a blank value is stored as `null` so the gallery still
+applies. Evidence: `ProductVariantImageTest`, `ProductSeoResponseMapperTest`
+(variant image on the public response), live UI capture
+`evidence/fe-09/variant-image-1440.png`, Gate.
+**Storefront** not in this cycle — see DECISIONS.md, the contract is live.
 
-### FE-10 · Product tags / collections
+### FE-10 · Product tags / collections — done 28 Oct 2026
 **Why** Merchandising beyond category/origin: "New arrivals", "Gift boxes".
 **Scope** FS.
 **Acceptance** `product_tags` (or a collections table) with slug + translated
 name; the wizard assigns tags; the products list filters by tag; the storefront
 exposes a tag filter.
 **Effort** 1 day. **Deps** none.
+**Shipped** `V18` adds `product_tags`, `product_tag_translations` and
+`product_tag_links`; `GET /api/dashboard/product-tags` plus create/rename/delete
+(slug generated once, delete refused with 409 + count while in use). The wizard
+assigns tags as chips in the basic step, the products list filters by tag (in
+the URL), and the public product exposes `tags[]` and accepts `?tagSlug=`.
+Tags reuse the product permissions — no new permission string that no role
+holds. Evidence: `ProductTagServiceTest`, `ProductTagMapperTest`,
+`ProductTagFilterIntegrationTest` (public + dashboard paths, real database),
+viewport captures in `evidence/fe-10/`, Gate.
+**Storefront** not in this cycle — see DECISIONS.md, the contract is live.
 
 ### FE-11 · Related / upsell products
 **Why** Pairings are taste pairings, not cross-sell.

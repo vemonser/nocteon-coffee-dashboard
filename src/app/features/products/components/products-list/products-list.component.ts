@@ -24,13 +24,15 @@ import {
 import { PageResponse } from '../../../../core/models/api-response.model';
 import { ProductListItem, ProductListParams, ProductType } from '../../models/product.models';
 import { ProductService } from '../../services/product.service';
+import { ProductTagService } from '../../../product-tags/services/product-tag.service';
+import { ProductTag } from '../../../product-tags/models/product-tag.model';
 import { CategoryTranslationService } from '../../../../shared/services/category-translation.service';
 import { HasPermissionDirective } from '../../../../core/auth/permission.directive';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { LifecycleTabsComponent } from '../../../../shared/components/lifecycle-tabs/lifecycle-tabs.component';
 import { TrashBannerComponent } from '../../../../shared/components/trash-banner/trash-banner.component';
 import { ColumnDef, createColumnHelper } from '@tanstack/table-core';
-import { TranslocoPipe } from '@jsverse/transloco';
+import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { PagerComponent } from '../../../../shared/components/pager/pager.component';
 import { NotifyService } from '../../../../core/notify/notify.service';
 import { RowMenuAction } from '../../../../shared/ui/actions-cell/actions-cell.component';
@@ -80,6 +82,86 @@ export class ProductsListComponent {
   readonly lowStockOnly = signal(false);
   private notify = inject(NotifyService);
   private confirmDialog = inject(ConfirmDialogService);
+  private readonly transloco = inject(TranslocoService);
+  private readonly productTagService = inject(ProductTagService);
+
+  /** FE-10: the tag vocabulary for the filter, loaded once. */
+  readonly productTags = signal<ProductTag[]>([]);
+
+  /** Mirrors the search box so the empty-state copy can react to it. */
+  private readonly searchText = signal('');
+
+  /**
+   * Filter labels for the select triggers. The spartan value element prints
+   * the raw control value ("all"/""), because the options live in a portal
+   * and the value template exposes no context — so the trigger shows this
+   * translated label instead (the primitive value stays for a11y, sr-only).
+   */
+  readonly typeLabel = (value: string): string =>
+    this.transloco.translate(
+      value === 'COFFEE'
+        ? 'products.form.productTypes.COFFEE'
+        : value === 'EQUIPMENT'
+          ? 'products.form.productTypes.EQUIPMENT'
+          : 'products.filters.allTypes',
+    );
+
+  readonly statusLabel = (value: string): string =>
+    this.transloco.translate(
+      value === 'active'
+        ? 'products.status.active'
+        : value === 'inactive'
+          ? 'products.status.inactive'
+          : 'products.filters.allStatuses',
+    );
+
+  readonly featuredLabel = (value: string): string =>
+    this.transloco.translate(
+      value === 'featured'
+        ? 'products.featured.featuredOnly'
+        : value === 'notFeatured'
+          ? 'products.featured.notFeatured'
+          : 'products.filters.allFeatured',
+    );
+
+  /** The tag select trigger reads the tag's name, never its slug. */
+  readonly tagLabel = (value: string): string => {
+    if (!value) return this.transloco.translate('products.filters.allTags');
+    const tag = this.productTags().find((t) => t.slug === value);
+    return tag ? this.tagName(tag) : value;
+  };
+
+  tagName(tag: ProductTag): string {
+    const language = this.transloco.getActiveLang();
+    return (
+      tag.translations.find((t) => t.language === language)?.title ??
+      tag.translations.find((t) => t.language === 'en')?.title ??
+      tag.slug
+    );
+  }
+
+  /** What the empty state says — and what it offers as the next step (#5). */
+  readonly emptyMessage = computed(() => {
+    if (this.isTrash()) return this.transloco.translate('products.empty.trash');
+    const q = this.searchText().trim();
+    return q
+      ? this.transloco.translate('products.empty.search', { q })
+      : this.transloco.translate('products.empty.none');
+  });
+
+  readonly emptyAction = computed<{ label: string; action: () => void } | null>(() => {
+    if (this.isTrash()) return null;
+    const q = this.searchText().trim();
+    return q
+      ? {
+          label: this.transloco.translate('products.empty.clear'),
+          action: () => this.filters.patchValue({ search: '' }),
+        }
+      : {
+          label: this.transloco.translate('products.add'),
+          action: () => this.goToCreate(),
+        };
+  });
 
   readonly canManageTrash = this.authService.hasPermission('product:delete');
   readonly isTrashAllowed = computed(() => this.authService.hasPermission('product:delete'));
@@ -95,8 +177,6 @@ export class ProductsListComponent {
   items = signal<ProductListItem[]>([]);
   pageData = signal<PageResponse<ProductListItem> | null>(null);
   loading = signal(false);
-  deleting = signal<ProductListItem | null>(null);
-  submitting = signal(false);
   currentPage = signal(0);
   pageSize = signal(20);
   selectedIds = signal<ReadonlySet<number>>(new Set());
@@ -108,9 +188,13 @@ export class ProductsListComponent {
 
   readonly filters = new FormGroup({
     search: new FormControl(''),
-    status: new FormControl('all'),
-    featured: new FormControl('all'),
-    type: new FormControl('all'),
+    // '' = "no filter". The select triggers then show their translated
+    // placeholder ("All types"), instead of the raw control value 'all'.
+    status: new FormControl(''),
+    featured: new FormControl(''),
+    type: new FormControl(''),
+    /** FE-10: '' = every tag. */
+    tag: new FormControl(''),
   });
 
   readonly loadError = signal(false);
@@ -173,10 +257,11 @@ export class ProductsListComponent {
     });
     const actionsCol = this.columnHelper.display({ id: 'actions', header: 'Actions', meta: { width: '56px' } });
 
-    const cols: ColumnDef<ProductListItem, any>[] = [mainCol, typeCol, categoryCol, priceCol];
-    if (this.hasStockData()) {
-      cols.push(stockCol);
-    }
+    // The Stock column is always present: a column that appears only when the
+    // data answers re-lays-out the whole table and moves every cell (CLS,
+    // UX_AUDIT_products.md #3) and makes the empty state lose a column (#5).
+    // A missing stock value simply renders an empty cell.
+    const cols: ColumnDef<ProductListItem, any>[] = [mainCol, typeCol, categoryCol, priceCol, stockCol];
     cols.push(statusCol, featuredCol, actionsCol);
     return cols;
   });
@@ -213,30 +298,154 @@ export class ProductsListComponent {
   ];
 
   constructor() {
-    this.categorySlug.set(this.route.snapshot.queryParamMap.get('category'));
-    // The dashboard's low-stock drill-down asks for the low-stock set.
-    this.lowStockOnly.set(this.route.snapshot.queryParamMap.get('stock') === 'low');
-    this.filters.valueChanges.subscribe(() => {
-      this.currentPage.set(0);
-      this.load();
-    });
+    // The URL is the request. Read it first, remember what the first load
+    // answers, then let every control WRITE the URL and let the subscription
+    // below do the loading — the same contract the orders list follows.
+    this.readUrl();
+    this.loadedState = JSON.stringify(this.currentState());
     this.load();
+
+    this.productTagService.getAll().subscribe({
+      next: (res) => this.productTags.set(res.data ?? []),
+      // A failed tag preload must not break the list; the filter simply has no options.
+      error: () => this.productTags.set([]),
+    });
+
+    this.route.queryParamMap.subscribe((params) => {
+      const next = this.stateFromParams(params);
+      if (JSON.stringify(next) !== this.loadedState) {
+        this.applyState(next);
+        this.load();
+      }
+    });
+
+    // A control never loads directly: it writes the URL. Typing is debounced
+    // (350ms) and always replaces the history entry, so Back steps between
+    // pages rather than between keystrokes.
+    let previousSearch = `${this.filters.value.search ?? ''}`;
+    this.filters.valueChanges.subscribe((value) => {
+      const search = `${value.search ?? ''}`;
+      const searchChanged = search !== previousSearch;
+      previousSearch = search;
+      this.searchText.set(search);
+      if (this.urlDebounce) clearTimeout(this.urlDebounce);
+      if (searchChanged) {
+        this.urlDebounce = setTimeout(() => this.syncUrl(true), 350);
+      } else {
+        this.currentPage.set(0);
+        this.syncUrl(true);
+      }
+    });
   }
 
   clearCategoryFilter(): void {
     this.categorySlug.set(null);
     this.currentPage.set(0);
-    this.router.navigate([], { queryParams: {}, relativeTo: this.route });
-    this.load();
+    this.syncUrl(true);
   }
 
   setListView(mode: 'active' | 'trash'): void {
     this.viewMode.set(mode);
     this.currentPage.set(0);
-    this.load();
+    this.syncUrl(true);
+  }
+
+  // ── URL state ────────────────────────────────────────────────────────────
+
+  /** The state the rows on screen were loaded with (see orders-list). */
+  private loadedState = '';
+
+  private urlDebounce: ReturnType<typeof setTimeout> | null = null;
+
+  private currentState() {
+    return {
+      search: `${this.filters.value.search ?? ''}`,
+      status: `${this.filters.value.status ?? 'all'}`,
+      featured: `${this.filters.value.featured ?? 'all'}`,
+      type: `${this.filters.value.type ?? 'all'}`,
+      tag: `${this.filters.value.tag ?? ''}`,
+      category: this.categorySlug(),
+      lowStock: this.lowStockOnly(),
+      sort: this.currentSort,
+      direction: this.currentDirection,
+      page: this.currentPage(),
+      size: this.pageSize(),
+      view: this.viewMode(),
+    };
+  }
+
+  private stateFromParams(params: import('@angular/router').ParamMap) {
+    const pick = (key: string, allowed: readonly string[], fallback: string): string => {
+      const value = params.get(key) ?? '';
+      return allowed.includes(value) ? value : fallback;
+    };
+    const size = Number(params.get('size') ?? 20);
+
+    return {
+      search: params.get('q') ?? '',
+      status: pick('status', ['', 'active', 'inactive'], ''),
+      featured: pick('featured', ['', 'featured', 'notFeatured'], ''),
+      type: pick('type', ['', 'COFFEE', 'EQUIPMENT'], ''),
+      tag: params.get('tag') ?? '',
+      category: params.get('category'),
+      lowStock: params.get('stock') === 'low',
+      sort: params.get('sort') ?? 'createdAt',
+      direction: (params.get('direction') === 'asc' ? 'asc' : 'desc') as 'asc' | 'desc',
+      page: Math.max(0, Number(params.get('page') ?? 0) || 0),
+      size: [10, 20, 50].includes(size) ? size : 20,
+      view: (params.get('view') === 'trash' ? 'trash' : 'active') as 'active' | 'trash',
+    };
+  }
+
+  private readUrl(): void {
+    this.applyState(this.stateFromParams(this.route.snapshot.queryParamMap));
+  }
+
+  private applyState(state: ReturnType<ProductsListComponent['stateFromParams']>): void {
+    this.viewMode.set(state.view);
+    this.categorySlug.set(state.category);
+    this.lowStockOnly.set(state.lowStock);
+    this.currentSort = state.sort;
+    this.currentDirection = state.direction;
+    this.currentPage.set(state.page);
+    this.pageSize.set(state.size);
+    // emitEvent: false — applying the URL must not write the URL back.
+    this.searchText.set(state.search);
+    this.filters.setValue(
+      { search: state.search, status: state.status, featured: state.featured, type: state.type, tag: state.tag },
+      { emitEvent: false },
+    );
+  }
+
+  private syncUrl(replace: boolean): void {
+    const f = this.filters.value;
+    const params: Record<string, string> = {};
+    if (this.categorySlug()) params['category'] = this.categorySlug()!;
+    if (this.lowStockOnly()) params['stock'] = 'low';
+    if (this.isTrash()) params['view'] = 'trash';
+    if (f.search?.trim()) params['q'] = f.search.trim();
+    if (f.status && f.status !== 'all') params['status'] = f.status;
+    if (f.featured && f.featured !== 'all') params['featured'] = f.featured;
+    if (f.type && f.type !== 'all') params['type'] = f.type;
+    if (f.tag) params['tag'] = f.tag;
+    if (this.currentSort !== 'createdAt') params['sort'] = this.currentSort;
+    if (this.currentDirection !== 'desc') params['direction'] = this.currentDirection;
+    if (this.currentPage() > 0) params['page'] = `${this.currentPage()}`;
+    if (this.pageSize() !== 20) params['size'] = `${this.pageSize()}`;
+
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: params,
+      replaceUrl: replace,
+    });
   }
 
   load(): void {
+    // Remember what this request is FOR: the URL subscription compares the
+    // next URL against the last LOADED state, so clearing a filter back to
+    // the initial state still reloads (it compared against the constructor
+    // snapshot before, and "back to the start" looked like "no change").
+    this.loadedState = JSON.stringify(this.currentState());
     this.loading.set(true);
     if (this.isTrash()) {
       this.loadTrash();
@@ -248,9 +457,10 @@ export class ProductsListComponent {
       size: this.pageSize(),
       search: f.search || undefined,
       categorySlug: this.categorySlug() ?? undefined,
-      isActive: f.status === 'all' ? undefined : f.status === 'active',
-      featured: f.featured === 'all' ? undefined : f.featured === 'featured',
-      productType: f.type === 'all' ? undefined : (f.type as ProductType),
+      isActive: !f.status || f.status === 'all' ? undefined : f.status === 'active',
+      featured: !f.featured || f.featured === 'all' ? undefined : f.featured === 'featured',
+      productType: !f.type || f.type === 'all' ? undefined : (f.type as ProductType),
+      tagSlug: f.tag || undefined,
       sort: this.currentSort,
       direction: this.currentDirection,
     };
@@ -385,33 +595,46 @@ export class ProductsListComponent {
     });
   }
 
-  openPermanentDelete(product: ProductListItem): void {
-    this.deleting.set(product);
+  /**
+   * Moving to Trash is REVERSIBLE, so it runs immediately and the toast
+   * carries the way back (8s). No confirm dialog — a dialog that says
+   * "cannot be undone" over a restorable action taught the reader the wrong
+   * thing (UX_AUDIT_products.md #2 / decision D2-A).
+   */
+  trashProduct(product: ProductListItem): void {
+    this.productService.delete(product.slug).subscribe({
+      next: () => {
+        this.load();
+        this.notify.successWithAction(
+          'common.movedToTrash',
+          'Moved to trash',
+          this.notify.t('common.undo', 'Undo'),
+          () => this.restore(product),
+        );
+      },
+      error: (err) =>
+        this.notify.apiError(err, 'notify.errorFallback', 'Could not move to Trash'),
+    });
   }
 
-  submitDeleteOrPermanent(): void {
-    if (this.isTrash()) {
-      this.submitPermanentDelete();
-    } else {
-      this.submitDelete();
-    }
-  }
+  /** Permanent delete exists only in the Trash view and is truly irreversible. */
+  async openPermanentDelete(product: ProductListItem): Promise<void> {
+    const ok = await this.confirmDialog.confirm({
+      title: this.notify.t('products.deleteTitle', 'Delete product'),
+      message: `${this.notify.t('products.deleteConfirm', 'Are you sure you want to delete')} ${product.slug}? ${this.notify.t('products.deleteWarning', 'This action cannot be undone.')}`,
+      confirmLabel: this.notify.t('products.delete', 'Delete'),
+      cancelLabel: this.notify.t('products.cancel', 'Cancel'),
+      tone: 'destructive',
+    });
+    if (!ok) return;
 
-  submitPermanentDelete(): void {
-    const product = this.deleting();
-    if (!product) return;
-    this.submitting.set(true);
     this.productService.deletePermanently(product.id).subscribe({
       next: () => {
-        this.deleting.set(null);
         this.load();
-        this.submitting.set(false);
         this.notify.success('notify.deleted', 'Deleted permanently');
       },
-      error: (err) => {
-        this.submitting.set(false);
-        this.notify.apiError(err, 'notify.errorFallback', 'Could not delete permanently');
-      },
+      error: (err) =>
+        this.notify.apiError(err, 'notify.errorFallback', 'Could not delete permanently'),
     });
   }
 
@@ -534,20 +757,20 @@ export class ProductsListComponent {
         this.onFeaturedToggle(event.item);
         break;
       case 'trash':
-        this.confirmDelete(event.item);
+        this.trashProduct(event.item);
         break;
     }
   }
 
   goToPage(page: number): void {
     this.currentPage.set(page);
-    this.load();
+    this.syncUrl(true);
   }
 
   setPageSize(size: number): void {
     this.pageSize.set(size);
     this.currentPage.set(0);
-    this.load();
+    this.syncUrl(true);
   }
 
   onSortChange(event: TableSortEvent | null): void {
@@ -562,7 +785,7 @@ export class ProductsListComponent {
     this.currentSort = sortFieldMap[col] || col;
     this.currentDirection = event?.direction ?? 'desc';
     this.currentPage.set(0);
-    this.load();
+    this.syncUrl(true);
   }
 
   goToCreate(): void {
@@ -601,10 +824,6 @@ export class ProductsListComponent {
     });
   }
 
-  confirmDelete(product: ProductListItem): void {
-    this.deleting.set(product);
-  }
-
   async onToggleStatus(product: ProductListItem): Promise<void> {
     const newActive = !product.isActive;
     if (!newActive && product.featured) {
@@ -615,25 +834,6 @@ export class ProductsListComponent {
     this.productService.toggleActive(product.slug, newActive).subscribe({
       next: () => this.load(),
       error: (err) => this.notify.apiError(err, 'notify.errorFallback', 'Could not update status'),
-    });
-  }
-
-  submitDelete(): void {
-    const product = this.deleting();
-    if (!product) return;
-    this.submitting.set(true);
-
-    this.productService.delete(product.slug).subscribe({
-      next: () => {
-        this.deleting.set(null);
-        this.load();
-        this.submitting.set(false);
-        this.notify.success('notify.deleted', 'Deleted successfully');
-      },
-      error: (err) => {
-        this.submitting.set(false);
-        this.notify.apiError(err, 'notify.errorFallback', 'Could not delete');
-      },
     });
   }
 }

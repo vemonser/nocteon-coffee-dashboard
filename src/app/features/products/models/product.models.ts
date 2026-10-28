@@ -5,6 +5,9 @@
 // `findAllDashboard` query maps to.
 // ════════════════════════════════════════════════════════════════════════════
 import { ProductOptionValueSummary } from '../../product-options/models/product-option.model';
+import { ProductTagSummary } from '../../product-tags/models/product-tag.model';
+
+export type { ProductTagSummary };
 
 export interface ProductListItem {
   id: number;
@@ -52,6 +55,8 @@ export interface ProductListParams {
   optionValueIds?: number[];
   inStockOnly?: boolean;
   onSaleOnly?: boolean;
+  /** FE-10: only products carrying this tag. */
+  tagSlug?: string;
   sort?: string;
   direction?: 'asc' | 'desc';
 }
@@ -82,6 +87,10 @@ export interface ProductTranslation {
   shortDescription?: string;
   /** The editorial story, per language. */
   story?: string;
+  /** Search/social title for this language; the API falls back to the name. */
+  metaTitle?: string;
+  /** Search/social description for this language; falls back to the short description. */
+  metaDescription?: string;
 }
 
 /** Backend ProductVariantResponse — includes resolved option summaries. */
@@ -91,6 +100,8 @@ export interface ProductVariant {
   price: number;
   compareAtPrice?: number | null;
   costPrice?: number | null;
+  /** The variant's own photo; empty means "use the product gallery". */
+  imageUrl?: string | null;
   stockQuantity: number;
   reservedQuantity?: number;
   reorderThreshold?: number;
@@ -107,6 +118,8 @@ export interface ProductVariantRequest {
   price: number;
   compareAtPrice?: number | null;
   costPrice?: number | null;
+  /** Omitted means "use the product gallery" — the API stores null, not an empty string. */
+  imageUrl?: string;
   stockQuantity: number;
   reorderThreshold?: number;
   isActive: boolean;
@@ -146,6 +159,10 @@ export interface ProductDetail {
   tastingNotes: TastingNote[];
   pairings: ProductPairing[];
   brewingMethods: ProductBrewingMethod[];
+  /** Merchandising tags (FE-10): slug + localized name, as the API returns them. */
+  tags?: ProductTagSummary[];
+  /** The product's own social card; empty means "use the primary image". */
+  ogImageUrl?: string | null;
 }
 
 // Request payload sent to backend on save.
@@ -167,6 +184,10 @@ export interface ProductRequest {
   tastingNoteSlugs: string[];
   pairingSlugs: string[];
   brewingMethods: ProductBrewingMethod[];
+  /** Merchandising tags by slug (FE-10). Omitted means "no tags". */
+  tagSlugs?: string[];
+  /** Omitted means "use the primary image" — the API stores null, not an empty string. */
+  ogImageUrl?: string;
 }
 
 export interface StagedMedia {

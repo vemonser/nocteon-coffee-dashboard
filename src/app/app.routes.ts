@@ -124,6 +124,14 @@ export const routes: Routes = [
               ),
           },
           {
+            path: 'categories',
+            data: { breadcrumb: 'journalCategories' },
+            loadComponent: () =>
+              import('./features/journal/components/journal-categories.component').then(
+                (m) => m.JournalCategoriesComponent,
+              ),
+          },
+          {
             path: ':slug/edit',
             data: { breadcrumb: 'editJournalPost' },
             loadComponent: () =>
@@ -503,6 +511,15 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/products/components/products-list/products-list.component').then(
             (m) => m.ProductsListComponent,
+          ),
+      },
+      {
+        path: 'product-tags',
+        data: { breadcrumb: 'productTags' },
+        canActivate: [permissionGuard('product:read')],
+        loadComponent: () =>
+          import('./features/product-tags/components/product-tags.component').then(
+            (m) => m.ProductTagsComponent,
           ),
       },
       {

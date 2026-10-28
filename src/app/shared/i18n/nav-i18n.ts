@@ -9,6 +9,7 @@ export type NavKey =
   | 'reviews'
   | 'storeSettings'
   | 'journal'
+  | 'journalCategories'
   | 'products'
   | 'categories'
   | 'notifications'
@@ -31,6 +32,7 @@ export type NavKey =
   | 'pairings'
   | 'carts'
   | 'productOptions'
+  | 'productTags'
   | 'broadcasts'
   | 'newsletter'
   | 'contactMessages'
@@ -46,6 +48,7 @@ export const navI18n: Record<Language, Record<NavKey, string>> = {
     storeSettings: 'Store settings',
     promoCodes: 'Promo codes',
     journal: 'Journal',
+    journalCategories: 'Journal categories',
     products: 'Products',
     notifications: 'Notifications',
     categories: 'Categories',
@@ -67,6 +70,7 @@ export const navI18n: Record<Language, Record<NavKey, string>> = {
     pairings: 'Pairings',
     carts: 'Carts',
     productOptions: 'Product options',
+    productTags: 'Tags',
     broadcasts: 'Broadcasts',
     newsletter: 'Newsletter',
     contactMessages: 'Contact messages',
@@ -82,6 +86,7 @@ export const navI18n: Record<Language, Record<NavKey, string>> = {
     storeSettings: 'إعدادات الموقع',
     promoCodes: 'رموز ترويجية',
     journal: 'المجلة',
+    journalCategories: 'فئات الجورنال',
     products: 'المنتجات',
     categories: 'الفئات',
     categoryDetail: 'الفئة',
@@ -102,6 +107,7 @@ export const navI18n: Record<Language, Record<NavKey, string>> = {
     pairings: 'التوافقات',
     carts: 'السلة',
     productOptions: 'خيارات المنتجات',
+    productTags: 'الوسوم',
     broadcasts: 'الرسائل الجماعية',
     newsletter: 'النشرة البريدية',
     contactMessages: 'رسائل التواصل',

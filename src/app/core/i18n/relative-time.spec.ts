@@ -14,6 +14,15 @@ describe('formatRelativeTime', () => {
     expect(formatRelativeTime(now, 'ar')).toBe('الآن');
   });
 
+  it('lowercases the phrase when it is composed after a label', () => {
+    const now = new Date().toISOString();
+
+    // "Updated just now" — the label precedes it, so sentence case applies.
+    expect(formatRelativeTime(now, 'en', { lowercase: true })).toBe('just now');
+    // Arabic has no letter case; the word is unchanged.
+    expect(formatRelativeTime(now, 'ar', { lowercase: true })).toBe('الآن');
+  });
+
   it('counts the hours in English', () => {
     const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
 

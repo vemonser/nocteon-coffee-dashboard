@@ -1,1 +1,26 @@
  
+/* First-load KPI skeleton — same quiet opacity pulse as widget-state.
+   TODO(ux-motion): move to the shared motion utilities when the motion
+   foundation lands (UX_AUDIT_dashboard.md #4). */
+@keyframes dashboard-kpi-skeleton {
+  0% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0.55;
+  }
+}
+
+.kpi-skeleton {
+  animation: dashboard-kpi-skeleton 1.6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kpi-skeleton {
+    animation: none;
+    opacity: 0.7;
+  }
+}

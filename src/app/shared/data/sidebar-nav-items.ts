@@ -20,6 +20,7 @@ const icons: Record<NavKey, string> = {
   promoCodes: 'lucideTags',
   storeSettings: 'lucideSettings2',
   journal: 'lucideBookOpen',
+  journalCategories: 'lucideTags',
   products: 'lucideCoffee',
   categories: 'lucideTags',
   notifications: 'lucideBellRing',
@@ -41,6 +42,7 @@ const icons: Record<NavKey, string> = {
   pairings: 'lucideUtensilsCrossed',
   carts: 'lucideShoppingCart',
   productOptions: 'lucideSlidersHorizontal',
+  productTags: 'lucideTag',
   broadcasts: 'lucideMegaphone',
   newsletter: 'lucideMailPlus',
   contactMessages: 'lucideMail',
@@ -124,6 +126,7 @@ export function getNavItems(lang: Language) {
     'journal:read',
     [
       { label: t.journal, icon: icons.journal, route: '/dashboard/journal', permission: 'journal:read' },
+      { label: t.journalCategories, icon: icons.journalCategories, route: '/dashboard/journal/categories', permission: 'journal:read' },
       { label: t.broadcasts, icon: icons.broadcasts, route: '/dashboard/broadcasts', permission: 'broadcast:read' },
       { label: t.newsletter, icon: icons.newsletter, route: '/dashboard/newsletter', permission: 'user:read' },
       { label: t.notifications, icon: icons.notifications, route: '/dashboard/notifications', permission: 'notification:read' },
@@ -140,6 +143,7 @@ export function getNavItems(lang: Language) {
     'product:read',
     [
       { label: t.products, icon: icons.products, route: '/dashboard/products', permission: 'product:read' },
+      { label: t.productTags, icon: icons.productTags, route: '/dashboard/product-tags', permission: 'product:read' },
       { label: t.productOptions, icon: icons.productOptions, route: '/dashboard/product-options', permission: 'product_option:read' },
       { label: t.categories, icon: icons.categories, route: '/dashboard/categories', permission: 'category:read' },
     ],

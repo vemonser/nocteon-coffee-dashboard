@@ -109,6 +109,24 @@ export class DashboardComponent {
     ),
   );
 
+  /**
+   * The filters the money/orders KPI cards drill down with. The cards count
+   * paid orders only (their own tooltips say so), so the list must open
+   * filtered to `paymentStatus=PAID`, and it inherits the range the reader
+   * is looking at — mapped onto the query contract the orders list already
+   * parses (`range=today|7d|30d`). The 90/365-day and custom windows have no
+   * token on that contract, so the range part is simply omitted there.
+   */
+  readonly ordersKpiLinkParams = computed<Record<string, string>>(() => {
+    const rangeToken: Record<number, string> = { 1: 'today', 7: '7d', 30: '30d' };
+    const range = rangeToken[this.statsService.days()];
+    const params: Record<string, string> = { paymentStatus: 'PAID' };
+    if (range) {
+      params['range'] = range;
+    }
+    return params;
+  });
+
   /** Welcome state: shown when the user has dashboard:read but no widget
       permission is true.  Links go to the first page they can open. */
   readonly showWelcome = computed(() =>

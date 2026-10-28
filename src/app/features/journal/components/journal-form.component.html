@@ -6,7 +6,19 @@
       {{ 'common.back' | transloco }}
     </button>
 
-    <button hlmBtn size="sm" (click)="save()" [disabled]="saving()">
+    <div class="flex items-center gap-2">
+    <button hlmBtn variant="outline" size="sm" type="button" (click)="openPreview()">
+      <ng-icon name="lucideEye" class="me-2 size-4" />
+      {{ 'journal.preview' | transloco }}
+    </button>
+
+    <button
+      hlmBtn
+      size="sm"
+      type="button"
+      (click)="save()"
+      [disabled]="saving() || !form?.dirty || form?.invalid"
+    >
       @if (saving()) {
         <ng-icon name="lucideLoader2" class="mr-2 size-4 animate-spin" />
       } @else {
@@ -14,6 +26,7 @@
       }
       {{ saving() ? ('common.saving' | transloco) : ('journal.savePost' | transloco) }}
     </button>
+    </div>
   </div>
 
   <h1 class="text-2xl font-medium tracking-tight">
@@ -29,14 +42,14 @@
   }
 
   @if (error() && !loading()) {
-    <p class="text-sm text-destructive">{{ error() }}</p>
+    <p class="text-sm text-destructive">{{ error() | transloco }}</p>
   }
 
   @if (!loading() && form) {
     <hlm-card>
       <form [formGroup]="form">
         <hlm-tabs [tab]="activeTab()"  class="w-full">
-          <hlm-tabs-list class="w-full grid grid-cols-3" aria-label="Journal post sections">
+          <hlm-tabs-list class="w-full grid grid-cols-3" [attr.aria-label]="'journal.sections' | transloco">
             <button hlmTabsTrigger="basic">{{ 'journal.basicInfo' | transloco }}</button>
             <button hlmTabsTrigger="translations">{{ 'journal.content' | transloco }}</button>
             <button hlmTabsTrigger="products">{{ 'journal.relatedProducts' | transloco }}</button>
@@ -53,7 +66,7 @@
                 <hlm-select-content *hlmSelectPortal>
                   <hlm-select-group>
                     @for (cat of categories(); track cat.slug) {
-                      <hlm-select-item [value]="cat.slug">{{ cat.slug }}</hlm-select-item>
+                      <hlm-select-item [value]="cat.slug">{{ categoryName(cat) }}</hlm-select-item>
                     }
                   </hlm-select-group>
                 </hlm-select-content>
@@ -101,9 +114,9 @@
                   <hlm-select-value placeholder="{{ 'journal.selectStatus' | transloco }}" />
                 </hlm-select-trigger>
                 <hlm-select-content *hlmSelectPortal>
-                  <hlm-select-item value="DRAFT">DRAFT</hlm-select-item>
-                  <hlm-select-item value="PUBLISHED">PUBLISHED</hlm-select-item>
-                  <hlm-select-item value="ARCHIVED">ARCHIVED</hlm-select-item>
+                  <hlm-select-item value="DRAFT">{{ 'journal.draft' | transloco }}</hlm-select-item>
+                  <hlm-select-item value="PUBLISHED">{{ 'journal.published' | transloco }}</hlm-select-item>
+                  <hlm-select-item value="ARCHIVED">{{ 'journal.archived' | transloco }}</hlm-select-item>
                 </hlm-select-content>
               </hlm-select>
             </div>
@@ -125,7 +138,7 @@
             @for (t of translationsArray.controls; track $index) {
               <div [formGroupName]="$index" class="space-y-4 pb-6 border-b last:border-0 last:pb-0">
                 <h3 class="font-medium uppercase text-sm text-muted-foreground">
-                  {{ t.value.language === 'en' ? 'English' : 'Arabic' }}
+                  {{ languageLabel(t.value.language) }}
                 </h3>
 
                 <div class="space-y-1.5">
@@ -143,7 +156,15 @@
 
                 <div class="space-y-1.5">
                   <label hlmLabel>{{ 'journal.content' | transloco }} {{ t.value.language === 'en' ? '*' : '' }}</label>
-                  <quill-editor formControlName="content" class="block h-56" />
+                  <quill-editor
+                    formControlName="content"
+                    class="block h-56"
+                    [valueGetter]="htmlValueGetter"
+                    (onEditorCreated)="onEditorCreated($event)"
+                  />
+                  @if (uploadingImage()) {
+                    <p class="text-xs text-muted-foreground">{{ 'journal.uploadingImage' | transloco }}</p>
+                  }
                 </div>
 
                 <div class="grid grid-cols-2 gap-4">
@@ -190,4 +211,21 @@
       </form>
     </hlm-card>
   }
+
+  <app-rich-text-video-dialog
+    [open]="videoOpen()"
+    (closed)="closeVideoDialog()"
+    (inserted)="onVideoInserted($event)"
+  />
+
+  <app-journal-preview-dialog
+    [open]="previewOpen()"
+    [title]="previewTranslation.title ?? ''"
+    [excerpt]="previewTranslation.excerpt ?? ''"
+    [bodyHtml]="previewTranslation.content ?? ''"
+    [coverUrl]="coverPreviewUrl() || existingCoverUrl()"
+    [tags]="previewTags"
+    [relatedProducts]="previewProductNames"
+    (closed)="previewOpen.set(false)"
+  />
 </div>

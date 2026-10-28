@@ -1161,3 +1161,225 @@ permission, but the server must enforce them before these actions are safe.
 - Y4: `GET /api/dashboard/products` (`ProductCardResponse`) does not return `totalStock`, `variantCount`, or `lowStockVariantCount`. The Stock column is hidden entirely until those fields exist. Needs backend: list stock fields.
 - Y6: `ProductTranslationRequest` has no per-language `story` field. Story remains product-level in the Coffee details card. Needs backend: story translations.
 - Y7: Product options have no `appliesTo` field yet. Temporary config file `src/app/features/products/product-option-applicability.ts` keys allowed option slugs by product type (COFFEE: weight, grind; EQUIPMENT: size) with a TODO. Needs backend: option applicability field.
+
+## Security — journal HTML (FE-01, 28 Oct 2026)
+
+### The API stores only allowlisted HTML; a renderer may bind it with `[innerHTML]`
+- `JournalService` sanitizes every translation's `content` before it is persisted (both
+  `create` and `update`), through the new backend `HtmlSanitizer`. The allowlist is the
+  Quill toolbar (headings, bold/italic/underline/strike, links, lists, quote, code,
+  image, hr, table) plus nothing else.
+- `a[href]` is limited to `https` and `mailto`; every link gets
+  `rel="noopener noreferrer"`. A link whose real host hides behind userinfo
+  (`https://nocteon.coffee@evil.example/`) is unwrapped, not trusted. `img[src]` is
+  limited to our Cloudinary account (the first path segment), the `nocteon/` upload
+  folder and `https`; with no cloud name configured no image can be proven ours, so
+  none is kept.
+- Public and dashboard read paths sanitize again, so posts written before the
+  sanitizer existed cannot execute stored markup.
+- **Frontend contract:** the journal body returned by the API is safe to render as
+  HTML. A renderer may use Angular `[innerHTML]` on it and must not call
+  `bypassSecurityTrustHtml` (or otherwise disable Angular's sanitizer). The dashboard
+  itself only feeds the value to Quill, which is the same boundary — the stored value
+  is already clean.
+- Evidence: `HtmlSanitizerTest` (payloads: script, `onerror`, `javascript:` href,
+  foreign image host, presentational attributes) and `JournalServiceSanitizationTest`
+  (captures the entity handed to `translationRepository`, on create and update).
+
+## Product SEO (FE-07, 28 Oct 2026)
+
+### SEO copy belongs to a language; the social card belongs to the product
+- `product_translations` gains `meta_title` (200) and `meta_description` (500) in
+  `V16__product_seo.sql`. A title is language-specific — an Arabic page needs an Arabic
+  title — so it sits next to `name`, not on the product.
+- `products.og_image_url` is nullable and is **not** seeded with the current primary URL.
+  A default that is copied would freeze the card and stop following a cover change, so
+  the response mapper resolves it: custom URL → primary image → first image, and never a
+  video (a video is not a valid `og:image`).
+- The public product response applies the copy fallbacks (title → name, description →
+  short description) so the storefront never renders an empty `<title>`. The dashboard
+  response returns the raw `ogImageUrl` so opening and saving the wizard does not pin the
+  cover image as a custom card by accident.
+- Wizard: "SEO title" and "SEO description" sit under each language in the content
+  section. The social image picker lives in the media step and lists existing images
+  only — a staged file has no URL until the first save, so it is chosen after saving.
+- Evidence: backend `ProductSeoWriteTest` (captures the entity handed to the repository)
+  and `ProductSeoResponseMapperTest` (fallbacks, video exclusion); dashboard `ng build`
+  and `npm run i18n:check`.
+- Verified in the browser at 1440x900 (English, fields filled, media-step picker):
+  `evidence/fe-07/seo-fields-1440.png` and `social-image-1440.png`. That run used the
+  local container, which still serves the previous backend image, so it proves the UI,
+  not persistence; the storefront must read the new fields (separate repository).
+
+## Needs backend (from UX audit 2026-10-28 — dashboard home)
+- Global search palette: querying "pro" returns no product hits even though the palette model has a `products` group (`global-search-palette.component.ts`). Either the backend search endpoint does not index products or the store index is empty. Safe fallback in place: palette shows "No results" guidance. Please confirm whether `/api/search` (or equivalent) should return products, categories, customers — then the palette groups light up with no frontend contract change. See UX_AUDIT_dashboard.md.
+
+## Products pass 4 — live verification (FE-07, 28 Oct 2026)
+
+Verifying FE-07 against a rebuilt database (V1..V117 applied from scratch, V16
+included) surfaced three defects that predate the SEO work and blocked the
+ordinary edit flow:
+
+### An edit with no new images returned 500
+- The multipart body only carries a `files` part when something is uploaded. On a
+  plain edit Spring binds it as `null`, and the media validation compared
+  `files.size()` without treating null as "zero uploads" — so every product edit
+  that did not add an image failed. Fixed to treat a missing part as zero; a new
+  item still requires its file (`ProductMediaServiceValidationTest`).
+
+### Variants were hard-deleted on every save
+- `replaceVariants` deleted all rows and re-inserted them. `order_items`
+  references `product_variants`, so any product that had ever been ordered
+  failed on the foreign key. Variants are now matched by SKU and updated in
+  place, new SKUs are inserted, and dropped ones are soft-deleted so order
+  history survives (`ProductVariantServiceReplaceTest`).
+
+### After a successful save the app asked to discard it
+- The unsaved-changes guard compares against the snapshot taken at load, not
+  `form.dirty`; the redirect after a save therefore opened "Unsaved changes".
+  The wizard refreshes its snapshot before navigating.
+- Also: the catch-all 500 handler logged only the message, so an unexpected
+  error appeared as "Unexpected error occurred: null". It now logs the stack.
+
+Live evidence: saved SEO values through the wizard, read them back from
+`GET /api/products/{slug}` and from a reopened wizard; screenshot
+`evidence/fe-07/live-persisted-1440.png`.
+
+## Journal pass — scheduling (FE-03, 28 Oct 2026)
+
+### The date the editor picked was ignored
+- `create` and `update` stamped "now" (or nothing) and never read
+  `request.publishedAt`, so the form could not schedule a post: it always went
+  live. Both paths now store the chosen date; a null date still means "publish
+  now" the first time and "keep the original date" afterwards.
+
+### The journal list and detail returned 500
+- `tags` is a lazy `@ElementCollection` and the DTO was handed the Hibernate
+  collection itself. Jackson read it after the transaction closed, so every
+  list and detail request failed (the dashboard showed a false "No posts yet"
+  empty state). The DTO now receives a copy, read inside the transaction, with
+  batch loading for the collection.
+
+### The post form listed the wrong categories
+- The category picker was filled from the product catalogue's `GET
+  /api/categories`. The backend looks journal categories up by slug, so every
+  create failed with "Journal category not found" unless the slugs happened to
+  coincide. Added `GET /api/dashboard/journal-categories` (journal:read) and the
+  form now uses it, showing the localized name.
+
+### Follow-ups from review and the live run
+- The dashboard detail/create/update responses still handed the lazy `tags`
+  collection to Jackson (the list/detail paths were fixed first). It is copied
+  everywhere now, and an integration test serializes the DTO outside a
+  transaction so the regression cannot come back silently.
+- Reopening a post opened a blank form: the dashboard detail returns a
+  `translations` array, while the form read `post.title`/`post.content`. Each
+  language group is now filled from its own entry.
+- The `datetime-local` value was sliced out of the ISO string, so every
+  open-and-save shifted the instant by the UTC offset — enough to move a
+  scheduled post across "now". It is converted to local time through the shared
+  `toLocalInputValue`, with a round-trip unit test.
+- Status badges and the status picker show translated labels (including
+  `journal.archived`), not raw enum names.
+
+### Evidence
+- `JournalScheduledPublishingIntegrationTest` runs the real queries: a post
+  dated tomorrow is absent publicly, present in the dashboard, and a post dated
+  in the past is public. It also covers ARCHIVED, a missing language, an edit
+  with no date, DRAFT→PUBLISHED stamping, and serialization after commit.
+- Live run: a post dated tomorrow renders the "Scheduled" badge, the public
+  list omits it, and `GET /api/journal/{slug}` returns 404
+  (`evidence/fe-03/scheduled-badge-1440.png`).
+
+## Journal wave — FE-02/04/05/06 (28 Oct 2026)
+
+### Inline images upload; nothing is base64
+- `POST /api/dashboard/journal/images` validates the magic bytes against an explicit format
+  allowlist (jpeg/png/gif/webp), caps at 5 MB, and returns the Cloudinary URL. The toolbar
+  inserts that URL; the FE-01 allowlist is what makes the image safe to render.
+- The endpoint is POST-only with `journal:create|update`; the upload failure path keeps the
+  editor content and shows a toast.
+
+### The preview is "as edited", not "as published"
+- The preview renders the draft with `[innerHTML]` on the sanitized body and Angular's
+  sanitizer; no `bypassSecurityTrustHtml`. Video embeds therefore do not appear in the
+  preview (Angular strips iframes) even though the saved post has them.
+
+### Categories
+- The slug is the stable identity: rename edits translated names only. Delete refuses while
+  any post references the category (trashed posts included) and returns 409 with
+  `data.postCount`; restore refuses when a live category took the slug.
+
+### Rich text
+- The sanitizer allows an `iframe` only for `https` embed paths on YouTube/Vimeo
+  (`/embed/…`, `/video/…`); foreign hosts, watch links and `javascript:` are removed, and only
+  `ql-video` survives as a class. Quill's code-block divs are rewritten to `pre>code` so the
+  code text is kept.
+- ngx-quill's default value getter uses `getSemanticHTML()`, which turns a video blot into an
+  anchor. The journal editor now supplies `valueGetter = editor.root.innerHTML`; the server
+  allowlist remains the security boundary for anything stored.
+- `quill.snow.css` was never in `angular.json`, so the toolbar rendered unstyled icons. It is
+  included now.
+
+## Products — rich story (FE-08, 28 Oct 2026)
+
+### One editor, one toolbar, two bodies
+- The product story uses the same Quill config (`shared/quill/rich-text.config.ts`), the same
+  video dialog and the same URL parser as the journal. The toolbar is not duplicated, so a
+  button added for the journal reaches the story too.
+- The editor stores `root.innerHTML` (not ngx-quill's semantic HTML) for the same reason as the
+  journal: semantic HTML turns a video embed into a link.
+- The story image upload is product-scoped (`POST /api/dashboard/products/story-images`,
+  `product:create|update`). Both editors share `RichTextImageService`, so the format allowlist,
+  magic-byte check and 5 MB cap cannot drift.
+- The story is sanitized on write (create and update) and again on read in both response
+  mappers. A legacy plain-text story is returned unchanged — the allowlist keeps text.
+- The storefront is not in this repository; it must render the story as HTML and rely on the
+  same sanitized contract as the journal.
+
+## Products — variant images and tags (FE-09, FE-10, 28 Oct 2026)
+
+### A variant photo is uploaded on its own, then carried by the request
+- `POST /api/dashboard/products/variant-images` (product:create|update) returns `{ url }` and
+  reuses `RichTextImageService` (5 MB, jpeg/png/gif/webp, magic-byte checked). The wizard writes
+  the URL into the variant's `imageUrl` control, and the product PUT/POST carries it.
+- Uploading before the product is saved can orphan an asset when the admin abandons the form.
+  The story editor already accepts exactly that trade-off, and the alternative — bundling files
+  with the product form and matching them by index — breaks as soon as a variant is reordered.
+- A blank `imageUrl` is stored as `null`, not `''`: the storefront falls back to the product
+  gallery, and an empty string would ask the CDN for an empty resource.
+- The variants table view has no image cell on purpose. It is the fast inline price/stock grid;
+  the card view is where the photo belongs, and both read the same control.
+
+### Tags are a separate vocabulary, administered with the product permissions
+- `product_tags` + `product_tag_translations` + `product_tag_links` (V18), the same shape as
+  journal categories: the slug is generated once from the English name and never rewritten, so
+  a rename cannot break the list filter or a stored link.
+- Deleting a tag still carried by products is refused with 409 and the product count. The count
+  includes trashed products: the link outlives a product's soft delete, so removing the tag
+  would leave a restored product without one.
+- The page and the endpoints are gated on `product:read|create|update|delete` rather than a new
+  `product_tag:*` permission. A new permission string is not held by any seeded role, which is
+  how `user:create` once became unreachable for ADMIN too. Tags are product metadata; the
+  product grants already describe who may touch that.
+- The public filter is `?tagSlug=`, matched by an `EXISTS` subquery in `ProductSpecifications`
+  and by a second `EXISTS` in the dashboard's own paginated JPQL. A join would return one row
+  per link and inflate `totalElements` — the dashboard query was the one that would have shipped
+  broken (it does not use the specification at all), and `ProductTagFilterIntegrationTest`
+  covers both paths.
+
+### Flyway: a schema migration can now arrive after the seeds
+- Schema lives below V100 and demo seeds at V100+. Every schema migration written after a
+  database was seeded is therefore versioned "behind" it, and Flyway's validate step refused to
+  start on that database. `spring.flyway.out-of-order: true` lets the additive change apply;
+  production loads `db/migration` only and stays in order. Recorded here because it changes
+  startup behaviour for everyone.
+
+### Needs backend / follow-up: the storefront
+- The storefront repository (`nocteon-storefront`) is not part of this cycle: it carries 118
+  uncommitted files from unrelated work. The contract it needs is already live:
+  - `GET /api/products/{slug}` → `variants[].imageUrl` (nullable; fall back to the gallery)
+    and `tags[] = { slug, name }` (name already localized).
+  - `GET /api/products?tagSlug=<slug>` filters the public list.
+- Remaining work there: swap the gallery image when a variant is selected, and render a tag
+  filter that links to `?tagSlug=`. Must land on a clean branch.
