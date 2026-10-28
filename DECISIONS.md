@@ -1204,6 +1204,7 @@ permission, but the server must enforce them before these actions are safe.
 - Evidence: backend `ProductSeoWriteTest` (captures the entity handed to the repository)
   and `ProductSeoResponseMapperTest` (fallbacks, video exclusion); dashboard `ng build`
   and `npm run i18n:check`.
-- Not verified live: the local container runs the previous backend image and no live
-  session was available here. The storefront must read the new fields to show them (it
-  lives in a separate repository).
+- Verified in the browser at 1440x900 (English, fields filled, media-step picker):
+  `evidence/fe-07/seo-fields-1440.png` and `social-image-1440.png`. That run used the
+  local container, which still serves the previous backend image, so it proves the UI,
+  not persistence; the storefront must read the new fields (separate repository).

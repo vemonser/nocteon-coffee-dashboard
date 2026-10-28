@@ -117,8 +117,10 @@ edits them per language; the public product endpoint exposes them.
 fallback (title → name, description → short description, OG image → first image,
 never a video), wizard fields under each language plus a social-image picker in
 the media step. Evidence: `ProductSeoWriteTest`, `ProductSeoResponseMapperTest`,
-`ng build`, `npm run i18n:check`. Not verified against a live API: the local
-container runs the previous image and no live session is available here.
+`ng build`, 290 unit tests, `npm run i18n:check`, and two 1440x900 viewport
+captures of the wizard (`evidence/fe-07/`). The captured run used the local
+container, which still runs the previous backend image, so the fields render
+and accept input but their persistence rests on the backend tests above.
 
 ### FE-08 · Rich story (reuse the journal editor)
 **Why** Story is a plain textarea; the blog gets rich text first.
