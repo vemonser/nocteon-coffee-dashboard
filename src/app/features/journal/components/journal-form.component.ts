@@ -181,17 +181,32 @@ export class JournalFormComponent implements OnInit {
       productSlugs: post.relatedProductSlugs ?? [],
     });
 
-    // لو الـ getBySlug بيرجّع ترجمة واحدة بس (حسب اللغة الحالية)، هنملى بس الـ en تلقائيًا هنا.
-    // لو محتاج كل الترجمات مع بعض، الـ backend محتاج يرجّع array ترجمات كاملة بدل ترجمة واحدة —
-    // قولّي لو محتاج نعدّل الـ getBySlug/DTO عشان يرجع الكل وقت التعديل.
-    const enGroup = this.translationsArray.at(0);
-    enGroup.patchValue({
-      title: post.title,
-      excerpt: post.excerpt,
-      content: post.content,
-      metaTitle: post.metaTitle,
-      metaDescription: post.metaDescription,
+    // The dashboard detail endpoint returns one entry per language; the old code read
+    // `post.title`/`post.content`, which that DTO does not have, so every edit opened
+    // blank and could not be saved (the English title is required).
+    const translations = post.translations ?? [];
+    this.translationsArray.controls.forEach((group) => {
+      const language = group.get('language')?.value;
+      const translation = translations.find((t) => t.language === language);
+      group.patchValue({
+        title: translation?.title ?? '',
+        excerpt: translation?.excerpt ?? '',
+        content: translation?.content ?? '',
+        metaTitle: translation?.metaTitle ?? '',
+        metaDescription: translation?.metaDescription ?? '',
+      });
     });
+
+    if (translations.length === 0) {
+      // Older responses carried a single, already-localized translation.
+      this.translationsArray.at(0).patchValue({
+        title: post.title,
+        excerpt: post.excerpt,
+        content: post.content,
+        metaTitle: post.metaTitle,
+        metaDescription: post.metaDescription,
+      });
+    }
   }
 
   /** The picker shows the category's name in the current language, falling back to English. */

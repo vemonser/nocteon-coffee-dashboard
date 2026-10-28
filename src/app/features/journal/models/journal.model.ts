@@ -36,6 +36,18 @@ export interface JournalPostResponse {
   metaTitle?: string | null;
   metaDescription?: string | null;
   relatedProductSlugs?: string[];
+  /**
+   * The dashboard detail endpoint returns every language at once. The form must
+   * read these; the flattened `title`/`content` fields do not exist on that DTO.
+   */
+  translations?: {
+    language: string;
+    title: string;
+    excerpt?: string;
+    content?: string;
+    metaTitle?: string;
+    metaDescription?: string;
+  }[];
 }
 
 export interface JournalFilterParams {
