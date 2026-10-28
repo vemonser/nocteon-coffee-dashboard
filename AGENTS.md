@@ -21,3 +21,12 @@
 11. One shared selector per metric (open orders, low stock, pending reviews, unread messages...). Never duplicate the logic.
 12. Seeds are deterministic: timestamps are never in the future and always in order, numbers increase with time, every order has at least one line.
 13. Status vocabulary: Active / Blocked, Verified / Unverified, Enabled / Disabled (products), order statuses from the shared map, one badge component.
+
+# Dashboard UX program
+- Goal: turn this admin dashboard from a set of CRUD pages into a fast, consistent, keyboard-friendly experience with a calm, purposeful motion system. Load the `dashboard-ux` skill before any UI work.
+- Check the Angular version in package.json first. The app has light/dark themes and English + Arabic (RTL).
+- Tokens and branding come from design.md. Never change branding, palette or the layout structure without writing it in UX_DECISIONS.md and waiting for my answer.
+- Evidence: a change is Done only with measurements or viewport screenshots before and after. Viewport captures only (full-page captures show fake clipped text).
+- Never invent backend endpoints: write what is missing under "Needs backend" in DECISIONS.md and build a safe fallback.
+- No window.alert, confirm or prompt: use the app's dialog service; reversible actions use undo toasts.
+- Ask me only through UX_DECISIONS.md (two options + a recommendation) and keep working on other items meanwhile.
