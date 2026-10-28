@@ -241,6 +241,9 @@ export class ProductWizardComponent implements CanComponentDeactivate, HasUnsave
         this.submitting.set(false);
         this.state.mediaDirty.set(false);
         this.state.form.markAsPristine();
+        // The guard compares against the load snapshot, not form.dirty: refresh it, or the
+        // redirect after a successful save asks the admin to discard the save they just made.
+        this.state.captureInitialSnapshot();
         this.notify.success(wasEdit ? 'notify.updated' : 'notify.created', wasEdit ? 'Updated successfully' : 'Created successfully');
         this.router.navigate(['/dashboard/products']);
       },
