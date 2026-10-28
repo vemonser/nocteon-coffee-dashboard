@@ -1244,3 +1244,33 @@ ordinary edit flow:
 Live evidence: saved SEO values through the wizard, read them back from
 `GET /api/products/{slug}` and from a reopened wizard; screenshot
 `evidence/fe-07/live-persisted-1440.png`.
+
+## Journal pass — scheduling (FE-03, 28 Oct 2026)
+
+### The date the editor picked was ignored
+- `create` and `update` stamped "now" (or nothing) and never read
+  `request.publishedAt`, so the form could not schedule a post: it always went
+  live. Both paths now store the chosen date; a null date still means "publish
+  now" the first time and "keep the original date" afterwards.
+
+### The journal list and detail returned 500
+- `tags` is a lazy `@ElementCollection` and the DTO was handed the Hibernate
+  collection itself. Jackson read it after the transaction closed, so every
+  list and detail request failed (the dashboard showed a false "No posts yet"
+  empty state). The DTO now receives a copy, read inside the transaction, with
+  batch loading for the collection.
+
+### The post form listed the wrong categories
+- The category picker was filled from the product catalogue's `GET
+  /api/categories`. The backend looks journal categories up by slug, so every
+  create failed with "Journal category not found" unless the slugs happened to
+  coincide. Added `GET /api/dashboard/journal-categories` (journal:read) and the
+  form now uses it, showing the localized name.
+
+### Evidence
+- `JournalScheduledPublishingIntegrationTest` runs the real queries: a post
+  dated tomorrow is absent publicly, present in the dashboard, and a post dated
+  in the past is public.
+- Live run: a post dated tomorrow renders the "Scheduled" badge, the public
+  list omits it, and `GET /api/journal/{slug}` returns 404
+  (`evidence/fe-03/scheduled-badge-1440.png`).

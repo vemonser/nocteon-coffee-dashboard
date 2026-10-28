@@ -62,7 +62,7 @@ DECISIONS.md ("The API stores only allowlisted HTML"). Evidence: `HtmlSanitizerT
 endpoint (reuse Cloudinary service).
 **Effort** 1 day. **Deps** FE-01 (sanitizer must allow own-CDN img src).
 
-### FE-03 · Scheduled publishing
+### FE-03 · Scheduled publishing — done 28 Oct 2026
 **Why** `publishedAt` exists but the public query only checks `status =
 PUBLISHED`, so a future-dated post is live immediately.
 **Scope** FS.
@@ -74,6 +74,14 @@ PUBLISHED`, so a future-dated post is live immediately.
   dashboard.
 **Files** `JournalPostRepository`, journal list/row component.
 **Effort** 0.5 day. **Deps** none.
+**Shipped** The public queries filter on the date; create/update now store the
+date the editor chose (it was ignored, so the form could not schedule at all);
+the list shows a "Scheduled" badge. Two defects blocked the flow and are fixed
+here: the journal list/detail 500 when serializing lazy tags, and the form
+filling its category picker from the product catalogue.
+Evidence: `JournalScheduledPublishingIntegrationTest` (3 tests, real database),
+live Playwright run (post dated tomorrow → badge, public 404 + absent from the
+list), screenshot `evidence/fe-03/scheduled-badge-1440.png`.
 
 ### FE-04 · Journal preview
 **Why** Editors publish blind today.
