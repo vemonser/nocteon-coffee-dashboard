@@ -178,7 +178,7 @@ export class BasicInfoStepComponent {
     });
 
     this.productTagService.getAll().subscribe({
-      next: (r) => this.productTags.set(r.data),
+      next: (r) => this.productTags.set(r.data ?? []),
       error: onErr('tags'),
     });
   }
