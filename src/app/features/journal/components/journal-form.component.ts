@@ -1,5 +1,5 @@
 ﻿import { CommonModule } from '@angular/common';
-import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, DestroyRef, effect, inject, OnInit, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   FormArray,
@@ -11,7 +11,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { catchError, forkJoin, of } from 'rxjs';
+import { catchError, finalize, forkJoin, of } from 'rxjs';
 
 import { HlmCardImports } from '@spartan-ng/helm/card';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
@@ -46,7 +46,12 @@ class DividerBlot extends BlockEmbed {
   static blotName = 'divider';
   static tagName = 'hr';
 }
-Quill.register(DividerBlot, true);
+try {
+  (Quill as any).import('formats/divider');
+} catch {
+  // Not registered yet (the normal case; the import throws when missing).
+  Quill.register(DividerBlot, true);
+}
 
 @Component({
   selector: 'app-journal-form',
@@ -91,6 +96,7 @@ Quill.register(DividerBlot, true);
   templateUrl: './journal-form.component.html',
   styles: [
     ':host ::ng-deep .ql-editor img { max-width: 100%; height: auto; }',
+    ':host ::ng-deep .ql-editor { font-family: inherit; }',
     ':host ::ng-deep .ql-toolbar .ql-toolbar-action { width: auto; min-width: 28px; padding: 0 6px; font-size: 14px; }',
     ':host ::ng-deep .ql-editor iframe.ql-video { width: 100%; aspect-ratio: 16 / 9; }',
   ],
@@ -138,6 +144,25 @@ export class JournalFormComponent implements OnInit {
    */
   readonly htmlValueGetter = (editor: Quill): string => editor.root.innerHTML;
   private videoEditor: Quill | null = null;
+  private videoRange: { index: number; length: number } | null = null;
+  private readonly toolbarActions: { button: HTMLButtonElement; key: string }[] = [];
+
+  constructor() {
+    // Toolbar labels are built once, when each editor is created; keep them in the current
+    // dashboard language when it changes.
+    effect(() => {
+      this.language.current();
+      for (const { button, key } of this.toolbarActions) {
+        const label = this.transloco.translate(key);
+        button.title = label;
+        button.setAttribute('aria-label', label);
+      }
+    });
+    this.destroyRef.onDestroy(() => {
+      const staged = this.coverPreviewUrl();
+      if (staged) URL.revokeObjectURL(staged);
+    });
+  }
 
   form!: FormGroup;
 
@@ -302,10 +327,13 @@ export class JournalFormComponent implements OnInit {
       action();
     });
     container.appendChild(button);
+    this.toolbarActions.push({ button, key: titleKey });
   }
 
   openVideoDialog(editor: Quill): void {
     this.videoEditor = editor;
+    // The dialog takes focus; remember the cursor now, not after it closes.
+    this.videoRange = editor.getSelection(true) ?? { index: editor.getLength(), length: 0 };
     this.videoControl.setValue('');
     this.videoError.set(false);
     this.videoOpen.set(true);
@@ -314,6 +342,7 @@ export class JournalFormComponent implements OnInit {
   closeVideoDialog(): void {
     this.videoOpen.set(false);
     this.videoEditor = null;
+    this.videoRange = null;
   }
 
   insertVideo(): void {
@@ -324,7 +353,7 @@ export class JournalFormComponent implements OnInit {
       this.videoError.set(true);
       return;
     }
-    const range = editor.getSelection(true) ?? { index: editor.getLength(), length: 0 };
+    const range = this.videoRange ?? editor.getSelection(true) ?? { index: editor.getLength(), length: 0 };
     editor.insertEmbed(range.index, 'video', url, 'user');
     editor.setSelection(range.index + 1, 0);
     this.closeVideoDialog();
@@ -348,16 +377,17 @@ export class JournalFormComponent implements OnInit {
     this.uploadingImage.set(true);
     this.journalService
       .uploadInlineImage(file)
-      .pipe(takeUntilDestroyed(this.destroyRef))
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => this.uploadingImage.set(false)),
+      )
       .subscribe({
         next: (res) => {
           editor.insertEmbed(range.index, 'image', res.data.url, 'user');
           editor.setSelection(range.index + 1, 0);
-          this.uploadingImage.set(false);
         },
         error: () => {
           // The editor keeps its content; only the upload failed.
-          this.uploadingImage.set(false);
           this.notify.apiError(null, 'journal.imageUploadFailed', 'Could not upload the image');
         },
       });

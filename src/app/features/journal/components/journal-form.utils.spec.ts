@@ -52,12 +52,17 @@ describe('parseVideoUrl', () => {
     expect(parseVideoUrl('https://vimeo.com/123456789')).toBe(
       'https://player.vimeo.com/video/123456789',
     );
+    expect(parseVideoUrl('https://player.vimeo.com/video/123456789')).toBe(
+      'https://player.vimeo.com/video/123456789',
+    );
   });
 
   it('refuses everything the sanitizer would strip', () => {
     expect(parseVideoUrl('https://evil.example/embed/abc123')).toBeNull();
     expect(parseVideoUrl('https://www.youtube.com/watch?v=short')).toBeNull();
     expect(parseVideoUrl('javascript:alert(1)')).toBeNull();
+    expect(parseVideoUrl('https://player.vimeo.com/video/123456789/extra')).toBeNull();
+    expect(parseVideoUrl('https://evil@www.youtube.com/watch?v=abc123XYZ')).toBeNull();
     expect(parseVideoUrl('')).toBeNull();
   });
 });

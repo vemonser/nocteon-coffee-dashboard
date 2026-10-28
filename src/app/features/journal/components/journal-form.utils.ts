@@ -55,6 +55,9 @@ export function parseVideoUrl(input: string): string | null {
     return null;
   }
 
+  // `https://evil@www.youtube.com/...` passes a host check but is not the provider's link.
+  if (url.username || url.password) return null;
+
   const host = url.hostname.toLowerCase().replace(/^www\./, '');
   const embed = (id: string): string =>
     /^[A-Za-z0-9_-]{6,}$/.test(id) ? `https://www.youtube.com/embed/${id}` : '';
@@ -74,8 +77,9 @@ export function parseVideoUrl(input: string): string | null {
     return id && /^\d+$/.test(id) ? `https://player.vimeo.com/video/${id}` : null;
   }
 
-  if (host === 'player.vimeo.com' && /^\/video\/\d+/.test(url.pathname)) {
-    return `https://player.vimeo.com${url.pathname}`;
+  if (host === 'player.vimeo.com') {
+    const match = url.pathname.match(/^\/video\/(\d+)\/?$/);
+    return match ? `https://player.vimeo.com/video/${match[1]}` : null;
   }
 
   return null;
