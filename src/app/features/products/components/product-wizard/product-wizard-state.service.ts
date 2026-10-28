@@ -54,7 +54,6 @@ export class ProductWizardStateService {
     harvestYear: [''],
     processingMethodSlug: [''],
     roastLevelSlug: [''],
-    story: [''],
     coffeeVarietySlug: [''],
 
     // Step 2 — Variants
@@ -306,7 +305,6 @@ export class ProductWizardStateService {
       processingMethodSlug: detail.coffeeDetails?.processingMethodSlug ?? '',
       roastLevelSlug: detail.coffeeDetails?.roastLevelSlug ?? '',
       coffeeVarietySlug: detail.coffeeDetails?.coffeeVarietySlug ?? '',
-      story: detail.coffeeDetails?.story ?? '',
     });
 
     this.form.setControl('translations', buildTranslations(detail.translations));

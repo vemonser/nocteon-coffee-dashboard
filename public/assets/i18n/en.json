@@ -391,7 +391,8 @@
       "productTypes": {
         "COFFEE": "Coffee",
         "EQUIPMENT": "Equipment"
-      }
+      },
+      "storyHint": "Saved for this language only — it is the editorial block on the product page."
     },
     "variants": {
       "title": "Variants",

@@ -189,17 +189,6 @@
         </div>
       </div>
 
-      <div class="mt-4 space-y-1.5">
-        <label hlmLabel>{{ 'products.form.story' | transloco }}</label>
-        <textarea
-          hlmInput
-          formControlName="story"
-          rows="4"
-          style="field-sizing: content"
-          class="w-full"
-          [placeholder]="'products.form.storyPlaceholder' | transloco"
-        ></textarea>
-      </div>
     </section>
   }
 
@@ -282,6 +271,21 @@
                     [attr.lang]="lang.code"
                     class="w-full"
                   ></textarea>
+                </div>
+
+                <div class="space-y-1.5">
+                  <label hlmLabel>{{ 'products.form.story' | transloco }}</label>
+                  <textarea
+                    hlmInput
+                    formControlName="story"
+                    rows="5"
+                    style="field-sizing: content"
+                    [dir]="lang.dir"
+                    [attr.lang]="lang.code"
+                    class="w-full"
+                    [placeholder]="'products.form.storyPlaceholder' | transloco"
+                  ></textarea>
+                  <p class="text-xs text-muted-foreground">{{ 'products.form.storyHint' | transloco }}</p>
                 </div>
               </div>
             }
