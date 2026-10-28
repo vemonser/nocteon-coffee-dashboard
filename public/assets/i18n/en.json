@@ -120,6 +120,7 @@
     "title": "Store setting"
   },
   "common": {
+    "loadFailedHint": "Check your connection and try again.",
     "accountSettings": "Account settings",
     "actionCannotBeUndone": "This action cannot be undone.",
     "actions": "Actions",
@@ -520,6 +521,10 @@
       "stockNeedsBackend": "The list API does not return stock or variant counts yet."
     },
     "empty": {
+      "none": "No products yet",
+      "search": "No products match “{{q}}”",
+      "clear": "Clear search",
+      "trash": "Trash is empty",
       "category": "No products in this category",
       "origin": "No products for this origin",
       "farm": "No products for this farm",

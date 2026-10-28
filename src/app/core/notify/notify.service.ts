@@ -68,12 +68,24 @@ export class NotifyService {
   /** Best-effort extraction from ApiResponse-shaped failures. */
   backendMessage(err: unknown): string | null {
     const e = err as {
+      status?: number;
       error?: { message?: unknown; errors?: Array<{ field?: string; message?: string }> };
       message?: unknown;
     } | null;
+
+    // A network failure (status 0) has no backend message: the browser's own
+    // text ("Failed to fetch", "Load failed") is developer noise, not an
+    // answer a person can act on (UX_AUDIT_products.md #4).
+    if (e && e.status === 0) return null;
+
+    const isNoise = (value: string): boolean =>
+      /^(failed to fetch|networkerror|load failed|net::err_|http failure response)/i.test(value.trim());
+
     const bodyMsg = e?.error?.message;
-    if (typeof bodyMsg === 'string' && bodyMsg.length > 0) return bodyMsg;
-    const first = e?.error?.errors?.find((x) => typeof x?.message === 'string' && x.message.length > 0);
+    if (typeof bodyMsg === 'string' && bodyMsg.length > 0 && !isNoise(bodyMsg)) return bodyMsg;
+    const first = e?.error?.errors?.find(
+      (x) => typeof x?.message === 'string' && x.message.length > 0 && !isNoise(x.message),
+    );
     if (first?.message) return first.field ? `${first.field}: ${first.message}` : first.message;
     return null;
   }

@@ -30,7 +30,7 @@ import { AuthService } from '../../../../core/auth/auth.service';
 import { LifecycleTabsComponent } from '../../../../shared/components/lifecycle-tabs/lifecycle-tabs.component';
 import { TrashBannerComponent } from '../../../../shared/components/trash-banner/trash-banner.component';
 import { ColumnDef, createColumnHelper } from '@tanstack/table-core';
-import { TranslocoPipe } from '@jsverse/transloco';
+import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { PagerComponent } from '../../../../shared/components/pager/pager.component';
 import { NotifyService } from '../../../../core/notify/notify.service';
 import { RowMenuAction } from '../../../../shared/ui/actions-cell/actions-cell.component';
@@ -80,6 +80,33 @@ export class ProductsListComponent {
   readonly lowStockOnly = signal(false);
   private notify = inject(NotifyService);
   private confirmDialog = inject(ConfirmDialogService);
+  private readonly transloco = inject(TranslocoService);
+
+  /** Mirrors the search box so the empty-state copy can react to it. */
+  private readonly searchText = signal('');
+
+  /** What the empty state says — and what it offers as the next step (#5). */
+  readonly emptyMessage = computed(() => {
+    if (this.isTrash()) return this.transloco.translate('products.empty.trash');
+    const q = this.searchText().trim();
+    return q
+      ? this.transloco.translate('products.empty.search', { q })
+      : this.transloco.translate('products.empty.none');
+  });
+
+  readonly emptyAction = computed<{ label: string; action: () => void } | null>(() => {
+    if (this.isTrash()) return null;
+    const q = this.searchText().trim();
+    return q
+      ? {
+          label: this.transloco.translate('products.empty.clear'),
+          action: () => this.filters.patchValue({ search: '' }),
+        }
+      : {
+          label: this.transloco.translate('products.add'),
+          action: () => this.goToCreate(),
+        };
+  });
 
   readonly canManageTrash = this.authService.hasPermission('product:delete');
   readonly isTrashAllowed = computed(() => this.authService.hasPermission('product:delete'));
@@ -171,10 +198,11 @@ export class ProductsListComponent {
     });
     const actionsCol = this.columnHelper.display({ id: 'actions', header: 'Actions', meta: { width: '56px' } });
 
-    const cols: ColumnDef<ProductListItem, any>[] = [mainCol, typeCol, categoryCol, priceCol];
-    if (this.hasStockData()) {
-      cols.push(stockCol);
-    }
+    // The Stock column is always present: a column that appears only when the
+    // data answers re-lays-out the whole table and moves every cell (CLS,
+    // UX_AUDIT_products.md #3) and makes the empty state lose a column (#5).
+    // A missing stock value simply renders an empty cell.
+    const cols: ColumnDef<ProductListItem, any>[] = [mainCol, typeCol, categoryCol, priceCol, stockCol];
     cols.push(statusCol, featuredCol, actionsCol);
     return cols;
   });
@@ -234,6 +262,7 @@ export class ProductsListComponent {
       const search = `${value.search ?? ''}`;
       const searchChanged = search !== previousSearch;
       previousSearch = search;
+      this.searchText.set(search);
       if (this.urlDebounce) clearTimeout(this.urlDebounce);
       if (searchChanged) {
         this.urlDebounce = setTimeout(() => this.syncUrl(true), 350);
@@ -314,6 +343,7 @@ export class ProductsListComponent {
     this.currentPage.set(state.page);
     this.pageSize.set(state.size);
     // emitEvent: false — applying the URL must not write the URL back.
+    this.searchText.set(state.search);
     this.filters.setValue(
       { search: state.search, status: state.status, featured: state.featured, type: state.type },
       { emitEvent: false },
@@ -343,6 +373,11 @@ export class ProductsListComponent {
   }
 
   load(): void {
+    // Remember what this request is FOR: the URL subscription compares the
+    // next URL against the last LOADED state, so clearing a filter back to
+    // the initial state still reloads (it compared against the constructor
+    // snapshot before, and "back to the start" looked like "no change").
+    this.loadedState = JSON.stringify(this.currentState());
     this.loading.set(true);
     if (this.isTrash()) {
       this.loadTrash();

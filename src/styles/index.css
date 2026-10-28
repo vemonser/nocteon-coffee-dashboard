@@ -10,6 +10,13 @@
     @apply border-border outline-ring/50;
   }
 
+  /* Always reserve the vertical scrollbar lane: a list that grows past the
+     fold used to narrow the whole page the moment its rows arrived, shifting
+     every visible element sideways (CLS). */
+  html {
+    scrollbar-gutter: stable;
+  }
+
   body {
     @apply bg-background text-foreground;
   }
