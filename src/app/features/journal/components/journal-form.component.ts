@@ -1,5 +1,6 @@
 ﻿import { CommonModule } from '@angular/common';
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   FormArray,
   FormBuilder,
@@ -32,6 +33,7 @@ import { TranslocoPipe } from '@jsverse/transloco';
 import { NotifyService } from '../../../core/notify/notify.service';
 import { LanguageService } from '../../../core/i18n/language.service';
 import { toLocalInputValue } from '../../../shared/utils/date-input';
+import { TranslationFormHelper } from '../../../shared/utils/translation.utils';
 type Lang = 'en' | 'ar';
 
 @Component({
@@ -81,6 +83,8 @@ export class JournalFormComponent implements OnInit {
   private productService = inject(ProductService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private destroyRef = inject(DestroyRef);
+  private translationHelper = inject(TranslationFormHelper);
   private language = inject(LanguageService);
 
   readonly languages: Lang[] = ['en', 'ar'];
@@ -233,20 +237,29 @@ export class JournalFormComponent implements OnInit {
   }
 
   private uploadInlineImage(editor: Quill, file: File): void {
+    if (this.uploadingImage()) return; // one upload at a time; the indicator stays honest
+    // Remember where the cursor was: the upload is async and the user may keep typing.
+    const range = editor.getSelection(true) ?? { index: editor.getLength(), length: 0 };
     this.uploadingImage.set(true);
-    this.journalService.uploadInlineImage(file).subscribe({
-      next: (res) => {
-        const range = editor.getSelection(true) ?? { index: editor.getLength(), length: 0 };
-        editor.insertEmbed(range.index, 'image', res.data.url, 'user');
-        editor.setSelection(range.index + 1, 0);
-        this.uploadingImage.set(false);
-      },
-      error: () => {
-        // The editor keeps its content; only the upload failed.
-        this.uploadingImage.set(false);
-        this.notify.apiError(null, 'journal.imageUploadFailed', 'Could not upload the image');
-      },
-    });
+    this.journalService
+      .uploadInlineImage(file)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res) => {
+          editor.insertEmbed(range.index, 'image', res.data.url, 'user');
+          editor.setSelection(range.index + 1, 0);
+          this.uploadingImage.set(false);
+        },
+        error: () => {
+          // The editor keeps its content; only the upload failed.
+          this.uploadingImage.set(false);
+          this.notify.apiError(null, 'journal.imageUploadFailed', 'Could not upload the image');
+        },
+      });
+  }
+
+  languageLabel(language: string): string {
+    return this.translationHelper.getLangLabel(language);
   }
 
   /** The picker shows the category's name in the current language, falling back to English. */

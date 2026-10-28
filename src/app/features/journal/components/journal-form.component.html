@@ -36,7 +36,7 @@
     <hlm-card>
       <form [formGroup]="form">
         <hlm-tabs [tab]="activeTab()"  class="w-full">
-          <hlm-tabs-list class="w-full grid grid-cols-3" aria-label="Journal post sections">
+          <hlm-tabs-list class="w-full grid grid-cols-3" [attr.aria-label]="'journal.sections' | transloco">
             <button hlmTabsTrigger="basic">{{ 'journal.basicInfo' | transloco }}</button>
             <button hlmTabsTrigger="translations">{{ 'journal.content' | transloco }}</button>
             <button hlmTabsTrigger="products">{{ 'journal.relatedProducts' | transloco }}</button>
@@ -125,7 +125,7 @@
             @for (t of translationsArray.controls; track $index) {
               <div [formGroupName]="$index" class="space-y-4 pb-6 border-b last:border-0 last:pb-0">
                 <h3 class="font-medium uppercase text-sm text-muted-foreground">
-                  {{ t.value.language === 'en' ? 'English' : 'Arabic' }}
+                  {{ languageLabel(t.value.language) }}
                 </h3>
 
                 <div class="space-y-1.5">

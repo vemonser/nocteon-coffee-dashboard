@@ -2040,6 +2040,7 @@
     "excerpt": "Excerpt",
     "metaTitle": "Meta title",
     "metaDescription": "Meta description",
+    "sections": "Post sections",
     "uploadingImage": "Uploading image…",
     "imageUploadFailed": "Could not upload the image.",
     "editPost": "Edit post"
