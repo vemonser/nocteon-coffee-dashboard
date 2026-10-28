@@ -31,6 +31,7 @@ import { QUILL_CONFIG_TOKEN } from 'ngx-quill/config';
 
 import { TranslocoPipe } from '@jsverse/transloco';
 import { JournalPreviewDialogComponent } from './journal-preview-dialog.component';
+import { parseTags, pickPreviewTranslation, PreviewTranslation } from './journal-form.utils';
 import { NotifyService } from '../../../core/notify/notify.service';
 import { LanguageService } from '../../../core/i18n/language.service';
 import { toLocalInputValue } from '../../../shared/utils/date-input';
@@ -151,7 +152,7 @@ export class JournalFormComponent implements OnInit {
         if (post?.data) {
           this.patchForm(post.data);
         } else {
-          this.error.set('Journal post not found');
+          this.error.set('journal.notFound');
         }
       }
 
@@ -222,21 +223,18 @@ export class JournalFormComponent implements OnInit {
   }
 
   /** The translation the preview shows: the dashboard language, falling back to English. */
-  get previewTranslation(): any {
-    const values = this.translationsArray?.getRawValue?.() as any[] | undefined;
-    if (!values?.length) return {};
-    const language = this.language.current();
-    return values.find((t) => t.language === language) ?? values.find((t) => t.language === 'en') ?? values[0];
+  get previewTranslation(): PreviewTranslation {
+    if (!this.previewOpen()) return {};
+    const values = (this.translationsArray?.getRawValue?.() ?? []) as PreviewTranslation[];
+    return pickPreviewTranslation(values, this.language.current());
   }
 
   get previewTags(): string[] {
-    return (this.form?.value?.tagsInput ?? '')
-      .split(',')
-      .map((t: string) => t.trim())
-      .filter((t: string) => t.length > 0);
+    return this.previewOpen() ? parseTags(this.form?.value?.tagsInput) : [];
   }
 
   get previewProductNames(): string[] {
+    if (!this.previewOpen()) return [];
     const slugs: string[] = this.form?.value?.productSlugs ?? [];
     return slugs.map((slug) => this.products().find((p) => p.slug === slug)?.name ?? slug);
   }
@@ -302,6 +300,8 @@ export class JournalFormComponent implements OnInit {
   onCoverSelected(event: Event): void {
     const file = (event.target as HTMLInputElement).files?.[0];
     if (!file) return;
+    const previous = this.coverPreviewUrl();
+    if (previous) URL.revokeObjectURL(previous);
     this.coverFile.set(file);
     this.coverPreviewUrl.set(URL.createObjectURL(file));
   }
@@ -332,7 +332,7 @@ export class JournalFormComponent implements OnInit {
       status: v.status ?? 'DRAFT',
       publishedAt: v.publishedAt ? new Date(v.publishedAt).toISOString() : null,
       productSlugs: v.productSlugs,
-      tags: (v.tagsInput ?? '').split(',').map((t: string) => t.trim()).filter(Boolean),
+      tags: parseTags(v.tagsInput),
       translations: v.translations.filter((t: any) => t.title?.trim() && t.content?.trim()),
     };
 

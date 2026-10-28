@@ -19,6 +19,7 @@ import { DialogShellComponent } from '../../../shared/ui/dialog-shell/dialog-she
   template: `
     <app-dialog-shell
       [open]="open()"
+      [mobileSheet]="true"
       [title]="'journal.preview' | transloco"
       testId="journal-preview"
       (closed)="closed.emit()"
@@ -27,7 +28,7 @@ import { DialogShellComponent } from '../../../shared/ui/dialog-shell/dialog-she
         @if (coverUrl()) {
           <img
             [src]="coverUrl()"
-            alt=""
+            [alt]="title()"
             class="aspect-[2/1] w-full rounded-md border object-cover"
           />
         }
@@ -35,7 +36,7 @@ import { DialogShellComponent } from '../../../shared/ui/dialog-shell/dialog-she
         <header class="space-y-2">
           @if (tags().length) {
             <div class="flex flex-wrap gap-1.5">
-              @for (tag of tags(); track tag) {
+              @for (tag of tags(); track $index) {
                 <hlm-badge variant="outline">{{ tag }}</hlm-badge>
               }
             </div>
@@ -54,7 +55,7 @@ import { DialogShellComponent } from '../../../shared/ui/dialog-shell/dialog-she
           <section class="space-y-2 border-t pt-4">
             <h2 class="text-sm font-medium">{{ 'journal.relatedProducts' | transloco }}</h2>
             <ul class="list-disc space-y-1 ps-5 text-sm text-muted-foreground">
-              @for (product of relatedProducts(); track product) {
+              @for (product of relatedProducts(); track $index) {
                 <li>{{ product }}</li>
               }
             </ul>

@@ -12,7 +12,13 @@
       {{ 'journal.preview' | transloco }}
     </button>
 
-    <button hlmBtn size="sm" (click)="save()" [disabled]="saving()">
+    <button
+      hlmBtn
+      size="sm"
+      type="button"
+      (click)="save()"
+      [disabled]="saving() || !form?.dirty || form?.invalid"
+    >
       @if (saving()) {
         <ng-icon name="lucideLoader2" class="mr-2 size-4 animate-spin" />
       } @else {
@@ -36,7 +42,7 @@
   }
 
   @if (error() && !loading()) {
-    <p class="text-sm text-destructive">{{ error() }}</p>
+    <p class="text-sm text-destructive">{{ error() | transloco }}</p>
   }
 
   @if (!loading() && form) {
