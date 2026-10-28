@@ -3,7 +3,10 @@
   <head>
     <script>
       (() => {
-        const saved = localStorage.getItem('theme');
+        // Must match ThemeService.THEME_KEY ('nocteon-theme'); the old
+        // 'theme' key never matched, so dark users got a light flash on
+        // every cold load.
+        const saved = localStorage.getItem('nocteon-theme');
 
         const dark = saved
           ? saved === 'dark'
@@ -12,6 +15,38 @@
         document.documentElement.classList.toggle('dark', dark);
       })();
     </script>
+    <style>
+      /* Splash: covers the app-initializer window (session check + dictionary)
+         where nothing is rendered yet. Angular replaces the app-root content
+         on bootstrap, which removes it — no manual teardown needed. */
+      #app-splash {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--background, #faf8f5);
+        color: var(--foreground, #2b2117);
+      }
+      html.dark #app-splash {
+        background: var(--background, #17130e);
+        color: var(--foreground, #f3ede4);
+      }
+      #app-splash span {
+        font-family: 'Playfair Display', Georgia, serif;
+        font-size: 1.5rem;
+        letter-spacing: 0.35em;
+        text-indent: 0.35em;
+        animation: app-splash-pulse 1.6s ease-in-out infinite;
+      }
+      @keyframes app-splash-pulse {
+        0%, 100% { opacity: 0.55; }
+        50% { opacity: 1; }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        #app-splash span { animation: none; }
+      }
+    </style>
 
     <meta charset="utf-8" />
     <title>NocteonDash</title>
@@ -24,6 +59,10 @@
     />
   </head>
   <body>
-    <app-root></app-root>
+    <app-root>
+      <div id="app-splash" role="status" aria-label="Loading">
+        <span>NOCTEON</span>
+      </div>
+    </app-root>
   </body>
 </html>
