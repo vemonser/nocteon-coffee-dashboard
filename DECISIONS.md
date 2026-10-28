@@ -1170,9 +1170,11 @@ permission, but the server must enforce them before these actions are safe.
   Quill toolbar (headings, bold/italic/underline/strike, links, lists, quote, code,
   image, hr, table) plus nothing else.
 - `a[href]` is limited to `https` and `mailto`; every link gets
-  `rel="noopener noreferrer"`. `img[src]` is limited to our Cloudinary host, the
-  `nocteon/` upload folder and, when configured, our own cloud name. A URL whose host
-  merely contains `res.cloudinary.com` (userinfo trick) is rejected.
+  `rel="noopener noreferrer"`. A link whose real host hides behind userinfo
+  (`https://nocteon.coffee@evil.example/`) is unwrapped, not trusted. `img[src]` is
+  limited to our Cloudinary account (the first path segment), the `nocteon/` upload
+  folder and `https`; with no cloud name configured no image can be proven ours, so
+  none is kept.
 - Public and dashboard read paths sanitize again, so posts written before the
   sanitizer existed cannot execute stored markup.
 - **Frontend contract:** the journal body returned by the API is safe to render as
