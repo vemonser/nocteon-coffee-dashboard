@@ -1,4 +1,4 @@
-import { Component, DestroyRef, inject } from '@angular/core';
+import { Component, DestroyRef, effect, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
@@ -32,6 +32,7 @@ import { LanguageService } from '../../../../../core/i18n/language.service';
 import { QuillEditorComponent } from 'ngx-quill';
 import { QUILL_CONFIG_TOKEN } from 'ngx-quill/config';
 import Quill from 'quill';
+import '../../../../../shared/quill/divider.blot';
 import { finalize } from 'rxjs';
 import { RICH_TEXT_QUILL_CONFIG } from '../../../../../shared/quill/rich-text.config';
 import { RichTextVideoDialogComponent } from '../../../../../shared/ui/rich-text-video-dialog/rich-text-video-dialog.component';
@@ -80,6 +81,8 @@ export class BasicInfoStepComponent {
   private notify = inject(NotifyService);
   private productService = inject(ProductService);
   private destroyRef = inject(DestroyRef);
+  private readonly toolbarActions: { button: HTMLButtonElement; key: string }[] = [];
+
   private transloco = inject(TranslocoService);
   private language = inject(LanguageService);
 
@@ -122,6 +125,15 @@ export class BasicInfoStepComponent {
   }
 
   constructor() {
+    effect(() => {
+      this.language.current();
+      for (const { button, key } of this.toolbarActions) {
+        const label = this.transloco.translate(key);
+        button.title = label;
+        button.setAttribute('aria-label', label);
+      }
+    });
+
     // A failed preload must not look like an empty catalog: toast on error.
     const onErr = (what: string) => (err: unknown) =>
       this.notify.apiError(err, 'notify.errorFallback', `Could not load ${what}`);
@@ -172,11 +184,34 @@ export class BasicInfoStepComponent {
   onStoryEditorCreated(editor: Quill): void {
     const toolbar = editor.getModule('toolbar') as { addHandler: (name: string, fn: () => void) => void };
     toolbar.addHandler('image', () => this.pickStoryImage(editor));
+    this.addToolbarAction(editor, '↶', 'journal.undo', () => editor.history.undo());
+    this.addToolbarAction(editor, '↷', 'journal.redo', () => editor.history.redo());
+    this.addToolbarAction(editor, '―', 'journal.horizontalRule', () => {
+      const range = editor.getSelection(true) ?? { index: editor.getLength(), length: 0 };
+      editor.insertEmbed(range.index, 'divider', true, 'user');
+      editor.setSelection(range.index + 1, 0);
+    });
     toolbar.addHandler('video', () => {
       this.storyVideoEditor = editor;
       this.storyVideoRange = editor.getSelection(true) ?? { index: editor.getLength(), length: 0 };
       this.storyVideoOpen.set(true);
     });
+  }
+
+  private addToolbarAction(editor: Quill, label: string, titleKey: string, action: () => void): void {
+    const container = (editor.getModule('toolbar') as { container: HTMLElement }).container;
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.textContent = label;
+    button.title = this.transloco.translate(titleKey);
+    button.setAttribute('aria-label', this.transloco.translate(titleKey));
+    button.className = 'ql-toolbar-action';
+    button.addEventListener('click', (event) => {
+      event.preventDefault();
+      action();
+    });
+    container.appendChild(button);
+    this.toolbarActions.push({ button, key: titleKey });
   }
 
   closeStoryVideo(): void {

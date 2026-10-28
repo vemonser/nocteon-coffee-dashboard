@@ -28,6 +28,7 @@ import { ProductService } from '../../products/services/product.service';
 import { JournalCategory, JournalPostRequest, JournalPostResponse } from '../models/journal.model';
 import { QuillEditorComponent } from 'ngx-quill';
 import Quill from 'quill';
+import '../../../shared/quill/divider.blot';
 import { QUILL_CONFIG_TOKEN } from 'ngx-quill/config';
 
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
@@ -42,19 +43,6 @@ import { LanguageService } from '../../../core/i18n/language.service';
 import { toLocalInputValue } from '../../../shared/utils/date-input';
 import { TranslationFormHelper } from '../../../shared/utils/translation.utils';
 type Lang = 'en' | 'ar';
-
-// Quill has no horizontal-rule blot; a block embed that renders <hr> survives the sanitizer.
-const BlockEmbed = (Quill as any).import('blots/block/embed');
-class DividerBlot extends BlockEmbed {
-  static blotName = 'divider';
-  static tagName = 'hr';
-}
-try {
-  (Quill as any).import('formats/divider');
-} catch {
-  // Not registered yet (the normal case; the import throws when missing).
-  Quill.register(DividerBlot, true);
-}
 
 @Component({
   selector: 'app-journal-form',

@@ -2728,5 +2728,12 @@
     "discard": "تجاهل التغييرات",
     "stay": "البقاء في الصفحة",
     "saveAndLeave": "حفظ ومغادرة"
+  },
+  "richText": {
+    "insertVideo": "إدراج فيديو",
+    "videoUrl": "رابط الفيديو",
+    "videoUrlHint": "رابط يوتيوب أو فيميو",
+    "videoInsert": "إدراج",
+    "videoUrlInvalid": "أدخل رابط يوتيوب أو فيميو."
   }
 }

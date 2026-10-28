@@ -30,14 +30,15 @@ test.describe('product story', () => {
     await page.goto('/dashboard/products/brazil-mogiana/edit');
     await expect(page.locator('h1').first()).toBeVisible({ timeout: 30_000 });
 
-    // The story lives with the translations; the English tab is active first.
-    const story = page.locator('textarea[formcontrolname="story"]');
+    // The story lives with the translations; the English tab is active first, and it is the
+    // rich-text editor (the plain textarea was replaced by FE-08).
+    const story = page.locator('quill-editor[formcontrolname="story"]');
     await expect(story).toHaveCount(1, { timeout: 20_000 });
-    await expect(story).toHaveValue(/Demo story/);
+    await expect(story.locator('.ql-editor')).toContainText('Demo story');
 
-    // Switch to Arabic: its own story field renders, RTL, with its own value.
+    // Switch to Arabic: its own story editor renders, RTL.
     await page.getByRole('tab', { name: /عربي/ }).click();
-    const arabicStory = page.locator('textarea[formcontrolname="story"]');
+    const arabicStory = page.locator('quill-editor[formcontrolname="story"]');
     await expect(arabicStory).toHaveCount(1);
     await expect(arabicStory).toHaveAttribute('dir', 'rtl');
   });

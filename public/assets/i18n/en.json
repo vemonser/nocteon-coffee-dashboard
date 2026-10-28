@@ -2616,5 +2616,12 @@
     "discard": "Discard changes",
     "stay": "Stay on page",
     "saveAndLeave": "Save and leave"
+  },
+  "richText": {
+    "insertVideo": "Insert video",
+    "videoUrl": "Video URL",
+    "videoUrlHint": "YouTube or Vimeo link",
+    "videoInsert": "Insert",
+    "videoUrlInvalid": "Enter a YouTube or Vimeo link."
   }
 }

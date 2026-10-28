@@ -1,4 +1,4 @@
-import { Component, input, output, signal } from '@angular/core';
+import { Component, effect, input, output, signal } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmInputImports } from '@spartan-ng/helm/input';
@@ -22,12 +22,12 @@ import { DialogShellComponent } from '../dialog-shell/dialog-shell.component';
   template: `
     <app-dialog-shell
       [open]="open()"
-      [title]="'journal.insertVideo' | transloco"
+      [title]="'richText.insertVideo' | transloco"
       testId="rich-text-video"
-      (closed)="closed.emit()"
+      (closed)="close()"
     >
       <div class="space-y-2">
-        <label hlmLabel for="rich-text-video-url">{{ 'journal.videoUrl' | transloco }}</label>
+        <label hlmLabel for="rich-text-video-url">{{ 'richText.videoUrl' | transloco }}</label>
         <input
           hlmInput
           id="rich-text-video-url"
@@ -37,16 +37,16 @@ import { DialogShellComponent } from '../dialog-shell/dialog-shell.component';
           dir="ltr"
           placeholder="https://www.youtube.com/watch?v=..."
         />
-        <p class="text-xs text-muted-foreground">{{ 'journal.videoUrlHint' | transloco }}</p>
+        <p class="text-xs text-muted-foreground">{{ 'richText.videoUrlHint' | transloco }}</p>
         @if (invalid()) {
-          <p class="text-xs text-destructive">{{ 'journal.videoUrlInvalid' | transloco }}</p>
+          <p class="text-xs text-destructive">{{ 'richText.videoUrlInvalid' | transloco }}</p>
         }
       </div>
-      <button dialog-footer-start hlmBtn variant="ghost" type="button" (click)="closed.emit()">
+      <button dialog-footer-start hlmBtn variant="ghost" type="button" (click)="close()">
         {{ 'common.cancel' | transloco }}
       </button>
       <button dialog-footer-end hlmBtn type="button" (click)="insert()">
-        {{ 'journal.videoInsert' | transloco }}
+        {{ 'richText.videoInsert' | transloco }}
       </button>
     </app-dialog-shell>
   `,
@@ -57,6 +57,12 @@ export class RichTextVideoDialogComponent {
   readonly inserted = output<string>();
   readonly url = new FormControl('', { nonNullable: true });
   readonly invalid = signal(false);
+
+  constructor() {
+    effect(() => {
+      if (!this.open()) this.reset();
+    });
+  }
 
   insert(): void {
     const embed = parseVideoUrl(this.url.value);
