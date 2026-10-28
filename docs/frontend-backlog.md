@@ -31,7 +31,7 @@ Scope tags: **FE** the Angular dashboard, **BE** Spring API, **FS** both.
 
 ## Wave 1 — Security and the blog authoring loop
 
-### FE-01 · Sanitize journal HTML (security)
+### FE-01 · Sanitize journal HTML (security) — done 28 Oct 2026
 **Why** The journal body is admin-authored HTML from Quill, stored and rendered
 verbatim. No sanitizer exists anywhere in the backend. Stored XSS if an admin
 account is compromised or a role is added later.
@@ -45,6 +45,10 @@ account is compromised or a role is added later.
 - Rendering uses `innerHTML` only on sanitized content (document the contract).
 **Files** `JournalService`, a new `HtmlSanitizer` service, `journal-form` preview.
 **Effort** 0.5 day. **Deps** none.
+**Shipped** Backend `common/service/HtmlSanitizer` wired into `JournalService.create` /
+`update` (and both read paths for pre-existing rows). Contract recorded in
+DECISIONS.md ("The API stores only allowlisted HTML"). Evidence: `HtmlSanitizerTest`,
+`JournalServiceSanitizationTest`, full backend suite.
 
 ### FE-02 · Journal inline images
 **Why** A blog post needs images inside the body, not only a cover.

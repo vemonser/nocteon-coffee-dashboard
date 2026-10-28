@@ -1161,3 +1161,25 @@ permission, but the server must enforce them before these actions are safe.
 - Y4: `GET /api/dashboard/products` (`ProductCardResponse`) does not return `totalStock`, `variantCount`, or `lowStockVariantCount`. The Stock column is hidden entirely until those fields exist. Needs backend: list stock fields.
 - Y6: `ProductTranslationRequest` has no per-language `story` field. Story remains product-level in the Coffee details card. Needs backend: story translations.
 - Y7: Product options have no `appliesTo` field yet. Temporary config file `src/app/features/products/product-option-applicability.ts` keys allowed option slugs by product type (COFFEE: weight, grind; EQUIPMENT: size) with a TODO. Needs backend: option applicability field.
+
+## Security — journal HTML (FE-01, 28 Oct 2026)
+
+### The API stores only allowlisted HTML; a renderer may bind it with `[innerHTML]`
+- `JournalService` sanitizes every translation's `content` before it is persisted (both
+  `create` and `update`), through the new backend `HtmlSanitizer`. The allowlist is the
+  Quill toolbar (headings, bold/italic/underline/strike, links, lists, quote, code,
+  image, hr, table) plus nothing else.
+- `a[href]` is limited to `https` and `mailto`; every link gets
+  `rel="noopener noreferrer"`. `img[src]` is limited to our Cloudinary host, the
+  `nocteon/` upload folder and, when configured, our own cloud name. A URL whose host
+  merely contains `res.cloudinary.com` (userinfo trick) is rejected.
+- Public and dashboard read paths sanitize again, so posts written before the
+  sanitizer existed cannot execute stored markup.
+- **Frontend contract:** the journal body returned by the API is safe to render as
+  HTML. A renderer may use Angular `[innerHTML]` on it and must not call
+  `bypassSecurityTrustHtml` (or otherwise disable Angular's sanitizer). The dashboard
+  itself only feeds the value to Quill, which is the same boundary — the stored value
+  is already clean.
+- Evidence: `HtmlSanitizerTest` (payloads: script, `onerror`, `javascript:` href,
+  foreign image host, presentational attributes) and `JournalServiceSanitizationTest`
+  (captures the entity handed to `translationRepository`, on create and update).
