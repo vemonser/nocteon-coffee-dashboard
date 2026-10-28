@@ -321,6 +321,7 @@
     "restoreNotFound": "This item is no longer in the trash."
   },
   "products": {
+    "draft": {"title":"Restore unsaved draft?","message":"There is an unsaved draft from {{time}}. Restore it?","restore":"Restore draft","discard":"Discard draft"},
     "title": "Products",
     "total": "total",
     "add": "Add product",

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, signal } from '@angular/core';
+import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { ProductRequest, ProductTranslation } from '../../models/product.models';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -19,6 +19,8 @@ import { NotifyService } from '../../../../core/notify/notify.service';
 import { ConfirmDialogService } from '../../../../core/services/confirm-dialog.service';
 import { LanguageService } from '../../../../core/i18n/language.service';
 import { CanComponentDeactivate } from '../../../../core/guards/unsaved-changes.guard';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { formatRelativeTime } from '../../../../core/i18n/relative-time';
 import { HasUnsavedChanges } from '../../../../core/guards/has-unsaved-changes';
 import {
   lucideArrowLeft,
@@ -123,6 +125,91 @@ export class ProductWizardComponent implements CanComponentDeactivate, HasUnsave
     return true;
   }
 
+  constructor() {
+    // ── Draft autosave (UX_AUDIT_products.md #7b) ──────────────────────────
+    // The 5-step form is long enough to lose on a stray refresh. Everything
+    // that is serialisable is saved a beat after typing stops; files staged
+    // for upload live outside the form and are deliberately NOT drafted.
+    let saveTimer: ReturnType<typeof setTimeout> | null = null;
+    this.state.form.valueChanges
+      .pipe(takeUntilDestroyed())
+      .subscribe(() => {
+        if (saveTimer) clearTimeout(saveTimer);
+        saveTimer = setTimeout(() => this.saveDraft(), 1200);
+      });
+  }
+
+  // ── Draft storage ──────────────────────────────────────────────────────
+
+  private draftKey(): string {
+    const id = this.state.isEditMode() ? (this.state.editingSlug() ?? 'edit') : 'new';
+    return `products.wizard.draft.v1:${id}`;
+  }
+
+  private saveDraft(): void {
+    if (!this.hasUnsavedChanges()) return;
+    try {
+      localStorage.setItem(
+        this.draftKey(),
+        JSON.stringify({ value: this.state.form.getRawValue(), savedAt: new Date().toISOString() }),
+      );
+    } catch {
+      /* storage full / private mode: the draft is a convenience, never a blocker */
+    }
+  }
+
+  private clearDraft(): void {
+    try {
+      localStorage.removeItem(this.draftKey());
+    } catch {
+      /* nothing to clean */
+    }
+  }
+
+  /** Offers the draft found for this product; restoring re-dirties the form on purpose. */
+  private async offerDraftRestore(): Promise<void> {
+    let raw: string | null = null;
+    try {
+      raw = localStorage.getItem(this.draftKey());
+    } catch {
+      return;
+    }
+    if (!raw) return;
+
+    let draft: { value?: unknown; savedAt?: string } | null = null;
+    try {
+      draft = JSON.parse(raw);
+    } catch {
+      this.clearDraft();
+      return;
+    }
+    if (!draft?.value) {
+      this.clearDraft();
+      return;
+    }
+
+    const when = formatRelativeTime(draft.savedAt, this.language.language(), { lowercase: true });
+    const restore = await this.confirmDialog.confirm({
+      title: this.notify.t('products.draft.title', 'Restore unsaved draft?'),
+      message: this.notify
+        .t('products.draft.message', 'There is an unsaved draft from {{time}}. Restore it?')
+        .replace('{{time}}', when),
+      confirmLabel: this.notify.t('products.draft.restore', 'Restore draft'),
+      cancelLabel: this.notify.t('products.draft.discard', 'Discard draft'),
+    });
+
+    if (!restore) {
+      this.clearDraft();
+      return;
+    }
+    try {
+      this.state.form.patchValue(draft.value as never, { emitEvent: false });
+    } catch {
+      // The draft no longer matches the form shape (schema change) — drop it.
+      this.clearDraft();
+    }
+  }
+
   ngOnInit(): void {
     const slug = this.route.snapshot.paramMap.get('slug');
 
@@ -141,6 +228,7 @@ export class ProductWizardComponent implements CanComponentDeactivate, HasUnsave
           );
           this.loadingDetail.set(false);
           this.applyStepFromUrl();
+          void this.offerDraftRestore();
         },
         error: () => {
           this.loadError.set('Could not load product. It may have been deleted.');
@@ -160,6 +248,7 @@ export class ProductWizardComponent implements CanComponentDeactivate, HasUnsave
       );
       this.state.captureInitialSnapshot();
       this.applyStepFromUrl();
+      void this.offerDraftRestore();
     }
   }
 
@@ -277,6 +366,7 @@ export class ProductWizardComponent implements CanComponentDeactivate, HasUnsave
         // The guard compares against the load snapshot, not form.dirty: refresh it, or the
         // redirect after a successful save asks the admin to discard the save they just made.
         this.state.captureInitialSnapshot();
+        this.clearDraft();
         this.notify.success(wasEdit ? 'notify.updated' : 'notify.created', wasEdit ? 'Updated successfully' : 'Created successfully');
         this.router.navigate(['/dashboard/products']);
       },
