@@ -126,6 +126,13 @@ export class ProductService {
     return this.http.post<ApiResponse<{ url: string }>>(`${this.base}/story-images`, fd);
   }
 
+  /** POST /variant-images — one photo for one variant, uploaded before the product is saved. */
+  uploadVariantImage(file: File): Observable<ApiResponse<{ url: string }>> {
+    const fd = new FormData();
+    fd.append('file', file);
+    return this.http.post<ApiResponse<{ url: string }>>(`${this.base}/variant-images`, fd);
+  }
+
   /** DELETE /media/{mediaId} — remove a product media record. */
   deleteMedia(mediaId: number): Observable<ApiResponse<void>> {
     return this.http.delete<ApiResponse<void>>(`${this.base}/media/${mediaId}`);

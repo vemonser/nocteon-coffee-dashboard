@@ -327,6 +327,7 @@ export class ProductWizardComponent implements CanComponentDeactivate, HasUnsave
         price: v.price,
         compareAtPrice: v.compareAtPrice || undefined,
         costPrice: v.costPrice || undefined,
+        imageUrl: v.imageUrl || undefined,
         stockQuantity: v.stockQuantity,
         reorderThreshold: v.reorderThreshold ?? undefined,
         isActive: v.isActive,

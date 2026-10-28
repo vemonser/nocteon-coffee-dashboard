@@ -152,6 +152,7 @@ export class ProductWizardStateService {
       price: [v?.price ?? null, [Validators.required, Validators.min(0.01)]],
       compareAtPrice: [v?.compareAtPrice ?? null, [ProductWizardStateService.compareAtGreaterThanPrice]],
       costPrice: [v?.costPrice ?? null],
+      imageUrl: [v?.imageUrl ?? ''],
       stockQuantity: [v?.stockQuantity ?? 0, [Validators.required, Validators.min(0)]],
       reorderThreshold: [v?.reorderThreshold ?? 5, [Validators.min(0)]],
       isActive: [v?.isActive ?? true],

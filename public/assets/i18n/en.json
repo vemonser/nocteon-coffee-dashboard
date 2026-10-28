@@ -436,7 +436,28 @@
       "lowStockBadge": "Low stock",
       "inStock": "{{count}} in stock",
       "duplicate": "Duplicate",
-      "remove": "Remove"
+      "remove": "Remove",
+      "unnamed": "Variant",
+      "removeTitle": "Remove variant",
+      "removeMessage": "Remove this variant? Its stock and price settings go with it.",
+      "image": {
+        "title": "Variant image",
+        "hint": "Shown instead of the product gallery when this variant is selected. JPG, PNG, GIF or WebP, up to 5 MB.",
+        "upload": "Upload image",
+        "replace": "Replace image",
+        "remove": "Remove image",
+        "uploading": "Uploading…",
+        "failed": "Could not upload the image",
+        "wrongType": "Use a JPEG, PNG, GIF or WebP image.",
+        "tooLarge": "The image must be 5 MB or smaller."
+      },
+      "validation": {
+        "skuRequired": "SKU is required",
+        "priceRequired": "Price is required",
+        "priceMin": "Price must be greater than 0",
+        "compareAtGreater": "Compare-at price must be greater than the price",
+        "margin": "Margin: {{value}}%"
+      }
     },
     "media": {
       "title": "Media gallery",

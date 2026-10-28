@@ -95,6 +95,8 @@ export interface ProductVariant {
   price: number;
   compareAtPrice?: number | null;
   costPrice?: number | null;
+  /** The variant's own photo; empty means "use the product gallery". */
+  imageUrl?: string | null;
   stockQuantity: number;
   reservedQuantity?: number;
   reorderThreshold?: number;
@@ -111,6 +113,8 @@ export interface ProductVariantRequest {
   price: number;
   compareAtPrice?: number | null;
   costPrice?: number | null;
+  /** Omitted means "use the product gallery" — the API stores null, not an empty string. */
+  imageUrl?: string;
   stockQuantity: number;
   reorderThreshold?: number;
   isActive: boolean;

@@ -27,6 +27,14 @@ export class NotifyService {
   }
 
   /**
+   * A client-side rejection the API never saw (a file of the wrong type, before
+   * the upload is attempted). No backend message exists, so the key is the answer.
+   */
+  error(messageKey: string, fallback: string): void {
+    toast.error(this.t(messageKey, fallback));
+  }
+
+  /**
    * A warning: the work happened, but not the way the reader expected.
    * A reply that was saved but NOT emailed is exactly this — it is neither
    * a success (the customer did not hear back) nor an error (the admin's
