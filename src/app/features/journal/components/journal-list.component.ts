@@ -67,6 +67,19 @@ export class JournalListComponent extends BaseListComponent<JournalPostResponse,
     return item.slug;
   }
 
+  /**
+   * A PUBLISHED post whose date is still in the future is not live yet: the public
+   * queries require `publishedAt <= now`. The list says so instead of pretending it
+   * is already published.
+   */
+  isScheduled(item: JournalPostResponse): boolean {
+    return (
+      item.status === 'PUBLISHED' &&
+      !!item.publishedAt &&
+      new Date(item.publishedAt).getTime() > Date.now()
+    );
+  }
+
   protected override loadPage(): Observable<PageResponse<JournalPostResponse>> {
     return this.journalService
       .getAll({

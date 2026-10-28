@@ -2011,6 +2011,7 @@
     "status": "Status",
     "draft": "Draft",
     "published": "Published",
+    "scheduled": "Scheduled",
     "contentEn": "English content",
     "contentAr": "Arabic content",
     "summaryEn": "English summary",

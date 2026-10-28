@@ -47,3 +47,9 @@ export interface JournalFilterParams {
   categorySlug?: string;
   featured?: boolean;
 }
+/** A journal category, as the post form's picker reads it. */
+export interface JournalCategory {
+  id: number;
+  slug: string;
+  translations: { language: string; title: string }[];
+}

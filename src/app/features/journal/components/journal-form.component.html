@@ -53,7 +53,7 @@
                 <hlm-select-content *hlmSelectPortal>
                   <hlm-select-group>
                     @for (cat of categories(); track cat.slug) {
-                      <hlm-select-item [value]="cat.slug">{{ cat.slug }}</hlm-select-item>
+                      <hlm-select-item [value]="cat.slug">{{ categoryName(cat) }}</hlm-select-item>
                     }
                   </hlm-select-group>
                 </hlm-select-content>

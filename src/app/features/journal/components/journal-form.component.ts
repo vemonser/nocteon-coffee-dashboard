@@ -22,15 +22,14 @@ import { HlmBadgeImports } from '@spartan-ng/helm/badge';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideArrowLeft, lucideCheck, lucideLoader2, lucideUpload } from '@ng-icons/lucide';
 import { JournalService } from '../services/journal.service';
-import { CategoryService } from '../../categories/services/category.service';
 import { ProductService } from '../../products/services/product.service';
-import { CategoryResponse } from '../../categories/models/category.model';
-import { JournalPostRequest, JournalPostResponse } from '../models/journal.model';
+import { JournalCategory, JournalPostRequest, JournalPostResponse } from '../models/journal.model';
 import { QuillEditorComponent, QuillModule } from 'ngx-quill';
 import { QUILL_CONFIG_TOKEN } from 'ngx-quill/config';
 
 import { TranslocoPipe } from '@jsverse/transloco';
 import { NotifyService } from '../../../core/notify/notify.service';
+import { LanguageService } from '../../../core/i18n/language.service';
 type Lang = 'en' | 'ar';
 
 @Component({
@@ -76,10 +75,10 @@ type Lang = 'en' | 'ar';
 export class JournalFormComponent implements OnInit {
   private fb = inject(FormBuilder);
   private journalService = inject(JournalService);
-  private categoryService = inject(CategoryService);
   private productService = inject(ProductService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private language = inject(LanguageService);
 
   readonly languages: Lang[] = ['en', 'ar'];
 
@@ -90,7 +89,7 @@ export class JournalFormComponent implements OnInit {
   readonly saving = signal(false);
   readonly error = signal<string | null>(null);
 
-  readonly categories = signal<CategoryResponse[]>([]);
+  readonly categories = signal<JournalCategory[]>([]);
   readonly products = signal<{ slug: string; name: string }[]>([]);
 
   readonly coverPreviewUrl = signal<string | null>(null);
@@ -122,15 +121,15 @@ export class JournalFormComponent implements OnInit {
       this.notify.apiError(null, 'notify.errorFallback', 'Could not load categories or products');
     };
     forkJoin({
-      categories: this.categoryService
-        .getAll({ isActive: true })
-        .pipe(catchError(() => (warnPreload(), of({ data: { content: [] } })))),
+      categories: this.journalService
+        .getCategories()
+        .pipe(catchError(() => (warnPreload(), of({ data: [] })))),
       products: this.productService
         .getAll({ size: 200 })
         .pipe(catchError(() => (warnPreload(), of({ data: { content: [] } })))),
       post: slug ? this.journalService.getBySlug(slug).pipe(catchError(() => of(null))) : of(null),
     }).subscribe(({ categories, products, post }) => {
-      this.categories.set(categories.data.content);
+      this.categories.set(categories.data);
       this.products.set(
         products.data.content.map((p: any) => ({ slug: p.slug, name: p.name ?? p.slug })),
       );
@@ -192,6 +191,16 @@ export class JournalFormComponent implements OnInit {
       metaTitle: post.metaTitle,
       metaDescription: post.metaDescription,
     });
+  }
+
+  /** The picker shows the category's name in the current language, falling back to English. */
+  categoryName(category: JournalCategory): string {
+    const language = this.language.current();
+    return (
+      category.translations.find((t) => t.language === language)?.title ??
+      category.translations.find((t) => t.language === 'en')?.title ??
+      category.slug
+    );
   }
 
   onCoverSelected(event: Event): void {

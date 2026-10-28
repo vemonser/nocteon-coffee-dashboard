@@ -3,7 +3,12 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { ApiResponse, PageResponse } from '../../../core/models/api-response.model';
 import { environment } from '../../../../environments/environment';
-import { JournalFilterParams, JournalPostRequest, JournalPostResponse } from '../models/journal.model';
+import {
+  JournalCategory,
+  JournalFilterParams,
+  JournalPostRequest,
+  JournalPostResponse,
+} from '../models/journal.model';
 
 @Injectable({ providedIn: 'root' })
 export class JournalService {
@@ -24,6 +29,13 @@ export class JournalService {
     return this.http.get<ApiResponse<PageResponse<JournalPostResponse>>>(this.fullUrl, {
       params: httpParams,
     });
+  }
+
+  /** The categories a post can be filed under (not the product catalogue's). */
+  getCategories(): Observable<ApiResponse<JournalCategory[]>> {
+    return this.http.get<ApiResponse<JournalCategory[]>>(
+      `${environment.apiUrl}/api/dashboard/journal-categories`,
+    );
   }
 
   getBySlug(slug: string): Observable<ApiResponse<JournalPostResponse>> {
