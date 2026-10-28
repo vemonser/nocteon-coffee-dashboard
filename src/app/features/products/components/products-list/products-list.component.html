@@ -203,7 +203,7 @@
       [navigableHref]="editHref"
       [clickableRows]="!isTrash()"
       (sortChange)="onSortChange($event)"
-      (delete)="confirmDelete($event)"
+      (delete)="trashProduct($event)"
       (restore)="restore($event)"
       (permanentDelete)="openPermanentDelete($event)"
       (rowClick)="goToEdit($event)"
@@ -235,27 +235,3 @@
   }
 </div>
 
-<!-- Delete Dialog -->
-@if (deleting()) {
-  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-    <div class="dialog-surface w-full max-w-sm p-6">
-      <h2 class="text-lg font-medium mb-2">{{ 'products.deleteTitle' | transloco }}</h2>
-      <p class="text-muted-foreground mb-6">
-        {{ 'products.deleteConfirm' | transloco }} <strong>{{ deleting()!.slug }}</strong
-        >? {{ 'products.deleteWarning' | transloco }}
-      </p>
-      <div class="flex gap-3">
-        <button hlmBtn variant="outline" class="flex-1" (click)="deleting.set(null)">{{ 'products.cancel' | transloco }}</button>
-        <button
-          hlmBtn
-          variant="destructive"
-          class="flex-1"
-          (click)="submitDeleteOrPermanent()"
-          [disabled]="submitting()"
-        >
-          {{ submitting() ? ('products.deleting' | transloco) : ('products.delete' | transloco) }}
-        </button>
-      </div>
-    </div>
-  </div>
-}

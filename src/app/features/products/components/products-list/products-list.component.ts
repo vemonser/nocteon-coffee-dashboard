@@ -95,8 +95,6 @@ export class ProductsListComponent {
   items = signal<ProductListItem[]>([]);
   pageData = signal<PageResponse<ProductListItem> | null>(null);
   loading = signal(false);
-  deleting = signal<ProductListItem | null>(null);
-  submitting = signal(false);
   currentPage = signal(0);
   pageSize = signal(20);
   selectedIds = signal<ReadonlySet<number>>(new Set());
@@ -493,33 +491,46 @@ export class ProductsListComponent {
     });
   }
 
-  openPermanentDelete(product: ProductListItem): void {
-    this.deleting.set(product);
+  /**
+   * Moving to Trash is REVERSIBLE, so it runs immediately and the toast
+   * carries the way back (8s). No confirm dialog — a dialog that says
+   * "cannot be undone" over a restorable action taught the reader the wrong
+   * thing (UX_AUDIT_products.md #2 / decision D2-A).
+   */
+  trashProduct(product: ProductListItem): void {
+    this.productService.delete(product.slug).subscribe({
+      next: () => {
+        this.load();
+        this.notify.successWithAction(
+          'common.movedToTrash',
+          'Moved to trash',
+          this.notify.t('common.undo', 'Undo'),
+          () => this.restore(product),
+        );
+      },
+      error: (err) =>
+        this.notify.apiError(err, 'notify.errorFallback', 'Could not move to Trash'),
+    });
   }
 
-  submitDeleteOrPermanent(): void {
-    if (this.isTrash()) {
-      this.submitPermanentDelete();
-    } else {
-      this.submitDelete();
-    }
-  }
+  /** Permanent delete exists only in the Trash view and is truly irreversible. */
+  async openPermanentDelete(product: ProductListItem): Promise<void> {
+    const ok = await this.confirmDialog.confirm({
+      title: this.notify.t('products.deleteTitle', 'Delete product'),
+      message: `${this.notify.t('products.deleteConfirm', 'Are you sure you want to delete')} ${product.slug}? ${this.notify.t('products.deleteWarning', 'This action cannot be undone.')}`,
+      confirmLabel: this.notify.t('products.delete', 'Delete'),
+      cancelLabel: this.notify.t('products.cancel', 'Cancel'),
+      tone: 'destructive',
+    });
+    if (!ok) return;
 
-  submitPermanentDelete(): void {
-    const product = this.deleting();
-    if (!product) return;
-    this.submitting.set(true);
     this.productService.deletePermanently(product.id).subscribe({
       next: () => {
-        this.deleting.set(null);
         this.load();
-        this.submitting.set(false);
         this.notify.success('notify.deleted', 'Deleted permanently');
       },
-      error: (err) => {
-        this.submitting.set(false);
-        this.notify.apiError(err, 'notify.errorFallback', 'Could not delete permanently');
-      },
+      error: (err) =>
+        this.notify.apiError(err, 'notify.errorFallback', 'Could not delete permanently'),
     });
   }
 
@@ -642,7 +653,7 @@ export class ProductsListComponent {
         this.onFeaturedToggle(event.item);
         break;
       case 'trash':
-        this.confirmDelete(event.item);
+        this.trashProduct(event.item);
         break;
     }
   }
@@ -709,10 +720,6 @@ export class ProductsListComponent {
     });
   }
 
-  confirmDelete(product: ProductListItem): void {
-    this.deleting.set(product);
-  }
-
   async onToggleStatus(product: ProductListItem): Promise<void> {
     const newActive = !product.isActive;
     if (!newActive && product.featured) {
@@ -723,25 +730,6 @@ export class ProductsListComponent {
     this.productService.toggleActive(product.slug, newActive).subscribe({
       next: () => this.load(),
       error: (err) => this.notify.apiError(err, 'notify.errorFallback', 'Could not update status'),
-    });
-  }
-
-  submitDelete(): void {
-    const product = this.deleting();
-    if (!product) return;
-    this.submitting.set(true);
-
-    this.productService.delete(product.slug).subscribe({
-      next: () => {
-        this.deleting.set(null);
-        this.load();
-        this.submitting.set(false);
-        this.notify.success('notify.deleted', 'Deleted successfully');
-      },
-      error: (err) => {
-        this.submitting.set(false);
-        this.notify.apiError(err, 'notify.errorFallback', 'Could not delete');
-      },
     });
   }
 }

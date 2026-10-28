@@ -47,6 +47,24 @@ export class NotifyService {
     toast.success(msg ?? this.t(fallbackKey, fallback));
   }
 
+  /**
+   * A success that carries one recovery action — the Undo of a reversible
+   * change (skill rule: reversible actions run immediately, the toast offers
+   * the way back for 8s instead of a confirm dialog).
+   */
+  successWithAction(
+    messageKey: string,
+    fallback: string,
+    actionLabel: string,
+    onAction: () => void,
+    durationMs = 8000,
+  ): void {
+    toast.success(this.t(messageKey, fallback), {
+      duration: durationMs,
+      action: { label: actionLabel, onClick: onAction },
+    });
+  }
+
   /** Best-effort extraction from ApiResponse-shaped failures. */
   backendMessage(err: unknown): string | null {
     const e = err as {
