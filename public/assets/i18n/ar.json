@@ -599,6 +599,8 @@
       "allFeatured": "كل المميزة",
       "allTags": "كل الوسوم"
     },
+    "duplicated": "تم نسخ المنتج. النسخة معطّلة.",
+    "duplicateFailed": "تعذّر نسخ المنتج",
     "actions": {
       "duplicate": "نسخ",
       "viewOnStorefront": "عرض في المتجر",

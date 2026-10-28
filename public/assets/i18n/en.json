@@ -591,6 +591,8 @@
       "allFeatured": "All featured",
       "allTags": "All tags"
     },
+    "duplicated": "Product duplicated. The copy is disabled.",
+    "duplicateFailed": "Could not duplicate the product",
     "actions": {
       "duplicate": "Duplicate",
       "viewOnStorefront": "View on storefront",

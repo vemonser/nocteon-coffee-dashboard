@@ -79,6 +79,14 @@ export class ProductService {
     return this.http.put<ApiResponse<ProductDetail>>(`${this.base}/${slug}`, fd);
   }
 
+  /**
+   * FE-12: copy a product into an inactive draft. The API returns the copy, so the caller does
+   * not have to guess the `-copy` slug.
+   */
+  duplicate(slug: string): Observable<ApiResponse<ProductDetail>> {
+    return this.http.post<ApiResponse<ProductDetail>>(`${this.base}/${slug}/duplicate`, null);
+  }
+
   delete(slug: string): Observable<ApiResponse<void>> {
     return this.http.delete<ApiResponse<void>>(`${this.base}/${slug}`);
   }

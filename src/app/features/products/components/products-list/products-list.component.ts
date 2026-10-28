@@ -203,6 +203,11 @@ export class ProductsListComponent {
   readonly activeCount = signal(0);
   readonly trashCount = signal(0);
 
+  /** The row currently being duplicated, so a double click cannot create two copies. */
+  readonly duplicatingId = signal<number | null>(null);
+  /** Duplicating creates a product, so it follows product:create. */
+  readonly canCreate = this.authService.hasPermission('product:create');
+
   readonly bulkProgress = signal<{ done: number; total: number } | null>(null);
   readonly bulkErrors = signal<string[]>([]);
   readonly bulkBusy = signal(false);
@@ -277,7 +282,9 @@ export class ProductsListComponent {
       disabled: !row.isActive,
       tooltip: !row.isActive ? 'Product is disabled' : undefined,
     },
-    { id: 'duplicate', label: 'products.actions.duplicate', icon: 'lucideCopy' },
+    // Duplicating creates a product, so it needs the create grant — not the update grant that
+    // opens the menu at all.
+    ...(this.canCreate ? [{ id: 'duplicate', label: 'products.actions.duplicate', icon: 'lucideCopy' }] : []),
     {
       id: 'toggleActive',
       label: row.isActive ? 'products.actions.disable' : 'products.actions.enable',
@@ -585,6 +592,26 @@ export class ProductsListComponent {
     });
   }
 
+  /**
+   * FE-12: the API copies the whole graph and answers with the copy, so the wizard can open on
+   * it. Navigating first (the old dead `/duplicate` route) left the admin on a 404.
+   */
+  duplicateProduct(product: ProductListItem): void {
+    if (this.duplicatingId() !== null) return;
+    this.duplicatingId.set(product.id);
+    this.productService.duplicate(product.slug).subscribe({
+      next: (res) => {
+        this.duplicatingId.set(null);
+        this.notify.success('products.duplicated', 'Product duplicated');
+        void this.router.navigate(['/dashboard/products', res.data.slug, 'edit']);
+      },
+      error: (err) => {
+        this.duplicatingId.set(null);
+        this.notify.apiError(err, 'products.duplicateFailed', 'Could not duplicate the product');
+      },
+    });
+  }
+
   restore(product: ProductListItem): void {
     this.productService.restore(product.id).subscribe({
       next: () => {
@@ -745,7 +772,7 @@ export class ProductsListComponent {
         this.goToEdit(event.item);
         break;
       case 'duplicate':
-        this.router.navigate(['/dashboard/products', event.item.slug, 'duplicate']);
+        this.duplicateProduct(event.item);
         break;
       case 'view':
         window.open(`/products/${event.item.slug}`, '_blank');
