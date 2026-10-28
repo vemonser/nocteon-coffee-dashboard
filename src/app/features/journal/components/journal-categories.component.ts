@@ -2,17 +2,19 @@ import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucideLoader2, lucidePencil, lucidePlus, lucideTrash2 } from '@ng-icons/lucide';
+import { lucideLoader2, lucideMoreVertical, lucidePencil, lucidePlus, lucideTrash2 } from '@ng-icons/lucide';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { HlmBadgeImports } from '@spartan-ng/helm/badge';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmCardImports } from '@spartan-ng/helm/card';
+import { HlmDropdownMenuImports } from '@spartan-ng/helm/dropdown-menu';
 import { HlmInputImports } from '@spartan-ng/helm/input';
 import { HlmLabel } from '@spartan-ng/helm/label';
 import { HasPermissionDirective } from '../../../core/auth/permission.directive';
 import { LanguageService } from '../../../core/i18n/language.service';
 import { NotifyService } from '../../../core/notify/notify.service';
 import { ConfirmDialogService } from '../../../core/services/confirm-dialog.service';
+import { UnsavedChangesDialogService } from '../../../core/services/unsaved-changes-dialog.service';
 import { DialogShellComponent } from '../../../shared/ui/dialog-shell/dialog-shell.component';
 import { JournalCategory } from '../models/journal.model';
 import { JournalService } from '../services/journal.service';
@@ -33,6 +35,7 @@ import { JournalService } from '../services/journal.service';
     HlmBadgeImports,
     HlmButtonImports,
     HlmCardImports,
+    HlmDropdownMenuImports,
     HlmInputImports,
     HlmLabel,
     DialogShellComponent,
@@ -40,7 +43,7 @@ import { JournalService } from '../services/journal.service';
     TranslocoPipe,
     NgIcon,
   ],
-  providers: [provideIcons({ lucideLoader2, lucidePencil, lucidePlus, lucideTrash2 })],
+  providers: [provideIcons({ lucideLoader2, lucideMoreVertical, lucidePencil, lucidePlus, lucideTrash2 })],
   template: `
     <div class="page-shell">
       <div class="flex flex-wrap items-center justify-between gap-3">
@@ -90,34 +93,43 @@ import { JournalService } from '../services/journal.service';
                   <p class="truncate font-medium">{{ nameOf(category) }}</p>
                   <p class="truncate text-xs text-muted-foreground">/{{ category.slug }}</p>
                 </div>
-                <div class="flex items-center gap-1">
-                  <button
-                    hlmBtn
-                    variant="ghost"
-                    size="icon"
-                    type="button"
-                    class="size-8"
-                    *hasPermission="'journal:update'"
-                    [attr.aria-label]="'journal.categories.edit' | transloco"
-                    [title]="'journal.categories.edit' | transloco"
-                    (click)="openRename(category)"
-                  >
-                    <ng-icon name="lucidePencil" class="size-4" />
-                  </button>
-                  <button
-                    hlmBtn
-                    variant="ghost"
-                    size="icon"
-                    type="button"
-                    class="size-8 text-destructive"
-                    *hasPermission="'journal:delete'"
-                    [attr.aria-label]="'common.delete' | transloco"
-                    [title]="'common.delete' | transloco"
-                    (click)="askDelete(category)"
-                  >
-                    <ng-icon name="lucideTrash2" class="size-4" />
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  hlmBtn
+                  variant="ghost"
+                  size="icon"
+                  class="size-8"
+                  [hlmDropdownMenuTrigger]="rowMenu"
+                  align="end"
+                  [attr.aria-label]="'common.actions' | transloco"
+                  [title]="'common.actions' | transloco"
+                >
+                  <ng-icon name="lucideMoreVertical" class="size-4" aria-hidden="true" />
+                </button>
+
+                <ng-template #rowMenu>
+                  <hlm-dropdown-menu class="min-w-40 rounded-md">
+                    <button
+                      *hasPermission="'journal:update'"
+                      hlmDropdownMenuItem
+                      class="flex items-center gap-2"
+                      (click)="openRename(category)"
+                    >
+                      <ng-icon name="lucidePencil" class="size-4 shrink-0" aria-hidden="true" />
+                      <span>{{ 'journal.categories.edit' | transloco }}</span>
+                    </button>
+                    <button
+                      *hasPermission="'journal:delete'"
+                      hlmDropdownMenuItem
+                      class="flex items-center gap-2 text-destructive-text"
+                      [disabled]="deletingId() === category.id"
+                      (click)="askDelete(category)"
+                    >
+                      <ng-icon name="lucideTrash2" class="size-4 shrink-0" aria-hidden="true" />
+                      <span>{{ 'common.delete' | transloco }}</span>
+                    </button>
+                  </hlm-dropdown-menu>
+                </ng-template>
               </div>
               <div class="flex flex-wrap gap-1.5">
                 @for (translation of category.translations; track $index) {
@@ -140,10 +152,16 @@ import { JournalService } from '../services/journal.service';
         <div class="space-y-1.5">
           <label hlmLabel for="category-name-en">{{ 'journal.categories.nameEn' | transloco }} *</label>
           <input hlmInput id="category-name-en" formControlName="enName" type="text" class="w-full" dir="ltr" />
+          @if (form.controls.enName.touched && form.controls.enName.invalid) {
+            <p class="text-xs text-destructive">{{ 'journal.categories.nameRequired' | transloco }}</p>
+          }
         </div>
         <div class="space-y-1.5">
           <label hlmLabel for="category-name-ar">{{ 'journal.categories.nameAr' | transloco }} *</label>
           <input hlmInput id="category-name-ar" formControlName="arName" type="text" class="w-full" dir="rtl" />
+          @if (form.controls.arName.touched && form.controls.arName.invalid) {
+            <p class="text-xs text-destructive">{{ 'journal.categories.nameRequired' | transloco }}</p>
+          }
         </div>
       </form>
 
@@ -156,7 +174,7 @@ import { JournalService } from '../services/journal.service';
         dialog-footer-end
         hlmBtn
         type="button"
-        [disabled]="saving() || form.invalid || (editing() !== null && !form.dirty)"
+        [disabled]="saving() || form.invalid || !isDirty()"
         (click)="save()"
       >
         @if (saving()) {
@@ -177,6 +195,7 @@ export class JournalCategoriesComponent implements OnInit {
   private language = inject(LanguageService);
   private notify = inject(NotifyService);
   private confirmDialog = inject(ConfirmDialogService);
+  private unsavedDialog = inject(UnsavedChangesDialogService);
   private fb = inject(FormBuilder);
   private transloco = inject(TranslocoService);
 
@@ -186,6 +205,8 @@ export class JournalCategoriesComponent implements OnInit {
   readonly saving = signal(false);
   readonly editorOpen = signal(false);
   readonly editing = signal<JournalCategory | null>(null);
+  readonly deletingId = signal<number | null>(null);
+  private readonly initialSnapshot = signal('');
 
   readonly form = this.fb.group({
     enName: ['', [Validators.required, Validators.minLength(2)]],
@@ -220,9 +241,28 @@ export class JournalCategoriesComponent implements OnInit {
     );
   }
 
+  /** Trimmed deep-compare of the two names, the app's dirty rule for forms. */
+  isDirty(): boolean {
+    return this.snapshot() !== this.initialSnapshot();
+  }
+
+  private snapshot(): string {
+    const value = this.form.getRawValue();
+    return JSON.stringify({
+      en: (value.enName ?? '').trim(),
+      ar: (value.arName ?? '').trim(),
+    });
+  }
+
+  private captureInitial(): void {
+    this.initialSnapshot.set(this.snapshot());
+    this.form.markAsPristine();
+  }
+
   openCreate(): void {
     this.editing.set(null);
     this.form.reset({ enName: '', arName: '' });
+    this.captureInitial();
     this.editorOpen.set(true);
   }
 
@@ -232,10 +272,15 @@ export class JournalCategoriesComponent implements OnInit {
       enName: category.translations.find((t) => t.language === 'en')?.title ?? '',
       arName: category.translations.find((t) => t.language === 'ar')?.title ?? '',
     });
+    this.captureInitial();
     this.editorOpen.set(true);
   }
 
-  closeEditor(): void {
+  async closeEditor(): Promise<void> {
+    if (this.isDirty()) {
+      const choice = await this.unsavedDialog.open({ canSave: false });
+      if (choice !== 'discard') return;
+    }
     this.editorOpen.set(false);
     this.editing.set(null);
   }
@@ -260,7 +305,11 @@ export class JournalCategoriesComponent implements OnInit {
     call$.subscribe({
       next: () => {
         this.saving.set(false);
-        this.closeEditor();
+        // Saved: refresh the snapshot before closing, or the discard guard fires on a
+        // form that is no longer dirty in any meaningful sense.
+        this.captureInitial();
+        this.editorOpen.set(false);
+        this.editing.set(null);
         this.notify.success(
           editing ? 'journal.categories.renamed' : 'journal.categories.created',
           editing ? 'Category renamed' : 'Category created',
@@ -275,6 +324,7 @@ export class JournalCategoriesComponent implements OnInit {
   }
 
   async askDelete(category: JournalCategory): Promise<void> {
+    if (this.deletingId() !== null) return;
     const confirmed = await this.confirmDialog.confirm({
       title: this.transloco.translate('journal.categories.deleteTitle'),
       message: this.transloco.translate('journal.categories.deleteMessage', {
@@ -285,12 +335,15 @@ export class JournalCategoriesComponent implements OnInit {
     });
     if (!confirmed) return;
 
+    this.deletingId.set(category.id);
     this.journalService.deleteCategory(category.id).subscribe({
       next: () => {
+        this.deletingId.set(null);
         this.notify.success('journal.categories.deleted', 'Category deleted');
         this.load();
       },
       error: (err) => {
+        this.deletingId.set(null);
         // A 409 carries the number of posts still using the category; the server message
         // already includes it, so it is shown as-is.
         this.notify.apiError(err, 'journal.categories.deleteFailed', 'Could not delete the category');

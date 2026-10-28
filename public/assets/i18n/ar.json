@@ -2107,7 +2107,8 @@
       "saveFailed": "تعذّر حفظ الفئة",
       "deleteFailed": "تعذّر حذف الفئة",
       "deleteTitle": "حذف الفئة",
-      "deleteMessage": "حذف \"{{name}}\"؟ يجب نقل المقالات المستخدمة لها أولًا."
+      "deleteMessage": "حذف \"{{name}}\"؟ يجب نقل المقالات المستخدمة لها أولًا.",
+      "nameRequired": "الاسم مطلوب"
     }
   },
   "dashboard": {

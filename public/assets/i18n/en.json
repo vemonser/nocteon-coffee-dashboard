@@ -2063,7 +2063,8 @@
       "saveFailed": "Could not save the category",
       "deleteFailed": "Could not delete the category",
       "deleteTitle": "Delete category",
-      "deleteMessage": "Delete \"{{name}}\"? Posts using it must be moved first."
+      "deleteMessage": "Delete \"{{name}}\"? Posts using it must be moved first.",
+      "nameRequired": "Name is required"
     }
   },
   "dashboard": {
