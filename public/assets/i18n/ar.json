@@ -120,6 +120,8 @@
     "title": "إعدادات المتجر"
   },
   "common": {
+    "freeShippingActive": "الشحن المجاني مفعّل",
+    "currency": "العملة",
     "loadFailedHint": "تحقق من اتصالك وحاول مرة أخرى.",
     "accountSettings": "إعدادات الحساب",
     "actionCannotBeUndone": "لا يمكن التراجع عن هذا الإجراء.",

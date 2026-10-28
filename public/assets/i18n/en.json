@@ -117,9 +117,11 @@
     "categories": "Categories"
   },
   "StoreSettingPage": {
-    "title": "Store setting"
+    "title": "Store settings"
   },
   "common": {
+    "freeShippingActive": "Free shipping active",
+    "currency": "Currency",
     "loadFailedHint": "Check your connection and try again.",
     "accountSettings": "Account settings",
     "actionCannotBeUndone": "This action cannot be undone.",

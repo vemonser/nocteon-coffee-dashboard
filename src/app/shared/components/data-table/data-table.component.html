@@ -814,7 +814,18 @@
                   }
                 }
                 @default {
-                  @if (cellHref()(cell.column.id, row.original); as href) {
+                  @if (isBooleanValue(cell.getValue())) {
+                    <!-- A switch setting reads as a state, never as "true/false". -->
+                    <span
+                      class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
+                      [class.bg-success-soft]="cell.getValue()"
+                      [class.text-success]="cell.getValue()"
+                      [class.bg-muted]="!cell.getValue()"
+                      [class.text-muted-foreground]="!cell.getValue()"
+                    >
+                      {{ (cell.getValue() ? 'common.active' : 'common.inactive') | transloco }}
+                    </span>
+                  } @else if (cellHref()(cell.column.id, row.original); as href) {
                     <!--
                       A cell the page turned into a real link. The table does
                       not know what it points at — the page supplies the
