@@ -1336,3 +1336,50 @@ Live evidence: saved SEO values through the wizard, read them back from
   mappers. A legacy plain-text story is returned unchanged — the allowlist keeps text.
 - The storefront is not in this repository; it must render the story as HTML and rely on the
   same sanitized contract as the journal.
+
+## Products — variant images and tags (FE-09, FE-10, 28 Oct 2026)
+
+### A variant photo is uploaded on its own, then carried by the request
+- `POST /api/dashboard/products/variant-images` (product:create|update) returns `{ url }` and
+  reuses `RichTextImageService` (5 MB, jpeg/png/gif/webp, magic-byte checked). The wizard writes
+  the URL into the variant's `imageUrl` control, and the product PUT/POST carries it.
+- Uploading before the product is saved can orphan an asset when the admin abandons the form.
+  The story editor already accepts exactly that trade-off, and the alternative — bundling files
+  with the product form and matching them by index — breaks as soon as a variant is reordered.
+- A blank `imageUrl` is stored as `null`, not `''`: the storefront falls back to the product
+  gallery, and an empty string would ask the CDN for an empty resource.
+- The variants table view has no image cell on purpose. It is the fast inline price/stock grid;
+  the card view is where the photo belongs, and both read the same control.
+
+### Tags are a separate vocabulary, administered with the product permissions
+- `product_tags` + `product_tag_translations` + `product_tag_links` (V18), the same shape as
+  journal categories: the slug is generated once from the English name and never rewritten, so
+  a rename cannot break the list filter or a stored link.
+- Deleting a tag still carried by products is refused with 409 and the product count. The count
+  includes trashed products: the link outlives a product's soft delete, so removing the tag
+  would leave a restored product without one.
+- The page and the endpoints are gated on `product:read|create|update|delete` rather than a new
+  `product_tag:*` permission. A new permission string is not held by any seeded role, which is
+  how `user:create` once became unreachable for ADMIN too. Tags are product metadata; the
+  product grants already describe who may touch that.
+- The public filter is `?tagSlug=`, matched by an `EXISTS` subquery in `ProductSpecifications`
+  and by a second `EXISTS` in the dashboard's own paginated JPQL. A join would return one row
+  per link and inflate `totalElements` — the dashboard query was the one that would have shipped
+  broken (it does not use the specification at all), and `ProductTagFilterIntegrationTest`
+  covers both paths.
+
+### Flyway: a schema migration can now arrive after the seeds
+- Schema lives below V100 and demo seeds at V100+. Every schema migration written after a
+  database was seeded is therefore versioned "behind" it, and Flyway's validate step refused to
+  start on that database. `spring.flyway.out-of-order: true` lets the additive change apply;
+  production loads `db/migration` only and stays in order. Recorded here because it changes
+  startup behaviour for everyone.
+
+### Needs backend / follow-up: the storefront
+- The storefront repository (`nocteon-storefront`) is not part of this cycle: it carries 118
+  uncommitted files from unrelated work. The contract it needs is already live:
+  - `GET /api/products/{slug}` → `variants[].imageUrl` (nullable; fall back to the gallery)
+    and `tags[] = { slug, name }` (name already localized).
+  - `GET /api/products?tagSlug=<slug>` filters the public list.
+- Remaining work there: swap the gallery image when a variant is selected, and render a tag
+  filter that links to `?tagSlug=`. Must land on a clean branch.

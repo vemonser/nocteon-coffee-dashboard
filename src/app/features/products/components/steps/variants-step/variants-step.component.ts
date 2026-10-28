@@ -1,4 +1,6 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { finalize } from 'rxjs';
 import { ConfirmDialogService } from '../../../../../core/services/confirm-dialog.service';
 import { CommonModule } from '@angular/common';
 import {
@@ -65,6 +67,7 @@ export class VariantsStepComponent implements OnInit {
   private notify = inject(NotifyService);
   private wizard = inject(ProductWizardComponent);
   private confirmDialog = inject(ConfirmDialogService);
+  private destroyRef = inject(DestroyRef);
 
   loadingOptions = signal(false);
   collapsed = signal<Set<number>>(new Set());
@@ -271,20 +274,24 @@ export class VariantsStepComponent implements OnInit {
 
     const group = this.state.variantsArray.at(index) as FormGroup;
     this.uploadingIndex.set(index);
-    this.productService.uploadVariantImage(file).subscribe({
-      next: (res) => {
-        this.uploadingIndex.set(null);
-        const url = res.data?.url;
-        if (!url) return;
-        const control = group.get('imageUrl');
-        control?.setValue(url);
-        control?.markAsDirty();
-      },
-      error: (err) => {
-        this.uploadingIndex.set(null);
-        this.notify.apiError(err, 'products.variants.image.failed', 'Could not upload the image');
-      },
-    });
+    this.productService
+      .uploadVariantImage(file)
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => this.uploadingIndex.set(null)),
+      )
+      .subscribe({
+        next: (res) => {
+          const url = res.data?.url;
+          if (!url) return;
+          const control = group.get('imageUrl');
+          control?.setValue(url);
+          control?.markAsDirty();
+        },
+        error: (err) => {
+          this.notify.apiError(err, 'products.variants.image.failed', 'Could not upload the image');
+        },
+      });
   }
 
   removeVariantImage(group: AbstractControl): void {

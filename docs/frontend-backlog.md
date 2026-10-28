@@ -168,21 +168,42 @@ passes through unchanged.
 Evidence: `evidence/fe-08/story-editor-1440.png`, `ProductStorySanitizationTest`,
 `RichTextImageServiceTest` + Gate.
 
-### FE-09 · Variant images
+### FE-09 · Variant images — done 28 Oct 2026
 **Why** A 250 g bag and a 1 kg bag cannot show different photos.
 **Scope** FS.
 **Acceptance** `product_variants` gains `image_url`; the variants step uploads
 one image per variant; the product page swaps the gallery image on variant
 selection.
 **Effort** 1 day. **Deps** none.
+**Shipped** `V17` adds `product_variants.image_url`; the variant request and
+response carry it, so `GET /api/products/{slug}` exposes
+`variants[].imageUrl`. Uploads go to
+`POST /api/dashboard/products/variant-images`, which reuses
+`RichTextImageService` (format allowlist, magic bytes, 5 MB). The variants step
+uploads, replaces and removes the photo per variant and shows a thumbnail in
+the collapsed summary; a blank value is stored as `null` so the gallery still
+applies. Evidence: `ProductVariantImageTest`, `ProductSeoResponseMapperTest`
+(variant image on the public response), live UI capture
+`evidence/fe-09/variant-image-1440.png`, Gate.
+**Storefront** not in this cycle — see DECISIONS.md, the contract is live.
 
-### FE-10 · Product tags / collections
+### FE-10 · Product tags / collections — done 28 Oct 2026
 **Why** Merchandising beyond category/origin: "New arrivals", "Gift boxes".
 **Scope** FS.
 **Acceptance** `product_tags` (or a collections table) with slug + translated
 name; the wizard assigns tags; the products list filters by tag; the storefront
 exposes a tag filter.
 **Effort** 1 day. **Deps** none.
+**Shipped** `V18` adds `product_tags`, `product_tag_translations` and
+`product_tag_links`; `GET /api/dashboard/product-tags` plus create/rename/delete
+(slug generated once, delete refused with 409 + count while in use). The wizard
+assigns tags as chips in the basic step, the products list filters by tag (in
+the URL), and the public product exposes `tags[]` and accepts `?tagSlug=`.
+Tags reuse the product permissions — no new permission string that no role
+holds. Evidence: `ProductTagServiceTest`, `ProductTagMapperTest`,
+`ProductTagFilterIntegrationTest` (public + dashboard paths, real database),
+viewport captures in `evidence/fe-10/`, Gate.
+**Storefront** not in this cycle — see DECISIONS.md, the contract is live.
 
 ### FE-11 · Related / upsell products
 **Why** Pairings are taste pairings, not cross-sell.

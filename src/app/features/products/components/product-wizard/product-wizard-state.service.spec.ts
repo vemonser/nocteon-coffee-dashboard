@@ -83,4 +83,32 @@ describe('ProductWizardStateService — tags', () => {
     state.toggleTag('new-arrivals');
     expect(state.tagSlugsArray.value).toEqual(['new-arrivals']);
   });
+
+  it('loads the saved tags back into the form in edit mode', () => {
+    state.loadFromDetail(
+      {
+        id: 1,
+        slug: 'brazil-mogiana',
+        categorySlug: 'coffee',
+        productType: 'COFFEE',
+        isActive: true,
+        featured: false,
+        translations: [],
+        variants: [],
+        media: [],
+        tastingNotes: [],
+        pairings: [],
+        brewingMethods: [],
+        tags: [
+          { slug: 'new-arrivals', name: 'New arrivals' },
+          { slug: 'gift-boxes', name: 'Gift boxes' },
+        ],
+      } as never,
+      () => state.translationsArray,
+    );
+
+    expect(state.tagSlugsArray.value).toEqual(['new-arrivals', 'gift-boxes']);
+    // The load is the baseline, not a change.
+    expect(state.hasFormChanged()).toBe(false);
+  });
 });
