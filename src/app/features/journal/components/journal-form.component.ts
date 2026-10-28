@@ -21,7 +21,7 @@ import { HlmTabsImports } from '@spartan-ng/helm/tabs';
 import { HlmBadgeImports } from '@spartan-ng/helm/badge';
 
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucideArrowLeft, lucideCheck, lucideLoader2, lucideUpload } from '@ng-icons/lucide';
+import { lucideArrowLeft, lucideCheck, lucideEye, lucideLoader2, lucideUpload } from '@ng-icons/lucide';
 import { JournalService } from '../services/journal.service';
 import { ProductService } from '../../products/services/product.service';
 import { JournalCategory, JournalPostRequest, JournalPostResponse } from '../models/journal.model';
@@ -30,6 +30,7 @@ import Quill from 'quill';
 import { QUILL_CONFIG_TOKEN } from 'ngx-quill/config';
 
 import { TranslocoPipe } from '@jsverse/transloco';
+import { JournalPreviewDialogComponent } from './journal-preview-dialog.component';
 import { NotifyService } from '../../../core/notify/notify.service';
 import { LanguageService } from '../../../core/i18n/language.service';
 import { toLocalInputValue } from '../../../shared/utils/date-input';
@@ -52,6 +53,7 @@ type Lang = 'en' | 'ar';
     HlmTabsImports,
     HlmBadgeImports,
     QuillEditorComponent,
+    JournalPreviewDialogComponent,
     NgIcon,
     TranslocoPipe,
   ],
@@ -72,7 +74,7 @@ type Lang = 'en' | 'ar';
         },
       },
     },
-    provideIcons({ lucideArrowLeft, lucideCheck, lucideLoader2, lucideUpload }),
+    provideIcons({ lucideArrowLeft, lucideCheck, lucideEye, lucideLoader2, lucideUpload }),
   ],
   templateUrl: './journal-form.component.html',
   styles: [':host ::ng-deep .ql-editor img { max-width: 100%; height: auto; }'],
@@ -105,6 +107,7 @@ export class JournalFormComponent implements OnInit {
 
   readonly activeTab = signal<'basic' | 'translations' | 'products'>('basic');
   readonly uploadingImage = signal(false);
+  readonly previewOpen = signal(false);
 
   form!: FormGroup;
 
@@ -216,6 +219,30 @@ export class JournalFormComponent implements OnInit {
         metaDescription: post.metaDescription,
       });
     }
+  }
+
+  /** The translation the preview shows: the dashboard language, falling back to English. */
+  get previewTranslation(): any {
+    const values = this.translationsArray?.getRawValue?.() as any[] | undefined;
+    if (!values?.length) return {};
+    const language = this.language.current();
+    return values.find((t) => t.language === language) ?? values.find((t) => t.language === 'en') ?? values[0];
+  }
+
+  get previewTags(): string[] {
+    return (this.form?.value?.tagsInput ?? '')
+      .split(',')
+      .map((t: string) => t.trim())
+      .filter((t: string) => t.length > 0);
+  }
+
+  get previewProductNames(): string[] {
+    const slugs: string[] = this.form?.value?.productSlugs ?? [];
+    return slugs.map((slug) => this.products().find((p) => p.slug === slug)?.name ?? slug);
+  }
+
+  openPreview(): void {
+    this.previewOpen.set(true);
   }
 
   onEditorCreated(editor: Quill): void {

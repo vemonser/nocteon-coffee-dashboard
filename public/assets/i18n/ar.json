@@ -2084,6 +2084,8 @@
     "excerpt": "المقتطف",
     "metaTitle": "عنوان ميتا",
     "metaDescription": "وصف ميتا",
+    "preview": "معاينة",
+    "untitled": "مقال بدون عنوان",
     "sections": "أقسام المقال",
     "uploadingImage": "جارٍ رفع الصورة…",
     "imageUploadFailed": "تعذّر رفع الصورة.",

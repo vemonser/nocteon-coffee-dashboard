@@ -6,6 +6,12 @@
       {{ 'common.back' | transloco }}
     </button>
 
+    <div class="flex items-center gap-2">
+    <button hlmBtn variant="outline" size="sm" type="button" (click)="openPreview()">
+      <ng-icon name="lucideEye" class="me-2 size-4" />
+      {{ 'journal.preview' | transloco }}
+    </button>
+
     <button hlmBtn size="sm" (click)="save()" [disabled]="saving()">
       @if (saving()) {
         <ng-icon name="lucideLoader2" class="mr-2 size-4 animate-spin" />
@@ -14,6 +20,7 @@
       }
       {{ saving() ? ('common.saving' | transloco) : ('journal.savePost' | transloco) }}
     </button>
+    </div>
   </div>
 
   <h1 class="text-2xl font-medium tracking-tight">
@@ -197,4 +204,15 @@
       </form>
     </hlm-card>
   }
+
+  <app-journal-preview-dialog
+    [open]="previewOpen()"
+    [title]="previewTranslation.title ?? ''"
+    [excerpt]="previewTranslation.excerpt ?? ''"
+    [bodyHtml]="previewTranslation.content ?? ''"
+    [coverUrl]="coverPreviewUrl() || existingCoverUrl()"
+    [tags]="previewTags"
+    [relatedProducts]="previewProductNames"
+    (closed)="previewOpen.set(false)"
+  />
 </div>

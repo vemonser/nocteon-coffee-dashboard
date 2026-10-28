@@ -2040,6 +2040,8 @@
     "excerpt": "Excerpt",
     "metaTitle": "Meta title",
     "metaDescription": "Meta description",
+    "preview": "Preview",
+    "untitled": "Untitled post",
     "sections": "Post sections",
     "uploadingImage": "Uploading image…",
     "imageUploadFailed": "Could not upload the image.",
