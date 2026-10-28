@@ -1210,3 +1210,37 @@ permission, but the server must enforce them before these actions are safe.
   `evidence/fe-07/seo-fields-1440.png` and `social-image-1440.png`. That run used the
   local container, which still serves the previous backend image, so it proves the UI,
   not persistence; the storefront must read the new fields (separate repository).
+
+## Needs backend (from UX audit 2026-10-28 — dashboard home)
+- Global search palette: querying "pro" returns no product hits even though the palette model has a `products` group (`global-search-palette.component.ts`). Either the backend search endpoint does not index products or the store index is empty. Safe fallback in place: palette shows "No results" guidance. Please confirm whether `/api/search` (or equivalent) should return products, categories, customers — then the palette groups light up with no frontend contract change. See UX_AUDIT_dashboard.md.
+
+## Products pass 4 — live verification (FE-07, 28 Oct 2026)
+
+Verifying FE-07 against a rebuilt database (V1..V117 applied from scratch, V16
+included) surfaced three defects that predate the SEO work and blocked the
+ordinary edit flow:
+
+### An edit with no new images returned 500
+- The multipart body only carries a `files` part when something is uploaded. On a
+  plain edit Spring binds it as `null`, and the media validation compared
+  `files.size()` without treating null as "zero uploads" — so every product edit
+  that did not add an image failed. Fixed to treat a missing part as zero; a new
+  item still requires its file (`ProductMediaServiceValidationTest`).
+
+### Variants were hard-deleted on every save
+- `replaceVariants` deleted all rows and re-inserted them. `order_items`
+  references `product_variants`, so any product that had ever been ordered
+  failed on the foreign key. Variants are now matched by SKU and updated in
+  place, new SKUs are inserted, and dropped ones are soft-deleted so order
+  history survives (`ProductVariantServiceReplaceTest`).
+
+### After a successful save the app asked to discard it
+- The unsaved-changes guard compares against the snapshot taken at load, not
+  `form.dirty`; the redirect after a save therefore opened "Unsaved changes".
+  The wizard refreshes its snapshot before navigating.
+- Also: the catch-all 500 handler logged only the message, so an unexpected
+  error appeared as "Unexpected error occurred: null". It now logs the stack.
+
+Live evidence: saved SEO values through the wizard, read them back from
+`GET /api/products/{slug}` and from a reopened wizard; screenshot
+`evidence/fe-07/live-persisted-1440.png`.
