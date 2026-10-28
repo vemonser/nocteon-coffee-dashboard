@@ -106,13 +106,19 @@ allowlist.
 
 ## Wave 2 — Products
 
-### FE-07 · Product SEO per language
+### FE-07 · Product SEO per language — done 28 Oct 2026
 **Why** No meta title/description/OG image; product links share poorly.
 **Scope** FS.
 **Acceptance** `product_translations` gains `meta_title`, `meta_description`,
 plus a product-level `og_image_url` (defaults to the primary media); the wizard
 edits them per language; the public product endpoint exposes them.
 **Effort** 1 day. **Deps** none.
+**Shipped** `V16__product_seo.sql`, entity/request/response fields, mapper
+fallback (title → name, description → short description, OG image → first image,
+never a video), wizard fields under each language plus a social-image picker in
+the media step. Evidence: `ProductSeoWriteTest`, `ProductSeoResponseMapperTest`,
+`ng build`, `npm run i18n:check`. Not verified against a live API: the local
+container runs the previous image and no live session is available here.
 
 ### FE-08 · Rich story (reuse the journal editor)
 **Why** Story is a plain textarea; the blog gets rich text first.

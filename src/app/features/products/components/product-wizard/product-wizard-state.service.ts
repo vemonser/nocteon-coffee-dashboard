@@ -45,6 +45,8 @@ export class ProductWizardStateService {
     productType: ['', Validators.required],
     isActive: [true],
     featured: [false],
+    /** Product-level social card. Empty = use the primary image. */
+    ogImageUrl: [''],
     translations: this.fb.array([]),
 
     // Step 1b — Coffee Details (only relevant when productType === 'COFFEE')
@@ -299,6 +301,7 @@ export class ProductWizardStateService {
       productType: detail.productType,
       isActive: detail.active ?? detail.isActive ?? true,
       featured: detail.featured,
+      ogImageUrl: detail.ogImageUrl ?? '',
 
       altitude: detail.coffeeDetails?.altitude ?? null,
       harvestYear: detail.coffeeDetails?.harvestYear ?? '',
@@ -401,7 +404,7 @@ export class ProductWizardStateService {
     this.translationsArray.clear();
     this.productOptions.set([]);
     this.pendingEditPicks = [];
-    this.form.reset({ isActive: true, featured: false });
+    this.form.reset({ isActive: true, featured: false, ogImageUrl: '' });
   }
   setPrimaryMedia(source: 'existing' | 'staged', index: number): void {
     this.mediaDirty.set(true);

@@ -1,10 +1,12 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { ConfirmDialogService } from '../../../../../core/services/confirm-dialog.service';
 import { CommonModule } from '@angular/common';
 import { CdkDragDrop, DragDropModule } from '@angular/cdk/drag-drop';
 import { ProductWizardStateService } from '../../product-wizard/product-wizard-state.service';
 import { ProductWizardComponent } from '../../product-wizard/product-wizard.component';
-import { TranslocoPipe } from '@jsverse/transloco';
+import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
+import { HlmSelectImports } from '@spartan-ng/helm/select';
+import { HlmLabel } from '@spartan-ng/helm/label';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
   lucideUpload,
@@ -27,7 +29,7 @@ interface MediaFileError {
 @Component({
   selector: 'app-media-step',
   standalone: true,
-  imports: [CommonModule, DragDropModule, TranslocoPipe, NgIcon],
+  imports: [CommonModule, DragDropModule, HlmSelectImports, HlmLabel, TranslocoPipe, NgIcon],
   providers: [provideIcons({ lucideUpload, lucidePlay, lucidePencil, lucideStar, lucideTrash2, lucideGripVertical })],
   templateUrl: './media-step.component.html',
 })
@@ -35,6 +37,27 @@ export class MediaStepComponent {
   protected state = inject(ProductWizardStateService);
   private wizard = inject(ProductWizardComponent);
   private confirmDialog = inject(ConfirmDialogService);
+  private transloco = inject(TranslocoService);
+
+  /** Images that can be a social card; a video is never one. */
+  readonly images = computed(() => this.state.existingMedia().filter((m) => m.type === 'IMAGE'));
+
+  /** Label for the social-image select: alt text when present, otherwise its position. */
+  readonly ogImageLabel = (value: unknown): string => {
+    const url = String(value ?? '');
+    if (!url) return this.transloco.translate('products.media.useCoverImage');
+    const images = this.images();
+    const index = images.findIndex((m) => m.url === url);
+    if (index === -1) return this.transloco.translate('products.media.customSocialImage');
+    return (
+      images[index].altText?.trim() ||
+      this.transloco.translate('products.media.imageNumber', { n: index + 1 })
+    );
+  };
+
+  setSocialImage(value: unknown): void {
+    this.state.form.patchValue({ ogImageUrl: value == null ? '' : String(value) });
+  }
 
   readonly fileErrors = signal<MediaFileError[]>([]);
   readonly videoDurations = signal<Record<string, string>>({});

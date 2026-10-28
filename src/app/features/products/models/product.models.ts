@@ -82,6 +82,10 @@ export interface ProductTranslation {
   shortDescription?: string;
   /** The editorial story, per language. */
   story?: string;
+  /** Search/social title for this language; the API falls back to the name. */
+  metaTitle?: string;
+  /** Search/social description for this language; falls back to the short description. */
+  metaDescription?: string;
 }
 
 /** Backend ProductVariantResponse — includes resolved option summaries. */
@@ -146,6 +150,8 @@ export interface ProductDetail {
   tastingNotes: TastingNote[];
   pairings: ProductPairing[];
   brewingMethods: ProductBrewingMethod[];
+  /** The product's own social card; empty means "use the primary image". */
+  ogImageUrl?: string | null;
 }
 
 // Request payload sent to backend on save.
@@ -167,6 +173,8 @@ export interface ProductRequest {
   tastingNoteSlugs: string[];
   pairingSlugs: string[];
   brewingMethods: ProductBrewingMethod[];
+  /** Omitted means "use the primary image" — the API stores null, not an empty string. */
+  ogImageUrl?: string;
 }
 
 export interface StagedMedia {

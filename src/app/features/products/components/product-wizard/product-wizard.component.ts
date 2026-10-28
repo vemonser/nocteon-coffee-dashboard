@@ -131,7 +131,13 @@ export class ProductWizardComponent implements CanComponentDeactivate, HasUnsave
       this.productService.getBySlug(slug).subscribe({
         next: (res) => {
           this.state.loadFromDetail(res.data, (existing: ProductTranslation[]) =>
-            this.translationHelper.buildArray(existing, ['description', 'shortDescription', 'story']),
+            this.translationHelper.buildArray(existing, [
+              'description',
+              'shortDescription',
+              'story',
+              'metaTitle',
+              'metaDescription',
+            ]),
           );
           this.loadingDetail.set(false);
         },
@@ -143,7 +149,13 @@ export class ProductWizardComponent implements CanComponentDeactivate, HasUnsave
     } else {
       this.state.form.setControl(
         'translations',
-        this.translationHelper.buildArray([], ['description', 'shortDescription', 'story']),
+        this.translationHelper.buildArray([], [
+          'description',
+          'shortDescription',
+          'story',
+          'metaTitle',
+          'metaDescription',
+        ]),
       );
       this.state.captureInitialSnapshot();
     }
@@ -258,7 +270,11 @@ export class ProductWizardComponent implements CanComponentDeactivate, HasUnsave
         description: t.description || undefined,
         shortDescription: t.shortDescription || undefined,
         story: t.story || undefined,
+        metaTitle: t.metaTitle || undefined,
+        metaDescription: t.metaDescription || undefined,
       })),
+
+      ogImageUrl: v.ogImageUrl || undefined,
 
       coffeeDetails: isCoffee
         ? {

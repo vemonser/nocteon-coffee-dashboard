@@ -158,6 +158,34 @@
     </div>
   }
 
+  <!-- Social share image (product-level, one card for every language) -->
+  <section class="card-surface p-4">
+    <div class="max-w-md space-y-1.5">
+      <label hlmLabel>{{ 'products.media.socialImage' | transloco }}</label>
+      <hlm-select
+        [value]="state.form.get('ogImageUrl')?.value ?? ''"
+        (valueChange)="setSocialImage($event)"
+        [itemToString]="ogImageLabel"
+        class="w-full"
+      >
+        <hlm-select-trigger class="h-[var(--filter-control-height)] w-full">
+          <hlm-select-value [placeholder]="'products.media.useCoverImage' | transloco" />
+        </hlm-select-trigger>
+        <hlm-select-content *hlmSelectPortal>
+          <hlm-select-group>
+            <hlm-select-item value="">{{ 'products.media.useCoverImage' | transloco }}</hlm-select-item>
+            @for (media of images(); track media.id; let i = $index) {
+              <hlm-select-item [value]="media.url">
+                {{ media.altText || ('products.media.imageNumber' | transloco: { n: i + 1 }) }}
+              </hlm-select-item>
+            }
+          </hlm-select-group>
+        </hlm-select-content>
+      </hlm-select>
+      <p class="text-xs text-muted-foreground">{{ 'products.media.socialImageHint' | transloco }}</p>
+    </div>
+  </section>
+
   @if (!state.isEditMode()) {
     <!-- Sticky footer for navigation (create mode only) -->
     <div class="sticky-footer">

@@ -1183,3 +1183,27 @@ permission, but the server must enforce them before these actions are safe.
 - Evidence: `HtmlSanitizerTest` (payloads: script, `onerror`, `javascript:` href,
   foreign image host, presentational attributes) and `JournalServiceSanitizationTest`
   (captures the entity handed to `translationRepository`, on create and update).
+
+## Product SEO (FE-07, 28 Oct 2026)
+
+### SEO copy belongs to a language; the social card belongs to the product
+- `product_translations` gains `meta_title` (200) and `meta_description` (500) in
+  `V16__product_seo.sql`. A title is language-specific — an Arabic page needs an Arabic
+  title — so it sits next to `name`, not on the product.
+- `products.og_image_url` is nullable and is **not** seeded with the current primary URL.
+  A default that is copied would freeze the card and stop following a cover change, so
+  the response mapper resolves it: custom URL → primary image → first image, and never a
+  video (a video is not a valid `og:image`).
+- The public product response applies the copy fallbacks (title → name, description →
+  short description) so the storefront never renders an empty `<title>`. The dashboard
+  response returns the raw `ogImageUrl` so opening and saving the wizard does not pin the
+  cover image as a custom card by accident.
+- Wizard: "SEO title" and "SEO description" sit under each language in the content
+  section. The social image picker lives in the media step and lists existing images
+  only — a staged file has no URL until the first save, so it is chosen after saving.
+- Evidence: backend `ProductSeoWriteTest` (captures the entity handed to the repository)
+  and `ProductSeoResponseMapperTest` (fallbacks, video exclusion); dashboard `ng build`
+  and `npm run i18n:check`.
+- Not verified live: the local container runs the previous backend image and no live
+  session was available here. The storefront must read the new fields to show them (it
+  lives in a separate repository).

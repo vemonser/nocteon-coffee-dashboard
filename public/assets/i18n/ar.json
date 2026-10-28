@@ -396,7 +396,13 @@
         "COFFEE": "قهوة",
         "EQUIPMENT": "معدات"
       },
-      "storyHint": "تُحفظ لهذه اللغة فقط — وهي الفقرة التحريرية في صفحة المنتج."
+      "storyHint": "تُحفظ لهذه اللغة فقط — وهي الفقرة التحريرية في صفحة المنتج.",
+      "metaTitle": "عنوان SEO",
+      "metaTitlePlaceholder": "يُستخدم اسم المنتج افتراضيًا",
+      "metaTitleHint": "العنوان الظاهر في نتائج البحث ومعاينات الروابط. اجعله أقل من 60 حرفًا.",
+      "metaDescription": "وصف SEO",
+      "metaDescriptionPlaceholder": "يُستخدم الوصف المختصر افتراضيًا",
+      "metaDescriptionHint": "السطر الظاهر تحت العنوان في نتائج البحث. اجعله أقل من 160 حرفًا."
     },
     "variants": {
       "title": "المتغيرات",
@@ -453,7 +459,12 @@
       "delete": "حذف",
       "altTextPlaceholder": "صف الصورة",
       "noAltText": "لا يوجد نص بديل",
-      "readyToUpload": "جاهز للرفع"
+      "readyToUpload": "جاهز للرفع",
+      "socialImage": "صورة المشاركة",
+      "socialImageHint": "تُستخدم في نتائج البحث ومعاينات الروابط. الافتراضي هو صورة الغلاف.",
+      "useCoverImage": "استخدام صورة الغلاف",
+      "imageNumber": "صورة {{n}}",
+      "customSocialImage": "صورة مخصصة"
     },
     "tastingNotes": {
       "title": "ملاحظات التذوق",

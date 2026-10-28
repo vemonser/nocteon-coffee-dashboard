@@ -392,7 +392,13 @@
         "COFFEE": "Coffee",
         "EQUIPMENT": "Equipment"
       },
-      "storyHint": "Saved for this language only — it is the editorial block on the product page."
+      "storyHint": "Saved for this language only — it is the editorial block on the product page.",
+      "metaTitle": "SEO title",
+      "metaTitlePlaceholder": "Defaults to the product name",
+      "metaTitleHint": "The title search results and link previews show. Keep it under 60 characters.",
+      "metaDescription": "SEO description",
+      "metaDescriptionPlaceholder": "Defaults to the short description",
+      "metaDescriptionHint": "The line under the title in search results. Keep it under 160 characters."
     },
     "variants": {
       "title": "Variants",
@@ -449,7 +455,12 @@
       "delete": "Delete",
       "altTextPlaceholder": "Describe the image",
       "noAltText": "No alt text",
-      "readyToUpload": "Ready to upload"
+      "readyToUpload": "Ready to upload",
+      "socialImage": "Social share image",
+      "socialImageHint": "Used in search results and link previews. Defaults to the cover image.",
+      "useCoverImage": "Use the cover image",
+      "imageNumber": "Image {{n}}",
+      "customSocialImage": "Custom image"
     },
     "tastingNotes": {
       "title": "Tasting notes",
@@ -1169,7 +1180,7 @@
     "showAll": "Show all",
     "discountGiven": "Discount given",
     "redemptions": "Redemptions",
-    "activeCodes": "Enabled Codes",
+    "activeCodes": "Enabled codes",
     "code": "Code",
     "codeRequired": "Promo code is required",
     "deleteConfirm": "Delete this promo code?",
@@ -2072,7 +2083,7 @@
       "avgOrderValue": "Avg order value",
       "totalCustomers": "Total customers",
       "newCustomers": "New customers",
-      "activeSubscriptions": "Enabled Subscriptions",
+      "activeSubscriptions": "Enabled subscriptions",
       "newSubscriptions": "New subscriptions",
       "onlineUsers": "Online users"
     },

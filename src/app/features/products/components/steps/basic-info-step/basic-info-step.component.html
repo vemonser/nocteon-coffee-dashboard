@@ -287,6 +287,38 @@
                   ></textarea>
                   <p class="text-xs text-muted-foreground">{{ 'products.form.storyHint' | transloco }}</p>
                 </div>
+
+                <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <div class="space-y-1.5">
+                    <label hlmLabel>{{ 'products.form.metaTitle' | transloco }}</label>
+                    <input
+                      hlmInput
+                      formControlName="metaTitle"
+                      type="text"
+                      maxlength="200"
+                      [dir]="lang.dir"
+                      [attr.lang]="lang.code"
+                      class="w-full"
+                      [placeholder]="'products.form.metaTitlePlaceholder' | transloco"
+                    />
+                    <p class="text-xs text-muted-foreground">{{ 'products.form.metaTitleHint' | transloco }}</p>
+                  </div>
+
+                  <div class="space-y-1.5">
+                    <label hlmLabel>{{ 'products.form.metaDescription' | transloco }}</label>
+                    <input
+                      hlmInput
+                      formControlName="metaDescription"
+                      type="text"
+                      maxlength="500"
+                      [dir]="lang.dir"
+                      [attr.lang]="lang.code"
+                      class="w-full"
+                      [placeholder]="'products.form.metaDescriptionPlaceholder' | transloco"
+                    />
+                    <p class="text-xs text-muted-foreground">{{ 'products.form.metaDescriptionHint' | transloco }}</p>
+                  </div>
+                </div>
               </div>
             }
           }
