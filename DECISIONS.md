@@ -1267,10 +1267,26 @@ Live evidence: saved SEO values through the wizard, read them back from
   coincide. Added `GET /api/dashboard/journal-categories` (journal:read) and the
   form now uses it, showing the localized name.
 
+### Follow-ups from review and the live run
+- The dashboard detail/create/update responses still handed the lazy `tags`
+  collection to Jackson (the list/detail paths were fixed first). It is copied
+  everywhere now, and an integration test serializes the DTO outside a
+  transaction so the regression cannot come back silently.
+- Reopening a post opened a blank form: the dashboard detail returns a
+  `translations` array, while the form read `post.title`/`post.content`. Each
+  language group is now filled from its own entry.
+- The `datetime-local` value was sliced out of the ISO string, so every
+  open-and-save shifted the instant by the UTC offset — enough to move a
+  scheduled post across "now". It is converted to local time through the shared
+  `toLocalInputValue`, with a round-trip unit test.
+- Status badges and the status picker show translated labels (including
+  `journal.archived`), not raw enum names.
+
 ### Evidence
 - `JournalScheduledPublishingIntegrationTest` runs the real queries: a post
   dated tomorrow is absent publicly, present in the dashboard, and a post dated
-  in the past is public.
+  in the past is public. It also covers ARCHIVED, a missing language, an edit
+  with no date, DRAFT→PUBLISHED stamping, and serialization after commit.
 - Live run: a post dated tomorrow renders the "Scheduled" badge, the public
   list omits it, and `GET /api/journal/{slug}` returns 404
   (`evidence/fe-03/scheduled-badge-1440.png`).

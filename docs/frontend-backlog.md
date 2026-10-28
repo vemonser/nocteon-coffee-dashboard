@@ -79,9 +79,12 @@ date the editor chose (it was ignored, so the form could not schedule at all);
 the list shows a "Scheduled" badge. Two defects blocked the flow and are fixed
 here: the journal list/detail 500 when serializing lazy tags, and the form
 filling its category picker from the product catalogue.
-Evidence: `JournalScheduledPublishingIntegrationTest` (3 tests, real database),
+Evidence: `JournalScheduledPublishingIntegrationTest` (8 tests, real database),
 live Playwright run (post dated tomorrow → badge, public 404 + absent from the
-list), screenshot `evidence/fe-03/scheduled-badge-1440.png`.
+list, editor reopens with its content), screenshots
+`evidence/fe-03/scheduled-badge-1440.png` and `scheduled-edit-1440.png`.
+Review fixes in the same branch: dashboard tags serialization, blank edit form,
+timezone-stable schedule date, translated statuses.
 
 ### FE-04 · Journal preview
 **Why** Editors publish blind today.
