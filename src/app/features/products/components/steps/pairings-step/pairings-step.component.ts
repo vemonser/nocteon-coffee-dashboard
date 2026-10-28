@@ -113,8 +113,11 @@ export class PairingsStepComponent {
       name: product.name,
       primaryImageUrl: product.primaryImageUrl,
     });
-    // A product that is now selected must leave the result list.
-    this.relatedResults.update((list) => list.filter((item) => item.slug !== product.slug));
+    // Clear the search after a pick: the term now matches only a product that is already in the
+    // list, and leaving it there would read as "no results".
+    this.relatedSearch.set('');
+    this.relatedResults.set([]);
+    if (this.searchTimer) clearTimeout(this.searchTimer);
   }
 
   removeRelated(slug: string): void {
