@@ -84,6 +84,25 @@ describe('ProductWizardStateService — tags', () => {
     expect(state.tagSlugsArray.value).toEqual(['new-arrivals']);
   });
 
+  it('keeps at most six related products, in the order they were added', () => {
+    ['a', 'b', 'c', 'd', 'e', 'f', 'g'].forEach((slug) =>
+      state.addRelated({ slug, name: slug.toUpperCase(), primaryImageUrl: null }),
+    );
+
+    expect(state.relatedProductSlugsArray.value).toEqual(['a', 'b', 'c', 'd', 'e', 'f']);
+    expect(state.relatedProducts()).toHaveLength(6);
+  });
+
+  it('removing a related product drops it from the request and from the chips', () => {
+    state.addRelated({ slug: 'kenya-nyeri', name: 'Kenya Nyeri', primaryImageUrl: null });
+    state.addRelated({ slug: 'ethiopia-yirgacheffe', name: 'Ethiopia', primaryImageUrl: null });
+
+    state.removeRelated('kenya-nyeri');
+
+    expect(state.relatedProductSlugsArray.value).toEqual(['ethiopia-yirgacheffe']);
+    expect(state.relatedProducts().map((item) => item.slug)).toEqual(['ethiopia-yirgacheffe']);
+  });
+
   it('loads the saved tags back into the form in edit mode', () => {
     state.loadFromDetail(
       {

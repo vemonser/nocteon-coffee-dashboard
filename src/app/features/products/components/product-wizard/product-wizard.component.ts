@@ -401,6 +401,7 @@ export class ProductWizardComponent implements CanComponentDeactivate, HasUnsave
       tastingNoteSlugs: this.state.tastingNotesArray.value,
       pairingSlugs: this.state.pairingsArray.value,
       tagSlugs: this.state.tagSlugsArray.value,
+      relatedProductSlugs: this.state.relatedProductSlugsArray.value,
 
       media: [
         ...this.state.existingMedia().map((m, index) => ({
@@ -479,8 +480,8 @@ export class ProductWizardComponent implements CanComponentDeactivate, HasUnsave
     switch (tabId) {
       case 'basic':
         return !eq(
-          { ...cur, variants: undefined, brewingMethods: undefined, tastingNoteSlugs: undefined, pairingSlugs: undefined },
-          { ...init, variants: undefined, brewingMethods: undefined, tastingNoteSlugs: undefined, pairingSlugs: undefined },
+          { ...cur, variants: undefined, brewingMethods: undefined, tastingNoteSlugs: undefined, pairingSlugs: undefined, relatedProductSlugs: undefined },
+          { ...init, variants: undefined, brewingMethods: undefined, tastingNoteSlugs: undefined, pairingSlugs: undefined, relatedProductSlugs: undefined },
         );
       case 'variants':
         return !eq(cur.variants, init.variants) || !eq(cur.brewingMethods, init.brewingMethods);
@@ -489,7 +490,10 @@ export class ProductWizardComponent implements CanComponentDeactivate, HasUnsave
       case 'tasting-notes':
         return !eq(cur.tastingNoteSlugs, init.tastingNoteSlugs);
       case 'pairings':
-        return !eq(cur.pairingSlugs, init.pairingSlugs);
+        return (
+          !eq(cur.pairingSlugs, init.pairingSlugs) ||
+          !eq(cur.relatedProductSlugs, init.relatedProductSlugs)
+        );
       default:
         return false;
     }

@@ -75,6 +75,99 @@
     }
   }
 
+  <!-- FE-11: "You may also like" — a different axis from pairings (which is a taste note). -->
+  <section class="card-surface mt-6 p-5">
+    <div class="mb-4 flex flex-wrap items-start justify-between gap-3">
+      <div>
+        <h2 class="text-lg font-medium">{{ 'products.related.title' | transloco }}</h2>
+        <p class="text-sm text-muted-foreground">{{ 'products.related.description' | transloco }}</p>
+      </div>
+      <span class="text-xs font-medium text-muted-foreground">
+        {{ 'products.related.count' | transloco: { count: selectedRelated().length, max: MAX_RELATED } }}
+      </span>
+    </div>
+
+    @if (selectedRelated().length > 0) {
+      <ul class="mb-4 flex flex-wrap gap-2" [attr.aria-label]="'products.related.selected' | transloco">
+        @for (item of selectedRelated(); track item.slug) {
+          <li
+            class="inline-flex items-center gap-2 rounded-full border border-primary bg-primary/10 py-1 pe-1 ps-1 text-sm text-primary"
+          >
+            @if (item.primaryImageUrl) {
+              <img [src]="item.primaryImageUrl" alt="" class="size-6 rounded-full object-cover" />
+            }
+            <span class="max-w-48 truncate">{{ item.name }}</span>
+            <button
+              type="button"
+              hlmBtn
+              variant="ghost"
+              size="icon"
+              class="size-6 shrink-0 rounded-full text-primary hover:bg-primary/20"
+              [attr.aria-label]="'products.related.remove' | transloco: { name: item.name }"
+              [title]="'products.related.remove' | transloco: { name: item.name }"
+              (click)="removeRelated(item.slug)"
+            >
+              <ng-icon name="lucideX" class="size-3.5" aria-hidden="true" />
+            </button>
+          </li>
+        }
+      </ul>
+    }
+
+    <div class="relative max-w-md">
+      <ng-icon
+        name="lucideSearch"
+        class="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+        aria-hidden="true"
+      />
+      <input
+        hlmInput
+        type="search"
+        class="w-full ps-9"
+        [value]="relatedSearch()"
+        [disabled]="!canAddMore()"
+        [placeholder]="'products.related.search' | transloco"
+        [attr.aria-label]="'products.related.search' | transloco"
+        (input)="onRelatedSearchInput($any($event.target).value)"
+      />
+    </div>
+
+    @if (!canAddMore()) {
+      <p class="mt-2 text-xs text-muted-foreground">{{ 'products.related.full' | transloco }}</p>
+    } @else if (relatedSearching()) {
+      <div class="mt-3 h-12 animate-pulse rounded-md bg-muted"></div>
+    } @else if (relatedSearch().trim().length >= 2) {
+      @if (relatedResults().length === 0) {
+        <p class="mt-3 text-sm text-muted-foreground">{{ 'products.related.noMatches' | transloco }}</p>
+      } @else {
+        <ul class="mt-3 divide-y rounded-md border" [attr.aria-label]="'products.related.results' | transloco">
+          @for (product of relatedResults(); track product.slug) {
+            <li class="flex items-center gap-3 p-2">
+              @if (product.primaryImageUrl) {
+                <img [src]="product.primaryImageUrl" alt="" class="size-8 shrink-0 rounded object-cover" />
+              } @else {
+                <span class="size-8 shrink-0 rounded bg-muted" aria-hidden="true"></span>
+              }
+              <div class="min-w-0 flex-1">
+                <p class="truncate text-sm font-medium">{{ product.name }}</p>
+                <p class="truncate text-xs text-muted-foreground">/{{ product.slug }}</p>
+              </div>
+              <button
+                hlmBtn
+                variant="outline"
+                size="sm"
+                type="button"
+                (click)="addRelated(product)"
+              >
+                {{ 'products.related.add' | transloco }}
+              </button>
+            </li>
+          }
+        </ul>
+      }
+    }
+  </section>
+
   @if (!state.isEditMode()) {
     <!-- Sticky footer for navigation (create mode only) -->
     <div class="sticky-footer">

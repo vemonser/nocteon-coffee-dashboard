@@ -9,6 +9,13 @@ import { ProductTagSummary } from '../../product-tags/models/product-tag.model';
 
 export type { ProductTagSummary };
 
+/** FE-11: a "You may also like" entry as the wizard renders it. */
+export interface RelatedProductSummary {
+  slug: string;
+  name: string;
+  primaryImageUrl?: string | null;
+}
+
 export interface ProductListItem {
   id: number;
   slug: string;
@@ -161,6 +168,8 @@ export interface ProductDetail {
   brewingMethods: ProductBrewingMethod[];
   /** Merchandising tags (FE-10): slug + localized name, as the API returns them. */
   tags?: ProductTagSummary[];
+  /** "You may also like" (FE-11), in display order. */
+  relatedProducts?: RelatedProductSummary[];
   /** The product's own social card; empty means "use the primary image". */
   ogImageUrl?: string | null;
 }
@@ -186,6 +195,8 @@ export interface ProductRequest {
   brewingMethods: ProductBrewingMethod[];
   /** Merchandising tags by slug (FE-10). Omitted means "no tags". */
   tagSlugs?: string[];
+  /** "You may also like" by slug (FE-11), max 6, in display order. */
+  relatedProductSlugs?: string[];
   /** Omitted means "use the primary image" — the API stores null, not an empty string. */
   ogImageUrl?: string;
 }

@@ -514,6 +514,18 @@
       "search": "Search",
       "noMatches": "No matches"
     },
+    "related": {
+      "title": "You may also like",
+      "description": "Up to six products shown under this one on the storefront. Order is the order you add them in.",
+      "count": "{{count}} of {{max}}",
+      "selected": "Selected products",
+      "results": "Matching products",
+      "search": "Search products by name or slug...",
+      "add": "Add",
+      "remove": "Remove {{name}}",
+      "full": "Six is the maximum. Remove one to add another.",
+      "noMatches": "No products match that search."
+    },
     "wizard": {
       "loading": "Loading product...",
       "editTitle": "Edit product",
