@@ -5,6 +5,7 @@ import { ApiResponse, PageResponse } from '../../../core/models/api-response.mod
 import { environment } from '../../../../environments/environment';
 import {
   JournalCategory,
+  JournalCategoryRequest,
   JournalFilterParams,
   JournalPostRequest,
   JournalPostResponse,
@@ -29,6 +30,26 @@ export class JournalService {
     return this.http.get<ApiResponse<PageResponse<JournalPostResponse>>>(this.fullUrl, {
       params: httpParams,
     });
+  }
+
+  createCategory(request: JournalCategoryRequest): Observable<ApiResponse<JournalCategory>> {
+    return this.http.post<ApiResponse<JournalCategory>>(
+      `${environment.apiUrl}/api/dashboard/journal-categories`,
+      request,
+    );
+  }
+
+  renameCategory(id: number, request: JournalCategoryRequest): Observable<ApiResponse<JournalCategory>> {
+    return this.http.put<ApiResponse<JournalCategory>>(
+      `${environment.apiUrl}/api/dashboard/journal-categories/${id}`,
+      request,
+    );
+  }
+
+  deleteCategory(id: number): Observable<ApiResponse<void>> {
+    return this.http.delete<ApiResponse<void>>(
+      `${environment.apiUrl}/api/dashboard/journal-categories/${id}`,
+    );
   }
 
   /** The categories a post can be filed under (not the product catalogue's). */

@@ -9,6 +9,7 @@ export type NavKey =
   | 'reviews'
   | 'storeSettings'
   | 'journal'
+  | 'journalCategories'
   | 'products'
   | 'categories'
   | 'notifications'
@@ -46,6 +47,7 @@ export const navI18n: Record<Language, Record<NavKey, string>> = {
     storeSettings: 'Store settings',
     promoCodes: 'Promo codes',
     journal: 'Journal',
+    journalCategories: 'Journal categories',
     products: 'Products',
     notifications: 'Notifications',
     categories: 'Categories',
@@ -82,6 +84,7 @@ export const navI18n: Record<Language, Record<NavKey, string>> = {
     storeSettings: 'إعدادات الموقع',
     promoCodes: 'رموز ترويجية',
     journal: 'المجلة',
+    journalCategories: 'فئات الجورنال',
     products: 'المنتجات',
     categories: 'الفئات',
     categoryDetail: 'الفئة',

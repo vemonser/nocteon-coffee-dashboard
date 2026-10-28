@@ -20,6 +20,7 @@ const icons: Record<NavKey, string> = {
   promoCodes: 'lucideTags',
   storeSettings: 'lucideSettings2',
   journal: 'lucideBookOpen',
+  journalCategories: 'lucideTags',
   products: 'lucideCoffee',
   categories: 'lucideTags',
   notifications: 'lucideBellRing',
@@ -124,6 +125,7 @@ export function getNavItems(lang: Language) {
     'journal:read',
     [
       { label: t.journal, icon: icons.journal, route: '/dashboard/journal', permission: 'journal:read' },
+      { label: t.journalCategories, icon: icons.journalCategories, route: '/dashboard/journal/categories', permission: 'journal:read' },
       { label: t.broadcasts, icon: icons.broadcasts, route: '/dashboard/broadcasts', permission: 'broadcast:read' },
       { label: t.newsletter, icon: icons.newsletter, route: '/dashboard/newsletter', permission: 'user:read' },
       { label: t.notifications, icon: icons.notifications, route: '/dashboard/notifications', permission: 'notification:read' },

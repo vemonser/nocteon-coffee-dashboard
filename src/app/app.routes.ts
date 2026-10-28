@@ -124,6 +124,14 @@ export const routes: Routes = [
               ),
           },
           {
+            path: 'categories',
+            data: { breadcrumb: 'journalCategories' },
+            loadComponent: () =>
+              import('./features/journal/components/journal-categories.component').then(
+                (m) => m.JournalCategoriesComponent,
+              ),
+          },
+          {
             path: ':slug/edit',
             data: { breadcrumb: 'editJournalPost' },
             loadComponent: () =>

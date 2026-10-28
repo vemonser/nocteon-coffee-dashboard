@@ -65,3 +65,8 @@ export interface JournalCategory {
   slug: string;
   translations: { language: string; title: string }[];
 }
+
+/** Create/rename payload for a journal category. */
+export interface JournalCategoryRequest {
+  translations: { language: 'en' | 'ar'; name: string }[];
+}

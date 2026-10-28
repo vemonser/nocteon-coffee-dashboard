@@ -2045,7 +2045,26 @@
     "sections": "Post sections",
     "uploadingImage": "Uploading image…",
     "imageUploadFailed": "Could not upload the image.",
-    "editPost": "Edit post"
+    "editPost": "Edit post",
+    "categories": {
+      "title": "Journal categories",
+      "subtitle": "Posts are filed under these",
+      "add": "Add category",
+      "edit": "Rename category",
+      "nameEn": "English name",
+      "nameAr": "Arabic name",
+      "saveName": "Save name",
+      "empty": "No journal categories yet.",
+      "emptyHint": "Add the first category to file posts under it.",
+      "loadFailed": "Could not load the categories.",
+      "created": "Category created",
+      "renamed": "Category renamed",
+      "deleted": "Category deleted",
+      "saveFailed": "Could not save the category",
+      "deleteFailed": "Could not delete the category",
+      "deleteTitle": "Delete category",
+      "deleteMessage": "Delete \"{{name}}\"? Posts using it must be moved first."
+    }
   },
   "dashboard": {
     "title": "Dashboard",

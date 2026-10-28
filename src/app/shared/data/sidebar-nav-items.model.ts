@@ -17,6 +17,7 @@ export const icons: Record<NavKey, string> = {
   promoCodes: 'lucideTags',
   storeSettings: 'lucideSettings2',
   journal: 'lucideBookOpen',
+  journalCategories: 'lucideTags',
   products: 'lucideCoffee',
   categories: 'lucideTags',
   notifications: 'lucideBellRing',
