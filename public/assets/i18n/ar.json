@@ -2109,7 +2109,15 @@
       "deleteTitle": "حذف الفئة",
       "deleteMessage": "حذف \"{{name}}\"؟ يجب نقل المقالات المستخدمة لها أولًا.",
       "nameRequired": "الاسم مطلوب"
-    }
+    },
+    "undo": "تراجع",
+    "redo": "إعادة",
+    "horizontalRule": "خط فاصل",
+    "insertVideo": "إدراج فيديو",
+    "videoUrl": "رابط الفيديو",
+    "videoUrlHint": "رابط يوتيوب أو فيميو",
+    "videoInsert": "إدراج",
+    "videoUrlInvalid": "أدخل رابط يوتيوب أو فيميو."
   },
   "dashboard": {
     "title": "لوحة التحكم",

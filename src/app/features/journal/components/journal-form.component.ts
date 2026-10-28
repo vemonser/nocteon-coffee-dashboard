@@ -4,6 +4,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   FormArray,
   FormBuilder,
+  FormControl,
   FormGroup,
   FormsModule,
   ReactiveFormsModule,
@@ -29,14 +30,23 @@ import { QuillEditorComponent } from 'ngx-quill';
 import Quill from 'quill';
 import { QUILL_CONFIG_TOKEN } from 'ngx-quill/config';
 
-import { TranslocoPipe } from '@jsverse/transloco';
+import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { JournalPreviewDialogComponent } from './journal-preview-dialog.component';
-import { parseTags, pickPreviewTranslation, PreviewTranslation } from './journal-form.utils';
+import { DialogShellComponent } from '../../../shared/ui/dialog-shell/dialog-shell.component';
+import { parseTags, parseVideoUrl, pickPreviewTranslation, PreviewTranslation } from './journal-form.utils';
 import { NotifyService } from '../../../core/notify/notify.service';
 import { LanguageService } from '../../../core/i18n/language.service';
 import { toLocalInputValue } from '../../../shared/utils/date-input';
 import { TranslationFormHelper } from '../../../shared/utils/translation.utils';
 type Lang = 'en' | 'ar';
+
+// Quill has no horizontal-rule blot; a block embed that renders <hr> survives the sanitizer.
+const BlockEmbed = (Quill as any).import('blots/block/embed');
+class DividerBlot extends BlockEmbed {
+  static blotName = 'divider';
+  static tagName = 'hr';
+}
+Quill.register(DividerBlot, true);
 
 @Component({
   selector: 'app-journal-form',
@@ -55,6 +65,7 @@ type Lang = 'en' | 'ar';
     HlmBadgeImports,
     QuillEditorComponent,
     JournalPreviewDialogComponent,
+    DialogShellComponent,
     NgIcon,
     TranslocoPipe,
   ],
@@ -67,8 +78,8 @@ type Lang = 'en' | 'ar';
         modules: {
           toolbar: [
             ['bold', 'italic', 'underline'],
-            [{ header: [1, 2, 3, false] }],
-            ['link', 'image', 'blockquote'],
+            [{ header: [1, 2, 3, 4, false] }],
+            ['link', 'image', 'video', 'blockquote', 'code-block'],
             [{ list: 'ordered' }, { list: 'bullet' }],
             ['clean'],
           ],
@@ -78,7 +89,11 @@ type Lang = 'en' | 'ar';
     provideIcons({ lucideArrowLeft, lucideCheck, lucideEye, lucideLoader2, lucideUpload }),
   ],
   templateUrl: './journal-form.component.html',
-  styles: [':host ::ng-deep .ql-editor img { max-width: 100%; height: auto; }'],
+  styles: [
+    ':host ::ng-deep .ql-editor img { max-width: 100%; height: auto; }',
+    ':host ::ng-deep .ql-toolbar .ql-toolbar-action { width: auto; min-width: 28px; padding: 0 6px; font-size: 14px; }',
+    ':host ::ng-deep .ql-editor iframe.ql-video { width: 100%; aspect-ratio: 16 / 9; }',
+  ],
 })
 export class JournalFormComponent implements OnInit {
   private fb = inject(FormBuilder);
@@ -88,6 +103,7 @@ export class JournalFormComponent implements OnInit {
   private router = inject(Router);
   private destroyRef = inject(DestroyRef);
   private translationHelper = inject(TranslationFormHelper);
+  private transloco = inject(TranslocoService);
   private language = inject(LanguageService);
 
   readonly languages: Lang[] = ['en', 'ar'];
@@ -109,6 +125,19 @@ export class JournalFormComponent implements OnInit {
   readonly activeTab = signal<'basic' | 'translations' | 'products'>('basic');
   readonly uploadingImage = signal(false);
   readonly previewOpen = signal(false);
+  readonly videoOpen = signal(false);
+  readonly videoError = signal(false);
+  readonly videoControl = new FormControl('', { nonNullable: true });
+
+  /**
+   * Store the editor's real HTML, not Quill's "semantic" HTML.
+   *
+   * <p>ngx-quill's default getter calls `getSemanticHTML()`, which turns a video embed into an
+   * anchor — the iframe never reaches the server. The raw root HTML keeps the embed, and the
+   * API allowlist is the thing that decides what is safe to store.
+   */
+  readonly htmlValueGetter = (editor: Quill): string => editor.root.innerHTML;
+  private videoEditor: Quill | null = null;
 
   form!: FormGroup;
 
@@ -248,6 +277,57 @@ export class JournalFormComponent implements OnInit {
     // shared field would insert the image into whichever editor was created last.
     const toolbar = editor.getModule('toolbar') as { addHandler: (name: string, fn: () => void) => void };
     toolbar.addHandler('image', () => this.pickInlineImage(editor));
+    toolbar.addHandler('video', () => this.openVideoDialog(editor));
+
+    this.addToolbarAction(editor, '↶', 'journal.undo', () => editor.history.undo());
+    this.addToolbarAction(editor, '↷', 'journal.redo', () => editor.history.redo());
+    this.addToolbarAction(editor, '―', 'journal.horizontalRule', () => {
+      const range = editor.getSelection(true) ?? { index: editor.getLength(), length: 0 };
+      editor.insertEmbed(range.index, 'divider', true, 'user');
+      editor.setSelection(range.index + 1, 0);
+    });
+  }
+
+  /** Undo/redo/rule are not Quill toolbar formats; add plain buttons with accessible names. */
+  private addToolbarAction(editor: Quill, label: string, titleKey: string, action: () => void): void {
+    const container = (editor.getModule('toolbar') as { container: HTMLElement }).container;
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.textContent = label;
+    button.title = this.transloco.translate(titleKey);
+    button.setAttribute('aria-label', this.transloco.translate(titleKey));
+    button.className = 'ql-toolbar-action';
+    button.addEventListener('click', (event) => {
+      event.preventDefault();
+      action();
+    });
+    container.appendChild(button);
+  }
+
+  openVideoDialog(editor: Quill): void {
+    this.videoEditor = editor;
+    this.videoControl.setValue('');
+    this.videoError.set(false);
+    this.videoOpen.set(true);
+  }
+
+  closeVideoDialog(): void {
+    this.videoOpen.set(false);
+    this.videoEditor = null;
+  }
+
+  insertVideo(): void {
+    const editor = this.videoEditor;
+    if (!editor) return;
+    const url = parseVideoUrl(this.videoControl.value);
+    if (!url) {
+      this.videoError.set(true);
+      return;
+    }
+    const range = editor.getSelection(true) ?? { index: editor.getLength(), length: 0 };
+    editor.insertEmbed(range.index, 'video', url, 'user');
+    editor.setSelection(range.index + 1, 0);
+    this.closeVideoDialog();
   }
 
   private pickInlineImage(editor: Quill): void {

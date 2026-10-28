@@ -2065,7 +2065,15 @@
       "deleteTitle": "Delete category",
       "deleteMessage": "Delete \"{{name}}\"? Posts using it must be moved first.",
       "nameRequired": "Name is required"
-    }
+    },
+    "undo": "Undo",
+    "redo": "Redo",
+    "horizontalRule": "Horizontal rule",
+    "insertVideo": "Insert video",
+    "videoUrl": "Video URL",
+    "videoUrlHint": "YouTube or Vimeo link",
+    "videoInsert": "Insert",
+    "videoUrlInvalid": "Enter a YouTube or Vimeo link."
   },
   "dashboard": {
     "title": "Dashboard",

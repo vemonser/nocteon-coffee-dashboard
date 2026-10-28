@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseTags, pickPreviewTranslation } from './journal-form.utils';
+import { parseTags, parseVideoUrl, pickPreviewTranslation } from './journal-form.utils';
 
 describe('journal form helpers', () => {
   it('parses tags the way the editor types them', () => {
@@ -35,5 +35,29 @@ describe('journal form helpers', () => {
       { language: 'ar', title: '', content: '' },
     ];
     expect(pickPreviewTranslation(empty, 'ar').language).toBe('ar');
+  });
+});
+
+describe('parseVideoUrl', () => {
+  it('converts the usual YouTube and Vimeo links to embeds', () => {
+    expect(parseVideoUrl('https://www.youtube.com/watch?v=abc123XYZ')).toBe(
+      'https://www.youtube.com/embed/abc123XYZ',
+    );
+    expect(parseVideoUrl('https://youtu.be/abc123XYZ')).toBe(
+      'https://www.youtube.com/embed/abc123XYZ',
+    );
+    expect(parseVideoUrl('https://youtube.com/embed/abc123XYZ')).toBe(
+      'https://www.youtube.com/embed/abc123XYZ',
+    );
+    expect(parseVideoUrl('https://vimeo.com/123456789')).toBe(
+      'https://player.vimeo.com/video/123456789',
+    );
+  });
+
+  it('refuses everything the sanitizer would strip', () => {
+    expect(parseVideoUrl('https://evil.example/embed/abc123')).toBeNull();
+    expect(parseVideoUrl('https://www.youtube.com/watch?v=short')).toBeNull();
+    expect(parseVideoUrl('javascript:alert(1)')).toBeNull();
+    expect(parseVideoUrl('')).toBeNull();
   });
 });
