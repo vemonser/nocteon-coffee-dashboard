@@ -153,13 +153,20 @@ captures (`evidence/fe-07/`) and a live end-to-end check: values saved through
 the wizard, returned by `GET /api/products/{slug}`, and visible again after
 reopening the wizard.
 
-### FE-08 · Rich story (reuse the journal editor)
+### FE-08 · Rich story (reuse the journal editor) — done 28 Oct 2026
 **Why** Story is a plain textarea; the blog gets rich text first.
 **Scope** FE.
 **Acceptance** The story field uses the same Quill component and toolbar as the
 journal, stores HTML, renders on the product page; assistant/legacy plain
 stories still render as paragraphs.
 **Effort** 0.5 day. **Deps** FE-01 (sanitize story too), FE-02.
+**Shipped** The per-language story is the shared Quill editor (same toolbar,
+config and video dialog as the journal). Product-scoped image upload
+(`products/story-images`, product:create|update) shares `RichTextImageService`
+with the journal. The story is sanitized on write and read; legacy plain text
+passes through unchanged.
+Evidence: `evidence/fe-08/story-editor-1440.png`, `ProductStorySanitizationTest`,
+`RichTextImageServiceTest` + Gate.
 
 ### FE-09 · Variant images
 **Why** A 250 g bag and a 1 kg bag cannot show different photos.

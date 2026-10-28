@@ -1320,3 +1320,19 @@ Live evidence: saved SEO values through the wizard, read them back from
   allowlist remains the security boundary for anything stored.
 - `quill.snow.css` was never in `angular.json`, so the toolbar rendered unstyled icons. It is
   included now.
+
+## Products — rich story (FE-08, 28 Oct 2026)
+
+### One editor, one toolbar, two bodies
+- The product story uses the same Quill config (`shared/quill/rich-text.config.ts`), the same
+  video dialog and the same URL parser as the journal. The toolbar is not duplicated, so a
+  button added for the journal reaches the story too.
+- The editor stores `root.innerHTML` (not ngx-quill's semantic HTML) for the same reason as the
+  journal: semantic HTML turns a video embed into a link.
+- The story image upload is product-scoped (`POST /api/dashboard/products/story-images`,
+  `product:create|update`). Both editors share `RichTextImageService`, so the format allowlist,
+  magic-byte check and 5 MB cap cannot drift.
+- The story is sanitized on write (create and update) and again on read in both response
+  mappers. A legacy plain-text story is returned unchanged — the allowlist keeps text.
+- The storefront is not in this repository; it must render the story as HTML and rely on the
+  same sanitized contract as the journal.
