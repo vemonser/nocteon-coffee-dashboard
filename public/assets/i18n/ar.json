@@ -2084,6 +2084,8 @@
     "excerpt": "المقتطف",
     "metaTitle": "عنوان ميتا",
     "metaDescription": "وصف ميتا",
+    "uploadingImage": "جارٍ رفع الصورة…",
+    "imageUploadFailed": "تعذّر رفع الصورة.",
     "editPost": "تعديل المقال"
   },
   "dashboard": {

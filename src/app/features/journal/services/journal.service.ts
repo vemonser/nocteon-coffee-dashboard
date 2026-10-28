@@ -61,6 +61,19 @@ export class JournalService {
     return this.http.delete<ApiResponse<void>>(`${this.fullUrl}/${slug}`);
   }
 
+  /**
+   * POST /api/dashboard/journal/images — upload one image for the editor body.
+   * The toolbar inserts the returned URL; nothing is embedded as base64.
+   */
+  uploadInlineImage(file: File): Observable<ApiResponse<{ url: string }>> {
+    const fd = new FormData();
+    fd.append('file', file);
+    return this.http.post<ApiResponse<{ url: string }>>(
+      `${environment.apiUrl}/api/dashboard/journal/images`,
+      fd,
+    );
+  }
+
   /** POST /{slug}/cover — upload/replace a journal post cover image. */
   uploadCover(slug: string, file: File): Observable<ApiResponse<JournalPostResponse>> {
     const fd = new FormData();

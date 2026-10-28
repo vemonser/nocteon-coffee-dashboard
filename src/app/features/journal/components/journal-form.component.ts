@@ -24,7 +24,8 @@ import { lucideArrowLeft, lucideCheck, lucideLoader2, lucideUpload } from '@ng-i
 import { JournalService } from '../services/journal.service';
 import { ProductService } from '../../products/services/product.service';
 import { JournalCategory, JournalPostRequest, JournalPostResponse } from '../models/journal.model';
-import { QuillEditorComponent, QuillModule } from 'ngx-quill';
+import { QuillEditorComponent } from 'ngx-quill';
+import Quill from 'quill';
 import { QUILL_CONFIG_TOKEN } from 'ngx-quill/config';
 
 import { TranslocoPipe } from '@jsverse/transloco';
@@ -62,7 +63,7 @@ type Lang = 'en' | 'ar';
           toolbar: [
             ['bold', 'italic', 'underline'],
             [{ header: [1, 2, 3, false] }],
-            ['link', 'blockquote'],
+            ['link', 'image', 'blockquote'],
             [{ list: 'ordered' }, { list: 'bullet' }],
             ['clean'],
           ],
@@ -72,6 +73,7 @@ type Lang = 'en' | 'ar';
     provideIcons({ lucideArrowLeft, lucideCheck, lucideLoader2, lucideUpload }),
   ],
   templateUrl: './journal-form.component.html',
+  styles: [':host ::ng-deep .ql-editor img { max-width: 100%; height: auto; }'],
 })
 export class JournalFormComponent implements OnInit {
   private fb = inject(FormBuilder);
@@ -98,8 +100,11 @@ export class JournalFormComponent implements OnInit {
   readonly existingCoverUrl = signal<string | null>(null);
 
   readonly activeTab = signal<'basic' | 'translations' | 'products'>('basic');
+  readonly uploadingImage = signal(false);
 
   form!: FormGroup;
+
+
 
   get translationsArray(): FormArray {
     return this.form.get('translations') as FormArray;
@@ -207,6 +212,41 @@ export class JournalFormComponent implements OnInit {
         metaDescription: post.metaDescription,
       });
     }
+  }
+
+  onEditorCreated(editor: Quill): void {
+    // One handler per editor: the page renders English and Arabic editors side by side, and a
+    // shared field would insert the image into whichever editor was created last.
+    const toolbar = editor.getModule('toolbar') as { addHandler: (name: string, fn: () => void) => void };
+    toolbar.addHandler('image', () => this.pickInlineImage(editor));
+  }
+
+  private pickInlineImage(editor: Quill): void {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = () => {
+      const file = input.files?.[0];
+      if (file) this.uploadInlineImage(editor, file);
+    };
+    input.click();
+  }
+
+  private uploadInlineImage(editor: Quill, file: File): void {
+    this.uploadingImage.set(true);
+    this.journalService.uploadInlineImage(file).subscribe({
+      next: (res) => {
+        const range = editor.getSelection(true) ?? { index: editor.getLength(), length: 0 };
+        editor.insertEmbed(range.index, 'image', res.data.url, 'user');
+        editor.setSelection(range.index + 1, 0);
+        this.uploadingImage.set(false);
+      },
+      error: () => {
+        // The editor keeps its content; only the upload failed.
+        this.uploadingImage.set(false);
+        this.notify.apiError(null, 'journal.imageUploadFailed', 'Could not upload the image');
+      },
+    });
   }
 
   /** The picker shows the category's name in the current language, falling back to English. */
