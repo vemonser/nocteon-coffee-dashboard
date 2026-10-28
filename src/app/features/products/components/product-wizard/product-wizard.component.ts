@@ -140,6 +140,7 @@ export class ProductWizardComponent implements CanComponentDeactivate, HasUnsave
             ]),
           );
           this.loadingDetail.set(false);
+          this.applyStepFromUrl();
         },
         error: () => {
           this.loadError.set('Could not load product. It may have been deleted.');
@@ -158,6 +159,7 @@ export class ProductWizardComponent implements CanComponentDeactivate, HasUnsave
         ]),
       );
       this.state.captureInitialSnapshot();
+      this.applyStepFromUrl();
     }
   }
 
@@ -190,12 +192,14 @@ export class ProductWizardComponent implements CanComponentDeactivate, HasUnsave
       }
       this.activeTab.set(tabId);
     }
+    this.syncStepUrl();
   }
 
   onNext(): void {
     if (this.state.isCurrentStepValid()) {
       this.state.goNext();
       this.activeTab.set(this.stepTabs[this.state.currentStep()].id);
+      this.syncStepUrl();
     } else {
       this.markCurrentStepTouched();
     }
@@ -205,7 +209,36 @@ export class ProductWizardComponent implements CanComponentDeactivate, HasUnsave
     if (this.state.currentStep() > 0) {
       this.state.goBack();
       this.activeTab.set(this.stepTabs[this.state.currentStep()].id);
+      this.syncStepUrl();
     }
+  }
+
+  /**
+   * The step lives in the URL (?step=media): a refresh keeps the reader on
+   * the step they were on instead of restarting at Basic info
+   * (UX_AUDIT_products.md #7). The gate is the same as a tab click — a step
+   * that does not validate cannot be deep-linked past.
+   */
+  private syncStepUrl(): void {
+    const id = this.stepTabs[this.state.currentStep()]?.id;
+    if (!id) return;
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { step: id },
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
+  }
+
+  private applyStepFromUrl(): void {
+    const id = this.route.snapshot.queryParamMap.get('step');
+    if (!id) return;
+    if (!this.stepTabs.some((t) => t.id === id)) return;
+    if (id === this.stepTabs[this.state.currentStep()]?.id) {
+      this.activeTab.set(id);
+      return;
+    }
+    this.onTabChange(id);
   }
 
   private markCurrentStepTouched(): void {
