@@ -80,6 +80,8 @@ export interface ProductTranslation {
   name: string;
   description?: string;
   shortDescription?: string;
+  /** The editorial story, per language. */
+  story?: string;
 }
 
 /** Backend ProductVariantResponse — includes resolved option summaries. */

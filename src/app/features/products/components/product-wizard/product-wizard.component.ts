@@ -131,7 +131,7 @@ export class ProductWizardComponent implements CanComponentDeactivate, HasUnsave
       this.productService.getBySlug(slug).subscribe({
         next: (res) => {
           this.state.loadFromDetail(res.data, (existing: ProductTranslation[]) =>
-            this.translationHelper.buildArray(existing, ['description', 'shortDescription']),
+            this.translationHelper.buildArray(existing, ['description', 'shortDescription', 'story']),
           );
           this.loadingDetail.set(false);
         },
@@ -143,7 +143,7 @@ export class ProductWizardComponent implements CanComponentDeactivate, HasUnsave
     } else {
       this.state.form.setControl(
         'translations',
-        this.translationHelper.buildArray([], ['description', 'shortDescription']),
+        this.translationHelper.buildArray([], ['description', 'shortDescription', 'story']),
       );
       this.state.captureInitialSnapshot();
     }
@@ -257,6 +257,7 @@ export class ProductWizardComponent implements CanComponentDeactivate, HasUnsave
         name: t.name,
         description: t.description || undefined,
         shortDescription: t.shortDescription || undefined,
+        story: t.story || undefined,
       })),
 
       coffeeDetails: isCoffee
@@ -265,7 +266,6 @@ export class ProductWizardComponent implements CanComponentDeactivate, HasUnsave
             harvestYear: v.harvestYear || undefined,
             processingMethodSlug: v.processingMethodSlug || undefined,
             roastLevelSlug: v.roastLevelSlug || undefined,
-            story: v.story || undefined,
             coffeeVarietySlug: v.coffeeVarietySlug || undefined,
           }
         : undefined,
