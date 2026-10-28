@@ -56,7 +56,11 @@ export class MediaStepComponent {
   };
 
   setSocialImage(value: unknown): void {
-    this.state.form.patchValue({ ogImageUrl: value == null ? '' : String(value) });
+    const control = this.state.form.get('ogImageUrl');
+    control?.setValue(value == null ? '' : String(value));
+    // The wizard's guard compares normalized snapshots, not `form.dirty`, but marking the
+    // control dirty keeps any other consumer honest without changing the snapshot model.
+    control?.markAsDirty();
   }
 
   readonly fileErrors = signal<MediaFileError[]>([]);
