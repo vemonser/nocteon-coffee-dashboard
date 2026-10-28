@@ -50,7 +50,7 @@ account is compromised or a role is added later.
 DECISIONS.md ("The API stores only allowlisted HTML"). Evidence: `HtmlSanitizerTest`,
 `JournalServiceSanitizationTest`, full backend suite.
 
-### FE-02 · Journal inline images
+### FE-02 · Journal inline images — done 28 Oct 2026
 **Why** A blog post needs images inside the body, not only a cover.
 **Scope** FS.
 **Acceptance**
@@ -61,6 +61,11 @@ DECISIONS.md ("The API stores only allowlisted HTML"). Evidence: `HtmlSanitizerT
 **Files** `journal-form.component.ts`, `QUILL_CONFIG_TOKEN`, backend upload
 endpoint (reuse Cloudinary service).
 **Effort** 1 day. **Deps** FE-01 (sanitizer must allow own-CDN img src).
+**Shipped** Toolbar image button uploads through `POST /api/dashboard/journal/images`
+(magic-byte validation, 5 MB, jpeg/png/gif/webp only) and inserts the returned URL;
+one handler per editor; upload failure keeps the content and shows a toast.
+Rejected files and the sanitizer round-trip are covered by `JournalInlineImageTest`.
+Verified live against Cloudinary. Evidence: `evidence/fe-02/` + Gate.
 
 ### FE-03 · Scheduled publishing — done 28 Oct 2026
 **Why** `publishedAt` exists but the public query only checks `status =
@@ -86,7 +91,7 @@ list, editor reopens with its content), screenshots
 Review fixes in the same branch: dashboard tags serialization, blank edit form,
 timezone-stable schedule date, translated statuses.
 
-### FE-04 · Journal preview
+### FE-04 · Journal preview — done 28 Oct 2026
 **Why** Editors publish blind today.
 **Scope** FE.
 **Acceptance** A preview action renders the draft (title, cover, body, tags,
@@ -94,8 +99,12 @@ related products) in a full-screen dialog using the same styles as the public
 post, without changing status.
 **Files** `journal-form`, a preview dialog component.
 **Effort** 0.5 day. **Deps** FE-01.
+**Shipped** Preview dialog (cover, tags, title, excerpt, sanitized body, related
+products) reading the form rather than the saved row. Body via `[innerHTML]` on
+sanitized content only. Language fallback skips empty groups.
+Evidence: `evidence/fe-04/preview-1440.png` + Gate.
 
-### FE-05 · Journal categories CRUD
+### FE-05 · Journal categories CRUD — done 28 Oct 2026
 **Why** Categories are seed-only; the editor can pick one but nobody can create
 or rename them.
 **Scope** FS.
@@ -103,8 +112,13 @@ or rename them.
 unused categories; the journal form's category select reads the same endpoint;
 deleting a category in use is refused with the count.
 **Effort** 0.5 day. **Deps** none.
+**Shipped** Page at `journal/categories` (list/add/rename/delete) with a kebab
+row menu, normalized dirty snapshot, discard guard, and the 409 post count shown
+on refusal. Backend refuses deleting an in-use category (trashed posts count),
+generates the slug once, and guards slug reuse/restore.
+Evidence: `evidence/fe-05/categories-1440.png` + Gate.
 
-### FE-06 · Rich text toolbar upgrade
+### FE-06 · Rich text toolbar upgrade — done 28 Oct 2026
 **Why** Current toolbar: bold/italic/underline, h1-h3, link, quote, lists,
 clean. A blog needs more.
 **Scope** FE.
@@ -112,6 +126,12 @@ clean. A blog needs more.
 block, horizontal rule, undo/redo, and h4. Every addition survives FE-01's
 allowlist.
 **Effort** 0.5 day. **Deps** FE-01, FE-02.
+**Shipped** h4, code block, horizontal rule, undo/redo and YouTube/Vimeo embeds.
+The sanitizer allows only https embed iframes on the allowlist and rewrites
+Quill code blocks to `pre>code`. ngx-quill's semantic HTML turned videos into
+anchors, so the editor stores the raw root HTML. `quill.snow.css` was missing
+from `angular.json` and is now included.
+Evidence: `evidence/fe-06/toolbar-1440.png` + Gate.
 
 ---
 

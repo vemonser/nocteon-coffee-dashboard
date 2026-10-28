@@ -1290,3 +1290,33 @@ Live evidence: saved SEO values through the wizard, read them back from
 - Live run: a post dated tomorrow renders the "Scheduled" badge, the public
   list omits it, and `GET /api/journal/{slug}` returns 404
   (`evidence/fe-03/scheduled-badge-1440.png`).
+
+## Journal wave — FE-02/04/05/06 (28 Oct 2026)
+
+### Inline images upload; nothing is base64
+- `POST /api/dashboard/journal/images` validates the magic bytes against an explicit format
+  allowlist (jpeg/png/gif/webp), caps at 5 MB, and returns the Cloudinary URL. The toolbar
+  inserts that URL; the FE-01 allowlist is what makes the image safe to render.
+- The endpoint is POST-only with `journal:create|update`; the upload failure path keeps the
+  editor content and shows a toast.
+
+### The preview is "as edited", not "as published"
+- The preview renders the draft with `[innerHTML]` on the sanitized body and Angular's
+  sanitizer; no `bypassSecurityTrustHtml`. Video embeds therefore do not appear in the
+  preview (Angular strips iframes) even though the saved post has them.
+
+### Categories
+- The slug is the stable identity: rename edits translated names only. Delete refuses while
+  any post references the category (trashed posts included) and returns 409 with
+  `data.postCount`; restore refuses when a live category took the slug.
+
+### Rich text
+- The sanitizer allows an `iframe` only for `https` embed paths on YouTube/Vimeo
+  (`/embed/…`, `/video/…`); foreign hosts, watch links and `javascript:` are removed, and only
+  `ql-video` survives as a class. Quill's code-block divs are rewritten to `pre>code` so the
+  code text is kept.
+- ngx-quill's default value getter uses `getSemanticHTML()`, which turns a video blot into an
+  anchor. The journal editor now supplies `valueGetter = editor.root.innerHTML`; the server
+  allowlist remains the security boundary for anything stored.
+- `quill.snow.css` was never in `angular.json`, so the toolbar rendered unstyled icons. It is
+  included now.
