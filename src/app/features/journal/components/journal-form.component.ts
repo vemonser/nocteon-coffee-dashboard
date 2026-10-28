@@ -30,6 +30,7 @@ import { QUILL_CONFIG_TOKEN } from 'ngx-quill/config';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { NotifyService } from '../../../core/notify/notify.service';
 import { LanguageService } from '../../../core/i18n/language.service';
+import { toLocalInputValue } from '../../../shared/utils/date-input';
 type Lang = 'en' | 'ar';
 
 @Component({
@@ -175,7 +176,7 @@ export class JournalFormComponent implements OnInit {
       categorySlug: post.categorySlug,
       featured: post.featured,
       status: post.status,
-      publishedAt: post.publishedAt ? post.publishedAt.substring(0, 16) : null,
+      publishedAt: toLocalInputValue(post.publishedAt) || null,
       tagsInput: (post.tags ?? []).join(', '),
       productSlugs: post.relatedProductSlugs ?? [],
     });

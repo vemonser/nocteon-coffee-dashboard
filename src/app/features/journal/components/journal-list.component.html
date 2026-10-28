@@ -62,7 +62,7 @@
             <div class="flex items-center justify-between gap-2">
               <div class="flex flex-wrap items-center gap-1.5">
                 <hlm-badge [variant]="item.status === 'PUBLISHED' ? 'default' : item.status === 'ARCHIVED' ? 'outline' : 'secondary'">
-                  {{ item.status }}
+                  {{ 'journal.' + item.status.toLowerCase() | transloco }}
                 </hlm-badge>
                 @if (isScheduled(item)) {
                   <hlm-badge variant="outline">{{ 'journal.scheduled' | transloco }}</hlm-badge>
