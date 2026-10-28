@@ -508,6 +508,12 @@
       "variantsCount": "{{count}} متغيرات"
     },
     "table": {
+      "variantCount_zero": "بدون متغيرات",
+      "variantCount_one": "متغير واحد",
+      "variantCount_two": "متغيران",
+      "variantCount_few": "{{count}} متغيرات",
+      "variantCount_many": "{{count}} متغيّرًا",
+      "variantCount_other": "{{count}} متغير",
       "image": "الصورة",
       "name": "الاسم",
       "price": "السعر",
@@ -544,7 +550,7 @@
       "all": "الكل",
       "allTypes": "كل الأنواع",
       "allStatuses": "كل الحالات",
-      "allFeatured": "الكل"
+      "allFeatured": "كل المميزة"
     },
     "actions": {
       "duplicate": "نسخ",

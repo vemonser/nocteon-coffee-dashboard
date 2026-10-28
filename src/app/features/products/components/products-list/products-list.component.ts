@@ -85,6 +85,39 @@ export class ProductsListComponent {
   /** Mirrors the search box so the empty-state copy can react to it. */
   private readonly searchText = signal('');
 
+  /**
+   * Filter labels for the select triggers. The spartan value element prints
+   * the raw control value ("all"/""), because the options live in a portal
+   * and the value template exposes no context — so the trigger shows this
+   * translated label instead (the primitive value stays for a11y, sr-only).
+   */
+  readonly typeLabel = (value: string): string =>
+    this.transloco.translate(
+      value === 'COFFEE'
+        ? 'products.form.productTypes.COFFEE'
+        : value === 'EQUIPMENT'
+          ? 'products.form.productTypes.EQUIPMENT'
+          : 'products.filters.allTypes',
+    );
+
+  readonly statusLabel = (value: string): string =>
+    this.transloco.translate(
+      value === 'active'
+        ? 'products.status.active'
+        : value === 'inactive'
+          ? 'products.status.inactive'
+          : 'products.filters.allStatuses',
+    );
+
+  readonly featuredLabel = (value: string): string =>
+    this.transloco.translate(
+      value === 'featured'
+        ? 'products.featured.featuredOnly'
+        : value === 'notFeatured'
+          ? 'products.featured.notFeatured'
+          : 'products.filters.allFeatured',
+    );
+
   /** What the empty state says — and what it offers as the next step (#5). */
   readonly emptyMessage = computed(() => {
     if (this.isTrash()) return this.transloco.translate('products.empty.trash');
@@ -133,9 +166,11 @@ export class ProductsListComponent {
 
   readonly filters = new FormGroup({
     search: new FormControl(''),
-    status: new FormControl('all'),
-    featured: new FormControl('all'),
-    type: new FormControl('all'),
+    // '' = "no filter". The select triggers then show their translated
+    // placeholder ("All types"), instead of the raw control value 'all'.
+    status: new FormControl(''),
+    featured: new FormControl(''),
+    type: new FormControl(''),
   });
 
   readonly loadError = signal(false);
@@ -317,9 +352,9 @@ export class ProductsListComponent {
 
     return {
       search: params.get('q') ?? '',
-      status: pick('status', ['all', 'active', 'inactive'], 'all'),
-      featured: pick('featured', ['all', 'featured', 'notFeatured'], 'all'),
-      type: pick('type', ['all', 'COFFEE', 'EQUIPMENT'], 'all'),
+      status: pick('status', ['', 'active', 'inactive'], ''),
+      featured: pick('featured', ['', 'featured', 'notFeatured'], ''),
+      type: pick('type', ['', 'COFFEE', 'EQUIPMENT'], ''),
       category: params.get('category'),
       lowStock: params.get('stock') === 'low',
       sort: params.get('sort') ?? 'createdAt',
@@ -389,9 +424,9 @@ export class ProductsListComponent {
       size: this.pageSize(),
       search: f.search || undefined,
       categorySlug: this.categorySlug() ?? undefined,
-      isActive: f.status === 'all' ? undefined : f.status === 'active',
-      featured: f.featured === 'all' ? undefined : f.featured === 'featured',
-      productType: f.type === 'all' ? undefined : (f.type as ProductType),
+      isActive: !f.status || f.status === 'all' ? undefined : f.status === 'active',
+      featured: !f.featured || f.featured === 'all' ? undefined : f.featured === 'featured',
+      productType: !f.type || f.type === 'all' ? undefined : (f.type as ProductType),
       sort: this.currentSort,
       direction: this.currentDirection,
     };

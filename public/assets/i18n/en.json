@@ -504,6 +504,8 @@
       "variantsCount": "{{count}} variants"
     },
     "table": {
+      "variantCount_one": "{{count}} variant",
+      "variantCount_other": "{{count}} variants",
       "image": "Image",
       "name": "Name",
       "price": "Price",
@@ -540,7 +542,7 @@
       "all": "All",
       "allTypes": "All types",
       "allStatuses": "All statuses",
-      "allFeatured": "All"
+      "allFeatured": "All featured"
     },
     "actions": {
       "duplicate": "Duplicate",
@@ -2608,7 +2610,7 @@
   },
   "unsavedChanges": {
     "title": "Unsaved changes",
-    "body": "You have changes that haven't been saved. if you leave this page, they will be lost.",
+    "body": "You have changes that haven't been saved. If you leave this page, they will be lost.",
     "discard": "Discard changes",
     "stay": "Stay on page",
     "saveAndLeave": "Save and leave"

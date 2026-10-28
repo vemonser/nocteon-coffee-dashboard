@@ -49,12 +49,13 @@
       <span class="text-xs text-muted-foreground font-medium">{{ 'products.filters.type' | transloco }}</span>
       <hlm-select formControlName="type" class="w-40">
         <hlm-select-trigger class="h-[var(--filter-control-height)] w-40">
-          <hlm-select-value [placeholder]="'products.filters.allTypes' | transloco" />
+          <hlm-select-value class="sr-only" [placeholder]="'products.filters.allTypes' | transloco" />
+          <span class="line-clamp-1">{{ typeLabel(filters.controls.type.value ?? '') }}</span>
         </hlm-select-trigger>
         <hlm-select-content *hlmSelectPortal>
           <hlm-select-group>
             <hlm-select-label>{{ 'products.filters.type' | transloco }}</hlm-select-label>
-            <hlm-select-item value="all">{{ 'products.filters.all' | transloco }}</hlm-select-item>
+            <hlm-select-item value="">{{ 'products.filters.allTypes' | transloco }}</hlm-select-item>
             <hlm-select-item value="COFFEE">{{ 'products.form.productTypes.COFFEE' | transloco }}</hlm-select-item>
             <hlm-select-item value="EQUIPMENT">{{ 'products.form.productTypes.EQUIPMENT' | transloco }}</hlm-select-item>
           </hlm-select-group>
@@ -66,12 +67,13 @@
       <span class="text-xs text-muted-foreground font-medium">{{ 'products.filters.status' | transloco }}</span>
       <hlm-select formControlName="status" class="w-40">
         <hlm-select-trigger class="h-[var(--filter-control-height)] w-40">
-          <hlm-select-value [placeholder]="'products.filters.allStatuses' | transloco" />
+          <hlm-select-value class="sr-only" [placeholder]="'products.filters.allStatuses' | transloco" />
+          <span class="line-clamp-1">{{ statusLabel(filters.controls.status.value ?? '') }}</span>
         </hlm-select-trigger>
         <hlm-select-content *hlmSelectPortal>
           <hlm-select-group>
             <hlm-select-label>{{ 'products.status.all' | transloco }}</hlm-select-label>
-            <hlm-select-item value="all">{{ 'products.status.all' | transloco }}</hlm-select-item>
+            <hlm-select-item value="">{{ 'products.filters.allStatuses' | transloco }}</hlm-select-item>
             <hlm-select-item value="active">{{ 'products.status.active' | transloco }}</hlm-select-item>
             <hlm-select-item value="inactive">{{ 'products.status.inactive' | transloco }}</hlm-select-item>
           </hlm-select-group>
@@ -83,12 +85,13 @@
       <span class="text-xs text-muted-foreground font-medium">{{ 'products.filters.featured' | transloco }}</span>
       <hlm-select formControlName="featured" class="w-44">
         <hlm-select-trigger class="h-[var(--filter-control-height)] w-44">
-          <hlm-select-value [placeholder]="'products.filters.allFeatured' | transloco" />
+          <hlm-select-value class="sr-only" [placeholder]="'products.filters.allFeatured' | transloco" />
+          <span class="line-clamp-1">{{ featuredLabel(filters.controls.featured.value ?? '') }}</span>
         </hlm-select-trigger>
         <hlm-select-content *hlmSelectPortal>
           <hlm-select-group>
             <hlm-select-label>{{ 'products.featured.all' | transloco }}</hlm-select-label>
-            <hlm-select-item value="all">{{ 'products.featured.all' | transloco }}</hlm-select-item>
+            <hlm-select-item value="">{{ 'products.filters.allFeatured' | transloco }}</hlm-select-item>
             <hlm-select-item value="featured">{{ 'products.featured.featuredOnly' | transloco }}</hlm-select-item>
             <hlm-select-item value="notFeatured">{{ 'products.featured.notFeatured' | transloco }}</hlm-select-item>
           </hlm-select-group>
