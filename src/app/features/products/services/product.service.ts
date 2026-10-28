@@ -119,6 +119,13 @@ export class ProductService {
     return this.http.post<ApiResponse<void>>(`${this.base}/${slug}/media`, fd);
   }
 
+  /** POST /story-images — one image for the rich-text story. */
+  uploadStoryImage(file: File): Observable<ApiResponse<{ url: string }>> {
+    const fd = new FormData();
+    fd.append('file', file);
+    return this.http.post<ApiResponse<{ url: string }>>(`${this.base}/story-images`, fd);
+  }
+
   /** DELETE /media/{mediaId} — remove a product media record. */
   deleteMedia(mediaId: number): Observable<ApiResponse<void>> {
     return this.http.delete<ApiResponse<void>>(`${this.base}/media/${mediaId}`);

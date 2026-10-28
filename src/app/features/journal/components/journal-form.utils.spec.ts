@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { parseTags, parseVideoUrl, pickPreviewTranslation } from './journal-form.utils';
+import { parseTags, pickPreviewTranslation } from './journal-form.utils';
+import { parseVideoUrl } from '../../../shared/utils/video-url';
 
 describe('journal form helpers', () => {
   it('parses tags the way the editor types them', () => {

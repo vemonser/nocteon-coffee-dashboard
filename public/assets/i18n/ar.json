@@ -397,13 +397,15 @@
         "COFFEE": "قهوة",
         "EQUIPMENT": "معدات"
       },
-      "storyHint": "تُحفظ لهذه اللغة فقط — وهي الفقرة التحريرية في صفحة المنتج.",
+      "storyHint": "نص منسّق لهذه اللغة — عريض وعناوين وصور وفيديو.",
       "metaTitle": "عنوان SEO",
       "metaTitlePlaceholder": "يُستخدم اسم المنتج افتراضيًا",
       "metaTitleHint": "العنوان الظاهر في نتائج البحث ومعاينات الروابط. اجعله أقل من 60 حرفًا.",
       "metaDescription": "وصف SEO",
       "metaDescriptionPlaceholder": "يُستخدم الوصف المختصر افتراضيًا",
-      "metaDescriptionHint": "السطر الظاهر تحت العنوان في نتائج البحث. اجعله أقل من 160 حرفًا."
+      "metaDescriptionHint": "السطر الظاهر تحت العنوان في نتائج البحث. اجعله أقل من 160 حرفًا.",
+      "uploadingImage": "جارٍ رفع الصورة…",
+      "imageUploadFailed": "تعذّر رفع الصورة."
     },
     "variants": {
       "title": "المتغيرات",

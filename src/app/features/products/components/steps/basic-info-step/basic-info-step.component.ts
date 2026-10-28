@@ -1,4 +1,5 @@
-import { Component, inject } from '@angular/core';
+import { Component, DestroyRef, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 import { signal } from '@angular/core';
@@ -28,6 +29,13 @@ import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucidePencil } from '@ng-icons/lucide';
 import { LanguageService } from '../../../../../core/i18n/language.service';
+import { QuillEditorComponent } from 'ngx-quill';
+import { QUILL_CONFIG_TOKEN } from 'ngx-quill/config';
+import Quill from 'quill';
+import { finalize } from 'rxjs';
+import { RICH_TEXT_QUILL_CONFIG } from '../../../../../shared/quill/rich-text.config';
+import { RichTextVideoDialogComponent } from '../../../../../shared/ui/rich-text-video-dialog/rich-text-video-dialog.component';
+import { ProductService } from '../../../services/product.service';
 
 @Component({
   selector: 'app-basic-info-step',
@@ -42,11 +50,23 @@ import { LanguageService } from '../../../../../core/i18n/language.service';
     HlmSwitchImports,
     TranslocoPipe,
     NgIcon,
+    QuillEditorComponent,
+    RichTextVideoDialogComponent,
   ],
-  providers: [provideIcons({ lucidePencil })],
+  providers: [
+    { provide: QUILL_CONFIG_TOKEN, useValue: RICH_TEXT_QUILL_CONFIG },
+    provideIcons({ lucidePencil }),
+  ],
   templateUrl: './basic-info-step.component.html',
 })
 export class BasicInfoStepComponent {
+  /** Store the editor's real HTML (semantic HTML would turn a video into a link). */
+  readonly htmlValueGetter = (editor: Quill): string => editor.root.innerHTML;
+  readonly uploadingStory = signal(false);
+  readonly storyVideoOpen = signal(false);
+  private storyVideoEditor: Quill | null = null;
+  private storyVideoRange: { index: number; length: number } | null = null;
+
   protected state = inject(ProductWizardStateService);
   protected translationHelper = inject(TranslationFormHelper);
   private wizard = inject(ProductWizardComponent);
@@ -58,6 +78,8 @@ export class BasicInfoStepComponent {
   private processingMethodService = inject(ProcessingMethodService);
   private coffeeVarietyService = inject(CoffeeVarietyService);
   private notify = inject(NotifyService);
+  private productService = inject(ProductService);
+  private destroyRef = inject(DestroyRef);
   private transloco = inject(TranslocoService);
   private language = inject(LanguageService);
 
@@ -145,6 +167,63 @@ export class BasicInfoStepComponent {
 
   onCancel(): void {
     this.wizard.onCancel();
+  }
+
+  onStoryEditorCreated(editor: Quill): void {
+    const toolbar = editor.getModule('toolbar') as { addHandler: (name: string, fn: () => void) => void };
+    toolbar.addHandler('image', () => this.pickStoryImage(editor));
+    toolbar.addHandler('video', () => {
+      this.storyVideoEditor = editor;
+      this.storyVideoRange = editor.getSelection(true) ?? { index: editor.getLength(), length: 0 };
+      this.storyVideoOpen.set(true);
+    });
+  }
+
+  closeStoryVideo(): void {
+    this.storyVideoOpen.set(false);
+    this.storyVideoEditor = null;
+    this.storyVideoRange = null;
+  }
+
+  onStoryVideoInserted(url: string): void {
+    const editor = this.storyVideoEditor;
+    if (!editor) return;
+    const range = this.storyVideoRange ?? editor.getSelection(true) ?? { index: editor.getLength(), length: 0 };
+    editor.insertEmbed(range.index, 'video', url, 'user');
+    editor.setSelection(range.index + 1, 0);
+    this.closeStoryVideo();
+  }
+
+  private pickStoryImage(editor: Quill): void {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = () => {
+      const file = input.files?.[0];
+      if (file) this.uploadStoryImage(editor, file);
+    };
+    input.click();
+  }
+
+  private uploadStoryImage(editor: Quill, file: File): void {
+    if (this.uploadingStory()) return;
+    const range = editor.getSelection(true) ?? { index: editor.getLength(), length: 0 };
+    this.uploadingStory.set(true);
+    this.productService
+      .uploadStoryImage(file)
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => this.uploadingStory.set(false)),
+      )
+      .subscribe({
+        next: (res) => {
+          editor.insertEmbed(range.index, 'image', res.data.url, 'user');
+          editor.setSelection(range.index + 1, 0);
+        },
+        error: () => {
+          this.notify.apiError(null, 'products.form.imageUploadFailed', 'Could not upload the image');
+        },
+      });
   }
 
   isCurrentStepDirty(): boolean {

@@ -393,13 +393,15 @@
         "COFFEE": "Coffee",
         "EQUIPMENT": "Equipment"
       },
-      "storyHint": "Saved for this language only — it is the editorial block on the product page.",
+      "storyHint": "Rich text for this language — bold, headings, images and video.",
       "metaTitle": "SEO title",
       "metaTitlePlaceholder": "Defaults to the product name",
       "metaTitleHint": "The title search results and link previews show. Keep it under 60 characters.",
       "metaDescription": "SEO description",
       "metaDescriptionPlaceholder": "Defaults to the short description",
-      "metaDescriptionHint": "The line under the title in search results. Keep it under 160 characters."
+      "metaDescriptionHint": "The line under the title in search results. Keep it under 160 characters.",
+      "uploadingImage": "Uploading image…",
+      "imageUploadFailed": "Could not upload the image."
     },
     "variants": {
       "title": "Variants",

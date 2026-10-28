@@ -212,35 +212,11 @@
     </hlm-card>
   }
 
-  <app-dialog-shell
+  <app-rich-text-video-dialog
     [open]="videoOpen()"
-    [title]="'journal.insertVideo' | transloco"
-    testId="journal-video"
     (closed)="closeVideoDialog()"
-  >
-    <div class="space-y-2">
-      <label hlmLabel for="journal-video-url">{{ 'journal.videoUrl' | transloco }}</label>
-      <input
-        hlmInput
-        id="journal-video-url"
-        [formControl]="videoControl"
-        type="url"
-        class="w-full"
-        dir="ltr"
-        placeholder="https://www.youtube.com/watch?v=..."
-      />
-      <p class="text-xs text-muted-foreground">{{ 'journal.videoUrlHint' | transloco }}</p>
-      @if (videoError()) {
-        <p class="text-xs text-destructive">{{ 'journal.videoUrlInvalid' | transloco }}</p>
-      }
-    </div>
-    <button dialog-footer-start hlmBtn variant="ghost" type="button" (click)="closeVideoDialog()">
-      {{ 'common.cancel' | transloco }}
-    </button>
-    <button dialog-footer-end hlmBtn type="button" (click)="insertVideo()">
-      {{ 'journal.videoInsert' | transloco }}
-    </button>
-  </app-dialog-shell>
+    (inserted)="onVideoInserted($event)"
+  />
 
   <app-journal-preview-dialog
     [open]="previewOpen()"

@@ -33,7 +33,10 @@ import { QUILL_CONFIG_TOKEN } from 'ngx-quill/config';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { JournalPreviewDialogComponent } from './journal-preview-dialog.component';
 import { DialogShellComponent } from '../../../shared/ui/dialog-shell/dialog-shell.component';
-import { parseTags, parseVideoUrl, pickPreviewTranslation, PreviewTranslation } from './journal-form.utils';
+import { parseTags, pickPreviewTranslation, PreviewTranslation } from './journal-form.utils';
+import { RICH_TEXT_QUILL_CONFIG } from '../../../shared/quill/rich-text.config';
+import { RichTextVideoDialogComponent } from '../../../shared/ui/rich-text-video-dialog/rich-text-video-dialog.component';
+import { parseVideoUrl } from '../../../shared/utils/video-url';
 import { NotifyService } from '../../../core/notify/notify.service';
 import { LanguageService } from '../../../core/i18n/language.service';
 import { toLocalInputValue } from '../../../shared/utils/date-input';
@@ -71,6 +74,7 @@ try {
     QuillEditorComponent,
     JournalPreviewDialogComponent,
     DialogShellComponent,
+    RichTextVideoDialogComponent,
     NgIcon,
     TranslocoPipe,
   ],
@@ -79,17 +83,7 @@ try {
     // `provideQuillConfig` in app.config pulled Quill into the initial bundle.
     {
       provide: QUILL_CONFIG_TOKEN,
-      useValue: {
-        modules: {
-          toolbar: [
-            ['bold', 'italic', 'underline'],
-            [{ header: [1, 2, 3, 4, false] }],
-            ['link', 'image', 'video', 'blockquote', 'code-block'],
-            [{ list: 'ordered' }, { list: 'bullet' }],
-            ['clean'],
-          ],
-        },
-      },
+      useValue: RICH_TEXT_QUILL_CONFIG,
     },
     provideIcons({ lucideArrowLeft, lucideCheck, lucideEye, lucideLoader2, lucideUpload }),
   ],
@@ -276,6 +270,10 @@ export class JournalFormComponent implements OnInit {
     }
   }
 
+  languageLabel(language: string): string {
+    return this.translationHelper.getLangLabel(language);
+  }
+
   /** The translation the preview shows: the dashboard language, falling back to English. */
   get previewTranslation(): PreviewTranslation {
     if (!this.previewOpen()) return {};
@@ -334,8 +332,6 @@ export class JournalFormComponent implements OnInit {
     this.videoEditor = editor;
     // The dialog takes focus; remember the cursor now, not after it closes.
     this.videoRange = editor.getSelection(true) ?? { index: editor.getLength(), length: 0 };
-    this.videoControl.setValue('');
-    this.videoError.set(false);
     this.videoOpen.set(true);
   }
 
@@ -345,14 +341,9 @@ export class JournalFormComponent implements OnInit {
     this.videoRange = null;
   }
 
-  insertVideo(): void {
+  onVideoInserted(url: string): void {
     const editor = this.videoEditor;
     if (!editor) return;
-    const url = parseVideoUrl(this.videoControl.value);
-    if (!url) {
-      this.videoError.set(true);
-      return;
-    }
     const range = this.videoRange ?? editor.getSelection(true) ?? { index: editor.getLength(), length: 0 };
     editor.insertEmbed(range.index, 'video', url, 'user');
     editor.setSelection(range.index + 1, 0);
@@ -391,10 +382,6 @@ export class JournalFormComponent implements OnInit {
           this.notify.apiError(null, 'journal.imageUploadFailed', 'Could not upload the image');
         },
       });
-  }
-
-  languageLabel(language: string): string {
-    return this.translationHelper.getLangLabel(language);
   }
 
   /** The picker shows the category's name in the current language, falling back to English. */
