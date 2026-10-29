@@ -35,7 +35,7 @@
         <ng-icon name="lucideSearch" class="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
         <input hlmInput type="search" [dir]="language.current() === 'ar' ? 'rtl' : 'ltr'" [ngModel]="searchQuery" (ngModelChange)="searchQuery = $event; onSearch()" [placeholder]="'pairings.search' | transloco" [attr.aria-label]="'pairings.search' | transloco" class="w-full ps-9 h-[var(--filter-control-height)]" />
       </div>
-      <div class="relative">
+      <div class="relative" appClickOutside (appClickOutside)="columnsOpen.set(false)">
         <button hlmBtn variant="outline" type="button" (click)="columnsOpen.set(!columnsOpen())" (keydown.escape)="columnsOpen.set(false)" [attr.aria-expanded]="columnsOpen()" [attr.aria-label]="'common.columns' | transloco">
           <ng-icon name="lucideList" class="me-2 size-4" aria-hidden="true" />
           {{ 'common.columns' | transloco }}
@@ -107,7 +107,7 @@
           (selectionChange)="onSelectionChange($event)"
           (toggleAllChange)="toggleAll($event)"
           (edit)="onEditAction($event)"
-          (delete)="confirmDelete($event)"
+          (delete)="softDelete($event)"
           (restore)="restore($event)"
           (permanentDelete)="openPermanentDelete($event)"
           (sortChange)="onSortChange($event)"
@@ -195,32 +195,14 @@
   </div>
 }
 
-@if (deleting()) {
-  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-    <div class="dialog-surface w-full max-w-sm p-6">
-      <h2 class="text-lg font-bold mb-2">{{ 'pairings.deleteTitle' | transloco }}</h2>
-      <p class="text-muted-foreground mb-6">
-        {{ 'pairings.deleteConfirm' | transloco }}
-        <strong class="text-foreground">{{ deleting()!.slug }}</strong>?
-      </p>
-      <div class="flex gap-3">
-        <button hlmBtn variant="outline" class="flex-1" (click)="deleting.set(null)">{{ 'common.cancel' | transloco }}</button>
-        <button hlmBtn variant="destructive" class="flex-1" [disabled]="submitting()" (click)="submitDelete()">
-          @if (submitting()) { <span class="animate-spin mr-2">⟳</span> }
-          {{ submitting() ? ('common.deleting' | transloco) : ('common.delete' | transloco) }}
-        </button>
-      </div>
-    </div>
-  </div>
-}
 
 @if (permanentDeleteTarget()) {
-  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-    <div class="dialog-surface w-full max-w-sm p-6">
-      <h2 class="text-lg font-bold mb-2">{{ 'pairings.trash.deletePermanently' | transloco }}</h2>
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm" (click)="closePermanentDelete()">
+    <div role="dialog" aria-modal="true" aria-labelledby="pairing-permanent-title" tabindex="-1" cdkTrapFocus [cdkTrapFocusAutoCapture]="true" class="dialog-surface w-full max-w-sm p-6 outline-none" (click)="$event.stopPropagation()">
+      <h2 id="pairing-permanent-title" class="text-lg font-bold mb-2">{{ 'pairings.trash.deletePermanently' | transloco }}</h2>
       <p class="text-muted-foreground mb-6">
         {{ 'pairings.trash.permanentConfirm' | transloco }}
-        <strong class="text-foreground">{{ permanentDeleteTarget()!.slug }}</strong>?
+        <strong class="text-foreground">{{ permanentDeleteTarget()!.slug }}</strong>? {{ 'common.actionCannotBeUndone' | transloco }}
       </p>
       <div class="flex gap-3">
         <button hlmBtn variant="outline" class="flex-1" (click)="closePermanentDelete()">{{ 'common.cancel' | transloco }}</button>
@@ -234,8 +216,8 @@
 }
 
 @if (bulkConfirm()) {
-  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-    <div class="dialog-surface w-full max-w-sm p-6">
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm" (click)="cancelBulkConfirm()">
+    <div role="dialog" aria-modal="true" aria-labelledby="pairing-bulk-title" tabindex="-1" cdkTrapFocus [cdkTrapFocusAutoCapture]="true" class="dialog-surface w-full max-w-sm p-6 outline-none" (click)="$event.stopPropagation()">
       <h2 class="text-lg font-bold mb-2">
         {{ bulkConfirm() === 'trash' ? ('pairings.trash.bulkMoveToTrash' | transloco) : ('pairings.trash.deletePermanently' | transloco) }}
       </h2>
