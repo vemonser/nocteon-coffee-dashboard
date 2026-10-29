@@ -434,6 +434,28 @@
       "barcode": "Barcode",
       "barcodePlaceholder": "e.g. 4006381333931",
       "barcodeHint": "Optional. Scan or type the code printed on the packaging.",
+      "history": {
+        "title": "Stock history",
+        "empty": "No stock changes recorded yet",
+        "loadError": "The stock history could not be loaded",
+        "adjust": "Adjust stock",
+        "adjustTitle": "Adjust stock",
+        "adjustSubtitle": "{{sku}} · {{count}} in stock",
+        "delta": "Change (units)",
+        "deltaHint": "Positive adds units, negative removes them",
+        "deltaInvalid": "Enter a change other than 0 that keeps the stock at or above 0",
+        "preview": "Stock will go from {{before}} to {{after}}",
+        "reason": "Reason",
+        "reasonPlaceholder": "e.g. 24 units arrived from the roaster",
+        "reasonRequired": "A reason is required",
+        "adjusted": "Stock adjusted",
+        "adjustFailed": "The stock could not be adjusted",
+        "reasons": {
+          "ORDER": "Sold on an order",
+          "MANUAL_ADJUSTMENT": "Manual adjustment",
+          "PRODUCT_EDIT": "Changed in the product form"
+        }
+      },
       "weight": "Weight (g)",
       "price": "Price",
       "compareAtPrice": "Compare at price",

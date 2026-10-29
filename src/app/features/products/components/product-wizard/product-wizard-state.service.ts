@@ -192,6 +192,12 @@ export class ProductWizardStateService {
 
   buildVariantGroup(v?: Partial<ProductVariant>): FormGroup {
     return this.fb.group({
+      /**
+       * FE-13: the server id, carried so the panel can ask for THIS variant's
+       * stock history and adjust it. Not sent back — the save maps its fields
+       * explicitly, and the server matches variants by SKU.
+       */
+      id: [v?.id ?? null],
       sku: [v?.sku ?? '', Validators.required],
       // FE-15: optional, so only the length is enforced here; uniqueness is the server's answer
       // (409) because it is the only side that can see every variant of every product.

@@ -1670,3 +1670,68 @@ browser cannot read the server's file name in dev; the client falls back to
 `invoice-<orderNumber>.pdf`. Both names are the same convention today. If the
 orchestrator wants the server name to always win, expose
 `Content-Disposition` in the CORS config.
+
+# Decisions — FE-13 · Inventory movement log
+
+## One writer, four call sites
+
+Stock was mutated in four unrelated places: the checkout's COD consumption
+(`OrderService`), the payment webhook (`PaymentService`), the product form
+(`ProductVariantService.applyRequest`) and — nowhere else: `incrementStock`
+existed in the repository with **no caller**, so there was no restock path to
+wire. All three real paths now go through `InventoryMovementService`, which
+applies the change and writes the row **in the same transaction**, so a
+rolled-back order or a refused payment leaves no row claiming it happened.
+
+Found and wired:
+
+| Path | Before | Now |
+|---|---|---|
+| `OrderService.createOrder` (COD confirmed → consume reserved stock) | `findStockById` + `consumeStock` + `findStockById`, no record | `inventoryService.consumeForOrder(...)` → row `ORDER`, `source_id = orders.id`, actor = the buyer |
+| `PaymentService.handleCallback` (paid → consume) | same, no record | same service, actor `system:payment-webhook` |
+| `ProductVariantService.replaceVariants` (the product form can change the figure) | `setStockQuantity(v)`, no record | compares before/after and records `PRODUCT_EDIT`, actor from the security context |
+| manual adjustment | did not exist | `inventoryService.adjustManually(...)` → row `MANUAL_ADJUSTMENT` with the required reason |
+
+Deliberately **not** recorded: `reserved_quantity` changes (`reserveStock`,
+`releaseStock` on payment failure and on cancellation). They change what is
+*promised*, not what is on the shelf — a row whose before and after are equal
+would make the log unreadable. This is stated in the service's javadoc.
+
+## Reason vocabulary: three values, no invented "restock"
+
+`ORDER`, `MANUAL_ADJUSTMENT`, `PRODUCT_EDIT`. A `RESTOCK` value was considered and
+dropped: there is no restock endpoint and no purchase-order module, so units
+arriving are an admin adjustment whose **typed reason** says so ("24 units
+arrived from the roaster"). An enum value nothing can produce would be a lie in
+the schema. The acceptance's "restock" case is therefore served by the manual
+adjustment path, with the sentence preserved in `reason_note`.
+
+## 400, not 409, for a blank reason
+
+`StockAdjustmentReasonRequiredException` → 400 with
+`error.inventory.reasonRequired` (en + ar in the backend bundles). Nothing about
+the store's state is wrong; the request is missing the field that makes the
+change explainable. Zero delta and "would go below zero" are 400s too
+(`error.inventory.deltaZero`, `error.inventory.belowZero`).
+
+## The pair, not the delta
+
+The row stores `stock_before`, `stock_after` **and** `delta`, with a CHECK
+constraint that `stock_after - stock_before = delta`. The pair is what an admin
+reconciles against ("it was 12, now it is 9"); the delta is derived, and the
+constraint means a hand-written row cannot disagree with itself.
+
+## …and not the current stock
+
+The read endpoint answers what each change saw, not today's number. A list that
+printed the current stock on every row would describe the present five times and
+the past never — the exact failure the log exists to fix.
+
+## Known gap this makes visible (not fixed here)
+
+Cancelling a COD order releases `reserved_quantity` only, and a COD order had
+already *consumed* its units at checkout — so a cancelled COD order does not put
+stock back. That is pre-existing behaviour, not something FE-13 changes; the log
+now makes it visible (a cancellation writes no `ORDER` row, because the stock
+did not move). It belongs with FE-20 (returns/RMA), and is recorded in the
+report rather than silently "fixed" here.

@@ -438,6 +438,28 @@
       "barcode": "الباركود",
       "barcodePlaceholder": "مثال: 4006381333931",
       "barcodeHint": "اختياري. امسح الرمز المطبوع على العبوة أو اكتبه.",
+      "history": {
+        "title": "سجل المخزون",
+        "empty": "لا توجد تغييرات مخزون مسجلة بعد",
+        "loadError": "تعذّر تحميل سجل المخزون",
+        "adjust": "تعديل المخزون",
+        "adjustTitle": "تعديل المخزون",
+        "adjustSubtitle": "{{sku}} · {{count}} متوفر",
+        "delta": "التغيير (وحدات)",
+        "deltaHint": "القيمة الموجبة تضيف وحدات، والقيمة السالبة تخصمها",
+        "deltaInvalid": "أدخل تغييرًا غير صفري يحفظ المخزون عند صفر أو أكثر",
+        "preview": "سيتغير المخزون من {{before}} إلى {{after}}",
+        "reason": "السبب",
+        "reasonPlaceholder": "مثال: وصلت 24 وحدة من المحمصة",
+        "reasonRequired": "السبب مطلوب",
+        "adjusted": "تم تعديل المخزون",
+        "adjustFailed": "تعذّر تعديل المخزون",
+        "reasons": {
+          "ORDER": "بيع ضمن طلب",
+          "MANUAL_ADJUSTMENT": "تعديل يدوي",
+          "PRODUCT_EDIT": "تغيّر من نموذج المنتج"
+        }
+      },
       "weight": "الوزن (جرام)",
       "price": "السعر",
       "compareAtPrice": "سعر المقارنة",
