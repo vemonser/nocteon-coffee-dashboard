@@ -831,8 +831,16 @@ export class OrderDetailComponent {
           const anchor = document.createElement('a');
           anchor.href = url;
           anchor.download = filename;
+          // The anchor has to be in the document for the click to start the
+          // download, and the object URL has to outlive the click — revoking
+          // it in the same tick cancels the download in Chromium.
+          anchor.style.display = 'none';
+          document.body.appendChild(anchor);
           anchor.click();
-          URL.revokeObjectURL(url);
+          setTimeout(() => {
+            anchor.remove();
+            URL.revokeObjectURL(url);
+          }, 0);
         },
         error: (err: unknown) => {
           this.downloadingInvoice.set(false);
