@@ -4,7 +4,7 @@ import { NavigationEnd, Router, RouterModule, RouterOutlet } from '@angular/rout
 import { FormsModule } from '@angular/forms';
 import { filter } from 'rxjs';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucideSettings } from '@ng-icons/lucide';
+import { APP_ICONS } from '../../core/providers/icons.provider';
 import { ChangeDetectionStrategy, ViewEncapsulation } from '@angular/core';
 
 import { AuthService } from '../../core/auth/auth.service';
@@ -36,9 +36,10 @@ import { TranslocoPipe } from '@jsverse/transloco';
   },
   styleUrl: './layout.component.css',
   providers: [
-    provideIcons({
-      lucideSettings,
-    }),
+    // The shell owns the shared icon registry (see core/providers/icons.provider.ts):
+    // registering it at bootstrap pulled every icon any lazy chunk uses into the
+    // initial bundle, because bundlers split at module granularity.
+    provideIcons(APP_ICONS),
   ],
 })
 export class LayoutComponent {
