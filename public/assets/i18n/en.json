@@ -582,6 +582,10 @@
       "lowStockBadge": "Low stock",
       "inStock": "{{count}} in stock",
       "variants": "{{count}} variants",
+      "ratingValue": "{{rating}} out of 5",
+      "reviewCount_one": "{{count}} review",
+      "reviewCount_other": "{{count}} reviews",
+      "noRating": "No rating",
       "stockNeedsBackend": "The list API does not return stock or variant counts yet."
     },
     "empty": {

@@ -38,6 +38,17 @@ export interface ProductListItem {
   totalStock?: number | null;
   /** Not currently returned by ProductCardResponse — see DECISIONS.md. */
   lowStockVariantCount?: number | null;
+  /**
+   * FE-14: the average of the product's counted (approved, not deleted)
+   * reviews, already rounded to one decimal by the API. `null` when nothing is
+   * counted — never 0.0, which would claim "everyone gave it zero stars".
+   *
+   * Optional on purpose: an older backend does not send the field at all, and
+   * the list then hides the whole rating column instead of printing blanks.
+   */
+  averageRating?: number | null;
+  /** FE-14: how many counted reviews the average is built from (0 when none). */
+  reviewCount?: number | null;
   stockStatus?: 'in-stock' | 'low' | 'out' | 'unknown';
   updatedAt?: string;
 }

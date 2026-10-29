@@ -350,4 +350,28 @@ export function formatCount(value: number, lang: Language): string {
   return `\u2066${s}\u2069`;
 }
 
+/**
+ * A star rating's value, always with ONE decimal: "4.0", "4.3", "5.0".
+ *
+ * The decimal is not cosmetic: two products rated 4 and 4.3 that both printed
+ * "4" would look identical, and a 0 decimal would read as a whole-star score.
+ * The digits are Latin in both languages (the app-wide rule) and the value is
+ * isolated, so the decimal point cannot be reordered inside an Arabic
+ * paragraph — the same treatment `formatCount` gets.
+ *
+ * The API already rounds to one decimal; this is what guarantees the CELL
+ * shows one even if a future backend returns 4.25.
+ */
+export function formatRating(value: unknown, lang: Language): string {
+  const n = typeof value === 'number' ? value : Number.parseFloat(String(value ?? ''));
+  if (!Number.isFinite(n)) return '';
+  const s = clean(
+    new Intl.NumberFormat(appLocale(lang), {
+      minimumFractionDigits: 1,
+      maximumFractionDigits: 1,
+    }).format(n),
+  );
+  return `\u2066${s}\u2069`;
+}
+
 export { formatRelativeTime as formatRelative } from '../../core/i18n/relative-time';

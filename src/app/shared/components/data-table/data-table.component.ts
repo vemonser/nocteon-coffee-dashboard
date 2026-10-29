@@ -31,7 +31,8 @@ import { LocalizedDateService } from '../../../core/i18n/localized-date.service'
 import { StoreSettingsService } from '../../../core/settings/store-settings.service';
 import { LanguageService } from '../../../core/i18n/language.service';
 import { formatRelativeTime } from '../../../core/i18n/relative-time';
-import { formatPriceRange } from '../../utils/locale-format';
+import { formatCount, formatPriceRange, formatRating as formatRatingValue } from '../../utils/locale-format';
+import { hasCountedRating } from '../../utils/rating';
 
 export interface TableSortEvent {
   column: string;
@@ -322,6 +323,26 @@ export class DataTableComponent {
   formatPriceRange(range: { min: number; max: number }): string {
     return formatPriceRange(range.min, range.max, this.language.language() as any, this.storeSettings.currency());
   }
+
+  /**
+   * FE-14: a product's rating, always with one decimal ("4.0", "4.3"), from
+   * the ONE shared number formatter — never an ad-hoc `toFixed()`.
+   */
+  formatRating(value: number): string {
+    return formatRatingValue(value, this.language.language() as any);
+  }
+
+  /** FE-14: the review count beside the stars, through the shared count formatter. */
+  formatReviewCount(count: number): string {
+    return formatCount(count, this.language.language() as any);
+  }
+
+  /**
+   * FE-14: a cell shows a star score only when it is backed by reviews; the
+   * rule lives in `shared/utils/rating.ts` so the products list and this table
+   * cannot disagree about what "has a rating" means.
+   */
+  protected readonly hasRating = hasCountedRating;
   protected readonly dates = inject(LocalizedDateService);
 
   /**

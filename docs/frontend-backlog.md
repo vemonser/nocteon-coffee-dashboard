@@ -250,12 +250,30 @@ restock) with before/after, actor and reason; the variant panel shows the last
 changes; a manual adjustment asks for a reason.
 **Effort** 1.5 days. **Deps** none.
 
-### FE-14 · Rating aggregate on product cards
+### FE-14 · Rating aggregate on product cards — done 29 Oct 2026
 **Scope** FS.
 **Acceptance** The product card/list response carries `averageRating` and
 `reviewCount`; the storefront card shows stars; the dashboard list shows them
 as a column.
 **Effort** 0.5 day. **Deps** none.
+**Shipped** `GET /api/dashboard/products` now carries `averageRating`
+(`number|null`, one decimal, HALF_UP) and `reviewCount` (`number`, never null).
+Both are computed from the SAME definition of a counted review the reviews
+page uses (`deleted_at IS NULL AND status = 'APPROVED'`), through one grouped
+query per page — the products page budget is unchanged and the rating batch
+costs 1 statement at 1 id and at 20. A product with no counted review returns
+`null` + `0`, so the card can say "No rating" instead of drawing a 0.0 score.
+The dashboard list has a "Rating" column (star, one-decimal value, review
+count) that is **not rendered at all** when the API omits the fields (an older
+backend), and shows a neutral "No rating" label per row with no approved
+reviews. No migration: the reviews table already existed. Evidence:
+`ProductRatingAggregateIntegrationTest` (approved counted, pending and
+soft-deleted excluded, rounding, end-to-end card), `DashboardListQueryBudgetTest`
+(page budget + the rating batch), `rating.spec.ts`, `locale-format.spec.ts`
+(one decimal, Latin digits, bidi isolate), `npm run i18n:check`, Gate.
+**Storefront** not in this cycle: the dashboard endpoint carries the fields; the
+public list endpoints still answer `null` (see DECISIONS.md), and the star
+rendering on the storefront card belongs to the storefront cycle.
 
 ### FE-15 · Barcode / GTIN on variants
 **Scope** FS.
