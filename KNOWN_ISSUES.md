@@ -25,7 +25,7 @@ OPTIONS-04 [needs-backend] Deleting a value used by variants is not protected (n
 NOTIF-01 [needs-backend] The bell stays empty: the backend does not generate notifications from events (needs producers + endpoints). Evidence: NotificationService polls /unread-count; backend producers missing.
 NOTIF-02 [fixed] The /notifications page and wiring to the real API. Evidence: notification-list component wired to NotificationService real baseUrl.
 JOURNAL-01 [fixed] Never audited: run the QA harness and list the findings. Evidence: QA harness audits /dashboard/journal (journal route).
-SEARCH-01 [open] Never audited: run the QA harness and list the findings. Evidence: global search palette not covered by route-based audit.
+SEARCH-01 [fixed] Global search palette audited: i18n (no raw keys/hardcoded text), keyboard nav (arrows/j/k, Enter, Esc), empty/no-results state with hint, RTL/mirrored layout, aria-labels on icon-only buttons, 38px input height, focus trap with focus return. Evidence: e2e/gsp.spec.ts (5 tests pass), evidence/search-01/ screenshots.
 BROADCAST-01 [fixed] Never audited: run the QA harness and list the findings. Evidence: QA harness audits /dashboard/broadcasts (broadcasts route).
 VERIFY-01 [open] Contact dialog: "The reply was saved" helper shown before any action, send-vs-save semantics, reply thread. Evidence: replySaved key exists but unused; send-vs-save semantics unverified.
 VERIFY-02 [open] Reviews: reviewer full name link, delete confirm. Roles: the role editor flow (new role, diff, delete). Evidence: reviews delete confirm exists; roles editor flow unverified.
