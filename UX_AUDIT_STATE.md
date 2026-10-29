@@ -16,3 +16,15 @@ Notes:
 - Backend on :8080 must be up; frontend `npm start` on :4200.
 - Block data APIs for error state but keep `/api/auth/**` live, and log in *before* installing the block, or the auth guard bounces to /login.
 - Reusable scripts: `/tmp/opencode/ux-audit-capture.mjs`, `/tmp/opencode/ux-audit-walk.mjs`, `/tmp/opencode/ux-ar-pass.mjs`, `/tmp/opencode/ux-states.mjs`.
+
+## Ad-hoc area fix — Store settings (2026-10-29)
+Requested directly (not a full audit): the table header "Free shipping…" was truncated and the boolean printed as raw `false`.
+- Column widths: `freeShippingThreshold` 120px → **200px**, `isFreeShippingActive` **160px**; measured `clipped: false` for every header (en+ar).
+- Headers gained keys: `common.freeShippingActive`, `common.currency`; the shared table now renders any **boolean cell** as an Enabled/Disabled badge (`common.active`/`common.inactive`) instead of `true`/`false` — measured EN "Enabled", AR "مُفعّل".
+- Page title "Store setting" → "Store settings" (matches the sidebar).
+- Commit `f57b8192`; evidence `evidence/ux-audit/store-settings/{before,after}-{en,ar}.png`.
+
+### Store settings — follow-up (2026-10-29, `e29b8e71`)
+- Removed the **Created at** and **Updated at** columns (headers measured: Currency / Free shipping threshold / Free shipping active / Actions only).
+- The edit modal's **checkbox is now a toggle** (`hlm-switch`, label associated via `for`, `aria-label`), verified `hasSwitch: true`, `hasCheckbox: false`; screenshot `evidence/ux-audit/store-settings/after-toggle-dialog-en.png`.
+- Same pass fixed the modal's keyboard path (it had none): `role="dialog"`, `aria-modal`, labelled by its title, CDK focus trap with auto-capture, and **Esc closes** (measured `escCloses: true`).
