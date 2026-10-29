@@ -36,7 +36,8 @@ import { filter } from 'rxjs';
 
 import { AuthService } from '../../../core/auth/auth.service';
 import { LanguageService } from '../../../core/i18n/language.service';
-import { NavCountsService } from '../../../core/nav/nav-counts.service';
+import { NavCountsService, type NavBadge } from '../../../core/nav/nav-counts.service';
+import { PluralPipe } from '../../../shared/pipes/plural.pipe';
 import { HlmSidebarService } from '@spartan-ng/helm/sidebar';
 import {
   getNavItems,
@@ -81,6 +82,7 @@ const SECTIONS_OPEN_KEY = 'nocteon-sidebar-sections-open';
     HlmSeparator,
     UserMenuComponent,
     TranslocoPipe,
+    PluralPipe,
   ],
   providers: [
     provideIcons({
@@ -122,11 +124,8 @@ export class AppSidebarComponent {
   protected readonly navCounts = inject(NavCountsService);
   protected readonly sidebar = inject(HlmSidebarService);
 
-  protected badgeCount(route: string): number | null {
+  protected badgeFor(route: string): NavBadge | null {
     return this.navCounts.badgeFor(route);
-  }
-  protected badgeAria(route: string, n: number): string {
-    return this.navCounts.ariaLabel(route, n);
   }
   protected isRailCollapsed(): boolean {
     return this.sidebar.state() === 'collapsed';

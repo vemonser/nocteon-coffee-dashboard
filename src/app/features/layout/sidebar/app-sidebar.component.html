@@ -110,12 +110,12 @@
                         aria-hidden="true"
                       ></span>
                       <span class="flex-1 truncate">{{ child.label }}</span>
-                      @if (badgeCount(child.route); as n) {
-                        @if (n > 0) {
+                      @if (badgeFor(child.route); as badge) {
+                        @if (badge.count > 0) {
                           @if (isRailCollapsed()) {
-                            <span class="size-2 shrink-0 rounded-full bg-primary" [attr.aria-label]="badgeAria(child.route, n)"></span>
+                            <span class="size-2 shrink-0 rounded-full bg-primary" [attr.aria-label]="badge.count | plural: badge.labelKey"></span>
                           } @else {
-                            <span class="inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-primary px-1 text-[10px] font-medium text-primary-foreground" [attr.aria-label]="badgeAria(child.route, n)">{{ n > 99 ? '99+' : n }}</span>
+                            <span class="inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-primary px-1 text-[10px] font-medium text-primary-foreground" [attr.aria-label]="badge.count | plural: badge.labelKey">{{ badge.count > 99 ? '99+' : badge.count }}</span>
                           }
                         }
                       }

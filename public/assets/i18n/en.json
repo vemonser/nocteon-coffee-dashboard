@@ -1645,6 +1645,8 @@
     "lastUpdated": "Last updated",
     "loading": "Loading carts…",
     "noItems": "No items in this cart",
+    "countAbandoned_one": "{{count}} abandoned cart",
+    "countAbandoned_other": "{{count}} abandoned carts",
     "stock": "Stock",
     "status": {
       "active": "Active",
@@ -1882,6 +1884,8 @@
     "countOrders_other": "{{count}} orders",
     "countResults_one": "{{count}} result",
     "countResults_other": "{{count}} results",
+    "countPending_one": "{{count}} pending order",
+    "countPending_other": "{{count}} pending orders",
     "detail": {
       "back": "Back to orders",
       "title": "Order",

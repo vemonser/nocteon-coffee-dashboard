@@ -10,6 +10,26 @@ export interface NavCounts {
   contact?: number;
 }
 
+/**
+ * A nav badge as the shell needs it: the number to render, and the PLURAL BASE
+ * of its accessible name.
+ *
+ * The label is a KEY, never a sentence. The sidebar resolves it through the
+ * plural pipe, so the name is worded by the active language and follows a
+ * runtime language switch. Building the sentence here (the old `ariaLabel()`)
+ * froze it in English: an Arabic UI announced "3 pending" to a screen reader,
+ * and the string was not in the locale files at all.
+ *
+ * `orders.countPending` (2) and `carts.countAbandoned` (1) are new; the reviews
+ * and contact families already existed and are reused verbatim.
+ */
+export interface NavBadge {
+  /** The number on the badge. 0 is a real answer — the sidebar hides it. */
+  count: number;
+  /** Plural base key: `<base>_<Intl.PluralRules category>`. */
+  labelKey: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class NavCountsService {
   private readonly http = inject(HttpClient);
@@ -94,20 +114,25 @@ export class NavCountsService {
     this.fetch();
   }
 
-  badgeFor(route: string): number | null {
+  badgeFor(route: string): NavBadge | null {
     const c = this._counts();
     if (!c) return null;
-    if (route.includes('/orders')) return c.orders ?? null;
-    if (route.includes('/carts')) return c.carts ?? null;
-    if (route.includes('/reviews')) return c.reviews ?? null;
-    if (route.includes('/contact-messages')) return c.contact ?? null;
+    if (route.includes('/orders')) return badge(c.orders, 'orders.countPending');
+    if (route.includes('/carts')) return badge(c.carts, 'carts.countAbandoned');
+    if (route.includes('/reviews')) return badge(c.reviews, 'reviews.countPending');
+    if (route.includes('/contact-messages')) return badge(c.contact, 'contactMessages.countUnread');
     return null;
   }
+}
 
-  ariaLabel(route: string, n: number): string {
-    if (route.includes('/contact-messages')) return `${n} unread`;
-    return `${n} pending`;
-  }
+/**
+ * A badge, or nothing at all.
+ *
+ * A key the endpoint omitted means "this role cannot read that area", which is
+ * no badge — it is not a zero, so it must not fall back to one.
+ */
+function badge(count: number | undefined, labelKey: string): NavBadge | null {
+  return count === undefined ? null : { count, labelKey };
 }
 
 function toCount(value: unknown): number | undefined {
