@@ -8,6 +8,25 @@
   }
 }
 
+/* The phone tier of the column priority.
+
+   A 375px screen cannot show eight columns of numbers: it shows the few that
+   answer "which row, what state, how much", and the rest of the record lives
+   on the row's own page. The page names the columns (see `phoneHiddenColumns`)
+   — the table does not decide for a page it has never seen.
+
+   The floor width follows: `table-fixed` would otherwise keep the wide-screen
+   floor and scroll through empty space where the hidden columns used to be. */
+@media (max-width: 639.5px) {
+  .col-phone-hide {
+    display: none;
+  }
+
+  table[data-phone-hidden] {
+    min-width: var(--table-min-width-phone) !important;
+  }
+}
+
 /* Tighten low-content columns (ID + the bilingual name pair) so short values
    don't swim in padding and the EN + AR names sit close together. */
 .col-tight {

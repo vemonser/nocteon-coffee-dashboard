@@ -33,6 +33,7 @@ import { HlmTooltipImports } from '@spartan-ng/helm/tooltip';
 import { BrnTooltip } from '@spartan-ng/brain/tooltip';
 
 import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
+import { ErrorStateComponent } from '../../../shared/components/error-state/error-state.component';
 import { CanDisableDirective } from '../../../shared/directives/can-disable.directive';
 import { PermissionService } from '../../../core/auth/permission.service';
 import { KpiCardComponent } from '../../../shared/components/dashboard/kpi-card/kpi-card.component';
@@ -106,6 +107,7 @@ import { exportCountLabel } from '../utils/export-count-label';
     FormsModule,
     BrnTooltip,
     DataTableComponent,
+    ErrorStateComponent,
     HlmButtonImports,
     HlmInputImports,
     HlmNativeSelectImports,
@@ -265,6 +267,38 @@ export class OrdersListComponent {
     return this.t('orders.empty', 'No orders found');
   });
 
+  /**
+   * The line under the empty title: why the list is empty and what to do.
+   *
+   * <p>Two states, two sentences — a store with no orders yet gets the one
+   * that says orders will appear here; a filter that matches nothing gets the
+   * one that suggests widening it. The hint and the action must agree: an
+   * empty state that offers "Clear filters" when no filter is set is a button
+   * that does nothing.
+   */
+  protected readonly emptyHint = computed(() => {
+    if (this.filteredTotal() === 0 && !this.hasActiveFilters() && this.status() === 'ALL') {
+      return this.t('orders.emptyState.noOrdersHint', 'Orders placed in the store will appear here.');
+    }
+    if (this.filteredTotal() === 0) {
+      return this.t('orders.emptyState.noResultsHint', 'Try a wider date range, or clear the filters.');
+    }
+    return '';
+  });
+
+  /**
+   * The action that RESOLVES the empty state, or nothing when there is none.
+   *
+   * <p>Clear filters only exists when a filter is set. A store with no orders
+   * at all cannot be fixed from the console, so that state explains itself
+   * instead of offering a button that would change nothing.
+   */
+  protected readonly emptyAction = computed<{ label: string; action: () => void } | null>(() =>
+    this.hasActiveFilters()
+      ? { label: this.t('orders.filters.clear', 'Clear filters'), action: () => this.clearFilters() }
+      : null,
+  );
+
   /** Translate with English fallback — never a raw key. */
   protected t(key: string, fallback: string): string {
     const value = this.transloco.translate(key);
@@ -355,6 +389,17 @@ export class OrdersListComponent {
     }),
     this.columnHelper.display({ id: 'actions', header: 'orders.columns.actions', meta: { width: '78px' } }),
   ];
+
+  /**
+   * The column priority on a phone (below 640px): FE-26.
+   *
+   * <p>Kept: identity (Order #, pinned), Customer, Order status, Payment
+   * status, Total, Actions — the four facts a phone reader acts on.
+   * Dropped: Items and Method. Both are complete on the order page, which the
+   * row already opens, and neither answers "who / what state / how much".
+   * Dates are already gone below 1024px (`col-narrow-hide`).
+   */
+  protected readonly phoneHiddenColumns = ['itemCount', 'paymentMethod'];
 
   private static readonly SORT_PROPERTY: Record<string, string> = {
     orderNumber: 'orderNumber',
