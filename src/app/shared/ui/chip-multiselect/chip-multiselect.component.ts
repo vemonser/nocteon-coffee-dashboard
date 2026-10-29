@@ -1,5 +1,6 @@
-import { Component, computed, input, output, signal } from '@angular/core';
+import { Component, computed, inject, input, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { TranslocoService } from '@jsverse/transloco';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmInputImports } from '@spartan-ng/helm/input';
 
@@ -31,8 +32,14 @@ export class ChipMultiselectComponent {
   readonly noMatchesLabel = input<string>('');
   readonly searchPlaceholder = input<string>('');
   readonly addLabel = input<string>('Add');
-  readonly removeLabel = input<string>('Remove {{name}}');
-  readonly counterLabel = input<string>('{{count}} of {{max}}');
+
+  /**
+   * The two labels that carry a value. They are translated HERE, with their
+   * parameters, because a placeholder passed through a pipe without parameters
+   * is stripped: "Remove {{name}}" arrived as "Remove" and every chip's remove
+   * button shared one accessible name.
+   */
+  private readonly transloco = inject(TranslocoService);
 
   readonly selectionChange = output<string[]>();
 
@@ -59,12 +66,14 @@ export class ChipMultiselectComponent {
     return m === undefined || this.selected().length < m;
   });
 
+  /** "3 of 5" — only when the parent set a cap. */
   readonly counterText = computed(() => {
     const m = this.max();
     if (m === undefined) return '';
-    return this.counterLabel()
-      .replace(/\{\{\s*count\s*\}\}/g, String(this.selected().length))
-      .replace(/\{\{\s*max\s*\}\}/g, String(m));
+    return this.transloco.translate('common.chipMultiselect.counter', {
+      count: this.selected().length,
+      max: m,
+    });
   });
 
   isSelected(slug: string): boolean {
@@ -95,9 +104,8 @@ export class ChipMultiselectComponent {
     this.selectionChange.emit(next);
   }
 
+  /** "Remove Chocolate" — each chip needs its own accessible name. */
   removeAriaLabel(name: string): string {
-    return this.removeLabel()
-      .replace(/\{\{\s*name\s*\}\}/g, name)
-      .replace(/\{name\}/g, name);
+    return this.transloco.translate('common.chipMultiselect.remove', { name });
   }
 }

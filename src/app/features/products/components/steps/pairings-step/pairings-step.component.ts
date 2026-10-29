@@ -1,4 +1,6 @@
 import { Component, computed, inject, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { map, startWith } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormControl } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -51,7 +53,14 @@ export class PairingsStepComponent {
     })),
   );
 
-  readonly selected = computed<string[]>(() => this.state.pairingsArray.value as string[]);
+  /** See tasting-notes-step: a FormArray is not a signal, so follow the form. */
+  readonly selected = toSignal(
+    this.state.form.valueChanges.pipe(
+      startWith(null),
+      map(() => [...(this.state.pairingsArray.value as string[])]),
+    ),
+    { initialValue: [...(this.state.pairingsArray.value as string[])] },
+  );
 
   constructor() {
     this.pairingService.getAll({ size: 200 }).subscribe({
