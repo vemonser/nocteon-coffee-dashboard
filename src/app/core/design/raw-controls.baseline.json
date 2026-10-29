@@ -63,7 +63,7 @@
   "src/app/features/orders/order-detail/order-detail.component.html": {
     "input": 0,
     "select": 0,
-    "button": 1
+    "button": 4
   },
   "src/app/features/origins/components/origins-list.component.html": {
     "input": 0,

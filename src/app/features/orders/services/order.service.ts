@@ -10,7 +10,9 @@ import {
   PaymentMethod,
   PaymentStatus,
 } from '../models/order.model';
+import { invoiceFilenameFrom } from '../utils/invoice-filename';
 import {
+  OrderConfirmationResend,
   OrderNote,
   OrderPaymentDetails,
   OrderRefund,
@@ -169,6 +171,51 @@ export class OrderService {
    */
   refund(id: number, amount: number, reason: string): Observable<ApiResponse<OrderRefund>> {
     return this.http.post<ApiResponse<OrderRefund>>(`${this.base}/${id}/refund`, { amount, reason });
+  }
+
+  /**
+   * The invoice of an order, as a PDF.
+   *
+   * Fetched THROUGH the authenticated HttpClient — `responseType: 'blob'` with
+   * `observe: 'response'` — not through an `<a href>`: a plain link is a browser
+   * navigation with no Authorization header, so it would answer 401 and the
+   * admin would save an error page named "invoice.pdf". The file name comes
+   * from the server's `Content-Disposition` when it is readable, and from the
+   * order number otherwise.
+   *
+   * @param language the language of the DOCUMENT (the server draws an Arabic
+   *                 invoice right-to-left when asked for `ar`)
+   */
+  downloadInvoice(
+    id: number,
+    orderNumber: string,
+    language: 'en' | 'ar',
+  ): Observable<{ blob: Blob; filename: string }> {
+    const params = new HttpParams().set('lang', language);
+    return this.http
+      .get(`${this.base}/${id}/invoice`, { params, responseType: 'blob', observe: 'response' })
+      .pipe(
+        map((res) => ({
+          blob: res.body ?? new Blob(),
+          filename:
+            invoiceFilenameFrom(res.headers.get('Content-Disposition')) ??
+            `invoice-${orderNumber}.pdf`,
+        })),
+      );
+  }
+
+  /**
+   * Send the order confirmation again.
+   *
+   * The answer carries the backend's own message and the status the mail row
+   * ended in (SENT, FAILED, DEAD) — a refusal is shown as a warning, not as a
+   * green toast.
+   */
+  resendConfirmation(id: number): Observable<ApiResponse<OrderConfirmationResend>> {
+    return this.http.post<ApiResponse<OrderConfirmationResend>>(
+      `${this.base}/${id}/confirmation-email`,
+      {},
+    );
   }
 
   /**

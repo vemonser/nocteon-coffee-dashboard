@@ -1562,3 +1562,111 @@ every barcoded variant of a product (`a | b`) and stays empty when there is none
 barcodes; it surfaced because creating a product with a barcode is exactly what FE-15 has to test.
 `ProductVariantService.buildVariant` now sets `0L`, the value the duplicate path already used. The
 proper fix (a JPA `@Version`, which also gives optimistic locking) is a separate decision.
+
+# Decisions — FE-16 · Invoice PDF + resend confirmation
+
+## PDF library: OpenPDF 2.4.0 (`com.github.librepdf:openpdf`), not a headless browser
+
+Nothing on the backend could write a PDF (`pom.xml` had no PDF library, and
+FE-24 had already shipped the dashboard's own "Export PDF" as a print
+stylesheet rather than as a file). The invoice is the first document the store
+*must* hand to a customer as a file, so it needed a real writer.
+
+| Option | Why not |
+|---|---|
+| Headless Chromium / Playwright print-to-PDF | Forbidden by the brief, and it puts a browser + a process pool in the image to draw six tables. |
+| iText 7 / OpenPDF 3.x | OpenPDF 3.x renames the package to `org.openpdf` and pulls ICU4J (~14 MB) plus brotli; iText 7 needs the commercial `pdfCalligraph` add-on for Arabic shaping. Both are more dependency than this job is worth. |
+| Apache PDFBox | No Arabic shaping and no layout: text would be drawn glyph by glyph, in logical order. |
+| Hand-rolled PDF writer | Explicitly out of scope. |
+| **OpenPDF 2.4.0** | One self-contained jar, the maintained iText 5 fork, LGPL/MPL, and — verified before committing to it — its `ColumnText`/`BidiLine` path **shapes Arabic and applies bidi** when a cell is drawn with `RUN_DIRECTION_RTL`. |
+
+**The measured caveat.** `Document.add(new Paragraph(...))` with
+`RUN_DIRECTION_RTL` does **not** shape: it printed "فاتورة رقم" as isolated
+letters in reversed order (mojibake). A `PdfPCell` with
+`RUN_DIRECTION_RTL`, or a `ColumnText` with the same run direction, does shape
+correctly. So the renderer draws *everything* through table cells — labels,
+address, payment fields, footer — instead of paragraphs. This is pinned in
+`InvoicePdfRenderer`'s class comment so a future "simplification" back to
+paragraphs does not silently un-shape the document.
+
+## Font: IBM Plex Sans Arabic (SIL OFL 1.1), embedded
+
+The 14 built-in PDF fonts have no Arabic glyphs; using them produces boxes or
+Latin-1 mojibake. Two facts decided the font:
+
+- **It must cover both scripts.** `Noto Naskh Arabic` and `Noto Sans Arabic`
+  have **zero** Latin glyphs (checked), so one line such as
+  "قهوة Yirgacheffe 250 جرام" would change typeface mid-word.
+  IBM Plex Sans Arabic carries Latin (A–z, punctuation) + the whole Arabic block
+  + the presentation forms OpenPDF's shaper emits (140 of them).
+- **It must travel with the jar.** System fonts are not portable; the two TTFs
+  (236 KB + 247 KB) ship in `src/main/resources/fonts/` with the licence text
+  next to them, loaded as `BaseFont.IDENTITY_H` + `EMBEDDED` (subset) and cached
+  per JVM.
+
+## RTL layout: the table mirrors, the code does not
+
+An RTL `PdfPTable` mirrors **both** the cells and the `setWidths` array. The
+first draft reversed the cells by hand as well, which cancelled the mirroring and
+put the product name under the "Amount" column header. Two rules now:
+
+1. cells are always added in logical order;
+2. the widths array is reversed for RTL, so "the first width belongs to the first
+   cell" holds in both languages.
+
+## Values that must stay left-to-right
+
+A phone number, an e-mail, a SKU or a transaction reference is not Arabic text.
+A leading "+" is a NEUTRAL character, so in an RTL paragraph
+"+201000000000" printed as "20100000000+" — a different, dialable string. Those
+values are prefixed with U+200E (LRM, no glyph, nothing printed), which was
+verified against the alternatives (U+2066/2069 isolates and U+202A/202C also
+work; LRM is the smallest).
+
+## Digits: Latin in both languages
+
+`Locale("ar")` formats numbers with Arabic-Indic digits. The dashboard uses
+Latin digits in Arabic everywhere (shared formatters), so an Arabic invoice
+printing ٦٥٠٫٠٠ would be the one place an amount cannot be read back into the
+console. Month names translate; digits stay Latin.
+
+## Access: `order:read` is not enough on its own
+
+`/api/dashboard/**` is `authenticated()`, and the order endpoints are gated on
+`order:read` — which the **CUSTOMER** role also holds (it reads its own orders
+through it). Serving an invoice on that authority alone would let any logged-in
+customer download any customer's invoice, with name, address and money in it.
+
+Rule implemented in `OrderInvoiceService`: anyone holding `order:update` (the
+console roles; never CUSTOMER) may download any invoice, and everyone else only
+their own — with the **same 404** an unknown id answers, so the response never
+confirms that someone else's order exists. The resend endpoint needs no extra
+rule: it is gated on `order:update`, which customers never hold.
+
+## Resend: one `email_log` row per press
+
+Reuses the existing plumbing (`TransactionalEmailService` → `BrevoClient`,
+provider-side template, retry worker) — no second mail path. The automatic
+confirmation keeps its single key `ORDER-<id>-CONFIRMATION` (a duplicate of the
+same news must not queue twice); a manual resend gets its own row and key
+`ORDER-<id>-CONFIRMATION-RESEND-<n>`, so `email_log` stays an audit trail of
+*when support pressed the button* instead of one mutable slot. The returned
+`ApiResponse.message` is localized server-side (messages.properties /
+messages_ar.properties) because the dashboard shows the backend's sentence
+verbatim.
+
+A refusal is not a success: `data.emailStatus` (SENT / FAILED / DEAD) travels
+with the message, and the page shows a warning toast when it is not SENT.
+
+**Small hardening this needed:** `OrderConfirmationDataProvider` used
+`order.getUser().getProfile().getFullName()` (NPE for an account without a
+profile, i.e. a 500 on the resend) and `Map.of(...)` (rejects null values). It is
+now null-safe, and it sends the product *name* instead of its slug.
+
+## Known gap (documented, not invented)
+
+No `Content-Disposition` exposure is configured for the frontend origin, so the
+browser cannot read the server's file name in dev; the client falls back to
+`invoice-<orderNumber>.pdf`. Both names are the same convention today. If the
+orchestrator wants the server name to always win, expose
+`Content-Disposition` in the CORS config.

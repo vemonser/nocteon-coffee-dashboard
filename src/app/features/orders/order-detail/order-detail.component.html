@@ -103,32 +103,96 @@
             </button>
           }
 
-          <!-- Print invoice -->
+          <!--
+            Download invoice: the PDF the customer receives, fetched through
+            the authenticated HttpClient (never an <a href>, which would drop
+            the token) and saved with the name the server chose.
+          -->
           <button
             hlmBtn
             variant="outline"
-            data-testid="order-print-invoice"
-            (click)="printInvoice()"
-            [attr.aria-label]="'orders.detail.printInvoice' | transloco"
+            data-testid="order-download-invoice"
+            [disabled]="downloadingInvoice()"
+            [attr.aria-busy]="downloadingInvoice()"
+            (click)="downloadInvoice()"
+            [attr.aria-label]="'orders.detail.downloadInvoice' | transloco"
           >
-            <ng-icon name="lucidePrinter" class="size-4" aria-hidden="true" />
-            {{ 'orders.detail.printInvoice' | transloco }}
+            @if (downloadingInvoice()) {
+              <ng-icon name="lucideLoader" class="size-4 animate-spin" aria-hidden="true" />
+            } @else {
+              <ng-icon name="lucideFileDown" class="size-4" aria-hidden="true" />
+            }
+            {{ 'orders.detail.downloadInvoice' | transloco }}
           </button>
 
-          <!-- Copy order number -->
+          <!--
+            More actions: the two e-mail/print affordances that are used less
+            often than a status change, plus the copy shortcut. A menu keeps
+            the header to four controls instead of seven.
+          -->
           <button
             hlmBtn
             variant="outline"
             size="icon"
             class="min-h-10 min-w-10"
-            (click)="copyOrderNumber()"
+            data-testid="order-more-actions-menu"
+            [hlmDropdownMenuTrigger]="orderActionsMenu"
+            align="end"
             hlmTooltip
-            [brnTooltip]="'orders.actions.copyOrderNumber' | transloco"
-            [attr.aria-label]="'orders.actions.copyOrderNumber' | transloco"
-            data-testid="order-copy-number"
+            [brnTooltip]="'orders.detail.moreActions' | transloco"
+            [attr.aria-label]="'orders.detail.moreActions' | transloco"
           >
-            <ng-icon name="lucideClipboard" class="size-4" aria-hidden="true" />
+            <ng-icon name="lucideMoreVertical" class="size-4" aria-hidden="true" />
           </button>
+
+          <ng-template #orderActionsMenu>
+            <hlm-dropdown-menu class="min-w-56 rounded-md">
+              <button
+                hlmDropdownMenuItem
+                class="flex items-center gap-2"
+                data-testid="order-print-invoice"
+                (click)="printInvoice()"
+              >
+                <ng-icon name="lucidePrinter" aria-hidden="true" />
+                <span>{{ 'orders.detail.printInvoice' | transloco }}</span>
+              </button>
+
+              @if (canResendConfirmation() || resendingConfirmation()) {
+                <button
+                  hlmDropdownMenuItem
+                  class="flex items-center gap-2"
+                  data-testid="order-resend-confirmation"
+                  [disabled]="resendingConfirmation()"
+                  [attr.aria-busy]="resendingConfirmation()"
+                  (click)="resendConfirmation()"
+                >
+                  @if (resendingConfirmation()) {
+                    <ng-icon name="lucideLoader" class="animate-spin" aria-hidden="true" />
+                  } @else {
+                    <ng-icon name="lucideSend" aria-hidden="true" />
+                  }
+                  <span>
+                    {{
+                      (resendingConfirmation()
+                        ? 'orders.detail.resendingConfirmation'
+                        : 'orders.detail.resendConfirmation'
+                      ) | transloco
+                    }}
+                  </span>
+                </button>
+              }
+
+              <button
+                hlmDropdownMenuItem
+                class="flex items-center gap-2"
+                (click)="copyOrderNumber()"
+                data-testid="order-copy-number"
+              >
+                <ng-icon name="lucideClipboard" aria-hidden="true" />
+                <span>{{ 'orders.actions.copyOrderNumber' | transloco }}</span>
+              </button>
+            </hlm-dropdown-menu>
+          </ng-template>
 
           <!-- Refund (replaces the old "more actions" kebab) -->
           @if (canRefund()) {

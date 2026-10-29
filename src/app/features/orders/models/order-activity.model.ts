@@ -67,3 +67,18 @@ export interface OrderStats {
   byPaymentStatus: Array<{ paymentStatus: PaymentStatus; count: number }>;
   byPaymentMethod: Array<{ paymentMethod: PaymentMethod; count: number }>;
 }
+
+/** Where a queued e-mail ended up. */
+export type EmailStatus = 'PENDING' | 'SENT' | 'FAILED' | 'DEAD';
+
+/**
+ * The answer to "resend the confirmation".
+ *
+ * `emailStatus` is what the mail provider (or the retry worker) said, so the
+ * page can turn a refusal into a warning instead of a success.
+ */
+export interface OrderConfirmationResend {
+  orderId: number;
+  recipientEmail: string;
+  emailStatus: EmailStatus;
+}
