@@ -251,7 +251,21 @@
         {{ 'orders.bulk.selected' | transloco: { count: selectedCount() } }}
       </p>
       <div class="flex items-center gap-2">
-        <button *hasPermission="'order:update'" hlmBtn variant="outline" size="sm" (click)="bulkChangeStatus()">
+        <!--
+          The bulk status change is one action for the whole selection. It is
+          action-level gated (appCanDisable + the guard in the component):
+          the page stays readable, the action names the permission it needs,
+          and the server still decides.
+        -->
+        <button
+          hlmBtn
+          variant="outline"
+          size="sm"
+          data-testid="orders-bulk-change-status"
+          appCanDisable="'order:update'"
+          [disabled]="bulkStatusPending()"
+          (click)="bulkChangeStatus()"
+        >
           {{ 'orders.bulk.changeStatus' | transloco }}
         </button>
         <button hlmBtn variant="outline" size="sm" (click)="exportCsv()" [disabled]="loading()">
@@ -327,4 +341,21 @@
       (sizeChange)="onPageSizeChange($event)"
     />
   }
+
+  <!-- ── The bulk status dialogs (FE-18) ───────────────────────────────── -->
+  <app-order-bulk-status-dialog
+    [open]="bulkStatusOpen()"
+    [rows]="selectedRows()"
+    [pending]="bulkStatusPending()"
+    [progress]="bulkStatusProgress()"
+    (confirmed)="applyBulkStatus($event)"
+    (closed)="closeBulkStatus()"
+  />
+
+  <app-order-bulk-status-failures-dialog
+    [open]="bulkFailuresOpen()"
+    [failures]="bulkFailures()"
+    (closed)="closeBulkFailures()"
+    (retried)="retryBulkFailures()"
+  />
 </div>

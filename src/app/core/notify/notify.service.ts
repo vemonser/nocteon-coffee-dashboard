@@ -1,6 +1,8 @@
 import { Injectable, inject } from '@angular/core';
 import { TranslocoService } from '@jsverse/transloco';
 import { toast } from '@spartan-ng/brain/sonner';
+import { LanguageService } from '../i18n/language.service';
+import { countMessage } from '../i18n/plural';
 
 /**
  * Single channel for user-facing feedback on API outcomes.
@@ -14,12 +16,56 @@ import { toast } from '@spartan-ng/brain/sonner';
 @Injectable({ providedIn: 'root' })
 export class NotifyService {
   private readonly transloco = inject(TranslocoService);
+  private readonly language = inject(LanguageService);
 
   /** Translate with English fallback (mirrors BaseListComponent.t). */
   t(key: string, fallback: string): string {
     if (!key) return fallback;
     const value = this.transloco.translate(key);
     return typeof value === 'string' && value.length > 0 && value !== key ? value : fallback;
+  }
+
+  /**
+   * A count in the grammar of the active language.
+   *
+   * A toast body has no template, so it cannot use the `plural` pipe; this
+   * asks the same `countMessage` the pipe asks, so "12 orders updated" is
+   * worded once (`orders.bulk.updated_*`) for the toast and the dialog.
+   */
+  countText(base: string, count: number, params: Record<string, unknown> = {}): string {
+    return countMessage(
+      (key, values) => this.transloco.translate(key, values),
+      this.language.language(),
+      base,
+      count,
+      params,
+    );
+  }
+
+  /** A success whose text counts things ("12 orders updated"). */
+  successCount(base: string, count: number, params: Record<string, unknown> = {}): void {
+    toast.success(this.countText(base, count, params));
+  }
+
+  /**
+   * A counted warning that carries the way to the detail — a bulk run where
+   * some rows failed says how many succeeded and offers the per-row list.
+   */
+  warningCountWithAction(
+    base: string,
+    count: number,
+    action: { label: string; onClick: () => void },
+    options: {
+      description?: string;
+      params?: Record<string, unknown>;
+      durationMs?: number;
+    } = {},
+  ): void {
+    toast.warning(this.countText(base, count, options.params), {
+      duration: options.durationMs ?? 10000,
+      description: options.description,
+      action,
+    });
   }
 
   success(messageKey: string, fallback: string): void {

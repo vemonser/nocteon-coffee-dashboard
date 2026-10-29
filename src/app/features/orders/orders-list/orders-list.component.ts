@@ -33,7 +33,8 @@ import { HlmTooltipImports } from '@spartan-ng/helm/tooltip';
 import { BrnTooltip } from '@spartan-ng/brain/tooltip';
 
 import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
-import { HasPermissionDirective } from '../../../core/auth/permission.directive';
+import { CanDisableDirective } from '../../../shared/directives/can-disable.directive';
+import { PermissionService } from '../../../core/auth/permission.service';
 import { KpiCardComponent } from '../../../shared/components/dashboard/kpi-card/kpi-card.component';
 import { PagerComponent } from '../../../shared/components/pager/pager.component';
 import { PluralPipe } from '../../../shared/pipes/plural.pipe';
@@ -63,6 +64,16 @@ import {
   canRefund,
 } from '../models/order-status.model';
 import { computeKpi, tabToApiParams, type KpiValues } from '../utils/order-kpi';
+import {
+  bulkStatusToast,
+  eligibleRows,
+  runBulkStatus,
+  summarizeBulkStatus,
+  type BulkStatusResult,
+  type BulkStatusRow,
+} from '../utils/bulk-status';
+import { OrderBulkStatusDialogComponent } from '../components/order-bulk-status-dialog/order-bulk-status-dialog.component';
+import { OrderBulkStatusFailuresDialogComponent } from '../components/order-bulk-status-failures-dialog/order-bulk-status-failures-dialog.component';
 import { ORDER_COUNT_SCOPES } from '../../../core/dashboard/order-scope';
 import type { RowMenuAction } from '../../../shared/ui/actions-cell/actions-cell.component';
 import { formatCurrencyPlain } from '../../../shared/utils/locale-format';
@@ -104,7 +115,9 @@ import { orderItemsCount } from '../utils/order-items-count';
     KpiCardComponent,
     TranslocoPipe,
     MoneyPipe,
-    HasPermissionDirective,
+    CanDisableDirective,
+    OrderBulkStatusDialogComponent,
+    OrderBulkStatusFailuresDialogComponent,
   ],
   providers: [
     provideIcons({
@@ -132,6 +145,7 @@ import { orderItemsCount } from '../utils/order-items-count';
 export class OrdersListComponent {
   private readonly orderService = inject(OrderService);
   private readonly notify = inject(NotifyService);
+  private readonly permissions = inject(PermissionService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   protected readonly language = inject(LanguageService);
@@ -173,6 +187,28 @@ export class OrdersListComponent {
   protected readonly page = signal(0);
   protected readonly size = signal(20);
   protected readonly selectedIds = signal<ReadonlySet<number>>(new Set());
+
+  /** ── the bulk status run (FE-18) ─────────────────────────────────────── */
+
+  /** The bulk dialog: pick one status for the selection. */
+  protected readonly bulkStatusOpen = signal(false);
+  /** A run is in flight — one order at a time. */
+  protected readonly bulkStatusPending = signal(false);
+  protected readonly bulkStatusProgress = signal<{ done: number; total: number } | null>(null);
+  /** The rows the last run could not change, with the reason each gave. */
+  protected readonly bulkFailures = signal<readonly BulkStatusResult[]>([]);
+  protected readonly bulkFailuresOpen = signal(false);
+
+  /** The selected rows, in the shape the bulk dialog reads. */
+  protected readonly selectedRows = computed<BulkStatusRow[]>(() =>
+    this.rows()
+      .filter((row) => this.selectedIds().has(row.id))
+      .map((row) => ({
+        id: row.id,
+        orderNumber: formatOrderNumber(row.orderNumber, row.id),
+        status: row.status,
+      })),
+  );
 
   protected readonly pageSizeOptions = [10, 20, 50] as const;
 
@@ -541,6 +577,14 @@ export class OrdersListComponent {
         this.rows.set(rows.data?.content ?? []);
         this.pageTotal.set(rows.data?.totalElements ?? 0);
 
+        // The selection only ever describes rows that are ON SCREEN: a status
+        // run can move a row off the current tab, and a page change replaces
+        // the rows entirely. Keeping an invisible id selected would let the
+        // bulk bar count rows the admin cannot see.
+        const visible = new Set(this.rows().map((order) => order.id));
+        const kept = [...this.selectedIds()].filter((id) => visible.has(id));
+        if (kept.length !== this.selectedIds().size) this.selectedIds.set(new Set(kept));
+
         // The FILTERED set's total — the same set the tab counts describe.
         // It is the facets call's total, so the page needs no fourth
         // request for the "All orders" tab.
@@ -713,12 +757,110 @@ export class OrdersListComponent {
     this.selectedIds.set(new Set());
   }
 
+  // ── bulk status (FE-18) ──────────────────────────────────────────────────
+
+  /**
+   * "Change status" in the bulk bar: open the dialog that picks ONE status
+   * for the selection.
+   *
+   * <p>Before FE-18 this opened the first selected order's detail dialog,
+   * which is not a bulk action — the other rows were silently untouched.
+   * The permission is checked here as well as on the button, so a disabled
+   * control is not the only thing standing between a reader and the action.
+   */
   protected bulkChangeStatus(): void {
-    const first = this.rows().find((o) => this.selectedIds().has(o.id));
-    if (!first) return;
-    void this.router.navigate(['/dashboard/orders', first.id], {
-      queryParams: { action: 'changeStatus' },
-    });
+    if (!this.permissions.has('order:update')) return;
+    if (this.selectedIds().size === 0) return;
+    this.bulkFailures.set([]);
+    this.bulkStatusOpen.set(true);
+  }
+
+  protected closeBulkStatus(): void {
+    if (this.bulkStatusPending()) return;
+    this.bulkStatusOpen.set(false);
+  }
+
+  /**
+   * Apply the chosen status to the rows that can take it — SEQUENTIALLY.
+   *
+   * <p>`runBulkStatus` sends one request at a time (`concatMap`), records a
+   * per-row outcome, and stops only on a `403`: a permission error is not
+   * per-row, so the remaining rows are reported as "not attempted" instead of
+   * firing eleven more refusals (which would also mean eleven permission
+   * toasts on top of the interceptor's one).
+   */
+  protected applyBulkStatus(status: OrderStatus): void {
+    const targets = eligibleRows(this.selectedRows(), status);
+    if (targets.length === 0) return;
+
+    this.bulkStatusPending.set(true);
+    this.bulkStatusProgress.set({ done: 0, total: targets.length });
+    this.bulkFailures.set([]);
+
+    runBulkStatus(targets, {
+      update: (row) => this.orderService.updateStatus(row.id, { status }),
+      fallbackReason: this.t('orders.bulk.failures.reason', 'The order could not be updated'),
+      abortedReason: this.t(
+        'orders.bulk.failures.aborted',
+        'Not attempted — the run stopped after a permission error.',
+      ),
+      onProgress: (done, total) => this.bulkStatusProgress.set({ done, total }),
+      backendMessage: (err) => this.notify.backendMessage(err),
+    }).subscribe((results) => this.finishBulkStatus(results));
+  }
+
+  /** Add the outcomes up, tell the reader once, and settle the selection. */
+  private finishBulkStatus(results: readonly BulkStatusResult[]): void {
+    const summary = summarizeBulkStatus(results);
+    this.bulkStatusPending.set(false);
+    this.bulkStatusProgress.set(null);
+    this.bulkStatusOpen.set(false);
+    this.bulkFailures.set(summary.failures);
+
+    // The rows that failed stay selected, so the admin can fix the cause and
+    // run the change again without re-picking them; a clean run clears.
+    this.selectedIds.set(new Set(summary.failedIds));
+
+    // Re-read the page: the rows on screen now show the statuses the server
+    // actually holds, and any row that left the current tab drops out.
+    this.load();
+
+    const plan = bulkStatusToast(summary);
+    if (plan.tone === 'success') {
+      this.notify.successCount(plan.messageBase, plan.count);
+      return;
+    }
+
+    const review = this.t('orders.bulk.reviewFailures', 'Review failures');
+    this.notify.warningCountWithAction(
+      plan.messageBase,
+      plan.count,
+      { label: review, onClick: () => this.bulkFailuresOpen.set(true) },
+      {
+        description: plan.failureBase
+          ? this.notify.countText(plan.failureBase, plan.failureCount)
+          : undefined,
+        durationMs: 12000,
+      },
+    );
+
+    // The per-row list is the only actionable part of a partial run, so it
+    // opens rather than waiting for the reader to find the toast action.
+    if (plan.openFailures) this.bulkFailuresOpen.set(true);
+  }
+
+  protected closeBulkFailures(): void {
+    this.bulkFailuresOpen.set(false);
+  }
+
+  /**
+   * "Retry failed": reopen the picker with the failed rows still selected, so
+   * the retry goes through the SAME transition check. Re-sending the refused
+   * status blindly would just collect the same refusals.
+   */
+  protected retryBulkFailures(): void {
+    this.bulkFailuresOpen.set(false);
+    this.bulkStatusOpen.set(true);
   }
 
   /** Export the VIEW (filtered set ∩ tab) as CSV — walks all pages. */

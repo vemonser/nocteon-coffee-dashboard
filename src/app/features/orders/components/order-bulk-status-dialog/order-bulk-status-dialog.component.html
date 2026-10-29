@@ -1,0 +1,81 @@
+<app-order-dialog
+  [open]="open()"
+  [title]="title()"
+  [description]="description()"
+  [confirmLabel]="confirmLabel()"
+  [cancelLabel]="cancelLabel()"
+  [confirmDisabled]="!canConfirm()"
+  [pending]="pending()"
+  testId="bulk-status-dialog"
+  (confirmed)="confirm()"
+  (closed)="close()"
+>
+  <p class="mt-4 text-sm font-medium" data-testid="bulk-status-selection">
+    {{ 'orders.bulk.selected' | transloco: { count: rows().length } }}
+  </p>
+
+  @if (anyOption()) {
+    <div [dir]="direction()">
+      <hlm-radio-group
+        class="mt-3 grid gap-2"
+        data-testid="bulk-status-options"
+        [value]="selected()"
+        [attr.aria-label]="selectLabel()"
+        (valueChange)="pick($event)"
+      >
+        @for (choice of choices(); track choice.status) {
+          <label
+            class="flex items-start gap-3 rounded-md border border-border px-3 py-2"
+            [class.opacity-60]="!choice.enabled"
+          >
+            <hlm-radio
+              [inputId]="'bulk-status-' + choice.status"
+              [value]="choice.status"
+              [disabled]="!choice.enabled || pending()"
+            >
+              <hlm-radio-indicator />
+            </hlm-radio>
+            <span class="flex flex-col gap-0.5">
+              <span class="text-sm font-medium">{{ statusName(choice.status) }}</span>
+              <!--
+                The count says how many rows the status would ACTUALLY change,
+                and a status nobody can reach says so instead of vanishing.
+              -->
+              <span
+                class="text-xs text-muted-foreground"
+                [attr.data-testid]="'bulk-status-eligible-' + choice.status"
+              >
+                @if (choice.enabled) {
+                  {{ choice.count | plural: 'orders.bulk.eligible' }}
+                } @else {
+                  {{ 'orders.bulk.notEligible' | transloco }}
+                }
+              </span>
+            </span>
+          </label>
+        }
+      </hlm-radio-group>
+    </div>
+  } @else {
+    <p
+      class="mt-3 rounded-md border border-border px-3 py-2 text-sm text-muted-foreground"
+      data-testid="bulk-status-no-options"
+    >
+      {{ noOptions() }}
+    </p>
+  }
+
+  <p class="mt-3 text-xs text-muted-foreground" data-testid="bulk-status-hint">{{ hint() }}</p>
+  <p class="mt-1 text-xs text-muted-foreground">{{ cancelNote() }}</p>
+
+  @if (progressLabel(); as progress) {
+    <p
+      class="mt-3 text-sm text-muted-foreground"
+      role="status"
+      aria-live="polite"
+      data-testid="bulk-status-progress"
+    >
+      {{ progress }}
+    </p>
+  }
+</app-order-dialog>

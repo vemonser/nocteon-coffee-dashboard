@@ -1,0 +1,29 @@
+<app-order-dialog
+  [open]="open()"
+  [title]="title()"
+  [description]="description()"
+  [confirmLabel]="confirmLabel()"
+  [cancelLabel]="cancelLabel()"
+  [confirmDisabled]="!canRetry()"
+  testId="bulk-status-failures"
+  (confirmed)="retried.emit()"
+  (closed)="closed.emit()"
+>
+  <p class="mt-4 text-xs text-muted-foreground">{{ hint() }}</p>
+
+  <!--
+    One line per refused order: the number the warehouse uses, and the reason
+    the SERVER gave. A 4xx is never swallowed into a count.
+  -->
+  <ul class="mt-3 max-h-64 space-y-2 overflow-y-auto" data-testid="bulk-status-failures-list">
+    @for (failure of failures(); track failure.id) {
+      <li
+        class="rounded-md border border-border px-3 py-2"
+        [attr.data-testid]="'bulk-status-failure-' + failure.id"
+      >
+        <span dir="ltr" class="font-mono text-xs">{{ failure.orderNumber }}</span>
+        <span class="mt-1 block text-xs text-destructive">{{ failure.reason }}</span>
+      </li>
+    }
+  </ul>
+</app-order-dialog>

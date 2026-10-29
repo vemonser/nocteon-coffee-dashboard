@@ -68,3 +68,35 @@ export function ofPhrase(
   const separator = lang === 'ar' ? 'من' : 'of';
   return `${count} ${separator} ${total}`;
 }
+
+/** A translate function: Transloco's `translate` is one. */
+export type TranslateFn = (key: string, params?: Record<string, unknown>) => string;
+
+/**
+ * A counted message, resolved through a translate function.
+ *
+ * This is the ONE place a count becomes a sentence: the plural pipe renders
+ * it in a template, and a toast body renders it in TypeScript, but both ask
+ * this function, so "3 orders updated" can never mean one thing in a table
+ * and another in a toast.
+ *
+ * A missing key must never reach the screen: the family's `_other` is the
+ * fallback, then the number on its own.
+ */
+export function countMessage(
+  translate: TranslateFn,
+  lang: Language,
+  base: string,
+  count: number,
+  params: Record<string, unknown> = {},
+): string {
+  const key = pluralKey(base, count, lang);
+  const value = translate(key, { count, ...params });
+  if (typeof value === 'string' && value.length > 0 && value !== key) return value;
+
+  const otherKey = `${base}_other`;
+  const other = translate(otherKey, { count, ...params });
+  if (typeof other === 'string' && other.length > 0 && other !== otherKey) return other;
+
+  return String(count);
+}
