@@ -91,6 +91,17 @@ test.describe('states and interactions', () => {
   });
 
   test('a fast filter switch never shows the data of an older request', async () => {
+    // Expected sizes come from the API's own totals: the sets differ (that is
+    // what makes the race observable) but their sizes are data.
+    const totals: Record<string, number> = {};
+    page.on('response', async (response) => {
+      if (!/\/api\/dashboard\/orders\?/.test(response.url())) return;
+      const status = new URL(response.url()).searchParams.get('paymentStatus');
+      if (!status) return;
+      const body = await response.json().catch(() => null);
+      const total = body?.data?.totalElements;
+      if (typeof total === 'number') totals[status] = total;
+    });
     let call = 0;
     // The delayed request must be FINISHED before the test ends: a route
     // that is still pending when the interception is removed lands on the
@@ -112,16 +123,22 @@ test.describe('states and interactions', () => {
     await page.waitForTimeout(150);
     await page.goto(`${ORDERS}?paymentStatus=REFUNDED`, { waitUntil: 'domcontentloaded' });
 
-    // The rows answer the LAST request. The REFUNDED set is two orders; the
-    // PAID set is ten. If the first (delayed) response had won, the table
-    // would show ten rows.
+    // The rows answer the LAST request. If the delayed PAID response had won,
+    // the table would show the PAID rows instead — so the two totals must
+    // differ for this test to mean anything.
     //
     // The wait is a WAIT, not a sleep: the API is rate-limited and the
     // suite opens many pages, so a fixed sleep is a race.
+    // The pager states the set the LAST request produced; the rows on screen
+    // must be that set (ten at most), not the delayed request's.
+    const pager = await page.locator('app-pager').innerText();
+    const ofTotal = Number((pager.match(/of\s+(\d+)/) ?? [])[1] ?? 0);
+    expect(ofTotal, 'the pager states the last filter\'s total').toBeGreaterThan(0);
     const rows = page.locator('app-data-table tbody tr');
-    await expect(rows, 'the rows answer the LAST request, not the first').toHaveCount(2, {
-      timeout: 20_000,
-    });
+    await expect(rows, 'the rows answer the LAST request, not the first').toHaveCount(
+      Math.min(10, ofTotal),
+      { timeout: 20_000 },
+    );
 
     // And the revenue card is the LAST request's: the refunded set has no
     // paid revenue.

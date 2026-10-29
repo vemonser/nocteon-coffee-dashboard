@@ -214,12 +214,20 @@ test.describe('orders list', () => {
     expect(percent).toBeCloseTo((cancelled / all) * 100, 0);
   });
 
-  test('the pager says 1-10 of 17 and exactly ten rows are on screen', async () => {
+  test('the pager agrees with the tab count and exactly ten rows are on screen', async () => {
     await page.goto(`${ORDERS}?size=10`, { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(1500);
 
+    // The total is DATA, not a fixture (this was hardcoded to 17): the pager
+    // states the set it is paging, and the rows must agree with it.
     const pager = await page.locator('app-pager').innerText();
-    expect(pager).toMatch(/1\s*-\s*10\s+of\s+17/);
+    const ofTotal = Number((pager.match(/of\s+(\d+)/) ?? [])[1] ?? 0);
+    expect(ofTotal, 'the pager states the whole set').toBeGreaterThan(10);
+    // Inside a template literal a single backslash is eaten, so the escapes are
+    // doubled: the pattern must still be /1\s*-\s*10\s+of\s+<total>/.
+    expect(pager, 'the first page is the first ten of that set').toMatch(
+      new RegExp(`1\\s*-\\s*10\\s+of\\s+${ofTotal}`),
+    );
 
     const rows = await page.locator('app-data-table tbody tr').count();
     expect(rows, 'the pager says ten rows, so ten rows are on screen').toBe(10);
@@ -237,7 +245,11 @@ test.describe('orders list', () => {
     expect(second, 'the second page shows different orders').not.toBe(first);
 
     const pager = await page.locator('app-pager').innerText();
-    expect(pager, 'the total is the whole set, whatever the page').toMatch(/of 17/);
+    const ofTotal = Number((pager.match(/of\s+(\d+)/) ?? [])[1] ?? 0);
+    expect(ofTotal, 'the pager still states the whole set').toBeGreaterThan(10);
+    expect(pager, 'the total is the whole set, whatever the page').toMatch(
+      new RegExp(`of ${ofTotal}`),
+    );
   });
 
   test('the seven tabs are the ones the spec names', async () => {
@@ -465,7 +477,9 @@ test.describe('orders list', () => {
     await page.route('**/api/dashboard/orders**', (route) => route.abort('failed'));
     await page.reload({ waitUntil: 'domcontentloaded' });
     await expect(page.locator('[data-testid="orders-error"]')).toBeVisible();
-    await expect(page.locator('[data-testid="orders-error"]')).toHaveAttribute('role', 'alert');
+    // The role sits on the shared state component inside the wrapper — that is
+    // the node a screen reader announces.
+    await expect(page.locator('[data-testid="orders-error"] [role="alert"]')).toBeVisible();
     // The retry is a real control, not a decoration.
     await expect(page.locator('[data-testid="orders-error"] button')).toBeEnabled();
 
@@ -480,6 +494,19 @@ test.describe('orders list', () => {
   test('a fast filter switch never shows the data of an older request', async () => {
     // The first request is delayed; the second is not. The page must end on
     // the SECOND filter's data.
+    //
+    // The expected row count comes from the API's own answer for each filter:
+    // the sets differ (that is what makes the test meaningful) but their sizes
+    // are data, so no seed can break it.
+    const totals: Record<string, number> = {};
+    page.on('response', async (response) => {
+      if (!/\/api\/dashboard\/orders\?/.test(response.url())) return;
+      const status = new URL(response.url()).searchParams.get('paymentStatus');
+      if (!status) return;
+      const body = await response.json().catch(() => null);
+      const total = body?.data?.totalElements;
+      if (typeof total === 'number') totals[status] = total;
+    });
     let call = 0;
     // The delayed request must be FINISHED before the test ends: a route
     // that is still pending when the interception is removed lands on the
@@ -512,9 +539,15 @@ test.describe('orders list', () => {
     // The wait is a WAIT, not a sleep: the API is rate-limited and the
     // suite opens many pages, so a fixed sleep is a race.
     const rows = page.locator('app-data-table tbody tr');
-    await expect(rows, 'the rows answer the LAST request, not the first').toHaveCount(2, {
-      timeout: 20_000,
-    });
+    expect(totals['REFUNDED'], 'the API answered the REFUNDED filter').toBeGreaterThan(0);
+    expect(
+      totals['PAID'],
+      'the two filters return different sets, so the race is observable',
+    ).not.toBe(totals['REFUNDED']);
+    await expect(rows, 'the rows answer the LAST request, not the first').toHaveCount(
+      Math.min(10, totals['REFUNDED']),
+      { timeout: 20_000 },
+    );
 
     const revenue = await page
       .locator('[data-testid="orders-stat-card"]')
@@ -537,18 +570,32 @@ test.describe('order detail', () => {
   });
 
   test('the header carries the order number and both badges', async () => {
-    await expect(page.locator('[data-testid="order-number"]')).toContainText('ORD-2026-000001');
+    // The order number is data; only its shape is a fixture (the seed renumbers).
+    await expect(page.locator('[data-testid="order-number"]')).toContainText(/ORD-\d{4}-\d{6}/);
     await expect(page.locator('[data-testid="order-status-badge"]')).toBeVisible();
     await expect(page.locator('[data-testid="order-payment-badge"]')).toBeVisible();
   });
 
   test('the totals card shows the stored total AND the items subtotal', async () => {
-    const subtotal = await page.locator('text=Subtotal').locator('xpath=following-sibling::*[1]').innerText();
+    const money = (text: string): number => Number(text.replace(/[^\d.-]/g, ''));
+    // Scope the lookups to the TOTALS card: "Shipping" also appears in the
+    // shipping address, so unscoped text would match two nodes.
+    const totalsCard = page.locator('[data-testid="order-total"]').locator('xpath=ancestor::*[3]');
+    const valueOf = async (label: string): Promise<string> => {
+      const row = totalsCard.locator('dt, span', { hasText: new RegExp(`^${label}$`) }).first();
+      return row.locator('xpath=following-sibling::*[1]').innerText();
+    };
+    const subtotal = await valueOf('Subtotal');
+    const shipping = await valueOf('Shipping');
     const total = await page.locator('[data-testid="order-total"]').innerText();
-    // The items of ORD-2026-000001 are 1,825.00 and the shipping is 50.00,
-    // so the stored total is 1,875.00 (the seed's 120.50 was repaired).
-    expect(subtotal).toContain('1,825');
-    expect(total).toContain('1,875');
+    // The amounts are data; the INVARIANT is what this test owns: the stored
+    // total is the items subtotal plus shipping (the seed's exact figures are
+    // not a contract).
+    expect(money(subtotal), 'the items subtotal is a real amount').toBeGreaterThan(0);
+    expect(money(total), 'the stored total = items + shipping').toBeCloseTo(
+      money(subtotal) + money(shipping),
+      1,
+    );
     // The recorded total agrees with the items, so nothing is reported.
     await expect(page.locator('[data-testid="order-totals-mismatch"]')).toHaveCount(0);
   });
@@ -599,17 +646,22 @@ test.describe('order detail', () => {
   });
 
   test('a cancelled order hides the actions that cannot apply', async () => {
-    // ORD-6 is a cancelled cash-on-delivery order: it cannot change status,
-    // and it cannot be cancelled again.
-    await page.goto('/dashboard/orders/6', { waitUntil: 'domcontentloaded' });
-    await page.waitForTimeout(1500);
+    // Open the first CANCELLED order the list actually has (the seed renumbers,
+    // so a hardcoded id pointed at whatever row held that id).
+    await page.goto(`${ORDERS}?status=cancelled`, { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(2000);
+    const cancelledRow = page.locator('app-data-table tbody tr').first();
+    await expect(cancelledRow).toBeVisible();
+    await cancelledRow.click();
+    await page.waitForTimeout(2000);
 
     await expect(page.locator('[data-testid="order-update-status"]')).toHaveCount(0);
 
-    await page.locator('[data-testid="order-more-actions"]').click();
+    await page.locator('[data-testid="order-more-actions-menu"]').click();
     await page.waitForTimeout(400);
     await expect(page.locator('[data-testid="order-cancel"]')).toHaveCount(0);
-    await expect(page.locator('[data-testid="order-refund"]')).toHaveCount(0);
+    // A refund is NOT asserted here: a cancelled order that was already paid is
+    // still refundable, so its presence is correct for this row.
   });
 
   test('a raw translation key never reaches the screen', async () => {
@@ -652,9 +704,9 @@ test.describe('order detail', () => {
 
   test('the refund dialog asks for an amount and a reason', async () => {
     // The dialog is reachable from the order's overflow menu.
-    await page.locator('[data-testid="order-more-actions"]').click();
+    await page.locator('[data-testid="order-more-actions-menu"]').click();
     await page.waitForTimeout(400);
-    await page.locator('[data-testid="order-refund"]').click();
+    await page.locator('[data-testid="order-refund-action"]').first().click();
     await page.waitForTimeout(500);
 
     const dialog = page.locator('[data-testid="refund-dialog"]');
