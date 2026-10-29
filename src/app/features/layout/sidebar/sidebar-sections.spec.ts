@@ -56,7 +56,6 @@ const authStub = {
 
 const navCountsStub = {
   badgeFor: () => null,
-  ariaLabel: (_route: string, n: number) => `${n} pending`,
 };
 
 describe('sidebar sections (FE-25 D4+A)', () => {
