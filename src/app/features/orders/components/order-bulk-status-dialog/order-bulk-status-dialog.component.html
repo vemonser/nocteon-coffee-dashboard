@@ -69,14 +69,15 @@
   <p class="mt-3 text-xs text-muted-foreground" data-testid="bulk-status-hint">{{ hint() }}</p>
   <p class="mt-1 text-xs text-muted-foreground">{{ cancelNote() }}</p>
 
-  @if (progressLabel(); as progress) {
+  @if (pending()) {
+    <!-- The batch is one request, so the line says so instead of counting rows. -->
     <p
       class="mt-3 text-sm text-muted-foreground"
       role="status"
       aria-live="polite"
-      data-testid="bulk-status-progress"
+      data-testid="bulk-status-sending"
     >
-      {{ progress }}
+      {{ pendingLabel() }}
     </p>
   }
 </app-order-dialog>

@@ -4,6 +4,7 @@ import { EMPTY, Observable, expand, forkJoin, map, of, switchMap, toArray } from
 import { ApiResponse, PageResponse } from '../../../core/models/api-response.model';
 import { environment } from '../../../../environments/environment';
 import {
+  BulkStatusRowResult,
   OrderFilterRequest,
   OrderResponse,
   OrderStatus,
@@ -123,6 +124,31 @@ export class OrderService {
     if (update.reason) body['reason'] = update.reason;
 
     return this.http.put<ApiResponse<OrderResponse>>(`${this.base}/${id}/status`, body);
+  }
+
+  /**
+   * Change the status of MANY orders in ONE request (FE-18b).
+   *
+   * <p>Before this endpoint existed the list sent one request per row,
+   * sequentially. The answer carries one result per id, in the order sent: a
+   * refused or unknown order comes back as `success: false` with the server's
+   * own message, so a batch is never all-or-nothing.
+   *
+   * <p>The customer is NOT notified from here: there is one shared note for
+   * the whole batch, and the mail would quote it to every customer.
+   */
+  bulkUpdateStatus(
+    ids: readonly number[],
+    status: OrderStatus,
+    note?: string,
+  ): Observable<ApiResponse<BulkStatusRowResult[]>> {
+    const body: { ids: number[]; status: OrderStatus; note?: string } = {
+      ids: [...ids],
+      status,
+    };
+    if (note) body.note = note;
+
+    return this.http.put<ApiResponse<BulkStatusRowResult[]>>(`${this.base}/bulk-status`, body);
   }
 
   /** The status history of an order, oldest first. */

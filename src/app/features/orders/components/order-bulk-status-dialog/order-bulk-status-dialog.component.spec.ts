@@ -27,7 +27,7 @@ class EmptyLoader implements TranslocoLoader {
 const DICT: Record<string, string> = {
   'orders.bulk.selected': '{{count}} selected',
   'orders.bulk.changeStatus': 'Change status',
-  'orders.bulk.dialog.description': 'One at a time.',
+  'orders.bulk.dialog.description': 'One request updates the selection.',
   'orders.bulk.dialog.selectLabel': 'New status',
   'orders.bulk.dialog.hint': 'Skipped rows are listed afterwards.',
   'orders.bulk.dialog.cancelNote': 'Cancelling stays per order.',
@@ -37,7 +37,7 @@ const DICT: Record<string, string> = {
   'orders.bulk.notEligible': 'No selected order can move to this status',
   'orders.bulk.updateCount_one': 'Update {{count}} order',
   'orders.bulk.updateCount_other': 'Update {{count}} orders',
-  'orders.bulk.progress': 'Updating {{done}} of {{total}}…',
+  'orders.bulk.sending': 'Sending the change…',
   'orders.dialogs.status.confirm': 'Update status',
   'orders.statuses.PENDING': 'Pending',
   'orders.statuses.CONFIRMED': 'Confirmed',
@@ -64,6 +64,7 @@ const rows: BulkStatusRow[] = [
 async function mount(inputs: {
   rows?: BulkStatusRow[];
   open?: boolean;
+  pending?: boolean;
 }): Promise<ComponentFixture<OrderBulkStatusDialogComponent>> {
   await TestBed.configureTestingModule({
     imports: [OrderBulkStatusDialogComponent],
@@ -82,6 +83,7 @@ async function mount(inputs: {
   const fixture = TestBed.createComponent(OrderBulkStatusDialogComponent);
   fixture.componentRef.setInput('open', inputs.open ?? true);
   fixture.componentRef.setInput('rows', inputs.rows ?? rows);
+  if (inputs.pending !== undefined) fixture.componentRef.setInput('pending', inputs.pending);
   fixture.detectChanges();
   return fixture;
 }
@@ -159,6 +161,24 @@ describe('OrderBulkStatusDialogComponent', () => {
     expect(element.querySelector('[data-testid="bulk-status-options"]')).toBeNull();
     expect(element.querySelector('[data-testid="bulk-status-no-options"]')?.textContent).toContain(
       'None can change status.',
+    );
+  });
+
+  it('says the batch is one request while it is in flight, and locks the picker', async () => {
+    const fixture = await mount({ pending: true });
+    const element = fixture.nativeElement as HTMLElement;
+
+    // No per-row counter: the change is sent in one request.
+    expect(element.querySelector('[data-testid="bulk-status-sending"]')?.textContent).toContain(
+      'Sending the change…',
+    );
+
+    const confirm = element.querySelector(
+      '[data-testid="bulk-status-dialog-confirm"]',
+    ) as HTMLButtonElement;
+    expect(confirm.disabled).toBe(true);
+    expect((element.querySelector('input#bulk-status-CONFIRMED') as HTMLInputElement).disabled).toBe(
+      true,
     );
   });
 });

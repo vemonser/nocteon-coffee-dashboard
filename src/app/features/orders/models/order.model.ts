@@ -83,6 +83,21 @@ export interface OrderResponse {
 }
 
 /**
+ * One row's outcome in a bulk status change (FE-18b).
+ *
+ * <p>The shape the endpoint answers with: every id the dashboard sent comes
+ * back exactly once, in the order it was sent, and `message` is the SERVER's
+ * own sentence when `success` is false. `orderNumber` is null only when the id
+ * is not an order (there was nothing to name).
+ */
+export interface BulkStatusRowResult {
+  id: number;
+  orderNumber: string | null;
+  success: boolean;
+  message: string | null;
+}
+
+/**
  * The filters the list sends to the backend.
  *
  * The backend's `OrderFilterRequest` (page, size, sort, direction, status,
