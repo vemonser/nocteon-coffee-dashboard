@@ -103,6 +103,17 @@ describe('ProductWizardStateService — tags', () => {
     expect(state.relatedProducts().map((item) => item.slug)).toEqual(['ethiopia-yirgacheffe']);
   });
 
+  it('removing one from the middle keeps the rest in order', () => {
+    ['a', 'b', 'c'].forEach((slug) =>
+      state.addRelated({ slug, name: slug.toUpperCase(), primaryImageUrl: null }),
+    );
+
+    state.removeRelated('b');
+
+    expect(state.relatedProductSlugsArray.value).toEqual(['a', 'c']);
+    expect(state.relatedProducts().map((item) => item.slug)).toEqual(['a', 'c']);
+  });
+
   it('loads the saved tags back into the form in edit mode', () => {
     state.loadFromDetail(
       {

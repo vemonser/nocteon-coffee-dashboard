@@ -1420,3 +1420,18 @@ Live evidence: saved SEO values through the wizard, read them back from
   2 failures unrelated to this change. The seeded status was restored before the final run; the
   lesson is that these two tests depend on mutable demo data — worth making them seed-invariant
   rather than fixing the row each time.
+
+### Two duplicate edge cases, decided
+- **Duplicating a trashed product is a 404.** The trash view has no Duplicate action, and a copy of
+  a discarded product is almost always a mistake; restoring first is one click away.
+- **Soft-deleted variants are not copied.** They are retired rows kept for order history, and a new
+  draft resurrecting them would reappear on the storefront as selectable options.
+- Related products must be **active**: the picker only searches active products, and the API now
+  refuses an inactive slug, so a crafted request cannot put a dead link on a live product page.
+
+### Ordered relations are rows, not an ordered collection
+The first implementation mapped `product_relations` as a `@ManyToMany` with `@OrderColumn`. A
+reorder test showed why that is wrong here: Hibernate updates the positions in place and the
+write collides on the primary key as soon as two entries swap. The mapping is now an explicit
+`ProductRelation` row (`id`, `product_id`, `related_product_id`, `position`), and a change replaces
+the product's rows — one delete plus N inserts, at most six rows.
