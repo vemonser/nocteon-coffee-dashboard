@@ -96,6 +96,7 @@ export const routes: Routes = [
           {
             path: ':id',
             data: { breadcrumb: 'userDetails' },
+            canActivate: [permissionGuard('user:read')],
             loadComponent: () =>
               import('./features/users/user-detail/components/user-detail.component').then(
                 (m) => m.UserDetailComponent,

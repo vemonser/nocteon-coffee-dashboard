@@ -90,6 +90,10 @@ import { PluralPipe } from '../../../shared/pipes/plural.pipe';
   templateUrl: './broadcast-list.component.html',
 })
 export class BroadcastListComponent extends BaseListComponent<BroadcastResponse, BroadcastRequest> {
+
+  protected override createPermission = 'broadcast:create';
+  protected override updatePermission = 'broadcast:update';
+  protected override deletePermission = 'broadcast:delete';
   private broadcastService = inject(BroadcastService);
   private userService = inject(UserService);
 

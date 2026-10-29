@@ -251,7 +251,7 @@
         {{ 'orders.bulk.selected' | transloco: { count: selectedCount() } }}
       </p>
       <div class="flex items-center gap-2">
-        <button hlmBtn variant="outline" size="sm" (click)="bulkChangeStatus()">
+        <button *hasPermission="'order:update'" hlmBtn variant="outline" size="sm" (click)="bulkChangeStatus()">
           {{ 'orders.bulk.changeStatus' | transloco }}
         </button>
         <button hlmBtn variant="outline" size="sm" (click)="exportCsv()" [disabled]="loading()">

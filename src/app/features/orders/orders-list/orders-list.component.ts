@@ -33,6 +33,7 @@ import { HlmTooltipImports } from '@spartan-ng/helm/tooltip';
 import { BrnTooltip } from '@spartan-ng/brain/tooltip';
 
 import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
+import { HasPermissionDirective } from '../../../core/auth/permission.directive';
 import { KpiCardComponent } from '../../../shared/components/dashboard/kpi-card/kpi-card.component';
 import { PagerComponent } from '../../../shared/components/pager/pager.component';
 import { PluralPipe } from '../../../shared/pipes/plural.pipe';
@@ -103,6 +104,7 @@ import { orderItemsCount } from '../utils/order-items-count';
     KpiCardComponent,
     TranslocoPipe,
     MoneyPipe,
+    HasPermissionDirective,
   ],
   providers: [
     provideIcons({

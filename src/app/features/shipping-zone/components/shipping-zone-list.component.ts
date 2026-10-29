@@ -87,6 +87,9 @@ export class ShippingZoneListComponent extends BaseListComponent<
 
   protected override softDeleteEnabled = true;
   protected override canManageTrash = this.auth.hasPermission('shipping_zone:delete');
+  protected override createPermission = 'shipping_zone:create';
+  protected override updatePermission = 'shipping_zone:update';
+  protected override deletePermission = 'shipping_zone:delete';
   protected readonly isTrashAllowed = computed(() => this.auth.hasPermission('shipping_zone:delete'));
 
   protected override getId(item: ShippingZoneResponse): number {

@@ -69,6 +69,9 @@ export class PairingListComponent extends BaseListComponent<PairingResponse, Pai
 
   protected override softDeleteEnabled = true;
   protected override canManageTrash = this.auth.hasPermission('pairing:delete');
+  protected override createPermission = 'pairing:create';
+  protected override updatePermission = 'pairing:update';
+  protected override deletePermission = 'pairing:delete';
   protected readonly isTrashAllowed = computed(() => this.auth.hasPermission('pairing:delete'));
 
   protected override getId(item: PairingResponse): string {

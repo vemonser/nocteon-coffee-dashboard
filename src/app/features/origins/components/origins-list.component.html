@@ -91,7 +91,7 @@
   </div>
 
   <!-- Bulk actions -->
-  @if (hasSelection()) {
+  @if (hasSelection() && canDelete()) {
     <div
       class="flex flex-wrap items-center gap-2 rounded-lg border bg-muted/50 px-3 py-2"
       role="region"
@@ -152,11 +152,11 @@
           [initialSort]="{ column: currentSort, direction: currentDirection }"
           [navigableColumn]="isTrash() ? '' : 'slug'"
           [navigableHref]="rowHref"
-          [showEdit]="!isTrash()"
+          [showEdit]="!isTrash() && canUpdate()"
           [showView]="false"
-          [showDelete]="!isTrash()"
-          [showRestore]="isTrash()"
-          [showPermanentDelete]="isTrash()"
+          [showDelete]="!isTrash() && canDelete()"
+          [showRestore]="isTrash() && canDelete()"
+          [showPermanentDelete]="isTrash() && canDelete()"
           [restoreLabel]="'common.restore' | transloco"
           [permanentDeleteLabel]="'common.deletePermanently' | transloco"
           (selectionChange)="onSelectionChange($event)"

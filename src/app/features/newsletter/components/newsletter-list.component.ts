@@ -65,6 +65,10 @@ import { PluralPipe } from '../../../shared/pipes/plural.pipe';
   templateUrl: './newsletter-list.component.html',
 })
 export class NewsletterListComponent extends BaseListComponent<UserResponse, never, string> {
+
+  protected override createPermission: string | null = null;
+  protected override updatePermission: string | null = null;
+  protected override deletePermission: string | null = null;
   private readonly newsletterService = inject(NewsletterService);
 
   /** The whole audience, for the export. */

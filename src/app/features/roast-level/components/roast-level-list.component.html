@@ -59,7 +59,7 @@
   </div>
 
   <!-- Bulk actions -->
-  @if (hasSelection()) {
+  @if (hasSelection() && canDelete()) {
     <div class="flex flex-wrap items-center gap-2 rounded-lg border bg-muted/50 px-3 py-2" role="region">
       <span class="text-sm font-medium tabular-nums">{{ selectionCount() }}</span>
       <div class="ms-auto flex items-center gap-2">
@@ -107,11 +107,11 @@
           [selectRowLabel]="'roastLevels.trash.selectRow' | transloco"
           [navigableColumn]="''"
           [initialSort]="{ column: currentSort, direction: currentDirection }"
-          [showEdit]="!isTrash()"
+          [showEdit]="!isTrash() && canUpdate()"
           [showView]="false"
-          [showDelete]="!isTrash()"
-          [showRestore]="isTrash()"
-          [showPermanentDelete]="isTrash()"
+          [showDelete]="!isTrash() && canDelete()"
+          [showRestore]="isTrash() && canDelete()"
+          [showPermanentDelete]="isTrash() && canDelete()"
           [deleteLabel]="'roastLevels.trash.moveToTrash'"
           [destructiveDelete]="false"
           [restoreLabel]="'common.restore'"

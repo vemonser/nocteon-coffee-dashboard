@@ -77,6 +77,9 @@ export class PromoCodesListComponent extends BaseListComponent<
 
   protected override softDeleteEnabled = true;
   protected override canManageTrash = this.auth.hasPermission('promo:delete');
+  protected override createPermission = 'promo:create';
+  protected override updatePermission = 'promo:update';
+  protected override deletePermission = 'promo:delete';
   protected readonly isTrashAllowed = computed(() => this.auth.hasPermission('promo:delete'));
   protected readonly storeCurrency = computed(() => this.storeSettings.currency());
   protected readonly language = inject(LanguageService);

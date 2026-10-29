@@ -96,6 +96,9 @@ export class BrewingMethodsListComponent extends BaseListComponent<DashboardBrew
 
   protected override softDeleteEnabled = true;
   protected override canManageTrash = this.auth.hasPermission('brewing_method:delete');
+  protected override createPermission = 'brewing_method:create';
+  protected override updatePermission = 'brewing_method:update';
+  protected override deletePermission = 'brewing_method:delete';
   protected readonly isTrashAllowed = computed(() => this.auth.hasPermission('brewing_method:delete'));
 
   protected override getId(item: DashboardBrewingMethodResponse): string {

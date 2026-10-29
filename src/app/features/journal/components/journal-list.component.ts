@@ -59,6 +59,10 @@ import { LocalizedDateComponent } from '../../../shared/ui/localized-date/locali
   templateUrl: './journal-list.component.html',
 })
 export class JournalListComponent extends BaseListComponent<JournalPostResponse, never, string> {
+
+  protected override createPermission = 'journal:create';
+  protected override updatePermission = 'journal:update';
+  protected override deletePermission = 'journal:delete';
   router = inject(Router);
   private journalService = inject(JournalService);
   protected readonly language = inject(LanguageService);

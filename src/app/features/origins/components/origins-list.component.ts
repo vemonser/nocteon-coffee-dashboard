@@ -61,6 +61,9 @@ export class OriginsListComponent extends BaseListComponent<OriginResponse, Orig
   /** Opt into the shared soft-delete capability. */
   protected override softDeleteEnabled = true;
   protected override canManageTrash = this.auth.hasPermission('origin:delete');
+  protected override createPermission = 'origin:create';
+  protected override updatePermission = 'origin:update';
+  protected override deletePermission = 'origin:delete';
   protected readonly isTrashAllowed = computed(() => this.auth.hasPermission('origin:delete'));
   protected translationHelper = inject(TranslationFormHelper);
   protected router = inject(Router);

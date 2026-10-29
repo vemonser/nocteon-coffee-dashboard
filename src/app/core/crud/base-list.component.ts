@@ -8,6 +8,7 @@ import { SoftDeleteFailure, classifyRestoreError } from './soft-delete.contract'
 import { NotifyService } from '../notify/notify.service';
 import { TranslocoService } from '@jsverse/transloco';
 import { toast } from '@spartan-ng/brain/sonner';
+import { PermissionService } from '../auth/permission.service';
 
 export type ViewMode = 'list' | 'grid';
 
@@ -34,6 +35,7 @@ export abstract class BaseListComponent<TResponse, TRequest, TId = string>
 {
   protected readonly notify = inject(NotifyService);
   protected fb = inject(FormBuilder);
+  protected readonly permissionService = inject(PermissionService);
   protected Math = Math;
   // Named to avoid colliding with page-level `router` fields (e.g. UsersListComponent).
   protected readonly listRouter = inject(Router);
@@ -123,6 +125,25 @@ export abstract class BaseListComponent<TResponse, TRequest, TId = string>
 
   /** Whether the signed-in user may reach the trash endpoints (`<entity>:delete`). */
   protected canManageTrash = false;
+
+  /**
+   * Permission slugs gating the create/update/delete actions for this entity.
+   * `null` means "not gated" (allowed) so pages that do not set them keep the
+   * previous behaviour. Subclasses set these to the relevant `entity:*` slugs.
+   */
+  protected createPermission: string | null = null;
+  protected updatePermission: string | null = null;
+  protected deletePermission: string | null = null;
+
+  readonly canCreate = computed(() =>
+    this.createPermission ? this.permissionService.has(this.createPermission) : true,
+  );
+  readonly canUpdate = computed(() =>
+    this.updatePermission ? this.permissionService.has(this.updatePermission) : true,
+  );
+  readonly canDelete = computed(() =>
+    this.deletePermission ? this.permissionService.has(this.deletePermission) : true,
+  );
 
   /** Status filter (enabled/disabled) — active tab only, entity-specific. */
   protected statusFilterValue: boolean | undefined = undefined;

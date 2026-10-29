@@ -95,6 +95,9 @@ export class TastingNoteListComponent extends BaseListComponent<TastingNoteRespo
 
   protected override softDeleteEnabled = true;
   protected override canManageTrash = this.auth.hasPermission('tasting_note:delete');
+  protected override createPermission = 'tasting_note:create';
+  protected override updatePermission = 'tasting_note:update';
+  protected override deletePermission = 'tasting_note:delete';
   protected readonly isTrashAllowed = computed(() => this.auth.hasPermission('tasting_note:delete'));
 
   protected override getId(item: TastingNoteResponse): string {

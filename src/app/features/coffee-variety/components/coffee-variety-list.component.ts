@@ -97,6 +97,9 @@ export class CoffeeVarietyListComponent extends BaseListComponent<CoffeeVarietyR
 
   protected override softDeleteEnabled = true;
   protected override canManageTrash = this.auth.hasPermission('coffee_variety:delete');
+  protected override createPermission = 'coffee_variety:create';
+  protected override updatePermission = 'coffee_variety:update';
+  protected override deletePermission = 'coffee_variety:delete';
   protected readonly isTrashAllowed = computed(() => this.auth.hasPermission('coffee_variety:delete'));
 
   protected override getId(item: CoffeeVarietyResponse): string {

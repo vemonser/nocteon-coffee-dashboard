@@ -98,6 +98,9 @@ export class ProcessingMethodListComponent extends BaseListComponent<ProcessingM
 
   protected override softDeleteEnabled = true;
   protected override canManageTrash = this.auth.hasPermission('processing_method:delete');
+  protected override createPermission = 'processing_method:create';
+  protected override updatePermission = 'processing_method:update';
+  protected override deletePermission = 'processing_method:delete';
   protected readonly isTrashAllowed = computed(() => this.auth.hasPermission('processing_method:delete'));
 
   protected override getId(item: ProcessingMethodResponse): string {
