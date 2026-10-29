@@ -1,8 +1,9 @@
-﻿import { Component, computed, inject, signal } from '@angular/core';
+﻿import { Component, HostListener, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AbstractControl, FormArray, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HasPermissionDirective } from '../../../core/auth/permission.directive';
 import { BaseListComponent } from '../../../core/crud/base-list.component';
+import { A11yModule } from '@angular/cdk/a11y';
 import { PairingRequest, PairingResponse } from '../models/pairing.model';
 import { PairingService } from '../services/pairing.service';
 import { TranslationFormHelper } from '../../../shared/utils/translation.utils';
@@ -26,6 +27,7 @@ import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucidePlus, lucideSearch, lucideList, lucidePencil, lucideTrash2, lucideX, lucideCheck, lucideImage, lucideLoader2, lucideChevronLeft, lucideChevronRight } from '@ng-icons/lucide';
 
 import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
+import { ClickOutsideDirective } from '../../../shared/directives/click-outside.directive';
 import { LifecycleTabsComponent } from '../../../shared/components/lifecycle-tabs/lifecycle-tabs.component';
 import { TrashBannerComponent } from '../../../shared/components/trash-banner/trash-banner.component';
 import { PagerComponent } from '../../../shared/components/pager/pager.component';
@@ -40,6 +42,8 @@ import { PagerComponent } from '../../../shared/components/pager/pager.component
     ReactiveFormsModule,
     HasPermissionDirective,
     DataTableComponent,
+    ClickOutsideDirective,
+    A11yModule,
     LifecycleTabsComponent,
     TrashBannerComponent,
     ImageUploadComponent,
@@ -229,4 +233,11 @@ export class PairingListComponent extends BaseListComponent<PairingResponse, Pai
   protected override callDelete(slug: string) {
     return this.pairingService.delete(slug);
   }
+  /** Esc closes whichever dialog is open. */
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    if (this.permanentDeleteTarget()) this.closePermanentDelete();
+    else if (this.bulkConfirm()) this.cancelBulkConfirm();
+  }
+
 }
