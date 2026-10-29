@@ -26,6 +26,7 @@ import { UserAvatarComponent } from '../../ui/user-avatar/user-avatar.component'
 import { StatusBadgeComponent } from '../../ui/status-badge/status-badge.component';
 import { RatingStarsComponent } from '../../ui/rating-stars/rating-stars.component';
 import { VerifiedBadgeComponent } from '../../ui/verified-badge/verified-badge.component';
+import { EmptyStateComponent } from '../empty-state/empty-state.component';
 import { LocalizedNameService } from '../../../core/i18n/localized-name.service';
 import { LocalizedDateService } from '../../../core/i18n/localized-date.service';
 import { StoreSettingsService } from '../../../core/settings/store-settings.service';
@@ -34,6 +35,15 @@ import { formatRelativeTime } from '../../../core/i18n/relative-time';
 import { formatCount, formatPriceRange, formatRating as formatRatingValue } from '../../utils/locale-format';
 import { hasCountedRating } from '../../utils/rating';
 
+/**
+ * The two width tiers of the column priority, in px.
+ *
+ * They are also written into `data-table.component.css` (a media query cannot
+ * read a TypeScript constant), so the two must agree — the unit spec asserts
+ * these values and the stylesheet comments point back here.
+ */
+export const COLUMN_TIERS = { narrow: 1023.5, phone: 639.5 } as const;
+
 export interface TableSortEvent {
   column: string;
   direction: 'asc' | 'desc';
@@ -41,7 +51,7 @@ export interface TableSortEvent {
 
 @Component({
   selector: 'app-data-table',
-  imports: [UserAvatarComponent, ImageCellComponent, ActionsCellComponent, StatusCellComponent, DeletedBadgeComponent, LocalizedDateComponent, ColorCellComponent, MainCellComponent, StatusBadgeComponent, RatingStarsComponent, VerifiedBadgeComponent, NgIcon, TranslocoPipe, RouterModule, MoneyPipe, PluralPipe],
+  imports: [UserAvatarComponent, ImageCellComponent, ActionsCellComponent, StatusCellComponent, DeletedBadgeComponent, LocalizedDateComponent, ColorCellComponent, MainCellComponent, StatusBadgeComponent, RatingStarsComponent, VerifiedBadgeComponent, EmptyStateComponent, NgIcon, TranslocoPipe, RouterModule, MoneyPipe, PluralPipe],
   providers: [provideIcons({ lucideStar, lucideCreditCard, lucideBanknote, lucideBadgeCheck, lucideTriangleAlert, heroStarSolid, heroStar })],
   templateUrl: './data-table.component.html',
   styleUrl: './data-table.component.css',
@@ -213,6 +223,14 @@ export class DataTableComponent {
 
   loading = input<boolean>(false);
   emptyMessage = input<string>('No data found');
+  /**
+   * The line under the empty title: what the reader can do about it.
+   *
+   * <p>Optional, because some empty states have nothing to add ("Orders placed
+   * in the store will appear here" is the hint; a filter with no matches gets
+   * "Try a wider date range, or clear the filters").
+   */
+  emptyHint = input<string>('');
   /** Optional action button shown in the empty state (e.g., "Clear filters"). */
   emptyAction = input<{ label: string; action: () => void } | null>(null);
   /**
@@ -433,6 +451,41 @@ export class DataTableComponent {
    * `table-fixed` never has to squeeze columns below their budget.
    */
   minWidth = input<string>('760px');
+
+  /**
+   * Columns that leave the table on a PHONE (below 640px).
+   *
+   * <p>Column priority, in one place: a table keeps its identity, its state,
+   * its money and its actions at every width; dates and ids leave below
+   * 1024px (`col-narrow-hide`); the DETAIL columns a phone cannot use leave
+   * below 640px. Nothing is deleted — every hidden column is on the row's own
+   * page, one tap away, which is exactly what the horizontal scroll was
+   * hiding anyway. A page names the columns; the table never guesses.
+   */
+  phoneHiddenColumns = input<string[]>([]);
+
+  /**
+   * The priority test itself: a pure function, so the rule can be asserted
+   * without a browser (there is no media query in jsdom).
+   */
+  static hidesOnPhone(columnId: string, phoneHiddenColumns: readonly string[]): boolean {
+    return phoneHiddenColumns.includes(columnId);
+  }
+
+  /** True when this column leaves the table on a phone. */
+  isPhoneHidden(columnId: string): boolean {
+    return DataTableComponent.hidesOnPhone(columnId, this.phoneHiddenColumns());
+  }
+
+  /**
+   * The table's floor width on a phone.
+   *
+   * <p>`table-fixed` ignores content width, so the floor is what keeps a
+   * column from being squeezed below its budget. It has to follow the hidden
+   * columns: a 1111px floor on a 375px screen would scroll through empty
+   * space where the hidden columns used to be.
+   */
+  minWidthPhone = input<string>('');
 
   // ─── Selection (bulk actions) ─────────────────────────────────────────────────
 

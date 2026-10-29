@@ -26,6 +26,7 @@ import { TranslocoPipe } from '@jsverse/transloco';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucidePlus, lucideSearch, lucideList, lucidePencil, lucideTrash2, lucideX, lucideCheck, lucideImage, lucideLoader2, lucideChevronLeft, lucideChevronRight } from '@ng-icons/lucide';
 
+import { EmptyStateComponent } from '../../../shared/components/empty-state/empty-state.component';
 import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
 import { ClickOutsideDirective } from '../../../shared/directives/click-outside.directive';
 import { LifecycleTabsComponent } from '../../../shared/components/lifecycle-tabs/lifecycle-tabs.component';
@@ -41,6 +42,7 @@ import { PagerComponent } from '../../../shared/components/pager/pager.component
     FormsModule,
     ReactiveFormsModule,
     HasPermissionDirective,
+    EmptyStateComponent,
     DataTableComponent,
     ClickOutsideDirective,
     A11yModule,
@@ -62,6 +64,11 @@ import { PagerComponent } from '../../../shared/components/pager/pager.component
   templateUrl: './pairing-list.component.html',
 })
 export class PairingListComponent extends BaseListComponent<PairingResponse, PairingRequest> {
+
+  /** The create action's own copy, for the empty state's button. */
+  protected override createActionLabel(): string {
+    return this.t('pairings.add', 'Add new pairing');
+  }
   private pairingService = inject(PairingService);
   private auth = inject(AuthService);
   protected readonly language = inject(LanguageService);

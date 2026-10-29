@@ -23,6 +23,7 @@ import {
 } from '@ng-icons/lucide';
 
 import { TranslocoPipe } from '@jsverse/transloco';
+import { ErrorStateComponent } from '../../../shared/components/error-state/error-state.component';
 import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
 
 @Component({
@@ -32,6 +33,7 @@ import { DataTableComponent } from '../../../shared/components/data-table/data-t
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
+    ErrorStateComponent,
     DataTableComponent,
     TranslocoPipe,
     HlmButtonImports,

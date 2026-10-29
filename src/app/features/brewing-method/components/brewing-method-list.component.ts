@@ -40,6 +40,7 @@ import {
   lucideChevronRight,
 } from '@ng-icons/lucide';
 
+import { EmptyStateComponent } from '../../../shared/components/empty-state/empty-state.component';
 import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
 import { PagerComponent } from '../../../shared/components/pager/pager.component';
 import { LifecycleTabsComponent } from '../../../shared/components/lifecycle-tabs/lifecycle-tabs.component';
@@ -54,6 +55,7 @@ import { TrashBannerComponent } from '../../../shared/components/trash-banner/tr
     FormsModule,
     ReactiveFormsModule,
     HasPermissionDirective,
+    EmptyStateComponent,
     DataTableComponent,
     PagerComponent,
     LifecycleTabsComponent,
@@ -89,6 +91,11 @@ import { TrashBannerComponent } from '../../../shared/components/trash-banner/tr
   templateUrl: './brewing-methods-list.component.html',
 })
 export class BrewingMethodsListComponent extends BaseListComponent<DashboardBrewingMethodResponse, BrewingMethodRequest> {
+
+  /** The create action's own copy, for the empty state's button. */
+  protected override createActionLabel(): string {
+    return this.t('brewingMethods.add', 'Add brewing method');
+  }
   private brewingMethodService = inject(BrewingMethodService);
   protected readonly language = inject(LanguageService);
   protected translationHelper = inject(TranslationFormHelper);

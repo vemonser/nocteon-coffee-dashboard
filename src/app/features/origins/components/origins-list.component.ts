@@ -28,6 +28,7 @@ import {
   lucideTrash2, lucideX, lucideCheck, lucideImage, lucideLoader2,
 } from '@ng-icons/lucide';
 
+import { EmptyStateComponent } from '../../../shared/components/empty-state/empty-state.component';
 import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
 import { ClickOutsideDirective } from '../../../shared/directives/click-outside.directive';
 import { LifecycleTabsComponent } from '../../../shared/components/lifecycle-tabs/lifecycle-tabs.component';
@@ -39,7 +40,7 @@ import { PagerComponent } from '../../../shared/components/pager/pager.component
 @Component({
   selector: 'app-origins-list',
   standalone: true,
-  imports: [
+  imports: [ EmptyStateComponent,
     PagerComponent,
     CommonModule, FormsModule, ReactiveFormsModule, HasPermissionDirective, DataTableComponent,
     LifecycleTabsComponent, TrashBannerComponent,
@@ -54,6 +55,11 @@ import { PagerComponent } from '../../../shared/components/pager/pager.component
   templateUrl: './origins-list.component.html',
 })
 export class OriginsListComponent extends BaseListComponent<OriginResponse, OriginRequest> {
+
+  /** The create action's own copy, for the empty state's button. */
+  protected override createActionLabel(): string {
+    return this.t('origins.add', 'Add origin');
+  }
   private originService = inject(OriginService);
   private auth = inject(AuthService);
   protected readonly language = inject(LanguageService);

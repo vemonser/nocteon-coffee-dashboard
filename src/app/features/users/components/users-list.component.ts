@@ -26,6 +26,7 @@ import { HlmTooltipImports } from '@spartan-ng/helm/tooltip';
 
 import { BaseListComponent } from '../../../core/crud/base-list.component';
 import { DataTableComponent, type TableSortEvent } from '../../../shared/components/data-table/data-table.component';
+import { ErrorStateComponent } from '../../../shared/components/error-state/error-state.component';
 import { ActionsCellComponent, type RowMenuAction } from '../../../shared/ui/actions-cell/actions-cell.component';
 import { HasPermissionDirective } from '../../../core/auth/permission.directive';
 import { AuthService } from '../../../core/auth/auth.service';
@@ -49,6 +50,7 @@ type QuickFilter = 'ALL' | 'BLOCKED' | 'UNVERIFIED' | (string & {});
   standalone: true,
   imports: [
     PagerComponent, CommonModule, FormsModule, ReactiveFormsModule, HasPermissionDirective,
+    ErrorStateComponent,
     DataTableComponent, HlmCardImports, HlmButtonImports, HlmBadgeImports, HlmInputImports,
     HlmNativeSelectImports, HlmDialogImports, HlmFieldImports, HlmTableImports, HlmAvatarImports,
     HlmSkeletonImports, HlmLabelImports, HlmTooltipImports, NgIcon, TranslocoPipe,

@@ -271,6 +271,51 @@ export abstract class BaseListComponent<TResponse, TRequest, TId = string>
     });
   }
 
+  // ─── Empty state (FE-27) ─────────────────────────────────────────────────────
+
+  /**
+   * The search box holds a term, so an empty list means "no MATCHES", not
+   * "nothing exists yet".
+   *
+   * The two are different states with different copy AND different actions:
+   * a filter that matches nothing can be widened, an empty catalogue cannot.
+   */
+  protected readonly hasSearch = computed(() => this.searchQuery.trim().length > 0);
+
+  /** Drop the search term and reload: the way out of "no matches". */
+  protected clearSearch(): void {
+    this.searchQuery = '';
+    this.currentPage.set(0);
+    this.writeUrlState();
+    this.load();
+  }
+
+  /**
+   * The action an empty list offers.
+   *
+   * <p>Clearing the search when there is one, otherwise creating the first
+   * row — and nothing at all for a reader who may not create, because a
+   * button the server would refuse is worse than no button. Pages override
+   * `createActionLabel()` for their own copy ("Add origin").
+   */
+  protected readonly listEmptyAction = computed<{ label: string; action: () => void } | null>(
+    () => {
+      if (this.hasSearch()) {
+        return {
+          label: this.t('common.clearSearch', 'Clear search'),
+          action: () => this.clearSearch(),
+        };
+      }
+      if (!this.canCreate()) return null;
+      return { label: this.createActionLabel(), action: () => this.openCreateDialog() };
+    },
+  );
+
+  /** The create action's label. A page overrides it with its own copy. */
+  protected createActionLabel(): string {
+    return this.t('common.add', 'Add');
+  }
+
   onSearch(): void {
     clearTimeout(this.searchTimeout);
     this.searchTimeout = setTimeout(() => {

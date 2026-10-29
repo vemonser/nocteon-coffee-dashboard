@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DataTableComponent, TableSortEvent } from '../../../../shared/components/data-table/data-table.component';
+import { ErrorStateComponent } from '../../../../shared/components/error-state/error-state.component';
 import { HlmCardImports } from '@spartan-ng/helm/card';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmBadgeImports } from '@spartan-ng/helm/badge';
@@ -54,6 +55,7 @@ import { buildProductsCsv, withUtf8Bom } from '../../products-csv';
     CommonModule,
     ReactiveFormsModule,
     DataTableComponent,
+    ErrorStateComponent,
     LifecycleTabsComponent,
     TrashBannerComponent,
     HlmCardImports,
@@ -162,19 +164,47 @@ export class ProductsListComponent {
       : this.transloco.translate('products.empty.none');
   });
 
+  /**
+   * The line under the empty title: why it is empty, and what to do next.
+   *
+   * <p>One hint per state, so the sentence always agrees with the button
+   * beside it (FE-27: every empty state explains itself and offers the action
+   * that resolves it).
+   */
+  readonly emptyHint = computed(() => {
+    if (this.isTrash()) return this.transloco.translate('products.empty.hintTrash');
+    return this.searchText().trim()
+      ? this.transloco.translate('products.empty.hintSearch')
+      : this.transloco.translate('products.empty.hintNone');
+  });
+
   readonly emptyAction = computed<{ label: string; action: () => void } | null>(() => {
+    // Trash is a healthy state, not a task: nothing to offer.
     if (this.isTrash()) return null;
     const q = this.searchText().trim();
-    return q
-      ? {
-          label: this.transloco.translate('products.empty.clear'),
-          action: () => this.filters.patchValue({ search: '' }),
-        }
-      : {
-          label: this.transloco.translate('products.add'),
-          action: () => this.goToCreate(),
-        };
+    if (q) {
+      return {
+        label: this.transloco.translate('products.empty.clear'),
+        action: () => this.filters.patchValue({ search: '' }),
+      };
+    }
+    // "Add product" only for a reader who may create one; otherwise the hint
+    // stands alone instead of a button that would be refused.
+    return this.canCreate
+      ? { label: this.transloco.translate('products.add'), action: () => this.goToCreate() }
+      : null;
   });
+
+  /**
+   * The column priority on a phone (below 640px): FE-26.
+   *
+   * <p>Kept: name, price range, stock, rating, status, featured, actions — the
+   * catalogue facts a phone reader scans. Dropped: Type and Category, both of
+   * which are FILTERS above the table and both reachable in the product
+   * editor the row opens. Rating (FE-14) and the CSV export (FE-15) are
+   * untouched: this is a width priority, not a data change.
+   */
+  readonly phoneHiddenColumns = ['productType', 'category'];
 
   readonly canManageTrash = this.authService.hasPermission('product:delete');
   readonly isTrashAllowed = computed(() => this.authService.hasPermission('product:delete'));

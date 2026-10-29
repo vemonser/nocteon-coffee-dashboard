@@ -129,11 +129,16 @@
 
     <!-- Empty state -->
     @if (!loading() && items().length === 0) {
-      <div class="view-fade card-surface px-4 py-12 text-center">
-        <ng-icon name="lucideSearch" class="mx-auto mb-3 size-10 text-muted-foreground/40" aria-hidden="true" />
-        <p class="font-medium">{{ 'common.noData' | transloco }}</p>
-        <p class="mt-1 text-sm text-muted-foreground">{{ 'common.tryAdjusting' | transloco }}</p>
-      </div>
+      <!-- FE-27: the designed empty state, with the action that resolves it:
+           clear the search when a term is active, otherwise add the first row
+           (and nothing at all when the reader may not create). -->
+      <app-empty-state
+        class="view-fade card-surface"
+        [title]="'common.noData' | transloco"
+        [hint]="'common.tryAdjusting' | transloco"
+        [actionLabel]="listEmptyAction()?.label ?? ''"
+        (action)="listEmptyAction()?.action()"
+      />
     }
   }
 

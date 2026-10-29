@@ -138,6 +138,12 @@
     </div>
   }
 
+  <!-- A failed fetch is a state of its own: the empty state would claim the
+       inbox is empty, which is a different (and wrong) fact. -->
+  @if (!loading() && loadError()) {
+    <app-error-state (retry)="loadPage()" />
+  }
+
   <div class="overflow-hidden card-surface">
     @if (loading()) {
       <div class="space-y-0">
@@ -146,7 +152,14 @@
         <div class="h-16 animate-pulse bg-muted/30"></div>
       </div>
     } @else if (items().length === 0) {
-      <p class="py-16 text-center text-muted-foreground">{{ emptyMessage() }}</p>
+      <!-- FE-27: the designed empty state, with the action that resolves it. -->
+      <app-empty-state
+        icon="lucideMail"
+        [title]="hasActiveFilters() ? ('common.noSearchResults' | transloco) : emptyMessage()"
+        [hint]="hasActiveFilters() ? ('common.tryAdjusting' | transloco) : ('contactMessages.emptyHint' | transloco)"
+        [actionLabel]="hasActiveFilters() ? ('contactMessages.filters.clear' | transloco) : ''"
+        (action)="clearFilters()"
+      />
     } @else if (viewMode() === 'list') {
       <div class="divide-y divide-border">
         @for (message of items(); track message.id) {

@@ -18,6 +18,7 @@ import { HlmTooltipImports } from '@spartan-ng/helm/tooltip';
 import { BrnTooltip } from '@spartan-ng/brain/tooltip';
 
 import { BaseListComponent } from '../../../core/crud/base-list.component';
+import { ErrorStateComponent } from '../../../shared/components/error-state/error-state.component';
 import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
 import { PagerComponent } from '../../../shared/components/pager/pager.component';
 import { NewsletterService } from '../services/newsletter.service';
@@ -50,6 +51,7 @@ import { PluralPipe } from '../../../shared/pipes/plural.pipe';
     PagerComponent,
     CommonModule,
     FormsModule,
+    ErrorStateComponent,
     DataTableComponent,
     HlmButtonImports,
     HlmInputImports,

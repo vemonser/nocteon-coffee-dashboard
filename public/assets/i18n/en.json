@@ -119,7 +119,9 @@
     "searchFailed": "Search failed. Please try again."
   },
   "StoreSettingPage": {
-    "title": "Store settings"
+    "title": "Store settings",
+    "empty": "No store settings yet",
+    "emptyHint": "Settings created on the storefront appear here, ready to edit."
   },
   "common": {
     "freeShippingActive": "Free shipping active",
@@ -310,6 +312,9 @@
     "processing": "Processing…",
     "clear": "Clear",
     "refresh": "Refresh",
+    "showMoreOptions": "Show more options",
+    "clearSearch": "Clear search",
+    "add": "Add",
     "countItems_one": "{{count}} item",
     "countItems_other": "{{count}} items",
     "noItemsWarning": "This order has no line items — its total is the shipping, less the discount.",
@@ -327,7 +332,8 @@
     "permanentDeleteFailed": "Could not delete permanently",
     "restoreConflictTitle": "Cannot restore",
     "restoreConflictBody": "Another item already uses this slug. Rename or remove it, then restore again.",
-    "restoreNotFound": "This item is no longer in the trash."
+    "restoreNotFound": "This item is no longer in the trash.",
+    "noSearchResults": "No matches for your search"
   },
   "products": {
     "draft": {
@@ -597,6 +603,9 @@
       "search": "No products match “{{q}}”",
       "clear": "Clear search",
       "trash": "Trash is empty",
+      "hintNone": "Products you add show up here, with their rating, stock and status.",
+      "hintSearch": "Check the spelling, or clear the search to see the whole catalog.",
+      "hintTrash": "Products you move to trash stay here until you restore or delete them.",
       "category": "No products in this category",
       "origin": "No products for this origin",
       "farm": "No products for this farm",
@@ -1334,7 +1343,9 @@
       "selectAll": "Select all rows",
       "selectRow": "Select row",
       "columns": "Columns"
-    }
+    },
+    "empty": "No promo codes yet",
+    "emptyHint": "A promo code you create shows up here with its redemptions and expiry."
   },
   "reviews": {
     "title": "Reviews",
@@ -1412,6 +1423,7 @@
     "withdrawApproval": "Withdraw approval",
     "moveToPending": "Move to pending",
     "emptyState": {
+      "noReviewsHint": "Reviews appear here after a customer rates a product.",
       "noReviews": "No reviews yet",
       "noResults": "No reviews match these filters"
     },
@@ -1589,7 +1601,9 @@
       "changed": "Role changed"
     },
     "thisIsYourAccount": "This is your account",
-    "emailLocked": "Only an administrator can change an account's e-mail address."
+    "emailLocked": "Only an administrator can change an account's e-mail address.",
+    "empty": "No users found",
+    "emptyHint": "No account matches this search — clear it to see everyone."
   },
   "carts": {
     "title": "Carts",
@@ -1692,7 +1706,8 @@
     "errorState": {
       "title": "Could not load carts",
       "hint": "Check your connection and try again."
-    }
+    },
+    "emptyHint": "A cart appears here as soon as a customer starts a checkout."
   },
   "orders": {
     "title": "Orders",
@@ -2186,7 +2201,8 @@
     "videoUrl": "Video URL",
     "videoUrlHint": "YouTube or Vimeo link",
     "videoInsert": "Insert",
-    "videoUrlInvalid": "Enter a YouTube or Vimeo link."
+    "videoUrlInvalid": "Enter a YouTube or Vimeo link.",
+    "emptyHint": "A post you publish appears here, newest first."
   },
   "dashboard": {
     "title": "Dashboard",
@@ -2392,7 +2408,8 @@
     "revenueByOriginProductRevenue": "Product revenue",
     "revenueByOriginExclShipping": "Excluding shipping",
     "scopeLatest": "Latest 5",
-    "scopeCurrent": "Current"
+    "scopeCurrent": "Current",
+    "overviewErrorTitle": "Could not load your dashboard"
   },
   "imageCell": {
     "noImage": "No img"
@@ -2407,6 +2424,10 @@
   "appearance": {
     "light": "Light",
     "dark": "Dark",
+    "switchToDark": "Switch to dark theme",
+    "switchToLight": "Switch to light theme",
+    "darkEnabled": "Dark theme enabled",
+    "lightEnabled": "Light theme enabled",
     "accent": "Accent color",
     "accentChange": "Accent change",
     "burgundy": "Burgundy",
@@ -2470,7 +2491,8 @@
     "optionsCount": "options",
     "valuesCount": "values",
     "usedBy": "Used by",
-    "variants": "Variants"
+    "variants": "Variants",
+    "emptyHint": "An option such as \"Size\" or \"Grind\" groups the values variants are built from."
   },
   "broadcasts": {
     "title": "Broadcasts",
@@ -2525,7 +2547,8 @@
     "audienceExclude": "Everyone except…",
     "recipientIds": "Send to",
     "excludeIds": "Exclude",
-    "sendFailed": "The broadcast could not be sent."
+    "sendFailed": "The broadcast could not be sent.",
+    "emptyHint": "A broadcast you send appears here with who received it."
   },
   "contactMessages": {
     "title": "Contact messages",
@@ -2614,7 +2637,8 @@
     "replyHistory": "Reply history will appear here once the API returns it.",
     "saveDraft": "Save draft",
     "saving": "Saving…",
-    "replyThread": "Reply thread"
+    "replyThread": "Reply thread",
+    "emptyHint": "Messages sent from the storefront contact form arrive here."
   },
   "oauth2Callback": {
     "processing": "Signing you in…",
@@ -2685,7 +2709,8 @@
       "failed": "The addresses could not be exported"
     },
     "totalCount_one": "1 address in the audience",
-    "totalCount_other": "{{count}} addresses in the audience"
+    "totalCount_other": "{{count}} addresses in the audience",
+    "emptyHint": "People appear here once they subscribe from the storefront."
   },
   "permissions": {
     "resources": {

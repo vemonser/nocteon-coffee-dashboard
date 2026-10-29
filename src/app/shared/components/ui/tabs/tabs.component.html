@@ -4,23 +4,24 @@
   The same component draws the range in the toolbar and the tabs inside
   the cards, so the two can never drift apart.
 
-  `scrollable` keeps the group on one line: the range control on a phone
-  used to wrap onto two rows. The group is still ONE tab stop — the active
-  item carries tabindex="0" and the rest are "-1", so the arrow keys (not
-  Tab) move through the options.
+  `scrollable` keeps the group on one line on a phone: the range control used
+  to wrap onto two rows and push the page down. A wrapping group showed every
+  option but cost a row; a scrolling group keeps one row but HIDES what is
+  past the edge — so it must say that it scrolls:
+
+    - a fade at the inline end while there is more to read;
+    - a real button that scrolls the group on to the next screenful, with an
+      accessible name, so a keyboard reader has the affordance too and not
+      only a mouse wheel (FE-25a).
+
+  The group is still ONE tab stop: the active item is the only one with
+  tabindex="0" and the rest are "-1", so the arrow keys (not Tab) move through
+  the options. That attribute is written to the DOM after render — see
+  `applyRovingTabindex()` — because the button directive behind `hlmBtn` owns
+  `[attr.tabindex]` and would otherwise remove it.
+  The scroll button is a separate, ordinary button after the group.
 -->
-<div
-  [attr.role]="groupRole()"
-  [attr.aria-label]="label() || null"
-  class="inline-flex items-center gap-1 rounded-lg border bg-card p-1"
-  [class.max-w-full]="scrollable()"
-  [class.flex-nowrap]="scrollable()"
-  [class.flex-wrap]="!scrollable()"
-  [class.overflow-x-auto]="scrollable()"
-  [class.scrollbar-hide]="scrollable()"
-  [class.overscroll-x-contain]="scrollable()"
-  (keydown)="onKeydown($event)"
->
+<ng-template #optionButtons>
   @for (item of items(); track item.id) {
     <button
       hlmBtn
@@ -28,7 +29,6 @@
       [attr.role]="itemRole()"
       [attr.aria-selected]="itemRole() === 'tab' ? active() === item.id : null"
       [attr.aria-checked]="itemRole() === 'radio' ? active() === item.id : null"
-      [attr.tabindex]="focusableId() === item.id ? 0 : -1"
       [attr.data-tab-id]="item.id"
       [variant]="active() === item.id ? 'secondary' : 'ghost'"
       size="sm"
@@ -39,4 +39,57 @@
       {{ item.label }}
     </button>
   }
-</div>
+</ng-template>
+
+@if (scrollable()) {
+  <div class="flex max-w-full items-center gap-1">
+    <div class="relative min-w-0">
+      <div
+        #scroller
+        tabindex="-1"
+        [attr.role]="groupRole()"
+        [attr.aria-label]="label() || null"
+        class="inline-flex max-w-full flex-nowrap items-center gap-1 overflow-x-auto overscroll-x-contain rounded-lg border bg-card p-1 scrollbar-hide"
+        [attr.data-overflow]="hasMore() ? 'end' : null"
+        [attr.data-testid]="'tabs-scroll'"
+        (scroll)="measure()"
+        (keydown)="onKeydown($event)"
+      >
+        <ng-container *ngTemplateOutlet="optionButtons" />
+      </div>
+      <!-- The fade sits OVER the last visible item, so a half-cut label reads
+           as "there is more" instead of as a rendering bug. It never takes a
+           pointer event, so the item under it stays clickable. -->
+      @if (hasMore()) {
+        <span class="tabs-fade" aria-hidden="true"></span>
+      }
+    </div>
+
+    @if (hasMore()) {
+      <button
+        type="button"
+        hlmBtn
+        variant="outline"
+        size="icon-sm"
+        class="shrink-0"
+        data-testid="tabs-scroll-next"
+        [attr.aria-label]="'common.showMoreOptions' | transloco"
+        [title]="'common.showMoreOptions' | transloco"
+        (click)="scrollForward()"
+      >
+        <!-- Mirrored in RTL: the arrow points at the direction the content
+             moves in, which is the reader's reading direction. -->
+        <ng-icon name="lucideChevronRight" class="size-3.5 rtl:-scale-x-100" aria-hidden="true" />
+      </button>
+    }
+  </div>
+} @else {
+  <div
+    [attr.role]="groupRole()"
+    [attr.aria-label]="label() || null"
+    class="inline-flex flex-wrap items-center gap-1 rounded-lg border bg-card p-1"
+    (keydown)="onKeydown($event)"
+  >
+    <ng-container *ngTemplateOutlet="optionButtons" />
+  </div>
+}

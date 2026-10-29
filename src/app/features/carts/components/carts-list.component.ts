@@ -235,6 +235,30 @@ export class CartsListComponent {
     });
   }
 
+  /** The search box holds a term: an empty list means "no matches". */
+  protected readonly hasSearch = computed(() => this.searchQuery.trim().length > 0);
+
+  /**
+   * The action that resolves an empty cart list: clear the search when there
+   * is one. There is nothing else to resolve — a cart is created by a
+   * CUSTOMER starting a checkout, and no console button can summon one.
+   */
+  protected readonly emptyAction = computed<{ label: string; action: () => void } | null>(() =>
+    this.hasSearch()
+      ? {
+          label: this.transloco.translate('common.clearSearch'),
+          action: () => this.clearSearch(),
+        }
+      : null,
+  );
+
+  /** Drop the search term and reload. */
+  protected clearSearch(): void {
+    this.searchQuery = '';
+    this.currentPage.set(0);
+    this.loadPage();
+  }
+
   onSearch(): void {
     clearTimeout(this.searchTimeout);
     this.searchTimeout = setTimeout(() => {

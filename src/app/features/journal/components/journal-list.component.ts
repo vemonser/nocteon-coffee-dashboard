@@ -26,11 +26,15 @@ import { PageResponse } from '../../../core/models/api-response.model';
 import { Router, RouterLink } from '@angular/router';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { LocalizedDateComponent } from '../../../shared/ui/localized-date/localized-date.component';
+import { EmptyStateComponent } from '../../../shared/components/empty-state/empty-state.component';
+import { ErrorStateComponent } from '../../../shared/components/error-state/error-state.component';
 
 @Component({
   selector: 'app-journal-list',
   standalone: true,
   imports: [
+    EmptyStateComponent,
+    ErrorStateComponent,
     LocalizedDateComponent,
     CommonModule,
     FormsModule,
@@ -59,6 +63,11 @@ import { LocalizedDateComponent } from '../../../shared/ui/localized-date/locali
   templateUrl: './journal-list.component.html',
 })
 export class JournalListComponent extends BaseListComponent<JournalPostResponse, never, string> {
+
+  /** The create action's own copy, for the empty state's button. */
+  protected override createActionLabel(): string {
+    return this.t('journal.newPost', 'New post');
+  }
 
   protected override createPermission = 'journal:create';
   protected override updatePermission = 'journal:update';

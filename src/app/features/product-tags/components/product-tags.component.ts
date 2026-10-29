@@ -64,7 +64,7 @@ import { ProductTagService } from '../services/product-tag.service';
           }
         </div>
       } @else if (error()) {
-        <div class="rounded-md border border-destructive/40 bg-destructive-soft p-4">
+        <div role="alert" class="rounded-md border border-destructive/40 bg-destructive-soft p-4">
           <p class="text-sm text-destructive">{{ 'productTags.loadFailed' | transloco }}</p>
           <button hlmBtn variant="outline" size="sm" class="mt-3" type="button" (click)="load()">
             {{ 'common.retry' | transloco }}

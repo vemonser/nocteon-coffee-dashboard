@@ -1,10 +1,14 @@
 ﻿<div hlmSidebarWrapper>
-  <hlm-sidebar  variant="inset" [side]="language.current() === 'ar' ? 'right' : 'left'">
+  <hlm-sidebar
+  variant="inset"
+  [side]="language.current() === 'ar' ? 'right' : 'left'"
+  [mobileLabel]="'navigationBar.mainMenu' | transloco"
+>
     <!-- Logo -->
     <hlm-sidebar-header>
       <ul hlmSidebarMenu>
         <li hlmSidebarMenuItem>
-          <a hlmSidebarMenuButton size="lg" routerLink="/dashboard">
+          <a hlmSidebarMenuButton size="lg" [closeMobileSidebarOnClick]="true" routerLink="/dashboard">
             <!--
               size-8, not size-10: the menu button is h-12 with p-2, so its
               content box is 32px. A 40px logo was 4px too tall and the
@@ -36,6 +40,7 @@
         <li hlmSidebarMenuItem class="py-1.5">
           <a
             hlmSidebarMenuButton
+            [closeMobileSidebarOnClick]="true"
             [routerLink]="dashboardItem().route"
             [routerLinkActiveOptions]="{ exact: true }"
             ariaCurrentWhenActive="page"
@@ -62,6 +67,7 @@
                 @let child = parentItem.children[0];
                 <a
                   hlmSidebarMenuButton
+                  [closeMobileSidebarOnClick]="true"
                   [routerLink]="child.route"
                   ariaCurrentWhenActive="page"
                   routerLinkActive="bg-sidebar-accent text-sidebar-accent-foreground"
@@ -109,6 +115,7 @@
                     <li hlmSidebarMenuItem class="py-0">
                       <a
                         hlmSidebarMenuButton
+                        [closeMobileSidebarOnClick]="true"
                         [routerLink]="child.route"
                         ariaCurrentWhenActive="page"
                         routerLinkActive="bg-sidebar-accent text-sidebar-accent-foreground [&_span:first-of-type]:bg-sidebar-accent-foreground [&_span:first-of-type]:opacity-100"

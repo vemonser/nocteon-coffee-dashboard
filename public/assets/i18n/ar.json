@@ -119,7 +119,9 @@
     "searchFailed": "فشل البحث. حاول مرة أخرى."
   },
   "StoreSettingPage": {
-    "title": "إعدادات المتجر"
+    "title": "إعدادات المتجر",
+    "empty": "لا توجد إعدادات متجر بعد",
+    "emptyHint": "الإعدادات المنشأة من المتجر تظهر هنا جاهزة للتعديل."
   },
   "common": {
     "freeShippingActive": "الشحن المجاني مفعّل",
@@ -310,6 +312,9 @@
     "processing": "جارٍ التنفيذ…",
     "clear": "مسح",
     "refresh": "تحديث",
+    "showMoreOptions": "عرض المزيد من الخيارات",
+    "clearSearch": "مسح البحث",
+    "add": "إضافة",
     "countItems_zero": "لا منتجات",
     "countItems_one": "منتج واحد",
     "countItems_two": "منتجان",
@@ -331,7 +336,8 @@
     "permanentDeleteFailed": "تعذّر الحذف النهائي",
     "restoreConflictTitle": "تعذّر الاستعادة",
     "restoreConflictBody": "يوجد عنصر آخر بنفس المعرّف. أعد التسمية أو احذفه ثم استعد.",
-    "restoreNotFound": "لم يعُد هذا العنصر في المهملات."
+    "restoreNotFound": "لم يعُد هذا العنصر في المهملات.",
+    "noSearchResults": "لا نتائج مطابقة لبحثك"
   },
   "products": {
     "draft": {
@@ -609,6 +615,9 @@
       "search": "لا توجد منتجات تطابق «{{q}}»",
       "clear": "مسح البحث",
       "trash": "سلة المحذوفات فارغة",
+      "hintNone": "المنتجات التي تضيفها تظهر هنا مع تقييمها ومخزونها وحالتها.",
+      "hintSearch": "تحقق من الإملاء، أو امسح البحث لعرض الكتالوج كاملًا.",
+      "hintTrash": "المنتجات التي تنقلها إلى المهملات تبقى هنا حتى تستعيدها أو تحذفها نهائيًا.",
       "category": "لا توجد منتجات في هذه الفئة",
       "origin": "لا توجد منتجات لهذا المنشأ",
       "farm": "لا توجد منتجات لهذه المزرعة",
@@ -1346,7 +1355,9 @@
       "selectAll": "تحديد كل الصفوف",
       "selectRow": "تحديد الصف",
       "columns": "الأعمدة"
-    }
+    },
+    "empty": "لا توجد أكواد خصم بعد",
+    "emptyHint": "كود الخصم الذي تنشئه يظهر هنا مع عدد استخداماته وتاريخ انتهائه."
   },
   "reviews": {
     "title": "التقييمات",
@@ -1440,6 +1451,7 @@
     "withdrawApproval": "سحب الاعتماد",
     "moveToPending": "نقل إلى قيد المراجعة",
     "emptyState": {
+      "noReviewsHint": "تظهر التقييمات هنا بعد أن يقيّم عميل منتجًا.",
       "noReviews": "لا توجد تقييمات بعد",
       "noResults": "لا توجد تقييمات مطابقة للفلاتر"
     },
@@ -1621,7 +1633,9 @@
       "changed": "تم تغيير الدور"
     },
     "thisIsYourAccount": "هذا هو حسابك",
-    "emailLocked": "تغيير بريد الحساب متاح للمدير فقط."
+    "emailLocked": "تغيير بريد الحساب متاح للمدير فقط.",
+    "empty": "لا يوجد مستخدمون",
+    "emptyHint": "لا يوجد حساب مطابق لهذا البحث. امسحه لعرض الجميع."
   },
   "carts": {
     "title": "السلات",
@@ -1724,7 +1738,8 @@
     "errorState": {
       "title": "تعذر تحميل السلات",
       "hint": "تحقق من اتصالك وحاول مرة أخرى."
-    }
+    },
+    "emptyHint": "تظهر السلة هنا بمجرد أن يبدأ عميل إتمام الشراء."
   },
   "orders": {
     "title": "الطلبات",
@@ -2258,7 +2273,8 @@
     "videoUrl": "رابط الفيديو",
     "videoUrlHint": "رابط يوتيوب أو فيميو",
     "videoInsert": "إدراج",
-    "videoUrlInvalid": "أدخل رابط يوتيوب أو فيميو."
+    "videoUrlInvalid": "أدخل رابط يوتيوب أو فيميو.",
+    "emptyHint": "المقال الذي تنشره يظهر هنا، الأحدث أولًا."
   },
   "dashboard": {
     "title": "لوحة التحكم",
@@ -2500,7 +2516,8 @@
     "revenueByOriginProductRevenue": "إيرادات المنتج",
     "revenueByOriginExclShipping": "باستثناء الشحن",
     "scopeLatest": "أحدث ٥",
-    "scopeCurrent": "الحالي"
+    "scopeCurrent": "الحالي",
+    "overviewErrorTitle": "تعذّر تحميل لوحتك"
   },
   "imageCell": {
     "noImage": "لا توجد صورة"
@@ -2515,6 +2532,10 @@
   "appearance": {
     "light": "فاتح",
     "dark": "داكن",
+    "switchToDark": "التبديل إلى المظهر الداكن",
+    "switchToLight": "التبديل إلى المظهر الفاتح",
+    "darkEnabled": "تم تفعيل المظهر الداكن",
+    "lightEnabled": "تم تفعيل المظهر الفاتح",
     "accent": "لون التمييز",
     "accentChange": "تغيير لون التمييز",
     "burgundy": "عنابي",
@@ -2578,7 +2599,8 @@
     "optionsCount": "خيارات",
     "valuesCount": "قيم",
     "usedBy": "مستخدم في",
-    "variants": "المتغيرات"
+    "variants": "المتغيرات",
+    "emptyHint": "الخيار مثل «المقاس» أو «الطحن» يجمع القيم التي تُبنى منها المتغيرات."
   },
   "broadcasts": {
     "title": "الرسائل الجماعية",
@@ -2637,7 +2659,8 @@
     "audienceExclude": "الجميع ما عدا…",
     "recipientIds": "إرسال إلى",
     "excludeIds": "استثناء",
-    "sendFailed": "تعذّر إرسال النشرة."
+    "sendFailed": "تعذّر إرسال النشرة.",
+    "emptyHint": "النشرة التي ترسلها تظهر هنا مع من استلمها."
   },
   "contactMessages": {
     "title": "رسائل التواصل",
@@ -2746,7 +2769,8 @@
     "replyHistory": "سيظهر سجل الردود هنا عند توفره من الخادم.",
     "saveDraft": "حفظ مسودة",
     "saving": "جارٍ الحفظ…",
-    "replyThread": "سجل الردود"
+    "replyThread": "سجل الردود",
+    "emptyHint": "الرسائل المرسلة من نموذج التواصل في المتجر تصل هنا."
   },
   "oauth2Callback": {
     "processing": "جارٍ تسجيل الدخول…",
@@ -2821,7 +2845,8 @@
     "totalCount_two": "عنوانان في الجمهور",
     "totalCount_few": "{{count}} عناوين في الجمهور",
     "totalCount_many": "{{count}} عنوانًا في الجمهور",
-    "totalCount_other": "{{count}} عنوان في الجمهور"
+    "totalCount_other": "{{count}} عنوان في الجمهور",
+    "emptyHint": "يظهر المشتركون هنا بعد اشتراكهم من المتجر."
   },
   "permissions": {
     "resources": {

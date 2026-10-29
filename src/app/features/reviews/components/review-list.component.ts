@@ -916,13 +916,36 @@ export class ReviewListComponent {
       .join(' ');
   }
 
+  /**
+   * What the empty table says — through the dictionary, never a hardcoded
+   * English sentence (the Arabic screen showed "No reviews yet").
+   */
   protected readonly emptyMessage = computed(() => {
-    if (this.stats().total === 0) return 'No reviews yet';
-    if (this.hasActiveFilters() || this.status() !== 'all') {
-      return 'No reviews match these filters';
+    if (this.stats().total === 0) {
+      return this.transloco.translate('reviews.emptyState.noReviews');
     }
-    return 'No reviews found';
+    if (this.hasActiveFilters() || this.status() !== 'all') {
+      return this.transloco.translate('reviews.emptyState.noResults');
+    }
+    return this.transloco.translate('reviews.noData');
   });
+
+  /** The hint under the empty title: why it is empty and what to try. */
+  protected readonly emptyHint = computed(() =>
+    this.hasActiveFilters() || this.status() !== 'all'
+      ? this.transloco.translate('reviews.adjustSearch')
+      : this.transloco.translate('reviews.emptyState.noReviewsHint'),
+  );
+
+  /** The action that resolves it — only when there is a filter to clear. */
+  protected readonly emptyAction = computed<{ label: string; action: () => void } | null>(() =>
+    this.hasActiveFilters() || this.status() !== 'all'
+      ? {
+          label: this.transloco.translate('reviews.filters.clear'),
+          action: () => this.clearFilters(),
+        }
+      : null,
+  );
 
   protected readonly tabs = computed(() => [
     { id: 'all' as ReviewTab, label: 'reviews.tabs.all', count: this.stats().total },

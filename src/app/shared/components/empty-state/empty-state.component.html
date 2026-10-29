@@ -1,0 +1,26 @@
+<div
+  class="flex flex-col items-center gap-1.5 px-4 text-center"
+  [class.py-8]="!compact()"
+  [class.py-6]="compact()"
+>
+  <span
+    class="mb-1 flex items-center justify-center rounded-full bg-muted text-muted-foreground/70"
+    [class.size-10]="!compact()"
+    [class.size-8]="compact()"
+    aria-hidden="true"
+  >
+    <ng-icon [name]="icon()" [class]="compact() ? 'size-4' : 'size-5'" />
+  </span>
+
+  <p class="text-sm font-medium">{{ title() }}</p>
+
+  @if (hint()) {
+    <p class="max-w-[46ch] text-sm text-muted-foreground">{{ hint() }}</p>
+  }
+
+  @if (actionLabel()) {
+    <button hlmBtn variant="outline" size="sm" class="mt-2" (click)="action.emit()">
+      {{ actionLabel() }}
+    </button>
+  }
+</div>

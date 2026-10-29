@@ -508,7 +508,7 @@ export class CategoriesListComponent extends BaseListComponent<CategoryResponse,
   }
 
   /** Empty-state escape hatch: clear the term and reload the current tab. */
-  clearSearch(): void {
+  protected override clearSearch(): void {
     this.searchQuery = '';
     this.onSearch();
   }

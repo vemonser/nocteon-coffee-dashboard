@@ -27,6 +27,7 @@ import { injectHlmSidebarConfig } from './hlm-sidebar.token';
     } @else if (_sidebarService.isMobile()) {
       <hlm-sheet
         [side]="side()"
+        [ariaLabel]="mobileLabel()"
         [state]="_sidebarService.openMobile() ? 'open' : 'closed'"
         (stateChanged)="_sidebarService.setOpenMobile($event === 'open')"
       >
@@ -70,6 +71,15 @@ export class HlmSidebar {
   public readonly side = input<'left' | 'right'>('left');
   public readonly variant = input<SidebarVariant>(this._sidebarService.variant());
   public readonly collapsible = input<'offcanvas' | 'icon' | 'none'>('offcanvas');
+
+  /**
+   * The accessible name of the MOBILE drawer.
+   *
+   * On a phone the sidebar is not a region beside the page — it is a modal
+   * sheet, and a sheet with no name is announced as an unnamed "dialog".
+   * The name comes from the host so it is translated; a lib cannot own copy.
+   */
+  public readonly mobileLabel = input<string>('');
 
   protected readonly _sidebarGapComputedClass = computed(() =>
     hlm(

@@ -16,7 +16,13 @@
     explicit budget (see widthFor) and header/cell content truncates instead of
     forcing max-content width — that was the scrollWidth > clientWidth cause.
   -->
-  <table hlmTable class="w-full table-fixed" [style.minWidth]="minWidth()">
+  <table
+    hlmTable
+    class="w-full table-fixed"
+    [style.minWidth]="minWidth()"
+    [style.--table-min-width-phone]="minWidthPhone() || minWidth()"
+    [attr.data-phone-hidden]="phoneHiddenColumns().length ? '' : null"
+  >
     <thead class="border-b border-border">
       @for (headerGroup of table().getHeaderGroups(); track headerGroup.id) {
         <tr hlmTr>
@@ -60,6 +66,7 @@
                 header.column.id === 'id' ||
                 isVisualColumn(header.column.id)
               "
+              [class.col-phone-hide]="isPhoneHidden(header.column.id)"
               [class.sticky]="header.column.id === 'actions'"
               [class.z-10]="header.column.id === 'actions'"
               [class.bg-card]="header.column.id === 'actions'"
@@ -154,6 +161,7 @@
                   colId === 'name_ar' ||
                   isVisualColumn(colId)
                 "
+                [class.col-phone-hide]="isPhoneHidden(colId)"
                 [class.sticky]="colId === 'actions'"
                 [class.z-10]="colId === 'actions'"
                 [class.bg-card]="colId === 'actions'"
@@ -196,21 +204,17 @@
           <td
             hlmTd
             [attr.colspan]="renderedColumnCount() + (selectable() ? 1 : 0)"
-            class="text-center py-16 text-muted-foreground"
+            class="py-6"
           >
-            <div class="flex flex-col items-center gap-3">
-              {{ emptyMessage() }}
-              @if (emptyAction(); as action) {
-                <button
-                  hlmBtn
-                  variant="outline"
-                  size="sm"
-                  (click)="action.action()"
-                >
-                  {{ action.label }}
-                </button>
-              }
-            </div>
+            <!-- The empty state is a designed surface with the action that
+                 resolves it, never a bare sentence in a blank table. -->
+            <app-empty-state
+              [title]="emptyMessage()"
+              [hint]="emptyHint()"
+              [actionLabel]="emptyAction()?.label ?? ''"
+              data-testid="table-empty"
+              (action)="emptyAction()?.action()"
+            />
           </td>
         </tr>
       }
@@ -256,6 +260,7 @@
                 cell.column.id === 'id' ||
                 isVisualColumn(cell.column.id)
               "
+              [class.col-phone-hide]="isPhoneHidden(cell.column.id)"
               [class.sticky]="cell.column.id === 'actions'"
               [class.z-10]="cell.column.id === 'actions'"
               [class.bg-card]="cell.column.id === 'actions'"

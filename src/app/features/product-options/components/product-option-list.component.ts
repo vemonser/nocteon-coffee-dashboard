@@ -44,11 +44,15 @@ import {
 } from '../models/product-option.model';
 import { ProductOptionService } from '../services/product-option.service';
 import { PagerComponent } from '../../../shared/components/pager/pager.component';
+import { EmptyStateComponent } from '../../../shared/components/empty-state/empty-state.component';
+import { ErrorStateComponent } from '../../../shared/components/error-state/error-state.component';
 
 @Component({
   selector: 'app-product-option-list',
   standalone: true,
   imports: [
+    EmptyStateComponent,
+    ErrorStateComponent,
     PagerComponent,
     CommonModule,
     FormsModule,
@@ -84,6 +88,11 @@ export class ProductOptionListComponent extends BaseListComponent<
   ProductOptionRequest,
   number
 > {
+
+  /** The create action's own copy, for the empty state's button. */
+  protected override createActionLabel(): string {
+    return this.t('productOptions.add', 'Add option');
+  }
   protected override createPermission = 'product_option:create';
   protected override updatePermission = 'product_option:update';
   protected override deletePermission = 'product_option:delete';

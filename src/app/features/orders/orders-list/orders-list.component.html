@@ -287,21 +287,15 @@
 
   <!-- ── The table ──────────────────────────────────────────────────────── -->
   @if (error()) {
-    <div
-      class="card-surface p-6 text-center"
-      role="alert"
-      data-testid="orders-error"
-    >
-      <p class="font-medium text-destructive">{{ 'orders.errorState.title' | transloco }}</p>
-      <p class="mt-1 text-sm text-muted-foreground">{{ 'orders.errorState.hint' | transloco }}</p>
-      @if (error(); as message) {
-        <p class="mt-1 text-sm text-muted-foreground" data-testid="orders-error-message">
-          {{ message }}
-        </p>
-      }
-      <button hlmBtn variant="outline" class="mt-4" (click)="retry()">
-        {{ 'common.retry' | transloco }}
-      </button>
+    <!-- The SAME error surface the dashboard uses for a widget: icon, title,
+         hint, the backend's own message, and a real retry. -->
+    <div data-testid="orders-error">
+      <app-error-state
+        [titleKey]="'orders.errorState.title'"
+        [hintKey]="'orders.errorState.hint'"
+        [message]="error() ?? ''"
+        (retry)="retry()"
+      />
     </div>
   } @else {
     <div class="overflow-hidden card-surface">
@@ -310,6 +304,7 @@
         [columns]="columns"
         [loading]="loading()"
         [emptyMessage]="emptyMessage()"
+        [emptyHint]="emptyHint()"
         [initialSort]="{ column: sortColumnId, direction: direction() }"
         [cellPadding]="'px-3'"
         [showEdit]="false"
@@ -323,7 +318,10 @@
         [stickyStartColumn]="'orderNumber'"
         [menuActions]="menuActions"
         [minWidth]="'1111px'"
-        [emptyAction]="{ label: 'orders.filters.clear' | transloco, action: clearFilters }"
+        [minWidthPhone]="'660px'"
+        [rowHeight]="'72px'"
+        [phoneHiddenColumns]="phoneHiddenColumns"
+        [emptyAction]="emptyAction()"
         (sortChange)="onSortChange($event)"
         (rowClick)="openView($event)"
         (selectionChange)="onSelectionChange($event)"
