@@ -1,0 +1,13 @@
+{
+  "source_path": "/home/abdelrhman/Developments/2026/side-projects/nocteon/nocteon-dashboard/DECISIONS.md",
+  "type": "ADR",
+  "confidence": "high",
+  "manifest_override": true,
+  "title": "Decisions — product-options-pass-1",
+  "summary": "Consolidated decisions log for the nocteon dashboard across product options, permissions, orders, broadcasts, reviews, and products.",
+  "scope": ["product options", "permissions", "orders", "broadcasts", "newsletter", "reviews", "products", "users", "notifications", "dashboard"],
+  "cross_refs": ["API_GAPS.md", "design.md", "ORDERS_CONTRACT.md", "ORDERS_SEED_PROPOSAL.md", "SEED_PROPOSAL.md", "evidence/orders/measurements-formatters.json", "evidence/orders/results.json", "evidence/reviews/pass1/results.json", "results.json"],
+  "locked": false,
+  "precedence": 0,
+  "notes": ""
+}

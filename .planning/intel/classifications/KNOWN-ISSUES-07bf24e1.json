@@ -1,0 +1,13 @@
+{
+  "source_path": "/home/abdelrhman/Developments/2026/side-projects/nocteon/nocteon-dashboard/KNOWN_ISSUES.md",
+  "type": "DOC",
+  "confidence": "high",
+  "manifest_override": true,
+  "title": "Known issues (verify each one against the code and the UI, then mark [open] / [fixed] / [needs-backend] / [needs-decision] with a one-line evidence note)",
+  "summary": "Known issues tracker for the Nocteon dashboard UI/UX bugs and their verification status.",
+  "scope": ["Nocteon dashboard", "UI", "UX", "dates", "labels", "filter rows", "dialogs", "placeholders", "alerts", "sidebar", "permissions", "products", "options", "notifications", "journal", "search", "broadcasts", "contact messages", "reviews", "roles", "users"],
+  "cross_refs": ["docs/rbac-pass2-watermark.md"],
+  "locked": false,
+  "precedence": 2,
+  "notes": ""
+}

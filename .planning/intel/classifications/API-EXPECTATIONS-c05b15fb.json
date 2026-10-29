@@ -1,0 +1,13 @@
+{
+  "source_path": "/home/abdelrhman/Developments/2026/side-projects/nocteon/nocteon-dashboard/API_EXPECTATIONS.md",
+  "type": "DOC",
+  "confidence": "high",
+  "manifest_override": true,
+  "title": "API expectations (frontend contract)",
+  "summary": "Frontend API contract expectations comparing dashboard endpoints against backend, noting mismatches and missing endpoints.",
+  "scope": ["notifications", "nav counts", "products", "product options", "roles", "permissions", "users", "contact messages"],
+  "cross_refs": [],
+  "locked": false,
+  "precedence": 2,
+  "notes": ""
+}

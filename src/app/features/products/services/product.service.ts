@@ -142,6 +142,21 @@ export class ProductService {
     return this.http.post<ApiResponse<{ url: string }>>(`${this.base}/variant-images`, fd);
   }
 
+  /**
+   * GET /variant-barcodes?productIds=… — the barcodes of these products' variants, keyed by
+   * product id (FE-15).
+   *
+   * <p>One request for a whole exported page: the list rows do not carry variants, and reading
+   * every product detail for one column would be one request per row.
+   */
+  getVariantBarcodes(productIds: number[]): Observable<ApiResponse<Record<string, string[]>>> {
+    let params = new HttpParams();
+    productIds.forEach((id) => (params = params.append('productIds', id)));
+    return this.http.get<ApiResponse<Record<string, string[]>>>(`${this.base}/variant-barcodes`, {
+      params,
+    });
+  }
+
   /** DELETE /media/{mediaId} — remove a product media record. */
   deleteMedia(mediaId: number): Observable<ApiResponse<void>> {
     return this.http.delete<ApiResponse<void>>(`${this.base}/media/${mediaId}`);

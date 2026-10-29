@@ -1,0 +1,13 @@
+{
+  "source_path": "/home/abdelrhman/Developments/2026/side-projects/nocteon/nocteon-dashboard/.planning/codebase/CONCERNS.md",
+  "type": "DOC",
+  "confidence": "high",
+  "manifest_override": true,
+  "title": "Concerns",
+  "summary": "Analysis of technical debt, known issues, backend dependencies, testing gaps, performance, security, fragile areas, and operational concerns.",
+  "scope": ["technical debt", "known issues", "backend dependencies", "testing gaps", "performance", "security", "fragile areas", "operational concerns"],
+  "cross_refs": ["KNOWN_ISSUES.md", "API_GAPS.md"],
+  "locked": false,
+  "precedence": 2,
+  "notes": ""
+}

@@ -1,0 +1,13 @@
+{
+  "source_path": "/home/abdelrhman/Developments/2026/side-projects/nocteon/nocteon-dashboard/.planning/codebase/INTEGRATIONS.md",
+  "type": "DOC",
+  "confidence": "high",
+  "manifest_override": true,
+  "title": "External Integrations",
+  "summary": "Documents the backend API, service layer, authentication, i18n, theming, and dev/QA integrations used by the dashboard.",
+  "scope": ["Backend API", "Angular HttpClient", "AuthService", "PermissionService", "Transloco", "ApexCharts", "Quill", "Embla Carousel", "GSAP", "Spartan Helm", "Playwright", "QA harness", "Evidence harness"],
+  "cross_refs": ["src/environments/environment.ts", "src/app/core/models/api-response.model.ts", "src/app/core/crud/*", "src/app/features/products/services/product.service.ts", "src/app/features/orders/services/order.service.ts", "src/app/core/auth/auth.service.ts", "src/app/core/auth/permission.guard.ts", "src/app/core/auth/permission.directive.ts", "src/app/shared/directives/can*.directive.ts", "src/app/core/guards/unsaved-changes.guard.ts", "public/assets/i18n/en.json", "public/assets/i18n/ar.json", "angular.json", "e2e/", "playwright.config.ts", "qa/playwright.config.ts", "scripts/qa-static.mjs", "scripts/evidence.mjs", "scripts/evidence-targets.mjs"],
+  "locked": false,
+  "precedence": 2,
+  "notes": ""
+}

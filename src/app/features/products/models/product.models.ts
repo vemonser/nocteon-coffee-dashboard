@@ -115,6 +115,8 @@ export interface ProductTranslation {
 export interface ProductVariant {
   id?: number;
   sku: string;
+  /** FE-15: the scannable code printed on the packaging. Absent when the variant has none. */
+  barcode?: string | null;
   price: number;
   compareAtPrice?: number | null;
   costPrice?: number | null;
@@ -133,6 +135,8 @@ export interface ProductVariant {
 /** Backend ProductVariantRequest — references option value IDs. */
 export interface ProductVariantRequest {
   sku: string;
+  /** FE-15: omitted (or blank) means "no barcode" — the API stores null, not an empty string. */
+  barcode?: string;
   price: number;
   compareAtPrice?: number | null;
   costPrice?: number | null;

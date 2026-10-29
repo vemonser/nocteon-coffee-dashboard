@@ -342,6 +342,8 @@ export class VariantsStepComponent implements OnInit {
     this.state.addVariant();
     const src = this.state.variantsArray.at(index) as FormGroup;
     const dst = this.state.variantsArray.at(this.state.variantsArray.length - 1) as FormGroup;
-    dst.patchValue(src.getRawValue());
+    // FE-15: the barcode is not cloned. It identifies one physical item, and the API rejects a
+    // second variant that claims it — the copy starts with an empty field instead.
+    dst.patchValue({ ...src.getRawValue(), barcode: '' });
   }
 }

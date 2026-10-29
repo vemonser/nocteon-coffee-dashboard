@@ -1,0 +1,13 @@
+{
+  "source_path": "/home/abdelrhman/Developments/2026/side-projects/nocteon/nocteon-dashboard/.planning/codebase/ARCHITECTURE.md",
+  "type": "DOC",
+  "confidence": "high",
+  "manifest_override": true,
+  "title": "Architecture",
+  "summary": "Architecture analysis of the Nocteon Angular admin dashboard SPA, its layers, data flow, abstractions, and anti-patterns.",
+  "scope": ["Angular SPA", "core layer", "feature layer", "shared layer", "CRUD abstractions", "auth", "i18n", "theming"],
+  "cross_refs": ["STRUCTURE.md"],
+  "locked": false,
+  "precedence": 2,
+  "notes": ""
+}

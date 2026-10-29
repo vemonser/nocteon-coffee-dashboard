@@ -1,0 +1,13 @@
+{
+  "source_path": "/home/abdelrhman/Developments/2026/side-projects/nocteon/nocteon-dashboard/.planning/codebase/STACK.md",
+  "type": "DOC",
+  "confidence": "high",
+  "manifest_override": true,
+  "title": "Technology Stack",
+  "summary": "Technology stack analysis for the Nocteon admin dashboard, listing languages, frameworks, styling, build tooling, and constraints.",
+  "scope": ["TypeScript", "Angular", "Tailwind CSS", "build tooling", "testing dependencies"],
+  "cross_refs": [],
+  "locked": false,
+  "precedence": 2,
+  "notes": ""
+}

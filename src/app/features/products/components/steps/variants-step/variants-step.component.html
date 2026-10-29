@@ -164,6 +164,23 @@
                     <p class="mt-1 text-xs text-destructive">{{ 'products.variants.validation.skuRequired' | transloco }}</p>
                   }
                 </div>
+                <!-- FE-15: the scanned code. Optional; uniqueness is the server's answer. -->
+                <div class="space-y-1.5">
+                  <label hlmLabel>{{ 'products.variants.barcode' | transloco }}</label>
+                  <input
+                    hlmInput
+                    formControlName="barcode"
+                    type="text"
+                    class="w-full font-mono"
+                    autocomplete="off"
+                    [placeholder]="'products.variants.barcodePlaceholder' | transloco"
+                  />
+                  @if (group.get('barcode')?.hasError('maxlength') && group.get('barcode')?.touched) {
+                    <p class="mt-1 text-xs text-destructive">{{ 'products.variants.validation.barcodeMax' | transloco }}</p>
+                  } @else {
+                    <p class="text-xs text-muted-foreground">{{ 'products.variants.barcodeHint' | transloco }}</p>
+                  }
+                </div>
                 <div class="space-y-1.5">
                   <label hlmLabel>{{ 'products.variants.price' | transloco }} *</label>
                   <div class="relative">
@@ -270,6 +287,7 @@
         <thead class="bg-muted/40 text-start text-xs font-medium text-muted-foreground">
           <tr>
             <th class="px-3 py-2 text-start">{{ 'products.variants.sku' | transloco }}</th>
+            <th class="px-3 py-2 text-start">{{ 'products.variants.barcode' | transloco }}</th>
             <th class="px-3 py-2 text-start">{{ 'products.variants.price' | transloco }}</th>
             <th class="px-3 py-2 text-start">{{ 'products.variants.compareAtPrice' | transloco }}</th>
             <th class="px-3 py-2 text-start">{{ 'products.variants.stockQuantity' | transloco }}</th>
@@ -282,6 +300,9 @@
             <tr [formGroupName]="i" class="border-t" [class.bg-warning-soft]="stockLevel(group) === 'low'" [class.bg-destructive-soft]="stockLevel(group) === 'out'">
               <td class="px-3 py-2">
                 <input hlmInput formControlName="sku" type="text" class="h-[var(--filter-control-height)] w-full" [attr.aria-label]="'products.variants.sku' | transloco" [class.border-destructive]="group.get('sku')?.invalid && group.get('sku')?.touched" />
+              </td>
+              <td class="px-3 py-2">
+                <input hlmInput formControlName="barcode" type="text" class="h-[var(--filter-control-height)] w-full font-mono" [attr.aria-label]="'products.variants.barcode' | transloco" [class.border-destructive]="group.get('barcode')?.invalid && group.get('barcode')?.touched" />
               </td>
               <td class="px-3 py-2">
                 <div class="relative"><span class="pointer-events-none absolute start-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">EGP</span><input hlmInput formControlName="price" type="number" step="0.01" class="h-[var(--filter-control-height)] w-28 ps-9" [attr.aria-label]="'products.variants.price' | transloco" [class.border-destructive]="group.get('price')?.invalid && group.get('price')?.touched" /></div>

@@ -1,0 +1,13 @@
+{
+  "source_path": "/home/abdelrhman/Developments/2026/side-projects/nocteon/nocteon-dashboard/.planning/codebase/CONVENTIONS.md",
+  "type": "DOC",
+  "confidence": "high",
+  "manifest_override": true,
+  "title": "Coding Conventions",
+  "summary": "Coding conventions for the Nocteon admin dashboard covering formatting, Angular patterns, naming, forms, dialogs, lists, i18n, styling, permissions, status vocabulary, and error handling.",
+  "scope": ["formatting", "Angular patterns", "naming", "forms", "dialogs", "lists", "internationalization", "layout", "styling", "permissions", "status vocabulary", "error handling"],
+  "cross_refs": [],
+  "locked": false,
+  "precedence": 2,
+  "notes": ""
+}

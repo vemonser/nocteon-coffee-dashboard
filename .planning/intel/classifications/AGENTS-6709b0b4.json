@@ -1,0 +1,13 @@
+{
+  "source_path": "/home/abdelrhman/Developments/2026/side-projects/nocteon/nocteon-dashboard/AGENTS.md",
+  "type": "DOC",
+  "confidence": "high",
+  "manifest_override": true,
+  "title": "Nocteon admin dashboard: rules for every task",
+  "summary": "Project rules for the Nocteon admin dashboard covering workflow, UI rules, and QA harness requirements.",
+  "scope": ["Nocteon admin dashboard", "workflow", "UI rules", "QA harness"],
+  "cross_refs": ["design.md", "DECISIONS.md"],
+  "locked": false,
+  "precedence": 2,
+  "notes": ""
+}

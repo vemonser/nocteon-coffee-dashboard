@@ -1517,3 +1517,48 @@ switching is a service change only.
 ### Needs backend
 - Nothing. If the storefront is brought into this contract later, its list endpoints need the same
   batched aggregate (one grouped query per page, not per card).
+
+# Decisions — FE-15 barcode / GTIN on variants
+
+### The barcode is unique when set, and "when set" is a partial index
+`product_variants.barcode` is `varchar(64)` and nullable; the uniqueness rule is a
+`CREATE UNIQUE INDEX ... WHERE barcode IS NOT NULL` (V20), not a `UNIQUE` constraint. A plain
+constraint would accept exactly one NULL row, which would reject the second variant that has no
+barcode — the most common case in the catalogue. Blank input is normalized to `NULL` on write
+(never `''`, which is a real value to a unique index and would reproduce the same problem from the
+form side), and the value is trimmed.
+
+Uniqueness is global across products and **includes trashed variants**: their rows survive a delete
+because `order_items` references them, so the value still occupies the index. This mirrors the SKU
+rule (`existsBySkuIncludingDeleted`) rather than inventing a second one. A duplicate answers 409
+with `error.productVariant.duplicateBarcode` ("This barcode is already used by another variant" /
+"هذا الباركود مستخدم بالفعل في متغير آخر"), which the wizard's save toast shows verbatim because
+`NotifyService.apiError` prefers the API's localized message.
+
+No GTIN checksum is enforced: the field also holds internal codes (Code 128, ITF-14), and a
+checksum would reject them. Only the length (64) is validated.
+
+### Search reaches the variant identifiers through one EXISTS
+The dashboard list query (`ProductRepository.findAllDashboard`) matched the translated title only.
+It now also matches `product_variants.barcode` and `product_variants.sku` inside a single `EXISTS`
+subquery, in the row query and its count query. An `EXISTS` (not a join) is what keeps the page and
+`totalElements` unchanged — a join returns the product once per variant. The public catalogue
+search (`ProductSearchPredicate`) is deliberately untouched: a barcode is an internal identifier,
+not something a shopper types.
+
+### The products CSV export reads barcodes from one extra endpoint
+The list rows carry `variantsCount`, not the variants, so an export would have to read every
+product detail to print one column (one request per row). `GET /api/dashboard/products/variant-barcodes?productIds=…`
+(`product:read`) answers the whole page in one query. The CSV itself is still built in the
+browser, like the orders, newsletter and broadcasts exports: literal English headers, RFC-4180
+quoting, and the UTF-8 BOM so Excel reads Arabic product names as UTF-8. The `Barcode` column lists
+every barcoded variant of a product (`a | b`) and stays empty when there is none — never
+"undefined", "null" or a dash.
+
+### Variant inserts now set `version = 0`
+`product_variants.version` is `NOT NULL DEFAULT 0`, but the entity field carries Spring Data's
+`@Version` (not `jakarta.persistence`'s), so Hibernate wrote `NULL` for a fresh row and
+`POST /dashboard/products` failed on the constraint. This was pre-existing and unrelated to
+barcodes; it surfaced because creating a product with a barcode is exactly what FE-15 has to test.
+`ProductVariantService.buildVariant` now sets `0L`, the value the duplicate path already used. The
+proper fix (a JPA `@Version`, which also gives optimistic locking) is a separate decision.

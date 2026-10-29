@@ -386,6 +386,8 @@ export class ProductWizardComponent implements CanComponentDeactivate, HasUnsave
 
       variants: this.state.variantsArray.value.map((v: any) => ({
         sku: v.sku,
+        // FE-15: trimmed on save; empty means "no barcode", which the API stores as null.
+        barcode: `${v.barcode ?? ''}`.trim() || undefined,
         price: v.price,
         compareAtPrice: v.compareAtPrice || undefined,
         costPrice: v.costPrice || undefined,

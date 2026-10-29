@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "run": {
+    "id": "2026-10-28T20-05-00Z-fe04",
+    "task": "Journal preview",
+    "source": ".quality/specs/fe-04.md"
+  },
+  "criteria": [
+    {
+      "id": "AC-15",
+      "statement": "Given a post being edited, when Preview is opened, then the dialog renders the draft title, cover, body, tags and related products in the reader layout, and the status is unchanged.",
+      "sourceRef": {
+        "path": ".quality/specs/fe-04.md",
+        "line": 7
+      },
+      "kind": "ui",
+      "requiresBrowser": true,
+      "requiresAutomatedTest": true,
+      "implementation": [
+        "nocteon-dashboard/src/app/features/journal/components/journal-preview-dialog.component.ts",
+        "nocteon-dashboard/src/app/features/journal/components/journal-form.component.ts"
+      ],
+      "status": "PASS",
+      "notes": null,
+      "naReason": null,
+      "evidence": [
+        {
+          "type": "e2e",
+          "path": ".quality/runs/2026-10-28T20-05-00Z-fe04/artifacts/ac-15-preview.log",
+          "command": "bash -lc cd nocteon-dashboard && npx playwright test e2e/fe04-live.spec.ts --project=chromium --reporter=line",
+          "exitCode": 0,
+          "recordedAt": "2026-10-28T17:06:58.550Z"
+        },
+        {
+          "type": "screenshot",
+          "path": "nocteon-dashboard/evidence/fe-04/preview-1440.png",
+          "command": "test -s nocteon-dashboard/evidence/fe-04/preview-1440.png",
+          "exitCode": 0,
+          "recordedAt": "2026-10-28T17:06:58.611Z"
+        },
+        {
+          "type": "e2e",
+          "path": ".quality/runs/2026-10-28T20-05-00Z-fe04/artifacts/ac-15-preview.log",
+          "command": "bash -lc cd nocteon-dashboard && npx playwright test e2e/fe04-live.spec.ts --project=chromium --reporter=line",
+          "exitCode": 0,
+          "recordedAt": "2026-10-28T17:13:16.465Z"
+        },
+        {
+          "type": "screenshot",
+          "path": "nocteon-dashboard/evidence/fe-04/preview-1440.png",
+          "command": "test -s nocteon-dashboard/evidence/fe-04/preview-1440.png",
+          "exitCode": 0,
+          "recordedAt": "2026-10-28T17:13:16.541Z"
+        }
+      ]
+    }
+  ],
+  "unresolvedReviewBlockers": []
+}

@@ -142,3 +142,63 @@ describe('ProductWizardStateService — tags', () => {
     expect(state.hasFormChanged()).toBe(false);
   });
 });
+
+/**
+ * FE-15: the barcode is optional, so the form must not require it — but the string it carries is
+ * capped at what the API accepts (64), and it has to survive the edit-mode load, or an admin who
+ * opens a product would silently drop the codes the server already has.
+ */
+describe('ProductWizardStateService — variant barcode', () => {
+  let state: ProductWizardStateService;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({ providers: [ProductWizardStateService] });
+    state = TestBed.inject(ProductWizardStateService);
+  });
+
+  it('starts empty and valid, because the field is optional', () => {
+    const group = state.buildVariantGroup();
+    expect(group.get('barcode')?.value).toBe('');
+    expect(group.get('barcode')?.valid).toBe(true);
+  });
+
+  it('rejects a code longer than the column the API stores it in', () => {
+    const group = state.buildVariantGroup();
+    group.get('barcode')?.setValue('9'.repeat(65));
+    expect(group.get('barcode')?.hasError('maxlength')).toBe(true);
+    group.get('barcode')?.setValue('9'.repeat(64));
+    expect(group.get('barcode')?.valid).toBe(true);
+  });
+
+  it('loads the saved barcode back into the form in edit mode', () => {
+    state.loadFromDetail(
+      {
+        id: 1,
+        slug: 'brazil-mogiana',
+        categorySlug: 'coffee',
+        productType: 'COFFEE',
+        isActive: true,
+        featured: false,
+        translations: [],
+        variants: [
+          {
+            id: 10,
+            sku: 'BRA-250',
+            barcode: '4006381333931',
+            price: 650,
+            stockQuantity: 4,
+            isActive: true,
+            optionValues: [],
+          },
+        ],
+        media: [],
+        tastingNotes: [],
+        pairings: [],
+        brewingMethods: [],
+      } as never,
+      () => state.translationsArray,
+    );
+
+    expect(state.variantsArray.at(0).get('barcode')?.value).toBe('4006381333931');
+  });
+});

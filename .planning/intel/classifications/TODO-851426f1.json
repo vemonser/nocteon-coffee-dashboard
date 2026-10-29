@@ -1,0 +1,13 @@
+{
+  "source_path": "/home/abdelrhman/Developments/2026/side-projects/nocteon/nocteon-dashboard/TODO.md",
+  "type": "DOC",
+  "confidence": "high",
+  "manifest_override": true,
+  "title": "Nocteon Dashboard - Tickets V1-V5 Implementation Plan",
+  "summary": "Implementation plan listing UI tickets V1-V5 for the Nocteon dashboard.",
+  "scope": ["Nocteon dashboard", "V1 Add dialog fixes", "V2 lists fixes", "V3 category detail fixes", "V4 sidebar fixes", "V5 screenshots and evidence"],
+  "cross_refs": [],
+  "locked": false,
+  "precedence": 2,
+  "notes": ""
+}

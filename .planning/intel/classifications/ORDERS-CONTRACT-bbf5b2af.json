@@ -1,0 +1,13 @@
+{
+  "source_path": "/home/abdelrhman/Developments/2026/side-projects/nocteon/nocteon-dashboard/ORDERS_CONTRACT.md",
+  "type": "SPEC",
+  "confidence": "high",
+  "manifest_override": true,
+  "title": "ORDERS_CONTRACT.md — what the orders pages need from the backend",
+  "summary": "Contract for what the orders pages need from the backend: existing endpoints, defects, proposed endpoints, and unresolved decisions.",
+  "scope": ["orders", "backend", "order status transitions", "stats endpoint", "order status history", "order notes", "shipment", "payment details", "tags", "filters"],
+  "cross_refs": ["ORDERS_SEED_PROPOSAL.md", "evidence/orders/measurements.json", "V107__seed_orders_reviews_contacts.sql"],
+  "locked": false,
+  "precedence": 1,
+  "notes": ""
+}

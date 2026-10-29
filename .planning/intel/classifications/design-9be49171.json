@@ -1,0 +1,13 @@
+{
+  "source_path": "/home/abdelrhman/Developments/2026/side-projects/nocteon/nocteon-dashboard/design.md",
+  "type": "DOC",
+  "confidence": "high",
+  "manifest_override": true,
+  "title": "Nocteon Dashboard: design.md",
+  "summary": "Design-system specification for the admin dashboard covering tokens, charts, typography, spacing, layout, accessibility, and page patterns.",
+  "scope": ["design system", "color tokens", "typography", "spacing", "layout", "accessibility", "charts", "dashboard", "orders", "contact", "reviews", "command palette"],
+  "cross_refs": [],
+  "locked": false,
+  "precedence": 2,
+  "notes": ""
+}

@@ -193,6 +193,9 @@ export class ProductWizardStateService {
   buildVariantGroup(v?: Partial<ProductVariant>): FormGroup {
     return this.fb.group({
       sku: [v?.sku ?? '', Validators.required],
+      // FE-15: optional, so only the length is enforced here; uniqueness is the server's answer
+      // (409) because it is the only side that can see every variant of every product.
+      barcode: [v?.barcode ?? '', [Validators.maxLength(64)]],
       price: [v?.price ?? null, [Validators.required, Validators.min(0.01)]],
       compareAtPrice: [v?.compareAtPrice ?? null, [ProductWizardStateService.compareAtGreaterThanPrice]],
       costPrice: [v?.costPrice ?? null],

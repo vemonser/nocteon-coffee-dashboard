@@ -1,0 +1,13 @@
+{
+  "source_path": "/home/abdelrhman/Developments/2026/side-projects/nocteon/nocteon-dashboard/.planning/codebase/TESTING.md",
+  "type": "DOC",
+  "confidence": "high",
+  "manifest_override": true,
+  "title": "Testing",
+  "summary": "Overview of the project's testing setup across unit, E2E, QA, evidence, i18n, and build verification.",
+  "scope": ["unit tests", "E2E tests", "Playwright", "QA harness", "evidence harness", "i18n checks", "build verification"],
+  "cross_refs": ["playwright.config.ts", "qa/playwright.config.ts", "scripts/qa-static.mjs", "scripts/i18n-case-check.mjs", "scripts/evidence.mjs", "evidence-targets.mjs", "assert-order-evidence.mjs"],
+  "locked": false,
+  "precedence": 2,
+  "notes": ""
+}

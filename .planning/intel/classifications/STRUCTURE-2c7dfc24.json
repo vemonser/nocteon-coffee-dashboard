@@ -1,0 +1,13 @@
+{
+  "source_path": "/home/abdelrhman/Developments/2026/side-projects/nocteon/nocteon-dashboard/.planning/codebase/STRUCTURE.md",
+  "type": "DOC",
+  "confidence": "high",
+  "manifest_override": true,
+  "title": "Project Structure",
+  "summary": "Codebase structure map of the nocteon-dashboard Angular app: top-level layout, source folders, feature conventions, shared locations, tests, and configuration.",
+  "scope": ["nocteon-dashboard", "Angular app", "source tree", "feature folders", "shared components", "tests", "configuration"],
+  "cross_refs": [],
+  "locked": false,
+  "precedence": 2,
+  "notes": ""
+}
