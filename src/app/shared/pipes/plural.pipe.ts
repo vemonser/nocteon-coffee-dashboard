@@ -1,6 +1,6 @@
 import { Pipe, PipeTransform, inject } from '@angular/core';
 import { LanguageService } from '../../core/i18n/language.service';
-import { pluralCategory } from '../../core/i18n/plural';
+import { countMessage } from '../../core/i18n/plural';
 import { TranslocoService } from '@jsverse/transloco';
 
 /**
@@ -17,6 +17,9 @@ import { TranslocoService } from '@jsverse/transloco';
  * singular ("يومًا") and 8 takes the plural ("مبيعات") — see
  * `core/i18n/plural.ts`.
  *
+ * The lookup itself lives in `countMessage`, because a toast body has no
+ * template to run a pipe in and both must word a count the same way.
+ *
  * `pure: false` because the result depends on the active language, which is
  * not an input to the pipe.
  */
@@ -26,17 +29,12 @@ export class PluralPipe implements PipeTransform {
   private readonly transloco = inject(TranslocoService);
 
   transform(count: number, base: string, params: Record<string, unknown> = {}): string {
-    const lang = this.language.language();
-    const category = pluralCategory(count, lang);
-    const key = `${base}_${category}`;
-    const value = this.transloco.translate(key, { count, ...params });
-    // A missing key must never reach the screen; fall back to `_other`,
-    // then to the number on its own.
-    if (!value || value === key) {
-      const other = this.transloco.translate(`${base}_other`, { count, ...params });
-      if (other && other !== `${base}_other`) return other;
-      return String(count);
-    }
-    return value;
+    return countMessage(
+      (key, values) => this.transloco.translate(key, values),
+      this.language.language(),
+      base,
+      count,
+      params,
+    );
   }
 }

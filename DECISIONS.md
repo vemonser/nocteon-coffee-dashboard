@@ -1435,3 +1435,40 @@ reorder test showed why that is wrong here: Hibernate updates the positions in p
 write collides on the primary key as soon as two entries swap. The mapping is now an explicit
 `ProductRelation` row (`id`, `product_id`, `related_product_id`, `position`), and a change replaces
 the product's rows — one delete plus N inserts, at most six rows.
+
+---
+
+# FE-18 — Bulk status update (orders)
+
+## What runs, and how many requests
+The dashboard has **no bulk status endpoint**, so a run is **one request per selected order**,
+sent **sequentially** (`concatMap`, one in flight at a time) through the existing
+`PUT /api/dashboard/orders/:id/status`. Nothing is invented: the server validates every row and a
+`4xx` is reported **per row**, never swallowed. A `403` stops the run (a permission error is not
+per-row) and the unattempted rows are reported as "not attempted" — which also keeps the
+interceptor's permission toast to exactly one.
+
+Needs backend (optional, not blocking): a bulk endpoint
+(`PUT /api/dashboard/orders/status` with `{ ids, status }` returning per-id results) would turn a
+100-row run into one round trip and one transaction. The UI already aggregates per-row outcomes, so
+switching is a service change only.
+
+## Decisions
+- **Only the fulfilment chain is offered as a target** (`PENDING, CONFIRMED, PROCESSING, SHIPPED,
+  DELIVERED`); `CANCELLED` is excluded because cancelling needs one reason per order and has its own
+  dialog. The bulk dialog says so.
+- **Impossible statuses are listed and disabled, with a reason**, instead of being hidden — the
+  reader learns why "Delivered" is not available for their selection.
+- **No Undo.** A status change is not reversible-safe: `DELIVERED` and `CANCELLED` are terminal, so
+  an Undo offered on a run that reaches either would be a button that cannot work for part of the
+  rows. Instead, the failed rows **stay selected** and the failure dialog offers "Retry failed",
+  which reopens the picker so the retry goes through the same transition check.
+- **Partial failure opens the per-row list by itself** (order number + the server's own reason) and
+  the one warning toast carries the counts and a "Review failures" action. The full-success toast is
+  a single "12 orders updated".
+- **One plural implementation.** `countMessage` in `core/i18n/plural.ts` is now the only place a
+  count becomes a sentence; the `plural` pipe and `NotifyService.countText` both call it, so a toast
+  and a table cell word the same count the same way (Arabic gets all six categories).
+- **Bulk action gating** moved from structural (`*hasPermission`) to action-level
+  (`appCanDisable="'order:update'"` + a guard in the component): the button stays visible, disabled,
+  and names the missing permission in its tooltip, the same pattern as the header's Export button.

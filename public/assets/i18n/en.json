@@ -1777,7 +1777,33 @@
     "bulk": {
       "selected": "{{count}} selected",
       "changeStatus": "Change status",
-      "clear": "Clear selection"
+      "clear": "Clear selection",
+      "dialog": {
+        "description": "Each order is updated one at a time, and only to a status its current one allows.",
+        "selectLabel": "New status",
+        "hint": "Orders that cannot take this status are skipped, and any failure is listed afterwards.",
+        "cancelNote": "Cancelling stays with each order — it needs a reason.",
+        "noOptions": "None of the selected orders can change status — they are already delivered or cancelled."
+      },
+      "eligible_one": "{{count}} selected order can move to this status",
+      "eligible_other": "{{count}} selected orders can move to this status",
+      "notEligible": "No selected order can move to this status",
+      "updateCount_one": "Update {{count}} order",
+      "updateCount_other": "Update {{count}} orders",
+      "progress": "Updating {{done}} of {{total}}…",
+      "updated_one": "{{count}} order updated",
+      "updated_other": "{{count}} orders updated",
+      "failed_one": "{{count}} order was not updated",
+      "failed_other": "{{count}} orders were not updated",
+      "reviewFailures": "Review failures",
+      "failures": {
+        "title": "Some orders were not updated",
+        "hint": "They are still selected, so you can retry the change.",
+        "reason": "The order could not be updated",
+        "aborted": "Not attempted — the run stopped after a permission error.",
+        "retry": "Retry failed",
+        "close": "Close"
+      }
     },
     "export": {
       "hint": "Exports every order matching the current filters, with the columns shown in the table.",
