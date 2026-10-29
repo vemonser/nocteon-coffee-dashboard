@@ -1,5 +1,6 @@
 ﻿import { Component, inject, signal, computed } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmCardImports } from '@spartan-ng/helm/card';
 import { NgIcon, provideIcons } from '@ng-icons/core';
@@ -24,6 +25,10 @@ import { AuthService } from '../../core/auth/auth.service';
 import { DashboardToolbarComponent } from '../../shared/components/dashboard/dashboard-toolbar/dashboard-toolbar.component';
 import { StoreSettingsService } from '../../core/settings/store-settings.service';
 import { computeDelta } from '../../core/dashboard/delta';
+
+/** The ranges the dashboard toolbar offers, in days. `?days=` outside this
+    list is a hand-edited or stale URL and is ignored. */
+const RANGE_DAYS = [1, 7, 30, 90, 365];
 
 @Component({
   selector: 'app-dashboard',
@@ -144,6 +149,16 @@ export class DashboardComponent {
   readonly missingPermission = this.route.snapshot.queryParamMap.get('permission') ?? null;
 
   constructor() {
-    // NOOP — the permission checks are computed lazily above.
+    // The range lives in the URL (`?days=90`): the toolbar writes it on every
+    // pick, so the reader's choice survives a reload and the back button can
+    // walk back through the ranges. The stats service starts at 30 days, so
+    // the URL has to re-select the range here — and re-select it again when
+    // back/forward changes the URL under us.
+    this.route.queryParamMap.pipe(takeUntilDestroyed()).subscribe((params) => {
+      const days = Number(params.get('days'));
+      if (!RANGE_DAYS.includes(days)) return;
+      if (days === this.statsService.days()) return;
+      this.statsService.setDays(days);
+    });
   }
 }
