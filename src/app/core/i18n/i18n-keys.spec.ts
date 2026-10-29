@@ -85,6 +85,9 @@ const PLURAL_BASES = [
   'audit.countEntries',
   // The notification bell's accessible name counts unread notifications.
   'notifications.unreadCount',
+  // The notifications list counts what it is showing next to the unread
+  // count, so the header reads "4 notifications · 4 unread".
+  'notifications.totalCount',
 ];
 const EN_SUFFIXES = ['one', 'other'];
 const AR_SUFFIXES = ['zero', 'one', 'two', 'few', 'many', 'other'];
