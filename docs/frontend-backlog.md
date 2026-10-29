@@ -353,6 +353,21 @@ post, reviews, settings) and fails on non-200; runs in CI.
 **Acceptance** A `settings/audit` page lists audit rows with actor, action,
 entity, time and a JSON detail drawer; filters by action/actor/date; paginated.
 **Effort** 1 day. **Deps** none.
+**Shipped** `/dashboard/settings/audit`, a child of the Settings group with its
+own `audit:read` guard, a nav item and a defensive `PermissionService` check.
+The list is read-only: 72px rows (action, actor, entity, time) and one action per
+row — the detail drawer, which shows the record plus its stored JSON block by
+block (indented, with copy-to-clipboard). Filters: action (contains on the name),
+actor (user id or email fragment — the table has no username column), and a
+from/to date range widened to whole local days. Loading skeleton, empty (plain
+and filtered), error with retry, pagination. The backend endpoint
+`GET /api/dashboard/audit-logs` now filters and returns `old_values`,
+`new_values` and `metadata` as the STORED text rather than a parsed map, so the
+detail is verbatim. Evidence: `AuditLogQueryIntegrationTest` (14, backend: the
+page, every filter, the verbatim detail, 403/401) and 23 frontend unit tests
+(`audit-log-list.component.spec.ts`, `audit-date-range.spec.ts`). The audit
+table has no seed rows, so a fresh database shows the empty state; the browser
+pass (light/dark/RTL) still needs a run after merge.
 
 ### FE-23 · Real-time notifications
 **Why** The bell polls every 60 s; new orders can be a minute late.

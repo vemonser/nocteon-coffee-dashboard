@@ -44,4 +44,5 @@ export const icons: Record<NavKey, string> = {
   newsletter: 'lucideMailPlus',
   contactMessages: 'lucideMail',
   coffeeData: 'lucideDatabase',
+  auditLog: 'lucideScrollText',
 };

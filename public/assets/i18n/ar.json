@@ -2886,5 +2886,58 @@
     "videoUrlHint": "رابط يوتيوب أو فيميو",
     "videoInsert": "إدراج",
     "videoUrlInvalid": "أدخل رابط يوتيوب أو فيميو."
+  },
+  "audit": {
+    "title": "سجل التدقيق",
+    "subtitle": "لا يمكن تعديل أي شيء هنا: الإجراءات التي سجّلها لوحة التحكم، الأحدث أولًا.",
+    "countEntries_zero": "لا توجد إدخالات",
+    "countEntries_one": "إدخال واحد",
+    "countEntries_two": "إدخالان",
+    "countEntries_few": "{{count}} إدخالات",
+    "countEntries_many": "{{count}} إدخالًا",
+    "countEntries_other": "{{count}} إدخال",
+    "filters": {
+      "action": "تصفية حسب الإجراء",
+      "actor": "معرّف المستخدم أو البريد",
+      "from": "من تاريخ",
+      "to": "إلى تاريخ",
+      "clear": "مسح عوامل التصفية"
+    },
+    "columns": {
+      "time": "الوقت",
+      "action": "الإجراء",
+      "actor": "المنفّذ",
+      "entity": "الكيان"
+    },
+    "systemActor": "النظام",
+    "failed": "فشل",
+    "view": "عرض التفاصيل",
+    "emptyTitle": "لا توجد إدخالات بعد",
+    "emptyBody": "ستظهر هنا الإجراءات التي تُنفَّذ في لوحة التحكم فور تسجيلها.",
+    "emptyFilteredTitle": "لا توجد إدخالات مطابقة",
+    "emptyFilteredBody": "جرّب إجراءً أو منفّذًا أو نطاق تاريخ آخر.",
+    "loadError": "تعذّر تحميل سجل التدقيق",
+    "detail": {
+      "title": "الإدخال رقم {{id}}",
+      "subtitle": "ما تم تسجيله، والتفاصيل كما حُفظت.",
+      "time": "الوقت",
+      "actor": "المنفّذ",
+      "action": "الإجراء",
+      "entity": "الكيان",
+      "ip": "عنوان IP",
+      "result": "النتيجة",
+      "succeeded": "نجح",
+      "failed": "فشل",
+      "error": "الخطأ",
+      "userAgent": "وكيل المستخدم",
+      "oldValues": "القيم السابقة",
+      "newValues": "القيم الجديدة",
+      "metadata": "بيانات وصفية",
+      "noDetail": "لم يحفظ هذا الإدخال أي قيم.",
+      "copy": "نسخ JSON",
+      "copied": "تم النسخ إلى الحافظة",
+      "copyFailed": "تعذّر النسخ",
+      "close": "إغلاق"
+    }
   }
 }

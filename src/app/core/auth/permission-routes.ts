@@ -37,6 +37,7 @@ export const ROUTE_PERMISSIONS: Record<string, string[]> = {
   '/dashboard/users/roles/:roleName': ['user:read'],
   '/dashboard/users/:id': ['user:read'],
   '/dashboard/store-settings': ['settings:update'],
+  '/dashboard/settings/audit': ['audit:read'],
   '/dashboard/categories': ['category:read'],
   '/dashboard/categories/:slug': ['category:read'],
   '/dashboard/shipping-zones': ['shipping:read'],
