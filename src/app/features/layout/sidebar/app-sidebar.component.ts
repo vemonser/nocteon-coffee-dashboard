@@ -26,6 +26,7 @@ import {
   lucideTag,
   lucideMegaphone,
   lucideMail,
+  lucideScrollText,
   lucideChevronDown,
 } from '@ng-icons/lucide';
 import { HlmSidebarImports } from '@spartan-ng/helm/sidebar';
@@ -75,6 +76,7 @@ import { UserMenuComponent } from '../../../shared/ui/user-menu/user-menu.compon
       lucideTag,
       lucideMegaphone,
       lucideMail,
+      lucideScrollText,
       lucideChevronDown,
     }),
   ],

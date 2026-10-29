@@ -47,6 +47,7 @@ const icons: Record<NavKey, string> = {
   newsletter: 'lucideMailPlus',
   contactMessages: 'lucideMail',
   coffeeData: 'lucideDatabase',
+  auditLog: 'lucideScrollText',
 };
 
 const sectionLabels: Record<Language, Record<NavSectionKey, string>> = {
@@ -179,6 +180,9 @@ export function getNavItems(lang: Language) {
     'settings:update',
     [
       { label: t.storeSettings, icon: icons.storeSettings, route: '/dashboard/store-settings', permission: 'settings:update' },
+      // The audit trail: its own permission, so a role can read the log
+      // without being able to change the store's settings (see V13).
+      { label: t.auditLog, icon: icons.auditLog, route: '/dashboard/settings/audit', permission: 'audit:read' },
     ],
     t,
     s

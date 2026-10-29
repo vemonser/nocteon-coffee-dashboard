@@ -1562,3 +1562,44 @@ every barcoded variant of a product (`a | b`) and stays empty when there is none
 barcodes; it surfaced because creating a product with a barcode is exactly what FE-15 has to test.
 `ProductVariantService.buildVariant` now sets `0L`, the value the duplicate path already used. The
 proper fix (a JPA `@Version`, which also gives optimistic locking) is a separate decision.
+
+## Audit log (FE-22, 29 Oct 2026)
+
+### The permission was dead; the page is the second half of it
+`audit:read` has been in the role catalogue since V11 (ADMIN) and V13 (MODERATOR), and
+`AuditLogController` already answered `GET /api/dashboard/audit-logs`, but nothing in the
+dashboard pointed at either. The page is `/dashboard/settings/audit`: a route guarded by
+`permissionGuard('audit:read')`, a child of the Settings nav group (its own permission, so a role
+can read the log without `settings:update`), and a defensive `PermissionService.has('audit:read')`
+check before the first request. Nothing in the page mutates the log — an editable audit trail is
+not an audit trail.
+
+### The detail is the stored text, not a re-serialised shape
+`old_values`, `new_values` and `metadata` are `text` columns holding whatever the writer stored.
+The endpoint used to parse them into a `Map` and let Jackson write them back out; a value that
+would not parse became `null` (the record silently lost its detail) and a valid one lost its
+spacing and key order (`1.10` came back `1.1`). `AuditLogResponse` now returns the three columns as
+the raw strings, and the drawer pretty-prints them for reading while the copy button copies the
+same text. A block that will not parse is shown as recorded — that is exactly the record an
+auditor needs to see.
+
+### Needs backend: there is no username column on audit_logs
+The table stores `user_id` + `user_email` only, so the actor filter accepts a numeric user id (exact
+match) or a fragment of the email (contains, case-insensitive). A username cannot be filtered on or
+shown; the page shows the email and falls back to `#id`, then to "System". No column was invented.
+
+### Needs backend: no seeded audit rows, on purpose
+`public.audit_logs` is written by the app, not by `db/seed`, so a fresh dev database shows the
+page's empty state ("No audit entries yet") until something is recorded. That is the honest state,
+not a broken page: the empty copy says actions appear as they are recorded. A reviewer who wants
+rows can create one through any audited action (a role change, a product update) — the page
+refreshes on reload.
+
+### The action filter is a contains match, and the sort is fixed at newest first
+Typing "product" must find PRODUCT_CREATE, PRODUCT_UPDATE and PRODUCT_DELETE in one go, so the
+server compares the action NAME with `LIKE %product%`. Hibernate renders PostgreSQL
+`LIKE … ESCAPE ''`, so a backslash is a literal backslash there — escaping `_` would have broken
+the most useful search on the table ("order_create"), and the filter does not escape.
+The list is always newest first with `id DESC` as the tie-breaker: `created_at` is microsecond
+precision and two rows written by one request can share it, which would let page 2 repeat a row
+from page 1.

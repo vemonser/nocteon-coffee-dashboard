@@ -2750,5 +2750,54 @@
     "videoUrlHint": "YouTube or Vimeo link",
     "videoInsert": "Insert",
     "videoUrlInvalid": "Enter a YouTube or Vimeo link."
+  },
+  "audit": {
+    "title": "Audit log",
+    "subtitle": "Nothing here can be edited: the actions the dashboard recorded, newest first.",
+    "countEntries_one": "{{count}} entry",
+    "countEntries_other": "{{count}} entries",
+    "filters": {
+      "action": "Filter by action",
+      "actor": "User id or email",
+      "from": "From date",
+      "to": "To date",
+      "clear": "Clear filters"
+    },
+    "columns": {
+      "time": "Time",
+      "action": "Action",
+      "actor": "Actor",
+      "entity": "Entity"
+    },
+    "systemActor": "System",
+    "failed": "Failed",
+    "view": "View detail",
+    "emptyTitle": "No audit entries yet",
+    "emptyBody": "Actions taken in the dashboard appear here as they are recorded.",
+    "emptyFilteredTitle": "No entries match these filters",
+    "emptyFilteredBody": "Try another action, actor or date range.",
+    "loadError": "The audit log could not be loaded",
+    "detail": {
+      "title": "Audit entry #{{id}}",
+      "subtitle": "What was recorded, and the detail as it was stored.",
+      "time": "Time",
+      "actor": "Actor",
+      "action": "Action",
+      "entity": "Entity",
+      "ip": "IP address",
+      "result": "Result",
+      "succeeded": "Succeeded",
+      "failed": "Failed",
+      "error": "Error",
+      "userAgent": "User agent",
+      "oldValues": "Old values",
+      "newValues": "New values",
+      "metadata": "Metadata",
+      "noDetail": "This entry stored no values.",
+      "copy": "Copy JSON",
+      "copied": "Copied to the clipboard",
+      "copyFailed": "Could not copy",
+      "close": "Close"
+    }
   }
 }

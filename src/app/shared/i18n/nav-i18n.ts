@@ -36,6 +36,7 @@ export type NavKey =
   | 'broadcasts'
   | 'newsletter'
   | 'contactMessages'
+  | 'auditLog'
   | 'coffeeData';
 
 export const navI18n: Record<Language, Record<NavKey, string>> = {
@@ -74,6 +75,7 @@ export const navI18n: Record<Language, Record<NavKey, string>> = {
     broadcasts: 'Broadcasts',
     newsletter: 'Newsletter',
     contactMessages: 'Contact messages',
+    auditLog: 'Audit log',
     coffeeData: 'Coffee data',
   },
   ar: {
@@ -111,6 +113,7 @@ export const navI18n: Record<Language, Record<NavKey, string>> = {
     broadcasts: 'الرسائل الجماعية',
     newsletter: 'النشرة البريدية',
     contactMessages: 'رسائل التواصل',
+    auditLog: 'سجل التدقيق',
     coffeeData: 'بيانات القهوة',
   },
 };

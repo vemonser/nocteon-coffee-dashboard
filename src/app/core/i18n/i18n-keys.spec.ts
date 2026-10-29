@@ -81,6 +81,8 @@ const PLURAL_BASES = [
   // The Users list counts the people in each role. English has one/other;
   // Arabic needs all six categories ("مستخدمان" is not "2 مستخدم").
   'users.roleCard.users',
+  // The audit log counts the entries it found; Arabic has all six forms.
+  'audit.countEntries',
 ];
 const EN_SUFFIXES = ['one', 'other'];
 const AR_SUFFIXES = ['zero', 'one', 'two', 'few', 'many', 'other'];

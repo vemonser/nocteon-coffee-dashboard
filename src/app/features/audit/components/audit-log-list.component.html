@@ -1,0 +1,314 @@
+<div class="page-shell">
+  <!-- Header: the title, what the page counts, and one line saying it is read-only. -->
+  <div class="flex flex-col gap-1">
+    <h1 class="text-2xl font-medium tracking-tight">{{ 'audit.title' | transloco }}</h1>
+    <p class="text-sm text-muted-foreground">
+      {{ totalElements() | plural: 'audit.countEntries' }}
+      <span aria-hidden="true">·</span>
+      {{ 'audit.subtitle' | transloco }}
+    </p>
+  </div>
+
+  <!-- Filters: one compact row, every control at the shared 38px height.
+       Action is a contains match ("product" finds PRODUCT_*), actor takes a
+       user id or an email, and the two dates widen to whole local days. -->
+  <div class="flex flex-wrap items-center gap-2">
+    <div class="relative w-full sm:w-56">
+      <ng-icon
+        name="lucideSearch"
+        class="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+        aria-hidden="true"
+      />
+      <input
+        hlmInput
+        type="search"
+        class="h-[var(--filter-control-height)] w-full ps-9"
+        data-testid="audit-filter-action"
+        [ngModel]="action()"
+        (ngModelChange)="onActionInput($event)"
+        [placeholder]="'audit.filters.action' | transloco"
+        [attr.aria-label]="'audit.filters.action' | transloco"
+      />
+    </div>
+
+    <div class="relative w-full sm:w-56">
+      <input
+        hlmInput
+        type="search"
+        class="h-[var(--filter-control-height)] w-full"
+        data-testid="audit-filter-actor"
+        [ngModel]="actor()"
+        (ngModelChange)="onActorInput($event)"
+        [placeholder]="'audit.filters.actor' | transloco"
+        [attr.aria-label]="'audit.filters.actor' | transloco"
+      />
+    </div>
+
+    <input
+      hlmInput
+      type="date"
+      class="h-[var(--filter-control-height)] w-40"
+      data-testid="audit-filter-from"
+      [ngModel]="from()"
+      (ngModelChange)="from.set($event); onDateChange()"
+      [attr.aria-label]="'audit.filters.from' | transloco"
+      [title]="'audit.filters.from' | transloco"
+    />
+
+    <input
+      hlmInput
+      type="date"
+      class="h-[var(--filter-control-height)] w-40"
+      data-testid="audit-filter-to"
+      [ngModel]="to()"
+      (ngModelChange)="to.set($event); onDateChange()"
+      [attr.aria-label]="'audit.filters.to' | transloco"
+      [title]="'audit.filters.to' | transloco"
+    />
+
+    @if (hasActiveFilters()) {
+      <button
+        hlmBtn
+        variant="ghost"
+        size="sm"
+        class="h-[var(--filter-control-height)]"
+        data-testid="audit-clear-filters"
+        (click)="clearFilters()"
+      >
+        <ng-icon name="lucideX" class="me-1.5 size-4" aria-hidden="true" />
+        {{ 'audit.filters.clear' | transloco }}
+      </button>
+    }
+  </div>
+
+  <div class="card-surface overflow-hidden">
+    <!-- Loading: skeleton rows with the shape of a real row, so the page does
+         not jump when the data lands. -->
+    @if (loading()) {
+      <div data-testid="audit-skeleton">
+        @for (row of [1, 2, 3, 4, 5]; track row) {
+          <div class="flex h-[72px] items-center gap-4 border-b px-4 last:border-b-0">
+            <div class="h-3 w-28 animate-pulse rounded bg-muted"></div>
+            <div class="h-3 flex-1 animate-pulse rounded bg-muted"></div>
+            <div class="h-3 flex-1 animate-pulse rounded bg-muted"></div>
+            <div class="h-3 w-24 animate-pulse rounded bg-muted"></div>
+          </div>
+        }
+      </div>
+    } @else if (failed()) {
+      <!-- Error: says what failed and offers the retry. Never the empty copy. -->
+      <div class="flex flex-col items-center gap-3 p-12 text-center" role="alert" data-testid="audit-error">
+        <p class="font-medium text-destructive">{{ 'audit.loadError' | transloco }}</p>
+        <p class="text-sm text-muted-foreground">{{ 'common.loadFailedHint' | transloco }}</p>
+        <button hlmBtn variant="outline" (click)="retry()">
+          <ng-icon name="lucideRefreshCw" class="me-1.5 size-4" aria-hidden="true" />
+          {{ 'common.retry' | transloco }}
+        </button>
+      </div>
+    } @else if (items().length === 0 && hasActiveFilters()) {
+      <div class="flex flex-col items-center gap-4 p-12 text-center" data-testid="audit-empty-filtered">
+        <div class="flex size-14 items-center justify-center rounded-full bg-muted">
+          <ng-icon name="lucideFileSearch" class="size-6 text-muted-foreground" aria-hidden="true" />
+        </div>
+        <div class="space-y-1">
+          <p class="text-lg font-medium">{{ 'audit.emptyFilteredTitle' | transloco }}</p>
+          <p class="text-sm text-muted-foreground">{{ 'audit.emptyFilteredBody' | transloco }}</p>
+        </div>
+        <button hlmBtn variant="outline" (click)="clearFilters()">
+          {{ 'audit.filters.clear' | transloco }}
+        </button>
+      </div>
+    } @else if (items().length === 0) {
+      <div class="flex flex-col items-center gap-4 p-12 text-center" data-testid="audit-empty">
+        <div class="flex size-14 items-center justify-center rounded-full bg-muted">
+          <ng-icon name="lucideScrollText" class="size-6 text-muted-foreground" aria-hidden="true" />
+        </div>
+        <div class="space-y-1">
+          <p class="text-lg font-medium">{{ 'audit.emptyTitle' | transloco }}</p>
+          <p class="text-sm text-muted-foreground">{{ 'audit.emptyBody' | transloco }}</p>
+        </div>
+      </div>
+    } @else {
+      <!-- Column headers, aligned with the cells below. -->
+      <div
+        class="hidden items-center gap-4 border-b bg-muted/40 px-4 py-2 text-xs font-medium text-muted-foreground sm:flex"
+      >
+        <span class="w-32 shrink-0">{{ 'audit.columns.time' | transloco }}</span>
+        <span class="min-w-0 flex-1">{{ 'audit.columns.action' | transloco }}</span>
+        <span class="min-w-0 flex-1">{{ 'audit.columns.actor' | transloco }}</span>
+        <span class="min-w-0 flex-1">{{ 'audit.columns.entity' | transloco }}</span>
+        <span class="w-32 shrink-0 text-end">{{ 'common.actions' | transloco }}</span>
+      </div>
+
+      <div role="list">
+        @for (entry of items(); track entry.id) {
+          <div
+            role="listitem"
+            class="flex min-h-[72px] flex-wrap items-center gap-4 border-b px-4 transition-colors last:border-b-0 hover:bg-muted/40 sm:h-[72px] sm:flex-nowrap"
+            [attr.data-testid]="'audit-row-' + entry.id"
+          >
+            <span class="w-32 shrink-0 text-xs text-muted-foreground">
+              <app-localized-date [value]="entry.createdAt" [showTime]="true" [stackTime]="true" />
+            </span>
+
+            <span class="min-w-0 flex-1">
+              <span class="flex items-center gap-2">
+                <hlm-badge variant="secondary" class="font-mono text-[11px]" dir="ltr">{{ entry.action }}</hlm-badge>
+                @if (!entry.success) {
+                  <hlm-badge variant="destructive">{{ 'audit.failed' | transloco }}</hlm-badge>
+                }
+              </span>
+            </span>
+
+            <span class="min-w-0 flex-1 truncate text-sm" [title]="actorLabel(entry)">
+              <bdi>{{ actorLabel(entry) }}</bdi>
+            </span>
+
+            <span class="min-w-0 flex-1 truncate font-mono text-xs text-muted-foreground" dir="ltr">
+              {{ entityLabel(entry) || '—' }}
+            </span>
+
+            <span class="w-32 shrink-0 text-end">
+              <!-- The row's only action: the record is read-only. -->
+              <button
+                hlmBtn
+                variant="ghost"
+                size="sm"
+                [attr.data-testid]="'audit-view-' + entry.id"
+                [attr.aria-label]="'audit.view' | transloco"
+                [title]="'audit.view' | transloco"
+                (click)="openDetail(entry)"
+              >
+                <ng-icon name="lucideEye" class="me-1.5 size-4" aria-hidden="true" />
+                {{ 'audit.view' | transloco }}
+              </button>
+            </span>
+          </div>
+        }
+      </div>
+    }
+  </div>
+
+  @if (pageData() && !loading() && !failed() && items().length > 0) {
+    <app-pager
+      [page]="pageData()!.page"
+      [size]="pageData()!.size"
+      [totalElements]="pageData()!.totalElements"
+      [totalPages]="pageData()!.totalPages"
+      [first]="pageData()!.first"
+      [last]="pageData()!.last"
+      [showPageSize]="true"
+      [sizeOptions]="pageSizeOptions"
+      (pageChange)="goToPage($event)"
+      (sizeChange)="onPageSizeChange($event)"
+    />
+  }
+</div>
+
+<!-- The detail: the record, then its stored JSON block by block. -->
+<app-dialog-shell
+  [open]="selected() !== null"
+  [title]="detailTitle()"
+  [subtitle]="'audit.detail.subtitle' | transloco"
+  size="lg"
+  [mobileSheet]="true"
+  testId="audit-detail"
+  (closed)="closeDetail()"
+>
+  @if (selected(); as entry) {
+    <dl class="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
+      <div class="min-w-0">
+        <dt class="text-xs font-medium text-muted-foreground">{{ 'audit.detail.time' | transloco }}</dt>
+        <dd class="mt-1 text-sm">
+          <app-localized-date [value]="entry.createdAt" [showTime]="true" [variant]="'long'" [withComma]="true" />
+        </dd>
+      </div>
+
+      <div class="min-w-0">
+        <dt class="text-xs font-medium text-muted-foreground">{{ 'audit.detail.actor' | transloco }}</dt>
+        <dd class="mt-1 truncate text-sm" [title]="actorLabel(entry)">
+          <bdi>{{ actorLabel(entry) }}</bdi>
+          @if (entry.userId !== null && entry.userEmail) {
+            <span class="ms-1 font-mono text-xs text-muted-foreground" dir="ltr">#{{ entry.userId }}</span>
+          }
+        </dd>
+      </div>
+
+      <div class="min-w-0">
+        <dt class="text-xs font-medium text-muted-foreground">{{ 'audit.detail.action' | transloco }}</dt>
+        <dd class="mt-1">
+          <hlm-badge variant="secondary" class="font-mono text-[11px]" dir="ltr">{{ entry.action }}</hlm-badge>
+        </dd>
+      </div>
+
+      <div class="min-w-0">
+        <dt class="text-xs font-medium text-muted-foreground">{{ 'audit.detail.entity' | transloco }}</dt>
+        <dd class="mt-1 truncate font-mono text-sm" dir="ltr">{{ entityLabel(entry) || '—' }}</dd>
+      </div>
+
+      <div class="min-w-0">
+        <dt class="text-xs font-medium text-muted-foreground">{{ 'audit.detail.result' | transloco }}</dt>
+        <dd class="mt-1 text-sm">
+          @if (entry.success) {
+            <span class="text-emerald-700 dark:text-emerald-400">{{ 'audit.detail.succeeded' | transloco }}</span>
+          } @else {
+            <span class="text-destructive">{{ 'audit.detail.failed' | transloco }}</span>
+          }
+        </dd>
+      </div>
+
+      @if (entry.ipAddress) {
+        <div class="min-w-0">
+          <dt class="text-xs font-medium text-muted-foreground">{{ 'audit.detail.ip' | transloco }}</dt>
+          <dd class="mt-1 font-mono text-sm" dir="ltr">{{ entry.ipAddress }}</dd>
+        </div>
+      }
+
+      @if (entry.errorMessage) {
+        <div class="min-w-0 sm:col-span-2">
+          <dt class="text-xs font-medium text-muted-foreground">{{ 'audit.detail.error' | transloco }}</dt>
+          <dd class="mt-1 text-sm text-destructive" [title]="entry.errorMessage">{{ entry.errorMessage }}</dd>
+        </div>
+      }
+
+      @if (entry.userAgent) {
+        <div class="min-w-0 sm:col-span-2">
+          <dt class="text-xs font-medium text-muted-foreground">{{ 'audit.detail.userAgent' | transloco }}</dt>
+          <dd class="mt-1 break-all text-xs text-muted-foreground" dir="ltr">{{ entry.userAgent }}</dd>
+        </div>
+      }
+    </dl>
+
+    @if (detailJson().length > 0) {
+      @for (block of detailJson(); track block.field) {
+        <section class="mt-6">
+          <div class="mb-2 flex items-center justify-between gap-2">
+            <h3 class="text-sm font-medium">{{ block.label | transloco }}</h3>
+            <button
+              hlmBtn
+              variant="ghost"
+              size="icon"
+              class="size-8"
+              [attr.data-testid]="'audit-copy-' + block.field"
+              [attr.aria-label]="'audit.detail.copy' | transloco"
+              [title]="'audit.detail.copy' | transloco"
+              (click)="copyDetail(block.text)"
+            >
+              <ng-icon name="lucideClipboard" class="size-4" aria-hidden="true" />
+            </button>
+          </div>
+          <pre
+            class="max-h-64 overflow-auto rounded-[var(--radius-control)] border bg-muted/50 p-3 text-xs leading-relaxed"
+            dir="ltr"
+          >{{ block.text }}</pre>
+        </section>
+      }
+    } @else {
+      <p class="mt-6 text-sm text-muted-foreground">{{ 'audit.detail.noDetail' | transloco }}</p>
+    }
+  }
+
+  <button dialog-footer-end hlmBtn variant="outline" (click)="closeDetail()">
+    {{ 'audit.detail.close' | transloco }}
+  </button>
+</app-dialog-shell>

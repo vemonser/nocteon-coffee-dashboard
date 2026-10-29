@@ -152,6 +152,17 @@ export const routes: Routes = [
           ),
       },
       {
+        // The audit trail. `audit:read` is what opens it: the role catalogue
+        // grants it to ADMIN and MODERATOR, and the server enforces it again.
+        path: 'settings/audit',
+        data: { breadcrumb: 'auditLog' },
+        canActivate: [permissionGuard('audit:read')],
+        loadComponent: () =>
+          import('./features/audit/components/audit-log-list.component').then(
+            (m) => m.AuditLogListComponent,
+          ),
+      },
+      {
         path: 'categories',
         data: { breadcrumb: 'categories' },
         canActivate: [permissionGuard('category:read')],
