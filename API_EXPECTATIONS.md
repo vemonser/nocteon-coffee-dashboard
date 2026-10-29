@@ -49,6 +49,19 @@ Error codes handled by UI: `notify.errorFallback` (generic), 404 on mark/delete.
 - `GET /api/products/{slug}` → `variants[].imageUrl` — [exists]. Nullable; `null` means "use the product gallery".
 - Variant create/update accept `imageUrl`; blank is stored as `null`.
 
+## Related products (FE-11)
+
+- `ProductRequest.relatedProductSlugs` — [exists] max 6, ordered. A seventh entry, the product
+  itself, or an unknown slug is rejected (400/404), not trimmed.
+- `GET /api/dashboard/products/{slug}` → `relatedProducts[] = { slug, name, primaryImageUrl }`.
+- `GET /api/products/{slug}` → `relatedProducts[]` as product cards, `[]` when nothing is curated.
+
+## Duplicate product (FE-12)
+
+- `POST /api/dashboard/products/{slug}/duplicate` — [exists] `product:create`. Creates an inactive
+  copy with a `<slug>-copy` slug (then `-copy-2`, ...), new variant SKUs, and stock 0. Returns the
+  copy as `DashboardProductResponse`.
+
 ## Product tags (FE-10)
 
 Base: `/api/dashboard/product-tags`
