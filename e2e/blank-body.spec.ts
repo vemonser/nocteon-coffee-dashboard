@@ -226,11 +226,15 @@ test.describe('the detector itself', () => {
   });
 
   test('a designed empty state PASSES the check', async () => {
+    // The probe root must be a CONTAINER: the detector looks for the empty-state
+    // component among its descendants, so the component cannot also be the root.
     const verdict = await verdictFor(
       await probe(
-        '<p>No categories yet</p><p>Add a category to organize your products.</p>' +
-          '<button>Add category</button>',
-        'app-empty-state',
+        '<app-empty-state>' +
+          '<p>No categories yet</p><p>Add a category to organize your products.</p>' +
+          '<button>Add category</button>' +
+          '</app-empty-state>',
+        'section',
       ),
     );
 
