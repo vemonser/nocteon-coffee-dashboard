@@ -223,6 +223,9 @@
     "previousPage": "الصفحة السابقة",
     "price": "السعر",
     "priceRange": "نطاق السعر",
+    "rating": {
+      "outOf": "{{value}} من {{max}}"
+    },
     "profile": "الملف الشخصي",
     "removeImage": "إزالة الصورة",
     "required": "مطلوب",
@@ -623,7 +626,6 @@
       "lowStockBadge": "مخزون منخفض",
       "inStock": "{{count}} متوفر",
       "variants": "{{count}} متغيرات",
-      "ratingValue": "{{rating}} من 5",
       "reviewCount_zero": "لا توجد مراجعات",
       "reviewCount_one": "مراجعة واحدة",
       "reviewCount_two": "مراجعتان",
