@@ -22,7 +22,7 @@
       @for (error of fileErrors(); track error.name) {
         <p class="flex items-start gap-2 text-xs text-destructive">
           <span class="font-mono">{{ error.name }}</span>
-          <span>{{ error.message }}</span>
+          <span>{{ error.message | transloco }}</span>
         </p>
       }
     </div>
@@ -34,7 +34,7 @@
       <p class="mb-3 text-sm font-medium">{{ 'products.media.currentMedia' | transloco }}</p>
       <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4" cdkDropList (cdkDropListDropped)="dropExisting($event)">
         @for (media of state.existingMedia(); track media.id; let i = $index) {
-          <div class="group relative flex flex-col rounded-md border bg-card p-2" cdkDrag>
+          <div class="group relative flex flex-col rounded-md border bg-card p-2 outline-none focus-visible:ring-2 focus-visible:ring-ring" cdkDrag tabindex="0" role="listitem">
             <div class="relative">
               @if (media.type === 'IMAGE') {
                 <img [src]="media.url" [alt]="media.altText" class="aspect-square w-full rounded-md border object-cover" />
@@ -55,15 +55,18 @@
               }
 
               <div class="absolute end-2 top-2 flex gap-1 opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100">
+                <button type="button" cdkDragHandle class="cursor-grab rounded bg-card/95 p-1.5 text-foreground shadow-sm focus-visible:ring-2 focus-visible:ring-ring" (click)="$event.stopPropagation()" [attr.aria-label]="'products.media.reorder' | transloco" [title]="'products.media.reorder' | transloco">
+                  <ng-icon name="lucideGripVertical" class="size-4" />
+                </button>
                 @if (media.type === 'IMAGE' && !media.isPrimary) {
-                  <button type="button" class="rounded bg-card/95 p-1.5 text-foreground shadow-sm" (click)="setPrimary('existing', i)" [attr.aria-label]="'products.media.setAsCover' | transloco" [title]="'products.media.setAsCover' | transloco">
+                  <button type="button" class="rounded bg-card/95 p-1.5 text-foreground shadow-sm focus-visible:ring-2 focus-visible:ring-ring" (click)="setPrimary('existing', i)" [attr.aria-label]="'products.media.setAsCover' | transloco" [title]="'products.media.setAsCover' | transloco">
                     <ng-icon name="lucideStar" class="size-4" />
                   </button>
                 }
-                <button type="button" class="rounded bg-card/95 p-1.5 text-foreground shadow-sm" (click)="toggleAlt('existing-' + i)" [attr.aria-label]="'products.media.editAltText' | transloco" [title]="'products.media.editAltText' | transloco">
+                <button type="button" class="rounded bg-card/95 p-1.5 text-foreground shadow-sm focus-visible:ring-2 focus-visible:ring-ring" (click)="toggleAlt('existing-' + i)" [attr.aria-label]="'products.media.editAltText' | transloco" [title]="'products.media.editAltText' | transloco">
                   <ng-icon name="lucidePencil" class="size-4" />
                 </button>
-                <button type="button" class="rounded bg-destructive p-1.5 text-destructive-foreground shadow-sm" (click)="removeExisting(i)" [attr.aria-label]="'products.media.delete' | transloco" [title]="'products.media.delete' | transloco">
+                <button type="button" class="rounded bg-destructive p-1.5 text-destructive-foreground shadow-sm focus-visible:ring-2 focus-visible:ring-ring" (click)="removeExisting(i)" [attr.aria-label]="'products.media.delete' | transloco" [title]="'products.media.delete' | transloco">
                   <ng-icon name="lucideTrash2" class="size-4" />
                 </button>
               </div>
@@ -75,6 +78,7 @@
                 [value]="media.altText"
                 (change)="onExistingAltChange(i, $event)"
                 [placeholder]="'products.media.altTextPlaceholder' | transloco"
+                [attr.aria-label]="'products.media.editAltText' | transloco"
                 class="mt-2 w-full rounded border px-2 py-1 text-xs"
               />
             } @else {
@@ -92,7 +96,7 @@
       <p class="mb-3 text-sm font-medium">{{ 'products.media.newMedia' | transloco }}</p>
       <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4" cdkDropList (cdkDropListDropped)="dropStaged($event)">
         @for (media of state.stagedMedia(); track media.file.name; let i = $index) {
-          <div class="group relative flex flex-col rounded-md border-2 border-primary bg-card p-2" cdkDrag>
+          <div class="group relative flex flex-col rounded-md border-2 border-primary bg-card p-2 outline-none focus-visible:ring-2 focus-visible:ring-ring" cdkDrag tabindex="0" role="listitem">
             <div class="relative">
               @if (media.type === 'IMAGE') {
                 <img [src]="media.previewUrl" [alt]="media.altText" class="aspect-square w-full rounded-md border object-cover" />
@@ -116,15 +120,18 @@
               }
 
               <div class="absolute end-2 top-2 flex gap-1 opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100">
+                <button type="button" cdkDragHandle class="cursor-grab rounded bg-card/95 p-1.5 text-foreground shadow-sm focus-visible:ring-2 focus-visible:ring-ring" (click)="$event.stopPropagation()" [attr.aria-label]="'products.media.reorder' | transloco" [title]="'products.media.reorder' | transloco">
+                  <ng-icon name="lucideGripVertical" class="size-4" />
+                </button>
                 @if (media.type === 'IMAGE' && !media.isPrimary) {
-                  <button type="button" class="rounded bg-card/95 p-1.5 text-foreground shadow-sm" (click)="setPrimary('staged', i)" [attr.aria-label]="'products.media.setAsCover' | transloco" [title]="'products.media.setAsCover' | transloco">
+                  <button type="button" class="rounded bg-card/95 p-1.5 text-foreground shadow-sm focus-visible:ring-2 focus-visible:ring-ring" (click)="setPrimary('staged', i)" [attr.aria-label]="'products.media.setAsCover' | transloco" [title]="'products.media.setAsCover' | transloco">
                     <ng-icon name="lucideStar" class="size-4" />
                   </button>
                 }
-                <button type="button" class="rounded bg-card/95 p-1.5 text-foreground shadow-sm" (click)="toggleAlt('staged-' + i)" [attr.aria-label]="'products.media.editAltText' | transloco" [title]="'products.media.editAltText' | transloco">
+                <button type="button" class="rounded bg-card/95 p-1.5 text-foreground shadow-sm focus-visible:ring-2 focus-visible:ring-ring" (click)="toggleAlt('staged-' + i)" [attr.aria-label]="'products.media.editAltText' | transloco" [title]="'products.media.editAltText' | transloco">
                   <ng-icon name="lucidePencil" class="size-4" />
                 </button>
-                <button type="button" class="rounded bg-destructive p-1.5 text-destructive-foreground shadow-sm" (click)="removeStaged(i)" [attr.aria-label]="'products.media.delete' | transloco" [title]="'products.media.delete' | transloco">
+                <button type="button" class="rounded bg-destructive p-1.5 text-destructive-foreground shadow-sm focus-visible:ring-2 focus-visible:ring-ring" (click)="removeStaged(i)" [attr.aria-label]="'products.media.delete' | transloco" [title]="'products.media.delete' | transloco">
                   <ng-icon name="lucideTrash2" class="size-4" />
                 </button>
               </div>
@@ -136,6 +143,7 @@
                 [value]="media.altText"
                 (change)="onStagedAltChange(i, $event)"
                 [placeholder]="'products.media.altTextPlaceholder' | transloco"
+                [attr.aria-label]="'products.media.editAltText' | transloco"
                 class="mt-2 w-full rounded border px-2 py-1 text-xs"
               />
             } @else {

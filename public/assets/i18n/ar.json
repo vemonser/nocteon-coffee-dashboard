@@ -114,7 +114,9 @@
     "shippingZones": "مناطق الشحن",
     "contactMessages": "رسائل التواصل",
     "carts": "السلة",
-    "categories": "الفئات"
+    "categories": "الفئات",
+    "esc": "Esc",
+    "searchFailed": "فشل البحث. حاول مرة أخرى."
   },
   "StoreSettingPage": {
     "title": "إعدادات المتجر"
@@ -327,7 +329,12 @@
     "restoreNotFound": "لم يعُد هذا العنصر في المهملات."
   },
   "products": {
-    "draft": {"title":"استعادة المسودة غير المحفوظة؟","message":"توجد مسودة غير محفوظة من {{time}}. هل تريد استعادتها؟","restore":"استعادة المسودة","discard":"تجاهل المسودة"},
+    "draft": {
+      "title": "استعادة المسودة غير المحفوظة؟",
+      "message": "توجد مسودة غير محفوظة من {{time}}. هل تريد استعادتها؟",
+      "restore": "استعادة المسودة",
+      "discard": "تجاهل المسودة"
+    },
     "title": "المنتجات",
     "total": "إجمالي",
     "add": "إضافة منتج",
@@ -498,7 +505,12 @@
       "socialImageHint": "تُستخدم في نتائج البحث ومعاينات الروابط. الافتراضي هو صورة الغلاف.",
       "useCoverImage": "استخدام صورة الغلاف",
       "imageNumber": "صورة {{n}}",
-      "customSocialImage": "صورة مخصصة"
+      "customSocialImage": "صورة مخصصة",
+      "unsupportedType": "نوع ملف غير مدعوم. استخدم صورة أو فيديو.",
+      "fileTooLarge": "الملف أكبر من 10 ميغابايت.",
+      "removeTitle": "إزالة الوسائط",
+      "removeMessage": "إزالة هذه الوسائط؟",
+      "reorder": "إعادة ترتيب"
     },
     "tastingNotes": {
       "title": "ملاحظات التذوق",

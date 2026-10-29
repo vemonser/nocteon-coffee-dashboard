@@ -97,11 +97,11 @@ export class MediaStepComponent {
     const errors: MediaFileError[] = [];
     Array.from(files).forEach((file) => {
       if (!file.type.startsWith('image/') && !file.type.startsWith('video/')) {
-        errors.push({ name: file.name, message: 'Unsupported file type. Use an image or a video.' });
+        errors.push({ name: file.name, message: 'products.media.unsupportedType' });
         return;
       }
       if (file.size > MediaStepComponent.MAX_BYTES) {
-        errors.push({ name: file.name, message: 'File is larger than 10 MB.' });
+        errors.push({ name: file.name, message: 'products.media.fileTooLarge' });
         return;
       }
 
@@ -138,13 +138,13 @@ export class MediaStepComponent {
   }
 
   async removeStaged(index: number): Promise<void> {
-    if (await this.confirmDialog.confirm({ title: 'Remove media', message: 'Remove this media?', tone: 'destructive' })) {
+    if (await this.confirmDialog.confirm({ title: this.transloco.translate('products.media.removeTitle'), message: this.transloco.translate('products.media.removeMessage'), tone: 'destructive' })) {
       this.state.removeStagedMedia(index);
     }
   }
 
   async removeExisting(index: number): Promise<void> {
-    if (await this.confirmDialog.confirm({ title: 'Remove media', message: 'Remove this media?', tone: 'destructive' })) {
+    if (await this.confirmDialog.confirm({ title: this.transloco.translate('products.media.removeTitle'), message: this.transloco.translate('products.media.removeMessage'), tone: 'destructive' })) {
       this.state.removeExistingMedia(index);
     }
   }
