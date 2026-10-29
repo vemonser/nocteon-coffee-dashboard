@@ -434,12 +434,12 @@
           }
           <div class="mt-1 flex items-center gap-2">
             <app-user-avatar [src]="review.avatarUrl" [name]="review.username" size="sm" />
-            @if (auth.hasPermission('user:read') && reviewUsers()[review.id]?.id) {
-              <a class="text-sm hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" [routerLink]="['/dashboard/users', reviewUsers()[review.id]!.id]">
-                <bdi>{{ reviewUsers()[review.id]?.fullName ?? toDisplayName(review.username) }}</bdi>
+            @if (auth.hasPermission('user:read') && (review.userId ?? reviewUsers()[review.id]?.id)) {
+              <a class="text-sm hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" [routerLink]="['/dashboard/users', review.userId ?? reviewUsers()[review.id]!.id]">
+                <bdi>{{ review.userFullName ?? reviewUsers()[review.id]?.fullName ?? toDisplayName(review.username) }}</bdi>
               </a>
             } @else {
-              <span class="text-sm"><bdi>{{ reviewUsers()[review.id]?.fullName ?? toDisplayName(review.username) }}</bdi></span>
+              <span class="text-sm"><bdi>{{ review.userFullName ?? reviewUsers()[review.id]?.fullName ?? toDisplayName(review.username) }}</bdi></span>
             }
             <app-verified-badge [verified]="review.verified" [showLabel]="true" />
           </div>

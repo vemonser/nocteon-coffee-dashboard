@@ -129,7 +129,7 @@
               } @else {
                 @if (roleDiffSummary(); as d) {
                   <span class="text-xs text-muted-foreground">
-                    +{{ d.granted }} granted, -{{ d.revoked }} revoked
+                    {{ 'users.roleChange.diffSummary' | transloco: d }}
                   </span>
                 }
                 <button hlmBtn variant="outline" size="sm" [disabled]="saving()" (click)="cancelEdit()">
@@ -233,11 +233,11 @@
           <p role="alert" class="text-sm text-destructive-text">{{ deleteError() }}</p>
         }
         <div class="flex gap-3">
-          <button hlmBtn variant="outline" class="flex-1" (click)="deleting.set(null)">
-            {{ 'common.cancel' | transloco }}
-          </button>
           <button hlmBtn variant="destructive" class="flex-1" (click)="confirmDelete()">
             {{ 'common.delete' | transloco }}
+          </button>
+          <button hlmBtn variant="outline" class="flex-1" (click)="deleting.set(null)">
+            {{ 'common.cancel' | transloco }}
           </button>
         </div>
       </div>
