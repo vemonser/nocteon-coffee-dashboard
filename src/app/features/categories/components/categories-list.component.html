@@ -79,7 +79,7 @@
       </div>
 
       <!-- Columns menu: secondary columns (ID + dates) toggle on wide screens -->
-      <div class="relative">
+      <div class="relative" appClickOutside (appClickOutside)="columnsOpen.set(false)">
         <button
           hlmBtn
           variant="outline"
