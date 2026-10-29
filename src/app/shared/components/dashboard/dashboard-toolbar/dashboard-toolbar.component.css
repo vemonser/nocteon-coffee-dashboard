@@ -1,3 +1,26 @@
 :host {
   display: block;
 }
+
+/*
+ * The report toolbar prints its CONTEXT, not its controls.
+ *
+ * On paper there is nothing to click, so the range tabs, the refresh and the
+ * export are dropped, and the range in effect plus the absolute "Updated"
+ * time stay — a printed report has to say what period it covers and when the
+ * numbers were fetched. Same `.print-hidden` switch the order invoice uses.
+ */
+@media print {
+  .print-hidden {
+    display: none !important;
+  }
+
+  .print-only {
+    display: inline !important;
+  }
+}
+
+/* Screen: the print-only timestamp is not shown. */
+.print-only {
+  display: none;
+}

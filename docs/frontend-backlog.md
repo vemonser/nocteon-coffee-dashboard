@@ -338,6 +338,16 @@ poll stays as a fallback; reconnect backoff is visible in the console only.
 **Acceptance** Either implement the PDF (print stylesheet is enough) or remove
 the option; no disabled placeholder ships.
 **Effort** 0.5 day. **Deps** none.
+**Shipped** Implemented as print, not as a client-side PDF library: "Export
+PDF" opens the browser's print dialog on a report print sheet (A4 portrait,
+12mm margin, light stylesheet, shell chrome and toasts dropped, KPI rows at two
+columns, cards never split across sheets, the chart scaled to the page). The
+toolbar's hand-rolled dropdown is now `hlm-dropdown-menu` (Esc, outside-click,
+menu roles, focus return). `dashboard.exportPdfSoon` and `dashboard.soon` are
+gone; `dashboard.exportPdfHint` says what the item does. Ctrl+P prints the same
+sheet (the page owns the mode through `core/print/print-mode.ts`, unit-tested).
+Evidence: `print-mode.spec.ts` (6), full unit suite, dev build, `i18n:check`,
+`qa:static` unchanged at 181. The sheet itself still needs a browser pass.
 
 ### FE-25 · Shell pass (design)
 **Scope** FE.

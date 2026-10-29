@@ -12,7 +12,7 @@
     </div>
   </header>
 
-  <app-dashboard-toolbar />
+  <app-dashboard-toolbar (printRequested)="printReport()" />
 
   @if (statsService.storeCurrencyError()) {
     <div role="alert" class="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-[var(--radius-control)] border border-warning/40 bg-warning-soft px-4 py-3 text-sm text-warning">

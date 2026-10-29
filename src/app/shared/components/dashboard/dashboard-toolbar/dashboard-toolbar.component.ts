@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -7,13 +7,17 @@ import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
   lucideCalendar,
   lucideDownload,
+  lucideFileSpreadsheet,
+  lucidePrinter,
   lucideRepeat,
   lucideRefreshCw,
   lucideChevronDown,
 } from '@ng-icons/lucide';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
+import { HlmDropdownMenuImports } from '@spartan-ng/helm/dropdown-menu';
 import { DashboardStatsService } from '../../../../features/dashboard/services/dashboard-stats.service';
 import { LanguageService } from '../../../../core/i18n/language.service';
+import { LocalizedDateService } from '../../../../core/i18n/localized-date.service';
 import { LocalizedDateComponent } from '../../../ui/localized-date/localized-date.component';
 import { TabsComponent } from '../../ui/tabs/tabs.component';
 import { formatRelativeTime } from '../../../../core/i18n/relative-time';
@@ -40,6 +44,7 @@ import { TranslocoService } from '@jsverse/transloco';
     TranslocoPipe,
     NgIcon,
     HlmButtonImports,
+    HlmDropdownMenuImports,
     LocalizedDateComponent,
     TabsComponent,
   ],
@@ -47,6 +52,8 @@ import { TranslocoService } from '@jsverse/transloco';
     provideIcons({
       lucideCalendar,
       lucideDownload,
+      lucideFileSpreadsheet,
+      lucidePrinter,
       lucideRepeat,
       lucideRefreshCw,
       lucideChevronDown,
@@ -58,8 +65,16 @@ import { TranslocoService } from '@jsverse/transloco';
 export class DashboardToolbarComponent {
   private readonly stats = inject(DashboardStatsService);
   private readonly language = inject(LanguageService);
+  private readonly localizedDate = inject(LocalizedDateService);
   private readonly transloco = inject(TranslocoService);
   private readonly router = inject(Router);
+
+  /**
+   * The page owns the print (it also answers Ctrl+P); the toolbar only asks.
+   * `window.print()` must leave the sidebar behind, and the page shell is the
+   * one place that knows it is a page.
+   */
+  readonly printRequested = output<void>();
 
   /** The range options. */
   readonly options = [
@@ -105,13 +120,17 @@ export class DashboardToolbarComponent {
   /** The live announcement of the current selection. */
   readonly announcement = signal('');
 
-  /** Export menu open state. */
-  readonly exportMenuOpen = signal(false);
-
-  /** Toggle export menu. */
-  toggleExportMenu(): void {
-    this.exportMenuOpen.set(!this.exportMenuOpen());
-  }
+  /**
+   * The absolute time the numbers on screen were fetched.
+   *
+   * Printed instead of "Updated 3 minutes ago": a relative time says nothing
+   * once the sheet is on a desk, and it would be wrong by the time it gets
+   * there. Same shared helper as every other date, so EN/AR agree.
+   */
+  readonly updatedAt = computed(() => {
+    this.language.language();
+    return this.localizedDate.formatDateAndTime(this.lastUpdated());
+  });
 
   /**
    * Select a range.
@@ -194,6 +213,19 @@ export class DashboardToolbarComponent {
     );
     return `${from} (${range})`;
   });
+
+  /**
+   * Export the report as a PDF.
+   *
+   * There is no server-generated PDF and no client-side PDF library: the
+   * dashboard already IS the report, so the browser's print dialog is the
+   * PDF writer ("Save as PDF"). The page prints on the light stylesheet with
+   * the shell chrome removed — see `DashboardComponent.printReport()` and
+   * the `@media print` rules.
+   */
+  printReport(): void {
+    this.printRequested.emit();
+  }
 
   /** Export the overview for the selected range as a CSV. */
   exportCsv(): void {
