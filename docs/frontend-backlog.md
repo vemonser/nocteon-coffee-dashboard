@@ -333,6 +333,19 @@ to CSV with a UTF-8 BOM; the button states the row count.
 **Acceptance** A return record (items, quantity, reason, status) restocks on
 approval and links to the refund; the order timeline shows it.
 **Effort** 3 days. **Deps** FE-13.
+**Shipped** Backend V22 (`returns`, `return_items`, plus
+`order_status_history.event_type`) and four endpoints under
+`/api/dashboard/orders/{id}/returns` (list, create, approve, reject).
+Approving restocks through `InventoryMovementService` (reason/source `RETURN`,
+`source_id` = the return), so the FE-13 log stays the only record of stock
+movement; approving twice restocks once (row lock + status check + retry-safe
+answer). The order page gained a Returns card with loading/empty/error+retry,
+a "Create return" dialog (lines, quantities capped by what is still
+returnable, a required reason, an optional link to an existing refund) and an
+approve/reject confirm that states the consequence in units. The timeline
+carries the return through `order_status_history` — same table, same
+transaction, no second timeline. Not built: a global returns queue and a
+return counter on the orders list.
 
 ---
 

@@ -459,7 +459,8 @@
         "reasons": {
           "ORDER": "Sold on an order",
           "MANUAL_ADJUSTMENT": "Manual adjustment",
-          "PRODUCT_EDIT": "Changed in the product form"
+          "PRODUCT_EDIT": "Changed in the product form",
+          "RETURN": "Returned and restocked"
         }
       },
       "weight": "Weight (g)",
@@ -2062,11 +2063,72 @@
       "statusChangedFrom": "{{from}} → {{to}}",
       "shipmentShipped": "Shipment handed to the carrier",
       "shipmentDelivered": "Shipment delivered",
-      "event": "Activity"
+      "event": "Activity",
+      "returnRequested": "Return requested",
+      "returnApproved": "Return approved — units restocked",
+      "returnRejected": "Return rejected",
+      "returnEvent": "Return updated"
     },
     "orderScope": {
       "all": "All orders",
       "allHelp": "Every order the store has, whatever its status and whatever its payment status — cancelled, pending and refunded orders are included."
+    },
+    "returns": {
+      "title": "Returns",
+      "create": "Create return",
+      "empty": "No returns recorded",
+      "emptyHint": "When a customer sends goods back, record it here and approve it to put the units back in stock.",
+      "errorTitle": "The returns could not be loaded",
+      "errorHint": "The request failed. retry to try again.",
+      "loadError": "The returns could not be loaded",
+      "requestedOn": "Requested",
+      "approvedOn": "Approved",
+      "rejectedOn": "Rejected",
+      "linkedToRefund": "Linked to a refund",
+      "inStock_one": "{{count}} unit in stock",
+      "inStock_two": "{{count}} units in stock",
+      "inStock_few": "{{count}} units in stock",
+      "inStock_many": "{{count}} units in stock",
+      "inStock_other": "{{count}} units in stock",
+      "created": "Return recorded",
+      "createFailed": "The return could not be recorded",
+      "approved": "Return approved and restocked",
+      "rejected": "Return rejected",
+      "decisionFailed": "The decision could not be saved",
+      "dialog": {
+        "title": "Create return",
+        "description": "Record what came back — the stock moves only when the return is approved.",
+        "confirm": "Create return",
+        "reason": "Why did it come back?",
+        "reasonPlaceholder": "Damaged on arrival, wrong grind, …",
+        "reasonRequired": "A return needs a reason.",
+        "lines": "Lines coming back",
+        "lineRequired": "Tick at least one line and enter how many.",
+        "ordered": "Ordered",
+        "alreadyReturned": "Already returned",
+        "noneLeft": "Nothing left to return",
+        "quantity": "Quantity",
+        "note": "Note (optional)",
+        "overLimit": "More than the units left on this line.",
+        "refund": "Refund (optional)",
+        "noRefund": "No refund",
+        "refundHint": "Link a refund the store already recorded for this order. A return never creates one."
+      },
+      "decision": {
+        "approveTitle": "Approve this return",
+        "rejectTitle": "Reject this return",
+        "approveDescription": "The units go back into stock, and the stock log records the change.",
+        "rejectDescription": "Nothing goes back into stock — the decision is final.",
+        "approve": "Approve return",
+        "reject": "Reject return",
+        "approveHint": "The stock log records the change with the reason of this return.",
+        "rejectHint": "The return stays on the record; the units are not restocked.",
+        "unitsOf_one": "{{count}} unit of {{product}}",
+        "unitsOf_two": "{{count}} units of {{product}}",
+        "unitsOf_few": "{{count}} units of {{product}}",
+        "unitsOf_many": "{{count}} units of {{product}}",
+        "unitsOf_other": "{{count}} units of {{product}}"
+      }
     }
   },
   "notifications": {

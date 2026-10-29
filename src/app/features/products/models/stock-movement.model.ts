@@ -8,10 +8,10 @@
  */
 
 /** Why a stock number changed — the machine-readable source of the row. */
-export type StockMovementReason = 'ORDER' | 'MANUAL_ADJUSTMENT' | 'PRODUCT_EDIT';
+export type StockMovementReason = 'ORDER' | 'MANUAL_ADJUSTMENT' | 'PRODUCT_EDIT' | 'RETURN';
 
 /** Where the change came from; `sourceId` points at that entity. */
-export type StockMovementSource = 'ORDER' | 'MANUAL' | 'PRODUCT';
+export type StockMovementSource = 'ORDER' | 'MANUAL' | 'PRODUCT' | 'RETURN';
 
 export interface StockMovement {
   id: number;

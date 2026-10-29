@@ -19,6 +19,15 @@ export interface VariantInfo {
   sku: string | null;
   compareAtPrice: number | null;
   attributes: VariantAttribute[];
+  /**
+   * The catalog's current stock for this variant.
+   *
+   * <p>The order page shows it only in the RETURNS section, where it is the
+   * proof that an approval really put the units back (the read is refreshed
+   * after a decision). It is not a claim about what was on the shelf when the
+   * order was placed.
+   */
+  stockQuantity: number | null;
 }
 
 export interface OrderItemView {

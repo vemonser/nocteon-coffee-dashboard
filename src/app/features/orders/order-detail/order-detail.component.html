@@ -494,6 +494,158 @@
           </div>
         </section>
 
+        <!-- Returns / RMA (FE-20): goods that came back, and the stock they put back -->
+        @if (canHaveReturns()) {
+          <section
+            class="flex flex-col overflow-hidden text-sm card-surface"
+            data-testid="detail-card"
+            data-card="returns"
+          >
+            <header class="flex items-center justify-between gap-2 px-6 pt-6">
+              <div class="flex items-center gap-2">
+                <ng-icon name="lucideUndo2" class="size-4 text-muted-foreground" aria-hidden="true" />
+                <h2 class="text-base font-medium leading-snug" data-testid="detail-card-title">
+                  {{ 'orders.returns.title' | transloco }}
+                </h2>
+              </div>
+              @if (canDecideReturns() && hasReturnableLines()) {
+                <button
+                  hlmBtn
+                  variant="outline"
+                  size="sm"
+                  class="print-hidden"
+                  data-testid="order-create-return"
+                  [disabled]="savingReturn() || returnsLoading()"
+                  (click)="openReturnDialog()"
+                >
+                  <ng-icon name="lucidePlus" class="size-3.5" aria-hidden="true" />
+                  {{ 'orders.returns.create' | transloco }}
+                </button>
+              }
+            </header>
+            <div class="px-6 pb-6 pt-4" data-testid="detail-card-body">
+              @if (returnsLoading()) {
+                <div class="flex flex-col gap-2" aria-busy="true" data-testid="returns-loading">
+                  <div class="h-4 w-32 animate-pulse rounded bg-foreground/10"></div>
+                  <div class="h-4 w-full animate-pulse rounded bg-foreground/10"></div>
+                  <div class="h-4 w-52 animate-pulse rounded bg-foreground/10"></div>
+                </div>
+              } @else if (returnsError(); as message) {
+                <app-error-state
+                  titleKey="orders.returns.errorTitle"
+                  hintKey="orders.returns.errorHint"
+                  [message]="message"
+                  (retry)="retryReturns()"
+                />
+              } @else if (returns().length === 0) {
+                <app-empty-state
+                  icon="lucideUndo2"
+                  [title]="'orders.returns.empty' | transloco"
+                  [hint]="'orders.returns.emptyHint' | transloco"
+                  [actionLabel]="canDecideReturns() && hasReturnableLines() ? ('orders.returns.create' | transloco) : ''"
+                  (action)="openReturnDialog()"
+                />
+              } @else {
+                <ul class="flex flex-col divide-y divide-border" data-testid="order-returns">
+                  @for (ret of returns(); track ret.id) {
+                    <li class="py-3 first:pt-0 last:pb-0" [attr.data-testid]="'order-return-' + ret.id">
+                      <div class="flex flex-wrap items-center gap-2">
+                        <app-status-badge [status]="returnKind(ret.status)" />
+                        <span class="text-xs text-muted-foreground">
+                          {{ 'orders.returns.requestedOn' | transloco }}
+                        </span>
+                        <time
+                          class="text-xs text-muted-foreground tabular-nums"
+                          [attr.datetime]="ret.createdAt"
+                          [attr.title]="dates.formatDateAndTime(ret.createdAt)"
+                        >
+                          {{ dates.format(ret.createdAt) }}
+                        </time>
+                      </div>
+
+                      <p class="mt-1 text-sm" dir="auto">
+                        <bdi>{{ ret.reason }}</bdi>
+                      </p>
+
+                      <ul class="mt-1 flex flex-col gap-0.5">
+                        @for (line of ret.items; track line.id) {
+                          <li class="flex items-center justify-between gap-3 text-sm">
+                            <span class="min-w-0 truncate" dir="auto">
+                              <bdi>{{ line.quantity }} × {{ line.productName ?? line.sku }}</bdi>
+                            </span>
+                            @if (ret.status === 'APPROVED') {
+                              @if (stockLabel(line.variantId); as stockText) {
+                                <span class="shrink-0 text-xs text-muted-foreground tabular-nums" data-testid="return-stock">
+                                  {{ stockText }}
+                                </span>
+                              }
+                            }
+                          </li>
+                          @if (line.note) {
+                            <li class="text-xs text-muted-foreground" dir="auto">
+                              <bdi>{{ line.note }}</bdi>
+                            </li>
+                          }
+                        }
+                      </ul>
+
+                      @if (ret.refundId !== null) {
+                        <p class="mt-1 text-xs text-muted-foreground" data-testid="return-refund-link">
+                          {{ 'orders.returns.linkedToRefund' | transloco }}
+                        </p>
+                      }
+
+                      @if (ret.decidedAt; as decidedAt) {
+                        <p class="mt-1 text-xs text-muted-foreground">
+                          {{ (ret.status === 'APPROVED' ? 'orders.returns.approvedOn' : 'orders.returns.rejectedOn') | transloco }}
+                          <time
+                            class="tabular-nums"
+                            [attr.datetime]="decidedAt"
+                            [attr.title]="dates.formatDateAndTime(decidedAt)"
+                          >
+                            {{ dates.format(decidedAt) }}
+                          </time>
+                          @if (ret.decidedBy) {
+                            <span aria-hidden="true"> · </span>
+                            <span data-return-decided-by>{{ ret.decidedBy }}</span>
+                          }
+                        </p>
+                      }
+
+                      @if (canDecide(ret)) {
+                        <div class="mt-2 flex items-center gap-2 print-hidden">
+                          <button
+                            hlmBtn
+                            variant="outline"
+                            size="sm"
+                            [attr.data-testid]="'return-approve-' + ret.id"
+                            [disabled]="decidingReturn()"
+                            (click)="askDecision(ret, 'approve')"
+                          >
+                            <ng-icon name="lucideCheckCircle" class="size-3.5" aria-hidden="true" />
+                            {{ 'orders.returns.decision.approve' | transloco }}
+                          </button>
+                          <button
+                            hlmBtn
+                            variant="outline"
+                            size="sm"
+                            [attr.data-testid]="'return-reject-' + ret.id"
+                            [disabled]="decidingReturn()"
+                            (click)="askDecision(ret, 'reject')"
+                          >
+                            <ng-icon name="lucideCircleSlash" class="size-3.5" aria-hidden="true" />
+                            {{ 'orders.returns.decision.reject' | transloco }}
+                          </button>
+                        </div>
+                      }
+                    </li>
+                  }
+                </ul>
+              }
+            </div>
+          </section>
+        }
+
         <!-- Internal notes -->
         <section
           class="flex flex-col overflow-hidden text-sm card-surface"
@@ -1041,6 +1193,24 @@
       [pending]="updating()"
       (saved)="saveShipment($event)"
       (closed)="closeShipmentDialog()"
+    />
+
+    <app-order-return-dialog
+      [open]="returnDialogOpen()"
+      [lines]="returnableLines()"
+      [refunds]="refundLines()"
+      [pending]="savingReturn()"
+      (confirmed)="createReturn($event)"
+      (closed)="closeReturnDialog()"
+    />
+
+    <app-order-return-decision-dialog
+      [open]="decisionDialogOpen()"
+      [mode]="decisionMode()"
+      [lines]="decisionTarget()?.items ?? []"
+      [pending]="decidingReturn()"
+      (confirmed)="applyDecision()"
+      (closed)="closeDecisionDialog()"
     />
   }
 </div>

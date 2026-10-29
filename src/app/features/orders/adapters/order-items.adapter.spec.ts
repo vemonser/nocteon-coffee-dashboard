@@ -21,6 +21,7 @@ const variant: VariantInfo = {
   id: 1,
   sku: 'SKU-1-1',
   compareAtPrice: 747.5,
+  stockQuantity: 12,
   attributes: [
     { name: 'Weight', value: '250g' },
     { name: 'Grind Type', value: 'Whole Bean' },
