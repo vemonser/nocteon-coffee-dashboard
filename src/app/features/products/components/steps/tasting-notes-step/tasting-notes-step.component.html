@@ -9,73 +9,19 @@
     </button>
   </div>
 
-  @if (selectedNotes().length > 0) {
-    <div class="rounded-md border border-border bg-muted/30 p-3">
-      <p class="mb-2 text-xs font-medium text-muted-foreground">
-        {{ selectedNotes().length }} {{ 'products.tastingNotes.selected' | transloco }}
-      </p>
-      <div class="flex flex-wrap gap-2">
-        @for (note of selectedNotes(); track note.slug) {
-          <span class="inline-flex items-center gap-1 rounded-full border border-primary bg-primary/10 py-1 pe-1 ps-3 text-sm text-primary">
-            {{ note.name }}
-            <button
-              type="button"
-              class="inline-flex size-5 items-center justify-center rounded-full hover:bg-primary/20"
-              [attr.aria-label]="'products.tastingNotes.remove' | transloco: { name: note.name }"
-              (click)="remove(note.slug)"
-            >
-              <span aria-hidden="true">&times;</span>
-            </button>
-          </span>
-        }
-      </div>
-    </div>
-  }
-
-  @if (allNotes().length === 0) {
-    <div class="rounded-md border-2 border-dashed py-12 text-center text-muted-foreground">
-      {{ 'products.tastingNotes.noNotes' | transloco }}
-    </div>
-  } @else {
-    @if (showSearch()) {
-      <div class="relative max-w-sm">
-        <input
-          hlmInput
-          type="search"
-          class="w-full"
-          [placeholder]="'products.tastingNotes.search' | transloco"
-          [value]="search()"
-          (input)="search.set($any($event.target).value)"
-        />
-      </div>
-    }
-
-    <div class="flex flex-wrap gap-2" role="group" [attr.aria-label]="'products.tastingNotes.title' | transloco">
-      @for (note of filteredNotes(); track note.slug) {
-        <button
-          type="button"
-          (click)="toggle(note.slug)"
-          [attr.aria-pressed]="isSelected(note.slug)"
-          class="inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition-colors"
-          [class]="isSelected(note.slug)
-            ? 'border-primary bg-primary/10 text-primary'
-            : 'border-border bg-card text-muted-foreground hover:border-input'"
-        >
-          @if (isSelected(note.slug)) {
-            <span aria-hidden="true">✓</span>
-          }
-          {{ getNoteName(note) }}
-        </button>
-      }
-    </div>
-
-    @if (filteredNotes().length === 0) {
-      <p class="text-sm text-muted-foreground">{{ 'products.tastingNotes.noMatches' | transloco }}</p>
-    }
-  }
+  <app-chip-multiselect
+    [items]="items()"
+    [selected]="selected()"
+    [emptyLabel]="'products.tastingNotes.noNotes' | transloco"
+    [noMatchesLabel]="'products.tastingNotes.noMatches' | transloco"
+    [searchPlaceholder]="'products.tastingNotes.search' | transloco"
+    [addLabel]="'common.chipMultiselect.add' | transloco"
+    [removeLabel]="'common.chipMultiselect.remove' | transloco"
+    [counterLabel]="'common.chipMultiselect.counter' | transloco"
+    (selectionChange)="onSelectionChange($event)"
+  ></app-chip-multiselect>
 
   @if (!state.isEditMode()) {
-    <!-- Sticky footer for navigation (create mode only) -->
     <div class="sticky-footer">
       <button hlmBtn variant="outline" (click)="onBack()">
         {{ 'common.back' | transloco }}

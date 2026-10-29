@@ -9,6 +9,7 @@ import { PairingResponse } from '../../../../pairing/models/pairing.model';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmInputImports } from '@spartan-ng/helm/input';
+import { ChipMultiselectComponent, ChipMultiselectItem } from '../../../../../shared/ui/chip-multiselect/chip-multiselect.component';
 import { NotifyService } from '../../../../../core/notify/notify.service';
 import { LanguageService } from '../../../../../core/i18n/language.service';
 import { ProductService } from '../../../services/product.service';
@@ -26,6 +27,7 @@ import { lucideSearch, lucideX } from '@ng-icons/lucide';
     HlmButtonImports,
     HlmInputImports,
     NgIcon,
+    ChipMultiselectComponent,
   ],
   providers: [provideIcons({ lucideSearch, lucideX })],
   templateUrl: './pairings-step.component.html',
@@ -40,20 +42,16 @@ export class PairingsStepComponent {
   private productService = inject(ProductService);
 
   readonly allPairings = signal<PairingResponse[]>([]);
-  readonly search = signal('');
 
-  readonly showSearch = computed(() => this.allPairings().length > 12);
+  readonly items = computed<ChipMultiselectItem[]>(() =>
+    this.allPairings().map((pairing) => ({
+      slug: pairing.slug,
+      name: this.getPairingName(pairing),
+      imageUrl: pairing.imageUrl,
+    })),
+  );
 
-  readonly filteredPairings = computed(() => {
-    const term = this.search().trim().toLowerCase();
-    if (!term) return this.allPairings();
-    return this.allPairings().filter((p) => this.getPairingName(p).toLowerCase().includes(term));
-  });
-
-  readonly selectedPairings = computed(() => {
-    const selected = this.state.pairingsArray.value as string[];
-    return selected.map((slug) => ({ slug, name: this.nameForSlug(slug) }));
-  });
+  readonly selected = computed<string[]>(() => this.state.pairingsArray.value as string[]);
 
   constructor() {
     this.pairingService.getAll({ size: 200 }).subscribe({
@@ -63,9 +61,6 @@ export class PairingsStepComponent {
     });
   }
 
-  // ── "You may also like" (FE-11) ────────────────────────────────────────────
-
-  /** At most six are shown on the product page; the API enforces the same rule. */
   readonly MAX_RELATED = 6;
   readonly relatedSearch = signal('');
   readonly relatedResults = signal<ProductListItem[]>([]);
@@ -113,8 +108,6 @@ export class PairingsStepComponent {
       name: product.name,
       primaryImageUrl: product.primaryImageUrl,
     });
-    // Clear the search after a pick: the term now matches only a product that is already in the
-    // list, and leaving it there would read as "no results".
     this.relatedSearch.set('');
     this.relatedResults.set([]);
     if (this.searchTimer) clearTimeout(this.searchTimer);
@@ -122,6 +115,12 @@ export class PairingsStepComponent {
 
   removeRelated(slug: string): void {
     this.state.removeRelated(slug);
+  }
+
+  onSelectionChange(slugs: string[]): void {
+    const arr = this.state.pairingsArray;
+    while (arr.length) arr.removeAt(0);
+    slugs.forEach((slug) => arr.push(new FormControl(slug)));
   }
 
   saveCurrentStep(): void {
@@ -140,37 +139,10 @@ export class PairingsStepComponent {
     return this.state.isCurrentStepValid();
   }
 
-  isSelected(slug: string): boolean {
-    return (this.state.pairingsArray.value as string[]).includes(slug);
-  }
-
-  selectedCount(): number {
-    return this.state.pairingsArray.value.length;
-  }
-
-  toggle(slug: string): void {
-    const index = (this.state.pairingsArray.value as string[]).indexOf(slug);
-    if (index === -1) {
-      this.state.pairingsArray.push(new FormControl(slug));
-    } else {
-      this.state.pairingsArray.removeAt(index);
-    }
-  }
-
-  remove(slug: string): void {
-    const index = (this.state.pairingsArray.value as string[]).indexOf(slug);
-    if (index !== -1) this.state.pairingsArray.removeAt(index);
-  }
-
   getPairingName(pairing: PairingResponse): string {
     const lang = this.language.current();
     const t = pairing.translations.find((x) => x.language?.toLowerCase() === lang?.toLowerCase());
     return t?.name ?? pairing.translations[0]?.name ?? pairing.slug;
-  }
-
-  private nameForSlug(slug: string): string {
-    const pairing = this.allPairings().find((p) => p.slug === slug);
-    return pairing ? this.getPairingName(pairing) : slug;
   }
 
   goManagePairings(): void {
