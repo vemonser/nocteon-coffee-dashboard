@@ -32,7 +32,7 @@
       <span
         hlmTooltip
         position="top"
-        [brnTooltip]="'orders.export.hint' | transloco: { count: pageTotal() }"
+        [brnTooltip]="'orders.export.hint' | transloco"
         class="inline-flex"
       >
         <button
@@ -45,7 +45,7 @@
           [disabled]="loading() || pageTotal() === 0"
         >
           <ng-icon name="lucideDownload" class="size-4" aria-hidden="true" />
-          {{ 'orders.export.button' | transloco }}
+          {{ exportLabel() }}
         </button>
       </span>
     </div>
@@ -254,8 +254,15 @@
         <button *hasPermission="'order:update'" hlmBtn variant="outline" size="sm" (click)="bulkChangeStatus()">
           {{ 'orders.bulk.changeStatus' | transloco }}
         </button>
-        <button hlmBtn variant="outline" size="sm" (click)="exportCsv()" [disabled]="loading()">
-          {{ 'orders.bulk.export' | transloco }}
+        <button
+          hlmBtn
+          variant="outline"
+          size="sm"
+          data-testid="orders-bulk-export"
+          (click)="exportCsv()"
+          [disabled]="loading() || pageTotal() === 0"
+        >
+          {{ exportLabel() }}
         </button>
         <button hlmBtn variant="ghost" size="sm" (click)="clearSelection()">
           {{ 'orders.bulk.clear' | transloco }}

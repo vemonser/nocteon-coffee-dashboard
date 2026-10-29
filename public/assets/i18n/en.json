@@ -1777,14 +1777,14 @@
     "bulk": {
       "selected": "{{count}} selected",
       "changeStatus": "Change status",
-      "export": "Export CSV",
       "clear": "Clear selection"
     },
     "export": {
-      "button": "Export CSV",
-      "hint": "Exports the {{count}} orders matching the current filters, with the columns shown in the table.",
+      "hint": "Exports every order matching the current filters, with the columns shown in the table.",
       "done": "Orders exported",
-      "error": "Export failed"
+      "error": "Export failed",
+      "count_one": "Export {{count}} order",
+      "count_other": "Export {{count}} orders"
     },
     "actions": {
       "view": "View",
