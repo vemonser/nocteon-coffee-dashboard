@@ -1472,3 +1472,48 @@ switching is a service change only.
 - **Bulk action gating** moved from structural (`*hasPermission`) to action-level
   (`appCanDisable="'order:update'"` + a guard in the component): the button stays visible, disabled,
   and names the missing permission in its tooltip, the same pattern as the header's Export button.
+
+## Products — rating aggregate on the list (FE-14, 29 Oct 2026)
+
+### The dashboard column and the reviews page share one definition of "a review"
+- A counted review is `deleted_at IS NULL AND status = 'APPROVED'` — the same predicate the
+  product page's average and count already used (`findAverageRatingByProductSlug`,
+  `countByProductSlug`). It is repeated word-for-word in the new grouped query
+  (`findApprovedRatingAggregatesByProductIds`) and the integration test asserts the two agree, so
+  the column cannot report 12 while the moderation page shows 11 approved.
+- Pending and rejected reviews never move the number: the storefront average is what a shopper
+  sees, and a moderator has not vouched for a pending one.
+- Soft-deleted reviews are excluded even when approved — a deleted review must disappear from the
+  score, not linger in it.
+
+### `null` average and `0` count are two different facts
+- No counted review → `averageRating: null`, `reviewCount: 0`. Rendering `0.0` beside a star would
+  claim five one-star ratings exist, which is the opposite of "nobody has rated this".
+- An average is rounded to one decimal (HALF_UP) in `ReviewService`, not in the view: the dashboard
+  column, any future storefront badge and the CSV must all print the same number.
+- Missing fields are a THIRD state, reserved for "this endpoint did not compute it" — see below.
+
+### The aggregate is dashboard-only, on purpose
+- `GET /api/dashboard/products` loads the aggregate; the public catalogue lists (`/api/products`,
+  category/origin/farm lists, AI search results) return `averageRating: null` and
+  `reviewCount: null`.
+- The public paths build a card per row with no batching of anything else; adding the rating there
+  would mean sweeping every storefront list for a query budget the storefront cycle owns, and the
+  storefront star display is explicitly out of scope today. Recorded in `CATALOG_API.md` so a
+  client treats null as "not available", not as "no reviews".
+- Nothing is missing on the backend side: no new endpoint, no new permission, no migration (the
+  `reviews` table and its `(user_id, product_id)` unique index already existed).
+
+### The rating column disappears when the backend does not send the fields
+- The Stock column is deliberately always present (a column that appears only when data answers
+  re-lays-out the table). The rating column is the opposite case: on an older backend there is
+  nothing to show in ANY row, so the column is not rendered instead of becoming a permanent column
+  of blanks. An older backend therefore looks exactly as it did before FE-14.
+- The distinction lives in `shared/utils/rating.ts`: `hasAnyRating` decides the COLUMN from the
+  rows, `hasCountedRating` decides the CELL with the neutral "No rating" label.
+- The column advertises no sort: the list's sort resolver only knows `name`, `price`, `createdAt`
+  and `featured`, so a sortable header would silently reorder by a different field.
+
+### Needs backend
+- Nothing. If the storefront is brought into this contract later, its list endpoints need the same
+  batched aggregate (one grouped query per page, not per card).

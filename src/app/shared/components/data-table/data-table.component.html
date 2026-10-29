@@ -341,6 +341,38 @@
                   </span>
                 }
 
+                @case ('productRating') {
+                  @let rating = $any(cell.getValue());
+                  @if (hasRating(rating)) {
+                    @let ratingLabel =
+                      ('products.table.ratingValue' | transloco: { rating: formatRating(rating.averageRating) }) +
+                      ' — ' +
+                      (rating.reviewCount | plural: 'products.table.reviewCount');
+                    <span
+                      class="flex min-w-0 items-center gap-1 text-start"
+                      role="img"
+                      [attr.aria-label]="ratingLabel"
+                      [attr.title]="ratingLabel"
+                    >
+                      <ng-icon
+                        name="heroStarSolid"
+                        class="size-3.5 shrink-0 text-warning"
+                        aria-hidden="true"
+                      />
+                      <span class="text-[13px] tabular-nums">{{ formatRating(rating.averageRating) }}</span>
+                      <span class="text-[11px] tabular-nums text-muted-foreground">
+                        (<bdi>{{ formatReviewCount(rating.reviewCount) }}</bdi>)
+                      </span>
+                    </span>
+                  } @else {
+                    <!-- No reviews yet is a real state, not a zero score: a star
+                         beside "0.0" would read as a terrible rating. -->
+                    <span class="block truncate text-start text-[13px] text-muted-foreground">
+                      {{ 'products.table.noRating' | transloco }}
+                    </span>
+                  }
+                }
+
                 @case ('items') {
                   @if ($any(cell.getValue()).length === 0) {
                     <!-- An order with no items is a real state, not a blank cell. -->

@@ -590,6 +590,14 @@
       "lowStockBadge": "مخزون منخفض",
       "inStock": "{{count}} متوفر",
       "variants": "{{count}} متغيرات",
+      "ratingValue": "{{rating}} من 5",
+      "reviewCount_zero": "لا توجد مراجعات",
+      "reviewCount_one": "مراجعة واحدة",
+      "reviewCount_two": "مراجعتان",
+      "reviewCount_few": "{{count}} مراجعات",
+      "reviewCount_many": "{{count}} مراجعة",
+      "reviewCount_other": "{{count}} مراجعة",
+      "noRating": "لا يوجد تقييم",
       "stockNeedsBackend": "واجهة القائمة لا ترجع المخزون أو عدد المتغيرات بعد."
     },
     "empty": {

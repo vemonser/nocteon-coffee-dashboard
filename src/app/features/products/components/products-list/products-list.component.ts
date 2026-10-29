@@ -36,6 +36,7 @@ import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { PagerComponent } from '../../../../shared/components/pager/pager.component';
 import { NotifyService } from '../../../../core/notify/notify.service';
 import { RowMenuAction } from '../../../../shared/ui/actions-cell/actions-cell.component';
+import { hasAnyRating } from '../../../../shared/utils/rating';
 import { Observable } from 'rxjs';
 
 @Component({
@@ -183,6 +184,14 @@ export class ProductsListComponent {
   pageSize = signal(20);
   selectedIds = signal<ReadonlySet<number>>(new Set());
   readonly hasStockData = signal(false);
+  /**
+   * FE-14: does the API send rating fields at all?
+   *
+   * <p>Derived from the rows themselves, so there is no second place to keep
+   * in step: an older backend answers without the fields, every row is null,
+   * and the column is not rendered at all (see `columns()`).
+   */
+  readonly hasRatingData = computed(() => hasAnyRating(this.items()));
 
   currentSort = 'createdAt';
   currentDirection: 'asc' | 'desc' = 'desc';
@@ -252,6 +261,17 @@ export class ProductsListComponent {
       }),
       { id: 'productStock', header: 'Stock', enableSorting: false, meta: { width: '105px' } },
     );
+    // FE-14: average rating + review count. The backend cannot sort by rating
+    // (the list's sort resolver only knows name/price/createdAt/featured), so
+    // the column advertises no sort rather than offering one that silently
+    // falls back to a different order.
+    const ratingCol = this.columnHelper.accessor(
+      (row) => ({
+        averageRating: row.averageRating ?? null,
+        reviewCount: row.reviewCount ?? null,
+      }),
+      { id: 'productRating', header: 'Rating', enableSorting: false, meta: { width: '120px' } },
+    );
     const statusCol = this.columnHelper.accessor('isActive', {
       header: 'Status',
       enableSorting: false,
@@ -268,7 +288,13 @@ export class ProductsListComponent {
     // data answers re-lays-out the whole table and moves every cell (CLS,
     // UX_AUDIT_products.md #3) and makes the empty state lose a column (#5).
     // A missing stock value simply renders an empty cell.
+    //
+    // The RATING column is the exception, and deliberately so: when the API
+    // does not carry the fields at all (an older backend), there is nothing
+    // to show in ANY row, so the column is dropped entirely instead of
+    // becoming a permanent column of blanks.
     const cols: ColumnDef<ProductListItem, any>[] = [mainCol, typeCol, categoryCol, priceCol, stockCol];
+    if (this.hasRatingData()) cols.push(ratingCol);
     cols.push(statusCol, featuredCol, actionsCol);
     return cols;
   });
@@ -493,6 +519,11 @@ export class ProductsListComponent {
           totalStock: p.totalStock ?? null,
           variantsCount: p.variantsCount ?? null,
           lowStockVariantCount: p.lowStockVariantCount ?? null,
+          // FE-14: the rating aggregate the list endpoint now sends. `null`
+          // and not `0` when the field is absent, so the column can tell
+          // "older backend" (hide) from "no reviews yet" (neutral label).
+          averageRating: p.averageRating ?? null,
+          reviewCount: p.reviewCount ?? null,
           stockStatus: 'unknown' as const,
         }));
 
@@ -556,6 +587,11 @@ export class ProductsListComponent {
           totalStock: null,
           variantsCount: null,
           lowStockVariantCount: null,
+          // The trash list has no rating aggregate (the deleted-rows endpoint
+          // does not carry it), so every trash row is null and the rating
+          // column drops out of that view by itself — see hasRatingData().
+          averageRating: null,
+          reviewCount: null,
           stockStatus: 'unknown' as const,
         }));
 

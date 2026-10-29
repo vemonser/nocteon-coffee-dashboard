@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatCompactCurrency, formatCurrency, formatDate, formatDateTime } from './locale-format';
+import { formatCompactCurrency, formatCurrency, formatDate, formatDateTime, formatRating } from './locale-format';
 
 /**
  * Phase 1, ticket 1.3 — ONE money formatter.
@@ -192,6 +192,33 @@ describe('raw date format guard', () => {
       if (/toLocaleString|toLocaleDateString|toLocaleTimeString/.test(text)) offenders.push(file);
     }
     expect(offenders).toEqual([]);
+  });
+});
+
+/**
+ * FE-14: a rating always shows ONE decimal, in both languages, with Latin
+ * digits. "4" and "4.3" must not look alike, and the decimal point must not be
+ * reordered inside an Arabic paragraph.
+ */
+describe('rating formatter', () => {
+  it('keeps a single decimal in both languages', () => {
+    expect(formatRating(4.3, 'en')).toMatch(/4\.3/);
+    expect(formatRating(4, 'en')).toMatch(/4\.0/);
+    expect(formatRating(5, 'ar')).toMatch(/5\.0/);
+    expect(formatRating(4.3, 'ar')).toMatch(/4\.3/);
+  });
+
+  it('never emits Arabic-Indic digits or a null-ish value', () => {
+    expect(formatRating(4.25, 'ar')).not.toMatch(/[٠-٩]/);
+    // The API rounds; the cell still rounds to the same precision if it does not.
+    expect(formatRating(4.25, 'en')).toMatch(/4\.3/);
+    expect(formatRating(null, 'en')).toBe('');
+    expect(formatRating(undefined, 'ar')).toBe('');
+  });
+
+  it('isolates the value so bidi cannot move the decimal point', () => {
+    expect(formatRating(4.3, 'ar').startsWith('\u2066')).toBe(true);
+    expect(formatRating(4.3, 'ar').endsWith('\u2069')).toBe(true);
   });
 });
 
