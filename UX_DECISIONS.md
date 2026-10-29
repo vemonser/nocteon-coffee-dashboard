@@ -32,7 +32,12 @@ Context: the nav is six sections (`Operations`, `Access`, `Content`, `Catalog`, 
 - **Option A (recommended)**: render the section label once as a small group heading and put its children directly under it; the parent row (a duplicate of the section name) disappears. Result: one heading + N sub-rows per section, and collapsing a section collapses straight to its heading. Re-parenting, so it changes the information architecture — needs your answer before anyone ships it.
 - **Option B**: keep the current one-accordion-per-section (the section label IS the summary) and change nothing. Zero risk, no visual gain.
 
-Your answer: [ ] A  [ ] B
+Your answer: [x] A (2026-10-29) — **accepted, shipped** in the FE-25 D4+A commit (`ux(shell): FE-25 D4+A D5+A — one section heading, theme toggle at every width`). What shipped:
+- `app-sidebar.component.html` renders the section label ONCE, as a 12px muted micro-label that IS the disclosure control (`<button>` + `aria-expanded` + `aria-controls` → the panel that holds the rows). Latin is uppercased (`ltr:uppercase ltr:tracking-wider`); Arabic is not, per design.md §8.
+- The children that sat under the parent row sit directly under the heading (same bullet + badge language, `ps-6` inline-start indent). The parent row — a copy of the section name with a second chevron — is gone: no duplicate label, no second chevron.
+- Collapsing a section collapses straight to its heading (the `.nav-collapse` grid animation is unchanged, and `visibility:hidden` still takes the closed links out of the tab order).
+- Auto-open now keys on the SECTION (`sectionKeyForRoute`), and the open/closed choice persists under `nocteon-sidebar-sections-open` (section keys, not the old parent routes — an old stored value simply opens nothing). Rail-collapsed dot badges, the pinned Home item and the active-link scroll are unchanged.
+- `sidebar-sections.spec.ts` pins it: one heading per visible section, the label never repeated as a row, `aria-expanded`/`aria-controls` wired to the panel that holds the links, a section with no permitted row renders no heading, and the drawer contract still holds.
 
 *Done meanwhile*: the drawer's focus/Esc/name/close-on-navigate behaviour (FE-25a) is independent of this choice and is shipped.
 
@@ -41,6 +46,10 @@ Context: `theme-toggle.component.html` carries `hidden ... sm:flex`, so on a pho
 - **Option A (recommended)**: show the toggle at every width and let the breadcrumb drop below 400px (it already truncates), keeping one row and no horizontal overflow.
 - **Option B**: leave it hidden on phones (theme stays a stored preference there).
 
-Your answer: [ ] A  [ ] B
+Your answer: [x] A (2026-10-29) — **accepted, shipped** in the same FE-25 D5+A commit. What shipped:
+- `theme-toggle.component.html`: `hidden items-center justify-center sm:flex` → `flex items-center justify-center`, so the switch is reachable at every width (it keeps its round 32px target and its existing hover ring).
+- `navigation-bar.component.html`: the left cluster is `min-w-0` and the separator `shrink-0`, so the breadcrumb shrinks instead of pushing the header wide. The trail's hide breakpoint moved from `sm` (640px) to `min-[400px]`, so the row at 375px is: menu trigger, search, notifications, theme, avatar.
+- `breadcrumb.component.html`: the crumbs truncate instead of wrapping (`min-w-0` + `overflow-hidden` on the nav, `flex-nowrap` + `min-w-0` on the list — the library list is `flex-wrap` by default — and `truncate` on the crumb labels). That is what keeps one row between 400px and 640px, where the trail used to be hidden outright.
+- `npm run i18n:check`, `npm run qa:static` (181, unchanged) and the unit suite cover this statically; the pixel check at 375 / 768 / 1440 in light + dark + Arabic is the browser pass.
 
-I did not touch the navbar layout: adding a control there is a layout-structure change (AGENTS.md), and the 375px overflow check is part of the browser pass.
+I did not touch the navbar layout while the question was open: adding a control there is a layout-structure change (AGENTS.md). With D5 answered A, the layout change above ships in this pass and the 375px overflow check stays part of the browser pass.

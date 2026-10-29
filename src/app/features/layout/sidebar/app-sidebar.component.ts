@@ -37,8 +37,37 @@ import { AuthService } from '../../../core/auth/auth.service';
 import { LanguageService } from '../../../core/i18n/language.service';
 import { NavCountsService } from '../../../core/nav/nav-counts.service';
 import { HlmSidebarService } from '@spartan-ng/helm/sidebar';
-import { getNavItems, sectionKeyForRoute } from '../../../shared/data/sidebar-nav-items';
+import {
+  getNavItems,
+  sectionKeyForRoute,
+  type NavSectionKey,
+} from '../../../shared/data/sidebar-nav-items';
+import type { NavItem } from '../../../shared/data/sidebar-nav-items.model';
 import { UserMenuComponent } from '../../../shared/ui/user-menu/user-menu.component';
+
+/**
+ * One rendered section (FE-25 D4+A).
+ *
+ * `rows` are the links that sit DIRECTLY under the section heading: the children of
+ * the section's (single, implicit) parent, or the parent itself when it has none.
+ * The section label is rendered ONCE — as the heading — and the old parent row that
+ * duplicated that label is gone.
+ */
+export interface SidebarSectionView {
+  key: NavSectionKey;
+  label: string;
+  rows: NavItem[];
+}
+
+/**
+ * Persisted section state.
+ *
+ * The KEY changed with D4+A: sections are the collapsible unit now, so the stored
+ * values are section keys ('catalog'), not the routes of the old parent rows
+ * ('/dashboard/products'). A list left over from the old structure parses fine and
+ * matches no section, so it opens nothing — which is the safe reading.
+ */
+const SECTIONS_OPEN_KEY = 'nocteon-sidebar-sections-open';
 
 @Component({
   selector: 'app-sidebar',
@@ -101,10 +130,8 @@ export class AppSidebarComponent {
     return this.sidebar.state() === 'collapsed';
   }
 
-  private readonly ITEM_OPEN_KEY = 'nocteon-sidebar-item-open';
-
-  /** Track expanded/collapsed state for parent nav items with children. */
-  protected readonly openItems = signal<Set<string>>(this.loadOpenItems());
+  /** Expanded/collapsed state of each section, keyed by the section key. */
+  protected readonly openSections = signal<Set<NavSectionKey>>(this.loadOpenSections());
 
   private readonly navContainer = viewChild.required<ElementRef<HTMLElement>>('nav');
 
@@ -112,32 +139,33 @@ export class AppSidebarComponent {
 
   protected readonly dashboardItem = computed(() => this._navItems().dashboard);
 
-  /** Sections with permission filtering applied, so a filtered-out item is never rendered. */
-  protected readonly sections = computed(() =>
+  /**
+   * Sections with permission filtering applied, flattened to the rows that render
+   * under each heading. A section whose rows are all filtered out is dropped, so a
+   * heading is never rendered empty.
+   */
+  protected readonly sections = computed<SidebarSectionView[]>(() =>
     this._navItems()
       .sections.map((section) => ({
-        ...section,
-        items: section.items
-          .map((parentItem) => {
-            if (parentItem.children && parentItem.children.length > 0) {
-              const visibleChildren = parentItem.children.filter(
-                (child) => !child.permission || this.auth.hasPermission(child.permission),
-              );
-              if (visibleChildren.length === 0) return null;
-              return { ...parentItem, children: visibleChildren };
-            }
-            return !parentItem.permission || this.auth.hasPermission(parentItem.permission)
-              ? parentItem
-              : null;
-          })
-          .filter((x): x is NonNullable<typeof x> => x !== null),
+        key: section.key,
+        label: section.label,
+        rows: section.items.flatMap((parentItem) => {
+          // A parent WITH children is only a permission gate: when none of its
+          // children is permitted the section has nothing to show, and it is
+          // dropped. Falling back to the parent row here would put the section
+          // name back on screen as a link — the duplicate D4+A removed.
+          if (parentItem.children && parentItem.children.length > 0) {
+            return parentItem.children.filter((child) => this.canSee(child));
+          }
+          return this.canSee(parentItem) ? [parentItem] : [];
+        }),
       }))
-      .filter((section) => section.items.length > 0),
+      .filter((section) => section.rows.length > 0),
   );
 
   constructor() {
     // RouterLinkActive sets aria-current="page" on the active link, which is the only
-    // reliable way to find it across the groups.
+    // reliable way to find it across the sections.
     this._router.events
       .pipe(filter((event) => event instanceof NavigationEnd))
       .subscribe(() => {
@@ -145,7 +173,7 @@ export class AppSidebarComponent {
         this.scrollActiveIntoView();
       });
 
-    // First paint: open the current page's group instead of everything.
+    // First paint: open the section holding the current page instead of everything.
     this.autoOpenForUrl(this._router.url);
 
     effect(() => {
@@ -155,55 +183,73 @@ export class AppSidebarComponent {
     });
   }
 
-  /** Toggle a parent nav item's children. */
-  protected toggleItem(route: string): void {
-    const next = new Set(this.openItems());
-    if (next.has(route)) {
-      next.delete(route);
+  /** The id of a section's heading button — the disclosure control. */
+  protected headingId(key: NavSectionKey): string {
+    return `sidebar-section-${key}-heading`;
+  }
+
+  /** The id of the panel the heading controls (its `aria-controls` target). */
+  protected panelId(key: NavSectionKey): string {
+    return `sidebar-section-${key}-panel`;
+  }
+
+  /** Toggle one section open or closed. */
+  protected toggleSection(key: NavSectionKey): void {
+    const next = new Set(this.openSections());
+    if (next.has(key)) {
+      next.delete(key);
     } else {
-      next.add(route);
+      next.add(key);
     }
-    this.openItems.set(next);
-    this.persistOpenItems();
+    this.openSections.set(next);
+    this.persistOpenSections();
   }
 
-  /** Check if a parent item's children are collapsed. */
-  protected isItemCollapsed(route: string): boolean {
-    return !this.openItems().has(route);
+  /** Is this section's panel collapsed? */
+  protected isSectionCollapsed(key: NavSectionKey): boolean {
+    return !this.openSections().has(key);
   }
 
-  /** Opens the group holding the current route; closes the rest. */
+  private canSee(item: NavItem): boolean {
+    return !item.permission || this.auth.hasPermission(item.permission);
+  }
+
+  /**
+   * Opens the section holding the current route. Other sections are left as the
+   * reader left them — auto-opening is a first-paint cue, not a reset.
+   */
   private autoOpenForUrl(url: string): void {
-    // Also auto-open the parent item if the route is a child
-    const navItems = getNavItems('en');
-    for (const section of navItems.sections) {
-      for (const item of section.items) {
-        if (item.children?.some((child) => url.startsWith(child.route))) {
-          this.openItems.update((s) => new Set([...s, item.route]));
-          this.persistOpenItems();
-          break;
-        }
-      }
-    }
+    const key = sectionKeyForRoute(url);
+    if (!key) return;
+    if (this.openSections().has(key)) return;
+    this.openSections.update((s) => new Set([...s, key]));
+    this.persistOpenSections();
   }
 
-  private persistOpenItems(): void {
+  private persistOpenSections(): void {
     try {
-      const items = Array.from(this.openItems());
-      if (items.length > 0) {
-        localStorage.setItem(this.ITEM_OPEN_KEY, JSON.stringify(items));
+      const sections = Array.from(this.openSections());
+      if (sections.length > 0) {
+        localStorage.setItem(SECTIONS_OPEN_KEY, JSON.stringify(sections));
       } else {
-        localStorage.removeItem(this.ITEM_OPEN_KEY);
+        localStorage.removeItem(SECTIONS_OPEN_KEY);
       }
     } catch {
       /* storage unavailable */
     }
   }
 
-  private loadOpenItems(): Set<string> {
+  private loadOpenSections(): Set<NavSectionKey> {
     try {
-      const saved = localStorage.getItem(this.ITEM_OPEN_KEY);
-      return saved ? new Set(JSON.parse(saved)) : new Set();
+      const saved = localStorage.getItem(SECTIONS_OPEN_KEY);
+      if (!saved) return new Set();
+      const parsed: unknown = JSON.parse(saved);
+      if (!Array.isArray(parsed)) return new Set();
+      // Only keys this nav knows (derived from the nav itself, so a new section
+      // needs no second list to stay restorable): an entry from an older
+      // structure is not a section.
+      const known = new Set<NavSectionKey>(getNavItems('en').sections.map((section) => section.key));
+      return new Set(parsed.filter((key): key is NavSectionKey => known.has(key as NavSectionKey)));
     } catch {
       return new Set();
     }

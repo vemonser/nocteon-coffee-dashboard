@@ -1,5 +1,15 @@
-<nav hlmBreadcrumb class="hidden sm:inline-block  items-center flex">
-  <ol hlmBreadcrumbList>
+<!--
+  Visible from 400px up (FE-25 D5+A). The old breakpoint was `sm` (640px), which
+  hid the trail on every phone; the theme toggle now shows at every width, so the
+  heading row needs the space back at 375px and keeps it from 400px.
+
+  `min-w-0` + `overflow-hidden` on the nav, `flex-nowrap` + `min-w-0` on the list
+  and `truncate` on the crumbs mean a long page name ellipsises instead of wrapping
+  to a second line inside the h-16 header (the library list is `flex-wrap` by
+  default) or pushing a horizontal scrollbar.
+-->
+<nav hlmBreadcrumb class="hidden min-w-0 min-[400px]:flex items-center overflow-hidden">
+  <ol hlmBreadcrumbList class="min-w-0 flex-nowrap">
     <!-- Home -->
     <li hlmBreadcrumbItem class="flex items-center">
       <a hlmBreadcrumbLink routerLink="/dashboard">
@@ -17,19 +27,20 @@
     }
 
     @for (item of breadcrumbs(); track item.label; let last = $last) {
-      <li hlmBreadcrumbItem class="flex items-center">
+      <li hlmBreadcrumbItem class="flex min-w-0 items-center">
         @if (!item.url) {
           <!-- Section crumb (e.g. Catalog) — not a destination -->
-          <span hlmBreadcrumbLink class="text-muted-foreground">{{ item.label }}</span>
+          <span hlmBreadcrumbLink class="truncate text-muted-foreground">{{ item.label }}</span>
         } @else if (!last) {
           <a
             hlmBreadcrumbLink
+            class="truncate"
             [routerLink]="crumbPath(item.url)"
             [queryParams]="crumbQueryParams(item.url)"
             >{{ item.label }}</a
           >
         } @else {
-          <a hlmBreadcrumbPage>{{ item.label }}</a>
+          <a hlmBreadcrumbPage class="truncate">{{ item.label }}</a>
         }
       </li>
       @if (!last) {
