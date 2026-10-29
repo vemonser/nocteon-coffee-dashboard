@@ -35,6 +35,7 @@ import {
 } from '@ng-icons/lucide';
 
 import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
+import { ClickOutsideDirective } from '../../../shared/directives/click-outside.directive';
 import { LifecycleTabsComponent } from '../../../shared/components/lifecycle-tabs/lifecycle-tabs.component';
 import { TrashBannerComponent } from '../../../shared/components/trash-banner/trash-banner.component';
 import { CategoryFormComponent } from './category-form/category-form.component';
@@ -66,6 +67,7 @@ import { HlmSwitchImports } from '@spartan-ng/helm/switch';
     ReactiveFormsModule,
     HasPermissionDirective,
     DataTableComponent,
+    ClickOutsideDirective,
     LifecycleTabsComponent,
     TrashBannerComponent,
     CategoryFormComponent,

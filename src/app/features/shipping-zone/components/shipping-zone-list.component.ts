@@ -32,6 +32,7 @@ import {
 } from '@ng-icons/lucide';
 
 import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
+import { ClickOutsideDirective } from '../../../shared/directives/click-outside.directive';
 import { PagerComponent } from '../../../shared/components/pager/pager.component';
 import { LifecycleTabsComponent } from '../../../shared/components/lifecycle-tabs/lifecycle-tabs.component';
 import { TrashBannerComponent } from '../../../shared/components/trash-banner/trash-banner.component';
@@ -46,6 +47,7 @@ import { TranslocoPipe } from '@jsverse/transloco';
     ReactiveFormsModule,
     HasPermissionDirective,
     DataTableComponent,
+    ClickOutsideDirective,
     PagerComponent,
     LifecycleTabsComponent,
     TrashBannerComponent,

@@ -37,6 +37,7 @@ import {
 } from '@ng-icons/lucide';
 
 import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
+import { ClickOutsideDirective } from '../../../shared/directives/click-outside.directive';
 import { LifecycleTabsComponent } from '../../../shared/components/lifecycle-tabs/lifecycle-tabs.component';
 import { TrashBannerComponent } from '../../../shared/components/trash-banner/trash-banner.component';
 import { Router } from '@angular/router';
@@ -54,6 +55,7 @@ import { AuthService } from '../../../core/auth/auth.service';
     ReactiveFormsModule,
     HasPermissionDirective,
     DataTableComponent,
+    ClickOutsideDirective,
     LifecycleTabsComponent,
     TrashBannerComponent,
     HlmCardImports,
