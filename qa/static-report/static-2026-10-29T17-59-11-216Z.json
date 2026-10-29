@@ -1,0 +1,907 @@
+[
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "forgotPassword.subtitle: \"Enter the email linked to your account. If it exists, we'll send a six-digit code.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "forgotPassword.success: \"Password reset. Please sign in.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "navigationBar.switchToEnglish: \"Switch to English\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "navigationBar.switchToArabic: \"Switch to Arabic\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "nav.searchFailed: \"Search failed. Please try again.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "common.restoreConflictBody: \"Another item already uses this slug. Rename or remove it, then restore again.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "products.draft.message: \"There is an unsaved draft from {{time}}. Restore it?\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "products.form.metaTitleHint: \"The title search results and link previews show. Keep it under 60 characters.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "products.form.metaDescriptionHint: \"The line under the title in search results. Keep it under 160 characters.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "products.form.tagsHint: \"Merchandising labels such as “New arrivals” or “Gift boxes”. They power the tag filter in the products list.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "products.variants.barcodeHint: \"Optional. Scan or type the code printed on the packaging.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "products.variants.removeMessage: \"Remove this variant? Its stock and price settings go with it.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "products.variants.image.hint: \"Shown instead of the product gallery when this variant is selected. JPG, PNG, GIF or WebP, up to 5 MB.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "products.variants.image.wrongType: \"Use a JPEG, PNG, GIF or WebP image.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "products.media.socialImageHint: \"Used in search results and link previews. Defaults to the cover image.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "products.media.unsupportedType: \"Unsupported file type. Use an image or a video.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "products.related.description: \"Up to six products shown under this one on the storefront. Order is the order you add them in.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "products.related.full: \"Six is the maximum. Remove one to add another.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "products.duplicated: \"Product duplicated. The copy is disabled.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "journal.summaryEnPlaceholder: \"Write a short English summary...\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "journal.summaryArPlaceholder: \"Write a short Arabic summary...\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "journal.categories.deleteMessage: \"Delete \"{{name}}\"? Posts using it must be moved first.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "journal.videoUrlHint: \"YouTube or Vimeo link\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "journal.videoUrlInvalid: \"Enter a YouTube or Vimeo link.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "dashboard.totalRevenueHelp: \"Includes shipping. Counts paid orders only.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "dashboard.ordersHelp: \"Orders counted by payment status: PAID only. Delivered or cancelled orders that were refunded do not count as paid, so they are excluded here.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "productTags.subtitle: \"Merchandising labels that cut across categories. The products list filters by them.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "productTags.slugHint: \"The slug is created from the English name once and never changes, so existing links and filters keep working.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "productTags.deleteMessage: \"Delete “{{name}}”? It is removed from the products list filter.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "oauth2Callback.failed: \"We couldn't complete Google sign-in.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "oauth2Callback.missingCode: \"The sign-in code is missing or expired. Please try again.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "profile.passwordChanged: \"Password changed. Please sign in again.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "unsavedChanges.body: \"You have changes that haven't been saved. If you leave this page, they will be lost.\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "richText.videoUrlHint: \"YouTube or Vimeo link\""
+  },
+  {
+    "check": "title-case",
+    "severity": "P2",
+    "msg": "richText.videoUrlInvalid: \"Enter a YouTube or Vimeo link.\""
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P2",
+    "msg": "ar identical to en: nav.esc"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P2",
+    "msg": "ar identical to en: carts.detail.col.sku"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P2",
+    "msg": "ar identical to en: orders.timeline.statusChangedFrom"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P2",
+    "msg": "ar identical to en: dashboard.deviceTypes.IOS"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P2",
+    "msg": "ar identical to en: dashboard.deviceTypes.MAC"
+  },
+  {
+    "check": "i18n-parity",
+    "severity": "P2",
+    "msg": "ar identical to en: unauthorized.missingSuffix"
+  },
+  {
+    "check": "native-dialog",
+    "severity": "P0",
+    "msg": "src/app/core/services/confirm-dialog.service.ts:17: confirm(opts: ConfirmOptions): Promise<boolean> {"
+  },
+  {
+    "check": "native-dialog",
+    "severity": "P1",
+    "msg": "src/app/features/categories/category-detail/components/category-detail.component.ts:595: @HostListener('window:beforeunload', ['$event'])"
+  },
+  {
+    "check": "native-dialog",
+    "severity": "P0",
+    "msg": "src/app/features/orders/components/order-bulk-status-dialog/order-bulk-status-dialog.component.html:11: (confirmed)=\"confirm()\""
+  },
+  {
+    "check": "native-dialog",
+    "severity": "P0",
+    "msg": "src/app/features/orders/components/order-bulk-status-dialog/order-bulk-status-dialog.component.ts:126: protected confirm(): void {"
+  },
+  {
+    "check": "native-dialog",
+    "severity": "P0",
+    "msg": "src/app/features/orders/components/order-cancel-dialog/order-cancel-dialog.component.html:11: (confirmed)=\"confirm()\""
+  },
+  {
+    "check": "native-dialog",
+    "severity": "P0",
+    "msg": "src/app/features/orders/components/order-cancel-dialog/order-cancel-dialog.component.ts:58: protected confirm(): void {"
+  },
+  {
+    "check": "native-dialog",
+    "severity": "P0",
+    "msg": "src/app/features/orders/components/order-refund-dialog/order-refund-dialog.component.html:11: (confirmed)=\"confirm()\""
+  },
+  {
+    "check": "native-dialog",
+    "severity": "P0",
+    "msg": "src/app/features/orders/components/order-refund-dialog/order-refund-dialog.component.ts:99: protected confirm(): void {"
+  },
+  {
+    "check": "native-dialog",
+    "severity": "P0",
+    "msg": "src/app/features/orders/components/order-status-dialog/order-status-dialog.component.html:10: (confirmed)=\"confirm()\""
+  },
+  {
+    "check": "native-dialog",
+    "severity": "P0",
+    "msg": "src/app/features/orders/components/order-status-dialog/order-status-dialog.component.ts:101: protected confirm(): void {"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/app.html:7: left-side"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/app.html:57: right-side"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/brewing-method/brewing-method-detail/components/brewing-method-detail.component.html:35: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/brewing-method/brewing-method-detail/components/brewing-method-detail.component.html:40: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/brewing-method/brewing-method-detail/components/brewing-method-detail.component.html:42: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/brewing-method/brewing-method-detail/components/brewing-method-detail.component.html:48: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/brewing-method/brewing-method-detail/components/brewing-method-detail.component.html:52: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/brewing-method/brewing-method-detail/components/brewing-method-detail.component.html:64: mr-1"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/brewing-method/brewing-method-detail/components/brewing-method-detail.component.html:156: text-right"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/brewing-method/brewing-method-detail/components/brewing-method-detail.component.html:186: text-right"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/brewing-method/components/brewing-methods-list.component.html:226: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/brewing-method/components/brewing-methods-list.component.html:259: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/broadcasts/components/broadcast-list.component.html:35: left-3"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/broadcasts/components/broadcast-list.component.html:43: pl-9"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/broadcasts/components/broadcast-list.component.html:289: text-left"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/broadcasts/components/broadcast-list.component.html:360: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/carts/cart-detail/cart-detail.component.html:78: text-left"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/carts/cart-detail/cart-detail.component.html:81: text-right"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/carts/cart-detail/cart-detail.component.html:82: text-right"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/carts/cart-detail/cart-detail.component.html:93: text-right"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/carts/cart-detail/cart-detail.component.html:94: text-right"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/carts/cart-detail/cart-detail.component.html:100: text-right"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/carts/cart-detail/cart-detail.component.html:101: text-right"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/carts/components/carts-list.component.html:86: mr-1"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/carts/components/carts-list.component.html:323: mr-1"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/carts/components/carts-list.component.html:333: mr-1"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/coffee-variety/coffee-variety-detail/components/coffee-variety-detail.component.html:40: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/coffee-variety/coffee-variety-detail/components/coffee-variety-detail.component.html:50: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/coffee-variety/coffee-variety-detail/components/coffee-variety-detail.component.html:52: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/coffee-variety/coffee-variety-detail/components/coffee-variety-detail.component.html:58: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/coffee-variety/coffee-variety-detail/components/coffee-variety-detail.component.html:62: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/coffee-variety/coffee-variety-detail/components/coffee-variety-detail.component.html:81: mr-1"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/coffee-variety/components/coffee-variety-list.component.html:226: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/coffee-variety/components/coffee-variety-list.component.html:259: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/contact-messages/components/contact-messages-list.component.html:430: mr-1"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/contact-messages/components/contact-messages-list.component.html:441: mr-1"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/contact-messages/components/contact-messages-list.component.html:448: mr-1"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/farms/components/farms-list.component.html:286: right-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/farms/farm-detail/components/farm-detail.component.html:38: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/farms/farm-detail/components/farm-detail.component.html:43: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/farms/farm-detail/components/farm-detail.component.html:45: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/farms/farm-detail/components/farm-detail.component.html:51: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/farms/farm-detail/components/farm-detail.component.html:55: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/journal/components/journal-form.component.html:23: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/journal/components/journal-form.component.html:25: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/journal/components/journal-list.component.html:20: left-3"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/journal/components/journal-list.component.html:28: pl-9"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/newsletter/components/newsletter-list.component.html:38: left-3"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/newsletter/components/newsletter-list.component.html:46: pl-9"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/origins/components/origins-list.component.html:289: right-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/origins/origin-detail/components/origin-detail.component.html:359: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/pairing/components/pairing-list.component.html:194: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/pairing/components/pairing-list.component.html:215: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/pairing/pairing-detail/components/pairing-detail.component.html:40: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/pairing/pairing-detail/components/pairing-detail.component.html:50: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/pairing/pairing-detail/components/pairing-detail.component.html:52: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/pairing/pairing-detail/components/pairing-detail.component.html:58: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/pairing/pairing-detail/components/pairing-detail.component.html:62: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/pairing/pairing-detail/components/pairing-detail.component.html:94: mr-1"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/processing-method/components/processing-method-list.component.html:226: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/processing-method/components/processing-method-list.component.html:259: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/processing-method/processing-method-detail/components/processing-method-detail.component.html:37: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/processing-method/processing-method-detail/components/processing-method-detail.component.html:47: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/processing-method/processing-method-detail/components/processing-method-detail.component.html:49: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/processing-method/processing-method-detail/components/processing-method-detail.component.html:55: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/processing-method/processing-method-detail/components/processing-method-detail.component.html:59: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/processing-method/processing-method-detail/components/processing-method-detail.component.html:72: mr-1"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/products/components/product-wizard/product-wizard.component.html:41: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/products/components/product-wizard/product-wizard.component.html:64: ml-1"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/products/components/product-wizard/product-wizard.component.html:69: right-1"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/products/components/product-wizard/product-wizard.component.html:114: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/products/components/product-wizard/product-wizard.component.html:116: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/products/components/product-wizard/product-wizard.component.html:132: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/products/components/product-wizard/product-wizard.component.html:146: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/products/components/product-wizard/product-wizard.component.html:148: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/products/components/steps/variants-step/variants-step.component.html:34: mr-1"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/products/components/steps/variants-step/variants-step.component.html:44: mr-1"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/products/components/steps/variants-step/variants-step.component.html:354: mr-1"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/products/components/steps/variants-step/variants-step.component.html:358: mr-1"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/products/product-media/product-media.component.html:39: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/products/product-media/product-media.component.html:41: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/products/product-media/product-media.component.html:70: left-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/products/product-media/product-media.component.html:79: left-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/products/product-media/product-media.component.html:88: right-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/products/product-media/product-media.component.html:123: left-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/products/product-media/product-media.component.html:132: left-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/products/product-media/product-media.component.html:141: right-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/products/product-media/product-media.component.html:152: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/products/product-media/product-media.component.html:154: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/promo-codes/components/promo-codes-list.component.html:321: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/promo-codes/components/promo-codes-list.component.html:345: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/promo-codes/promo-code-detail/components/promo-code-detail.component.html:31: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/promo-codes/promo-code-detail/components/promo-code-detail.component.html:41: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/promo-codes/promo-code-detail/components/promo-code-detail.component.html:43: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/promo-codes/promo-code-detail/components/promo-code-detail.component.html:49: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/promo-codes/promo-code-detail/components/promo-code-detail.component.html:53: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/promo-codes/promo-code-detail/components/promo-code-detail.component.html:66: mr-1"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/roast-level/components/roast-level-list.component.html:253: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/roast-level/components/roast-level-list.component.html:286: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/roast-level/roast-level-detail/components/roast-level-detail.component.html:40: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/roast-level/roast-level-detail/components/roast-level-detail.component.html:50: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/roast-level/roast-level-detail/components/roast-level-detail.component.html:52: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/roast-level/roast-level-detail/components/roast-level-detail.component.html:58: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/roast-level/roast-level-detail/components/roast-level-detail.component.html:62: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/roast-level/roast-level-detail/components/roast-level-detail.component.html:75: mr-1"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/shipping-zone/components/shipping-zone-list.component.html:202: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/shipping-zone/components/shipping-zone-list.component.html:224: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/shipping-zone/shipping-zone-detail/components/shipping-zone-detail.component.html:40: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/shipping-zone/shipping-zone-detail/components/shipping-zone-detail.component.html:50: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/shipping-zone/shipping-zone-detail/components/shipping-zone-detail.component.html:52: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/shipping-zone/shipping-zone-detail/components/shipping-zone-detail.component.html:58: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/shipping-zone/shipping-zone-detail/components/shipping-zone-detail.component.html:62: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/shipping-zone/shipping-zone-detail/components/shipping-zone-detail.component.html:75: mr-1"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/store-settings/components/store-settings-list.component.html:117: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/tasting-note/components/tasting-note-list.component.html:215: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/tasting-note/components/tasting-note-list.component.html:248: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/tasting-note/tasting-note-detail/components/tasting-note-detail.component.html:37: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/tasting-note/tasting-note-detail/components/tasting-note-detail.component.html:47: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/tasting-note/tasting-note-detail/components/tasting-note-detail.component.html:49: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/tasting-note/tasting-note-detail/components/tasting-note-detail.component.html:55: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/tasting-note/tasting-note-detail/components/tasting-note-detail.component.html:59: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/tasting-note/tasting-note-detail/components/tasting-note-detail.component.html:72: mr-1"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/users/components/users-list.component.html:226: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/users/components/users-list.component.html:246: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/users/components/users-list.component.html:265: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/features/users/user-detail/components/user-detail.component.html:246: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/shared/components/data-table/data-table.component.html:147: ml-1"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/shared/components/multi-select/multi-select.component.html:24: left-0"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/shared/components/multi-select/multi-select.component.html:34: mr-2"
+  },
+  {
+    "check": "rtl-lint",
+    "severity": "P2",
+    "msg": "src/app/shared/ui/user-menu/user-menu.component.html:44: text-left"
+  }
+]

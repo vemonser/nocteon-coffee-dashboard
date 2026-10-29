@@ -3,7 +3,6 @@ import { provideRouter, withViewTransitions } from '@angular/router';
 import { routes } from './app.routes';
 import {
   httpProviders,
-  provideAppIcons,
   provideAppInitializers,
   provideAppTransloco,
 } from './core/providers';
@@ -15,6 +14,5 @@ export const appConfig: ApplicationConfig = {
     ...httpProviders,
     provideAppTransloco(),
     provideAppInitializers(),
-    provideAppIcons(),
   ],
 };

@@ -1776,3 +1776,88 @@ stock back. That is pre-existing behaviour, not something FE-13 changes; the log
 now makes it visible (a cancellation writes no `ORDER` row, because the stock
 did not move). It belongs with FE-20 (returns/RMA), and is recorded in the
 report rather than silently "fixed" here.
+
+# Decisions — PERF-1 · initial bundle budget (29 Oct 2026)
+
+## Measured first, not guessed
+
+`npx ng build --configuration production --stats-json`, then the esbuild metafile
+(`dist/nocteon-dash/stats.json`, `outputs["main-*.js"].inputs[].bytesInOutput`).
+
+| | main.js | styles.css | initial total |
+|---|---|---|---|
+| before | 642.68 kB | 232.13 kB | **874.81 kB** (warning exceeded by 24.81 kB) |
+| after | 588.67 kB | 232.13 kB | **820.80 kB** (29.20 kB under the 850 kB warning) |
+
+The initial chunk was 73% framework: Angular core 153.0 kB, router 83.5 kB,
+common 38.7 kB, CDK 32.1 kB, rxjs ~6 kB — ~325 kB that no refactor removes.
+Of the rest, the heaviest *application* inputs were:
+
+| input | in initial | why it was eager |
+|---|---|---|
+| `@angular/forms` | 56.0 kB | `FormsModule` in the root `ConfirmDialogComponent` (typed confirmation) |
+| `@ng-icons/lucide` | 46.6 kB | one `provideIcons()` call in `bootstrapApplication` |
+| `@spartan-ng/brain/sonner` | 41.2 kB | `toast()` called synchronously by `NotifyService` |
+| `@angular/cdk/_overlay` | 36.4 kB | overlay/portal infra for the two root dialogs |
+| `tailwind-merge` | 26.8 kB | `classes()` in `libs/ui/utils/hlm.ts`, via `hlm-button`/`hlm-input` in the confirm dialog |
+| `@jsverse/transloco` | 14.1 kB | i18n, genuinely eager |
+| `src/app/app.routes.ts` | 9.1 kB | the route table, genuinely eager |
+| `quill.snow.css` | 23.7 kB (of the CSS) | listed in `angular.json` `styles` — global for two lazy screens |
+
+## What was moved, and why it is safe
+
+**Only the icon registry.** 131 of the 135 lucide icons used anywhere in the app
+were in the initial chunk although `provideAppIcons()` registered 7 by name. The
+cause is how bundlers split: at **module** granularity, not symbol granularity.
+`ng-icons-lucide.mjs` is a single module, so one eager reference to it pulls the
+whole retained set — every icon any lazy chunk also wants — into the entry chunk.
+
+`APP_ICONS` (`core/providers/icons.provider.ts`) is now provided by
+`LayoutComponent`, the shell. Nothing else changes: every authenticated page is
+inside that tree, so `<ng-icon name="lucideInbox">`, the empty-state default and
+the status-badge map resolve exactly as before. The public pages outside the
+shell (login, password reset, unauthorized) never used the shared registry —
+each one calls its own `provideIcons` with the icons it renders. The 131 icons
+now live in one shared lazy chunk (`chunk-D4CVrE9-.js`, 51.9 kB) loaded with the
+first dashboard navigation, which the shell performs immediately anyway.
+
+Measured effect: 131 inline `<svg>` icon definitions found in `main-*.js` before,
+0 after; initial total 874.81 → 820.80 kB; the NG8 budget warning is gone.
+
+## The budget was NOT raised
+
+`angular.json` still reads `maximumWarning: 850kB` / `maximumError: 1.1MB`. With
+820.80 kB there is 29.2 kB of headroom, so raising the warning would have hidden
+the metric instead of fixing it. The 1.1 MB error is untouched. Note the recent
+trend: five features cost ~3 kB, so the warning is roughly nine features away
+again — the next feature that adds an eager import is the trigger to look here
+first.
+
+## Left eager deliberately (measured, not forgotten)
+
+- **The two root dialogs, ~126 kB** (`forms` 56.0 + `cdk/overlay` 36.4 +
+  `tailwind-merge` 26.8 + `brain/field` 4.5 + `brain/forms` 2.3). They are
+  rendered in `app.html` for a first paint that shows neither. `@defer` or a CDK
+  `Dialog.open(await import(...))` would move all of it out, but it changes
+  behaviour: on a slow link the destructive-action confirmation, and the
+  `canDeactivate` answer for an unsaved form, would arrive one chunk download
+  late. That is a UX change on the exact paths the dashboard rules guard most
+  tightly, so it is proposed here rather than done in a perf pass.
+- **`sonner` 41.2 kB**: `NotifyService` calls `toast.*` synchronously from HTTP
+  interceptors. A dynamic `import()` inside those methods delays every toast and
+  can reorder them.
+- **`quill.snow.css` 23.7 kB** in the global stylesheet, for two lazy screens
+  (journal form, product wizard). Moving it needs
+  `ViewEncapsulation.None` on those components (their scoped styles would leak
+  globally) or an editor wrapper component — a feature refactor, out of scope
+  for a budget fix.
+- **`styles.css` 203 kB raw**: Tailwind v4 utilities plus the spartan preset,
+  generated from real template usage. That is the design system's cost, not a
+  splitting bug.
+
+## If this is revisited
+
+`npx ng build --configuration production --stats-json` and read
+`outputs[<chunk>].inputs[*].bytesInOutput`; add `--verbose` to list all 150
+chunks. The metafile is the source of truth — a `main` that grows again should be
+diagnosed by reading it, not by raising the number.
