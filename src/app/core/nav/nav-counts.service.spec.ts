@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { signal } from '@angular/core';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { environment } from '../../../environments/environment';
 import { AuthService } from '../auth/auth.service';
@@ -37,6 +37,7 @@ describe('NavCountsService', () => {
 
   afterEach(() => {
     http.verify();
+    vi.restoreAllMocks();
   });
 
   it('does not poll before a session exists', () => {
@@ -51,14 +52,66 @@ describe('NavCountsService', () => {
 
     http.expectOne(URL).flush({ data: { openOrders: 4, abandonedCarts: 2 } });
     expect(service.counts()?.orders).toBe(4);
-    expect(service.available()).toBe(true);
+    expect(service.badgeFor('/dashboard/orders')).toBe(4);
+    expect(service.badgeFor('/dashboard/carts')).toBe(2);
 
     loggedIn.set(false);
     TestBed.tick();
 
     expect(service.counts()).toBeNull();
-    expect(service.available()).toBe(false);
+    expect(service.badgeFor('/dashboard/orders')).toBeNull();
     http.expectNone(URL);
+  });
+
+  it('reads the keys the endpoint returns and leaves a forbidden area without a badge', () => {
+    loggedIn.set(true);
+    TestBed.tick();
+
+    http.expectOne(URL).flush({
+      data: {
+        openOrders: 7,
+        abandonedCarts: 3,
+        pendingReviews: 5,
+        contactUnread: 2,
+        unreadMessages: 2,
+      },
+    });
+
+    expect(service.badgeFor('/dashboard/orders')).toBe(7);
+    expect(service.badgeFor('/dashboard/carts')).toBe(3);
+    expect(service.badgeFor('/dashboard/reviews')).toBe(5);
+    expect(service.badgeFor('/dashboard/contact-messages')).toBe(2);
+  });
+
+  it('renders a zero count as no badge instead of inventing one', () => {
+    loggedIn.set(true);
+    TestBed.tick();
+
+    http.expectOne(URL).flush({ data: { openOrders: 0 } });
+
+    // 0 is a real answer; the sidebar hides a zero badge and the other areas
+    // have no key at all for this role.
+    expect(service.badgeFor('/dashboard/orders')).toBe(0);
+    expect(service.badgeFor('/dashboard/carts')).toBeNull();
+  });
+
+  it('keeps the last good counts when a poll fails and logs the failure once', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    loggedIn.set(true);
+    TestBed.tick();
+    http.expectOne(URL).flush({ data: { openOrders: 4 } });
+
+    service.fetch();
+    http.expectOne(URL).flush(null, { status: 500, statusText: 'Server Error' });
+
+    expect(service.counts()?.orders).toBe(4);
+    expect(service.badgeFor('/dashboard/orders')).toBe(4);
+
+    service.fetch();
+    http.expectOne(URL).flush(null, { status: 500, statusText: 'Server Error' });
+
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(service.counts()?.orders).toBe(4);
   });
 
   it('ignores fetch() when logged out', () => {

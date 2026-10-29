@@ -32,11 +32,11 @@ export interface ProductListItem {
   minPrice: number;
   maxPrice: number;
   discountPercentage?: number | null;
-  /** Not currently returned by ProductCardResponse — see DECISIONS.md. */
+  /** Returned by ProductCardResponse. The Stock column is always shown. */
   variantsCount?: number | null;
-  /** Not currently returned by ProductCardResponse — see DECISIONS.md. */
+  /** Returned by ProductCardResponse. The Stock column is always shown. */
   totalStock?: number | null;
-  /** Not currently returned by ProductCardResponse — see DECISIONS.md. */
+  /** Returned by ProductCardResponse. The Stock column is always shown. */
   lowStockVariantCount?: number | null;
   /**
    * FE-14: the average of the product's counted (approved, not deleted)

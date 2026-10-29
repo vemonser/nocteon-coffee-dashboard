@@ -6,8 +6,6 @@ import {
   startWith,
   of,
   catchError,
-  forkJoin,
-  map,
   Subscription,
   fromEvent,
   filter as rxFilter,
