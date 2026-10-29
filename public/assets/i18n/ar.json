@@ -2663,7 +2663,10 @@
     "bulkMarkRead": "تحديد كمقروء",
     "bulkMarkUnread": "تحديد كغير مقروء",
     "bulkDelete": "حذف",
-    "replyHistory": "سيظهر سجل الردود هنا عند توفره من الخادم."
+    "replyHistory": "سيظهر سجل الردود هنا عند توفره من الخادم.",
+    "saveDraft": "حفظ مسودة",
+    "saving": "جارٍ الحفظ…",
+    "replyThread": "سجل الردود"
   },
   "oauth2Callback": {
     "processing": "جارٍ تسجيل الدخول…",

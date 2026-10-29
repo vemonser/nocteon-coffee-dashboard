@@ -2555,7 +2555,10 @@
       "archived": "Archived"
     },
     "selectMessage": "Select message",
-    "replyHistory": "Reply history will appear here once the API returns it."
+    "replyHistory": "Reply history will appear here once the API returns it.",
+    "saveDraft": "Save draft",
+    "saving": "Saving…",
+    "replyThread": "Reply thread"
   },
   "oauth2Callback": {
     "processing": "Signing you in…",
