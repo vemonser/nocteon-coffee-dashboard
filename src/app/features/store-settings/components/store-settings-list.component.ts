@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, HostListener, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { BaseListComponent } from '../../../core/crud/base-list.component';
@@ -12,7 +12,8 @@ import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmInputImports } from '@spartan-ng/helm/input';
 import { HlmDialogImports } from '@spartan-ng/helm/dialog';
 import { HlmLabelImports } from '@spartan-ng/helm/label';
-import { HlmCheckboxImports } from '@spartan-ng/helm/checkbox';
+import { HlmSwitchImports } from '@spartan-ng/helm/switch';
+import { A11yModule } from '@angular/cdk/a11y';
 
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
@@ -37,7 +38,8 @@ import { DataTableComponent } from '../../../shared/components/data-table/data-t
     HlmInputImports,
     HlmDialogImports,
     HlmLabelImports,
-    HlmCheckboxImports,
+    HlmSwitchImports,
+    A11yModule,
     NgIcon,
   ],
   providers: [
@@ -48,6 +50,12 @@ import { DataTableComponent } from '../../../shared/components/data-table/data-t
   templateUrl: './store-settings-list.component.html',
 })
 export class StoreSettingsListComponent extends BaseListComponent<StoreSettingResponse, StoreSetting> {
+  /** Esc closes the edit dialog — every overlay in the app must have that. */
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    if (this.showDialog()) this.closeDialog();
+  }
+
   private storeSettingService = inject(StoreSettingService);
   private columnHelper = createColumnHelper<StoreSettingResponse>();
 
@@ -68,14 +76,6 @@ export class StoreSettingsListComponent extends BaseListComponent<StoreSettingRe
       header: 'Free Shipping Active',
       enableSorting: false,
       cell: (info) => (info.getValue() ? 'Yes' : 'No'),
-    }),
-    this.columnHelper.accessor('createdAt', {
-      header: 'Created At',
-      enableSorting: false,
-    }),
-    this.columnHelper.accessor('updatedAt', {
-      header: 'Updated At',
-      enableSorting: false,
     }),
     this.columnHelper.display({
       id: 'actions',

@@ -40,10 +40,18 @@
 ══════════════════════════════════════════════════════════ -->
 @if (showDialog()) {
   <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-    <div class="dialog-surface w-full max-w-lg max-h-[90vh] overflow-y-auto">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="store-setting-dialog-title"
+      tabindex="-1"
+      cdkTrapFocus
+      [cdkTrapFocusAutoCapture]="true"
+      class="dialog-surface w-full max-w-lg max-h-[90vh] overflow-y-auto outline-none"
+    >
       <!-- Dialog Header -->
       <div class="flex items-center justify-between p-6 border-b sticky top-0 rounded-t-[var(--radius-card)] bg-card">
-        <h2 class="text-lg font-medium">Edit Store Setting</h2>
+        <h2 id="store-setting-dialog-title" class="text-lg font-medium">Edit Store Setting</h2>
         <button hlmBtn variant="ghost" size="icon" (click)="closeDialog()">
           <ng-icon name="lucideX" class="size-4" />
         </button>
@@ -82,10 +90,14 @@
 
         <div class="flex items-center justify-between rounded-md border p-3">
           <div class="space-y-0.5">
-            <label hlmLabel class="mb-0">Free Shipping Enabled</label>
+            <label hlmLabel for="isFreeShippingActive" class="mb-0">Free Shipping Enabled</label>
             <p class="text-xs text-muted-foreground">Toggle free shipping on or off for the storefront</p>
           </div>
-          <hlm-checkbox formControlName="isFreeShippingActive" />
+          <hlm-switch
+            formControlName="isFreeShippingActive"
+            inputId="isFreeShippingActive"
+            [attr.aria-label]="'Free Shipping Enabled'"
+          />
         </div>
 
         <!-- Buttons -->
