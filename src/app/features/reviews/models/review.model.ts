@@ -1,5 +1,8 @@
 export interface ReviewResponse {
   id: number;
+  /** FE-VERIFIED: reviewer identity from the backend (optional for older APIs). */
+  userId?: number | null;
+  userFullName?: string | null;
   username: string;
   avatarUrl: string | null;
   rating: number;
