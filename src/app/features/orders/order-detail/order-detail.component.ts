@@ -7,6 +7,9 @@ import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
   lucideArrowLeft,
   lucidePrinter,
+  lucideFileDown,
+  lucideLoader,
+  lucideSend,
   lucideRefreshCw,
   lucideCircleSlash,
   lucideRotateCcw,
@@ -64,6 +67,7 @@ import { LocalizedNameService } from '../../../core/i18n/localized-name.service'
 import { LocalizedDateService } from '../../../core/i18n/localized-date.service';
 import { LanguageService } from '../../../core/i18n/language.service';
 import { NotifyService } from '../../../core/notify/notify.service';
+import { PermissionService } from '../../../core/auth/permission.service';
 import { BreadcrumbService } from '../../../shared/components/breadcrumb/service/breadcrumb.service';
 import { StatusBadgeComponent } from '../../../shared/ui/status-badge/status-badge.component';
 import { MoneyPipe } from '../../../shared/pipes/money.pipe';
@@ -125,6 +129,9 @@ interface OrderEventView extends OrderEvent {
     provideIcons({
       lucideArrowLeft,
       lucidePrinter,
+      lucideFileDown,
+      lucideLoader,
+      lucideSend,
       lucideRefreshCw,
       lucideCircleSlash,
       lucideRotateCcw,
@@ -161,6 +168,7 @@ export class OrderDetailComponent {
   private readonly transloco = inject(TranslocoService);
   private readonly breadcrumb = inject(BreadcrumbService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly permissions = inject(PermissionService);
   protected readonly names = inject(LocalizedNameService);
   protected readonly dates = inject(LocalizedDateService);
   protected readonly language = inject(LanguageService);
@@ -369,12 +377,17 @@ export class OrderDetailComponent {
     return null;
   });
 
-  /** The reason the store cannot resend an e-mail (no endpoint exists). */
-  protected readonly resendReason = computed(() =>
-    this.t(
-      'orders.detail.resendEmailGap',
-      'The store sends order e-mails automatically, but it cannot send one on demand.',
-    ),
+  /** Is a confirmation being sent right now? Guards the double press. */
+  protected readonly resendingConfirmation = signal(false);
+  /** Is the invoice being fetched right now? */
+  protected readonly downloadingInvoice = signal(false);
+
+  /**
+   * Re-sending needs `order:update`, the same authority the backend demands.
+   * Hiding the item is the client side of the rule; the server still refuses.
+   */
+  protected readonly canResendConfirmation = computed(
+    () => this.permissions.has('order:update') && !this.resendingConfirmation(),
   );
 
   /** Does the store have a shipment to show? */
@@ -792,6 +805,77 @@ export class OrderDetailComponent {
     document.documentElement.classList.toggle('dark', this.wasDark);
     document.documentElement.classList.remove('order-print');
     this.wasDark = false;
+  }
+
+  /**
+   * Download the invoice PDF.
+   *
+   * The bytes are fetched through the authenticated HttpClient (a plain link
+   * would drop the bearer token), then handed to the browser as a blob. The
+   * busy flag covers the round trip, so a second click cannot start a second
+   * download of the same file.
+   */
+  protected downloadInvoice(): void {
+    const order = this.order();
+    if (!order || this.downloadingInvoice()) return;
+
+    this.downloadingInvoice.set(true);
+
+    this.orderService
+      .downloadInvoice(order.id, this.plainOrderNumber(), this.language.current())
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: ({ blob, filename }) => {
+          this.downloadingInvoice.set(false);
+          const url = URL.createObjectURL(blob);
+          const anchor = document.createElement('a');
+          anchor.href = url;
+          anchor.download = filename;
+          anchor.click();
+          URL.revokeObjectURL(url);
+        },
+        error: (err: unknown) => {
+          this.downloadingInvoice.set(false);
+          this.notify.apiError(err, 'orders.detail.invoiceFailed', 'The invoice could not be downloaded');
+        },
+      });
+  }
+
+  /**
+   * Send the order confirmation again.
+   *
+   * The toast shows the BACKEND's message (it is already in the reader's
+   * language), and only a SENT row is a success: a message the provider refused
+   * is a warning, because the customer still has not heard from the store.
+   */
+  protected resendConfirmation(): void {
+    const order = this.order();
+    if (!order || this.resendingConfirmation()) return;
+
+    this.resendingConfirmation.set(true);
+    this.orderService
+      .resendConfirmation(order.id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res) => {
+          this.resendingConfirmation.set(false);
+          const status = res.data?.emailStatus;
+          if (status === 'SENT') {
+            this.notify.apiSuccess(res, 'orders.detail.confirmationSent', 'Confirmation sent');
+          } else {
+            const backendMessage = typeof res.message === 'string' ? res.message : null;
+            this.notify.warningMessage(
+              backendMessage,
+              'orders.detail.confirmationQueued',
+              'The confirmation was not sent yet',
+            );
+          }
+        },
+        error: (err: unknown) => {
+          this.resendingConfirmation.set(false);
+          this.notify.apiError(err, 'orders.detail.confirmationFailed', 'The confirmation could not be sent');
+        },
+      });
   }
 
   /** Add an internal note. */

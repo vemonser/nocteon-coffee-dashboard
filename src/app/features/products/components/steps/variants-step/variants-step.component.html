@@ -265,6 +265,90 @@
                 </div>
               }
 
+              <!--
+                FE-13: the stock history of a SAVED variant, and the way to
+                change the number with a reason. A variant that has never been
+                saved has no movements to show, so the block is absent rather
+                than empty.
+              -->
+              @if (variantId(group); as vid) {
+                <div class="mt-4 rounded-md border bg-muted/20" data-testid="variant-history">
+                  <div class="flex flex-wrap items-center justify-between gap-2 px-3 py-2">
+                    <button
+                      hlmBtn
+                      variant="ghost"
+                      size="sm"
+                      type="button"
+                      class="gap-1"
+                      [attr.aria-expanded]="isHistoryOpen(vid)"
+                      (click)="toggleHistory(vid)"
+                      data-testid="variant-history-toggle"
+                    >
+                      <ng-icon name="lucideHistory" class="size-4" aria-hidden="true" />
+                      {{ 'products.variants.history.title' | transloco }}
+                    </button>
+                    <button
+                      hlmBtn
+                      variant="outline"
+                      size="sm"
+                      type="button"
+                      class="gap-1"
+                      (click)="openAdjustment(i)"
+                      data-testid="variant-adjust-stock"
+                    >
+                      <ng-icon name="lucideSlidersHorizontal" class="size-4" aria-hidden="true" />
+                      {{ 'products.variants.history.adjust' | transloco }}
+                    </button>
+                  </div>
+
+                  @if (isHistoryOpen(vid)) {
+                    <div class="border-t px-3 py-2">
+                      @if (isHistoryLoading(vid)) {
+                        <p class="text-sm text-muted-foreground" aria-busy="true">
+                          {{ 'common.loading' | transloco }}
+                        </p>
+                      } @else if (movementsOf(vid).length === 0) {
+                        <p class="text-sm text-muted-foreground" data-testid="variant-history-empty">
+                          {{ 'products.variants.history.empty' | transloco }}
+                        </p>
+                      } @else {
+                        <ul class="divide-y divide-border" data-testid="variant-history-list">
+                          @for (movement of movementsOf(vid); track movement.id) {
+                            <li class="flex flex-wrap items-center justify-between gap-2 py-2 text-sm">
+                              <div class="flex min-w-0 flex-col">
+                                <span class="font-medium">
+                                  {{ movement.stockBefore }} → {{ movement.stockAfter }}
+                                  <span
+                                    class="ms-1 text-xs"
+                                    [class.text-destructive]="movement.delta < 0"
+                                    [class.text-success]="movement.delta > 0"
+                                    dir="ltr"
+                                  >
+                                    ({{ movementDelta(movement) }})
+                                  </span>
+                                </span>
+                                <span class="truncate text-xs text-muted-foreground">
+                                  {{ 'products.variants.history.reasons.' + movement.reason | transloco }}
+                                  @if (movement.reasonNote) {
+                                    · {{ movement.reasonNote }}
+                                  }
+                                </span>
+                              </div>
+                              <div class="flex shrink-0 flex-col items-end text-xs text-muted-foreground">
+                                <span class="truncate">{{ movement.actor }}</span>
+                                <time [attr.datetime]="movement.createdAt">
+                                  {{ dates.formatDateAndTime(movement.createdAt) }}
+                                </time>
+                              </div>
+                            </li>
+                          }
+                        </ul>
+                      }
+                    </div>
+                  }
+                </div>
+              }
+
               <div class="mt-4 flex justify-end gap-2 border-t pt-3">
                 <button hlmBtn variant="outline" size="sm" type="button" (click)="duplicateVariant(i)">
                   <ng-icon name="lucideCopy" class="mr-1 size-4" />
@@ -325,6 +409,15 @@
       </table>
     </div>
   }
+
+  <app-stock-adjustment-dialog
+    [open]="adjustTarget() !== null"
+    [sku]="adjustTarget()?.sku ?? ''"
+    [stock]="adjustTarget()?.stock ?? 0"
+    [pending]="savingAdjustment()"
+    (saved)="saveAdjustment($event)"
+    (closed)="closeAdjustment()"
+  />
 
   @if (!state.isEditMode()) {
     <!-- Sticky footer for navigation (create mode only) -->

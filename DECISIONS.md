@@ -1603,3 +1603,176 @@ the most useful search on the table ("order_create"), and the filter does not es
 The list is always newest first with `id DESC` as the tie-breaker: `created_at` is microsecond
 precision and two rows written by one request can share it, which would let page 2 repeat a row
 from page 1.
+
+# Decisions — FE-16 · Invoice PDF + resend confirmation
+
+## PDF library: OpenPDF 2.4.0 (`com.github.librepdf:openpdf`), not a headless browser
+
+Nothing on the backend could write a PDF (`pom.xml` had no PDF library, and
+FE-24 had already shipped the dashboard's own "Export PDF" as a print
+stylesheet rather than as a file). The invoice is the first document the store
+*must* hand to a customer as a file, so it needed a real writer.
+
+| Option | Why not |
+|---|---|
+| Headless Chromium / Playwright print-to-PDF | Forbidden by the brief, and it puts a browser + a process pool in the image to draw six tables. |
+| iText 7 / OpenPDF 3.x | OpenPDF 3.x renames the package to `org.openpdf` and pulls ICU4J (~14 MB) plus brotli; iText 7 needs the commercial `pdfCalligraph` add-on for Arabic shaping. Both are more dependency than this job is worth. |
+| Apache PDFBox | No Arabic shaping and no layout: text would be drawn glyph by glyph, in logical order. |
+| Hand-rolled PDF writer | Explicitly out of scope. |
+| **OpenPDF 2.4.0** | One self-contained jar, the maintained iText 5 fork, LGPL/MPL, and — verified before committing to it — its `ColumnText`/`BidiLine` path **shapes Arabic and applies bidi** when a cell is drawn with `RUN_DIRECTION_RTL`. |
+
+**The measured caveat.** `Document.add(new Paragraph(...))` with
+`RUN_DIRECTION_RTL` does **not** shape: it printed "فاتورة رقم" as isolated
+letters in reversed order (mojibake). A `PdfPCell` with
+`RUN_DIRECTION_RTL`, or a `ColumnText` with the same run direction, does shape
+correctly. So the renderer draws *everything* through table cells — labels,
+address, payment fields, footer — instead of paragraphs. This is pinned in
+`InvoicePdfRenderer`'s class comment so a future "simplification" back to
+paragraphs does not silently un-shape the document.
+
+## Font: IBM Plex Sans Arabic (SIL OFL 1.1), embedded
+
+The 14 built-in PDF fonts have no Arabic glyphs; using them produces boxes or
+Latin-1 mojibake. Two facts decided the font:
+
+- **It must cover both scripts.** `Noto Naskh Arabic` and `Noto Sans Arabic`
+  have **zero** Latin glyphs (checked), so one line such as
+  "قهوة Yirgacheffe 250 جرام" would change typeface mid-word.
+  IBM Plex Sans Arabic carries Latin (A–z, punctuation) + the whole Arabic block
+  + the presentation forms OpenPDF's shaper emits (140 of them).
+- **It must travel with the jar.** System fonts are not portable; the two TTFs
+  (236 KB + 247 KB) ship in `src/main/resources/fonts/` with the licence text
+  next to them, loaded as `BaseFont.IDENTITY_H` + `EMBEDDED` (subset) and cached
+  per JVM.
+
+## RTL layout: the table mirrors, the code does not
+
+An RTL `PdfPTable` mirrors **both** the cells and the `setWidths` array. The
+first draft reversed the cells by hand as well, which cancelled the mirroring and
+put the product name under the "Amount" column header. Two rules now:
+
+1. cells are always added in logical order;
+2. the widths array is reversed for RTL, so "the first width belongs to the first
+   cell" holds in both languages.
+
+## Values that must stay left-to-right
+
+A phone number, an e-mail, a SKU or a transaction reference is not Arabic text.
+A leading "+" is a NEUTRAL character, so in an RTL paragraph
+"+201000000000" printed as "20100000000+" — a different, dialable string. Those
+values are prefixed with U+200E (LRM, no glyph, nothing printed), which was
+verified against the alternatives (U+2066/2069 isolates and U+202A/202C also
+work; LRM is the smallest).
+
+## Digits: Latin in both languages
+
+`Locale("ar")` formats numbers with Arabic-Indic digits. The dashboard uses
+Latin digits in Arabic everywhere (shared formatters), so an Arabic invoice
+printing ٦٥٠٫٠٠ would be the one place an amount cannot be read back into the
+console. Month names translate; digits stay Latin.
+
+## Access: `order:read` is not enough on its own
+
+`/api/dashboard/**` is `authenticated()`, and the order endpoints are gated on
+`order:read` — which the **CUSTOMER** role also holds (it reads its own orders
+through it). Serving an invoice on that authority alone would let any logged-in
+customer download any customer's invoice, with name, address and money in it.
+
+Rule implemented in `OrderInvoiceService`: anyone holding `order:update` (the
+console roles; never CUSTOMER) may download any invoice, and everyone else only
+their own — with the **same 404** an unknown id answers, so the response never
+confirms that someone else's order exists. The resend endpoint needs no extra
+rule: it is gated on `order:update`, which customers never hold.
+
+## Resend: one `email_log` row per press
+
+Reuses the existing plumbing (`TransactionalEmailService` → `BrevoClient`,
+provider-side template, retry worker) — no second mail path. The automatic
+confirmation keeps its single key `ORDER-<id>-CONFIRMATION` (a duplicate of the
+same news must not queue twice); a manual resend gets its own row and key
+`ORDER-<id>-CONFIRMATION-RESEND-<n>`, so `email_log` stays an audit trail of
+*when support pressed the button* instead of one mutable slot. The returned
+`ApiResponse.message` is localized server-side (messages.properties /
+messages_ar.properties) because the dashboard shows the backend's sentence
+verbatim.
+
+A refusal is not a success: `data.emailStatus` (SENT / FAILED / DEAD) travels
+with the message, and the page shows a warning toast when it is not SENT.
+
+**Small hardening this needed:** `OrderConfirmationDataProvider` used
+`order.getUser().getProfile().getFullName()` (NPE for an account without a
+profile, i.e. a 500 on the resend) and `Map.of(...)` (rejects null values). It is
+now null-safe, and it sends the product *name* instead of its slug.
+
+## Known gap (documented, not invented)
+
+No `Content-Disposition` exposure is configured for the frontend origin, so the
+browser cannot read the server's file name in dev; the client falls back to
+`invoice-<orderNumber>.pdf`. Both names are the same convention today. If the
+orchestrator wants the server name to always win, expose
+`Content-Disposition` in the CORS config.
+
+# Decisions — FE-13 · Inventory movement log
+
+## One writer, four call sites
+
+Stock was mutated in four unrelated places: the checkout's COD consumption
+(`OrderService`), the payment webhook (`PaymentService`), the product form
+(`ProductVariantService.applyRequest`) and — nowhere else: `incrementStock`
+existed in the repository with **no caller**, so there was no restock path to
+wire. All three real paths now go through `InventoryMovementService`, which
+applies the change and writes the row **in the same transaction**, so a
+rolled-back order or a refused payment leaves no row claiming it happened.
+
+Found and wired:
+
+| Path | Before | Now |
+|---|---|---|
+| `OrderService.createOrder` (COD confirmed → consume reserved stock) | `findStockById` + `consumeStock` + `findStockById`, no record | `inventoryService.consumeForOrder(...)` → row `ORDER`, `source_id = orders.id`, actor = the buyer |
+| `PaymentService.handleCallback` (paid → consume) | same, no record | same service, actor `system:payment-webhook` |
+| `ProductVariantService.replaceVariants` (the product form can change the figure) | `setStockQuantity(v)`, no record | compares before/after and records `PRODUCT_EDIT`, actor from the security context |
+| manual adjustment | did not exist | `inventoryService.adjustManually(...)` → row `MANUAL_ADJUSTMENT` with the required reason |
+
+Deliberately **not** recorded: `reserved_quantity` changes (`reserveStock`,
+`releaseStock` on payment failure and on cancellation). They change what is
+*promised*, not what is on the shelf — a row whose before and after are equal
+would make the log unreadable. This is stated in the service's javadoc.
+
+## Reason vocabulary: three values, no invented "restock"
+
+`ORDER`, `MANUAL_ADJUSTMENT`, `PRODUCT_EDIT`. A `RESTOCK` value was considered and
+dropped: there is no restock endpoint and no purchase-order module, so units
+arriving are an admin adjustment whose **typed reason** says so ("24 units
+arrived from the roaster"). An enum value nothing can produce would be a lie in
+the schema. The acceptance's "restock" case is therefore served by the manual
+adjustment path, with the sentence preserved in `reason_note`.
+
+## 400, not 409, for a blank reason
+
+`StockAdjustmentReasonRequiredException` → 400 with
+`error.inventory.reasonRequired` (en + ar in the backend bundles). Nothing about
+the store's state is wrong; the request is missing the field that makes the
+change explainable. Zero delta and "would go below zero" are 400s too
+(`error.inventory.deltaZero`, `error.inventory.belowZero`).
+
+## The pair, not the delta
+
+The row stores `stock_before`, `stock_after` **and** `delta`, with a CHECK
+constraint that `stock_after - stock_before = delta`. The pair is what an admin
+reconciles against ("it was 12, now it is 9"); the delta is derived, and the
+constraint means a hand-written row cannot disagree with itself.
+
+## …and not the current stock
+
+The read endpoint answers what each change saw, not today's number. A list that
+printed the current stock on every row would describe the present five times and
+the past never — the exact failure the log exists to fix.
+
+## Known gap this makes visible (not fixed here)
+
+Cancelling a COD order releases `reserved_quantity` only, and a COD order had
+already *consumed* its units at checkout — so a cancelled COD order does not put
+stock back. That is pre-existing behaviour, not something FE-13 changes; the log
+now makes it visible (a cancellation writes no `ORDER` row, because the stock
+did not move). It belongs with FE-20 (returns/RMA), and is recorded in the
+report rather than silently "fixed" here.

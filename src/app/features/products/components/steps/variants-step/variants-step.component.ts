@@ -25,12 +25,18 @@ import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmCheckboxImports } from '@spartan-ng/helm/checkbox';
 import { HlmSwitchImports } from '@spartan-ng/helm/switch';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucidePlus, lucideX, lucideChevronDown, lucideChevronUp, lucideMoreVertical, lucideTrash2, lucideCopy, lucideImage, lucideUpload, lucideLoader2 } from '@ng-icons/lucide';
+import { lucidePlus, lucideX, lucideChevronDown, lucideChevronUp, lucideMoreVertical, lucideTrash2, lucideCopy, lucideImage, lucideUpload, lucideLoader2, lucideHistory, lucideSlidersHorizontal } from '@ng-icons/lucide';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { MoneyPipe } from '../../../../../shared/pipes/money.pipe';
 import { LanguageService } from '../../../../../core/i18n/language.service';
 import { NotifyService } from '../../../../../core/notify/notify.service';
 import { stockLevel as resolveStockLevel } from '../../../../../shared/utils/stock-level';
+import { StockMovement } from '../../../models/stock-movement.model';
+import {
+  StockAdjustmentDialogComponent,
+  type StockAdjustmentDraft,
+} from '../../stock-adjustment-dialog/stock-adjustment-dialog.component';
+import { LocalizedDateService } from '../../../../../core/i18n/localized-date.service';
 
 @Component({
   selector: 'app-variants-step',
@@ -45,11 +51,12 @@ import { stockLevel as resolveStockLevel } from '../../../../../shared/utils/sto
     HlmCheckboxImports,
     HlmSwitchImports,
     NgIcon,
+    StockAdjustmentDialogComponent,
     TranslocoPipe,
     MoneyPipe,
   ],
   providers: [
-    provideIcons({ lucidePlus, lucideX, lucideChevronDown, lucideChevronUp, lucideMoreVertical, lucideTrash2, lucideCopy, lucideImage, lucideUpload, lucideLoader2 }),
+    provideIcons({ lucidePlus, lucideX, lucideChevronDown, lucideChevronUp, lucideMoreVertical, lucideTrash2, lucideCopy, lucideImage, lucideUpload, lucideLoader2, lucideHistory, lucideSlidersHorizontal }),
   ],
   templateUrl: './variants-step.component.html',
   viewProviders: [
@@ -68,6 +75,7 @@ export class VariantsStepComponent implements OnInit {
   private wizard = inject(ProductWizardComponent);
   private confirmDialog = inject(ConfirmDialogService);
   private destroyRef = inject(DestroyRef);
+  protected readonly dates = inject(LocalizedDateService);
 
   loadingOptions = signal(false);
   collapsed = signal<Set<number>>(new Set());
@@ -78,6 +86,158 @@ export class VariantsStepComponent implements OnInit {
 
   private static readonly MAX_IMAGE_BYTES = 5 * 1024 * 1024;
   private static readonly IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+
+  // ─── FE-13: the stock history, per saved variant ────────────────────────
+
+  /** Which variants have their history open. */
+  readonly openHistory = signal<ReadonlySet<number>>(new Set());
+  /** The last movements per variant, once loaded. */
+  private readonly histories = signal<ReadonlyMap<number, StockMovement[]>>(new Map());
+  /** Variants whose history is being fetched. */
+  private readonly historyLoading = signal<ReadonlySet<number>>(new Set());
+
+  /** The variant whose stock is being adjusted, or null. */
+  readonly adjustTarget = signal<{
+    index: number;
+    variantId: number;
+    sku: string;
+    stock: number;
+  } | null>(null);
+  readonly savingAdjustment = signal(false);
+
+  /** The server id of a variant, or null while it has never been saved. */
+  variantId(group: AbstractControl): number | null {
+    const id = group.get('id')?.value;
+    return id === null || id === undefined || id === '' ? null : Number(id);
+  }
+
+  isHistoryOpen(variantId: number): boolean {
+    return this.openHistory().has(variantId);
+  }
+
+  isHistoryLoading(variantId: number): boolean {
+    return this.historyLoading().has(variantId);
+  }
+
+  movementsOf(variantId: number): StockMovement[] {
+    return this.histories().get(variantId) ?? [];
+  }
+
+  /**
+   * Open or close a variant's stock history.
+   *
+   * <p>Loaded on first open, not with the page: a product with eight variants
+   * would fire eight requests nobody asked for, and the list is only read when
+   * somebody is asking "why is this 7?".
+   */
+  toggleHistory(variantId: number): void {
+    const open = new Set(this.openHistory());
+    if (open.has(variantId)) {
+      open.delete(variantId);
+      this.openHistory.set(open);
+      return;
+    }
+    open.add(variantId);
+    this.openHistory.set(open);
+    if (!this.histories().has(variantId)) this.loadHistory(variantId);
+  }
+
+  private loadHistory(variantId: number): void {
+    const loading = new Set(this.historyLoading());
+    loading.add(variantId);
+    this.historyLoading.set(loading);
+
+    this.productService
+      .getVariantMovements(variantId, 10)
+      .pipe(
+        finalize(() => {
+          const done = new Set(this.historyLoading());
+          done.delete(variantId);
+          this.historyLoading.set(done);
+        }),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe({
+        next: (res) => {
+          const next = new Map(this.histories());
+          next.set(variantId, res.data ?? []);
+          this.histories.set(next);
+        },
+        error: (err) => {
+          this.notify.apiError(
+            err,
+            'products.variants.history.loadError',
+            'The stock history could not be loaded',
+          );
+        },
+      });
+  }
+
+  /** Open the adjustment dialog for one variant. */
+  openAdjustment(index: number): void {
+    const group = this.state.variantsArray.at(index);
+    const variantId = group ? this.variantId(group) : null;
+    if (!group || variantId === null) return;
+    this.adjustTarget.set({
+      index,
+      variantId,
+      sku: String(group.get('sku')?.value ?? ''),
+      stock: Number(group.get('stockQuantity')?.value ?? 0),
+    });
+  }
+
+  closeAdjustment(): void {
+    if (this.savingAdjustment()) return;
+    this.adjustTarget.set(null);
+  }
+
+  /**
+   * Send the adjustment, then keep the form in step with the server.
+   *
+   * <p>The stock now lives in two places — the row the server changed and the
+   * number in the form — and the form is the one that gets SAVED later. Leaving
+   * the old figure there would post it back and record a second, opposite
+   * movement, so the control is patched with the server's answer (without
+   * marking the form dirty for a change the admin did not type).
+   */
+  saveAdjustment(draft: StockAdjustmentDraft): void {
+    const target = this.adjustTarget();
+    if (!target || this.savingAdjustment()) return;
+
+    this.savingAdjustment.set(true);
+    this.productService
+      .adjustVariantStock(target.variantId, draft.delta, draft.reason)
+      .pipe(
+        finalize(() => this.savingAdjustment.set(false)),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe({
+        next: (res) => {
+          const after = res.data?.stockAfter;
+          if (typeof after === 'number') {
+            this.state.variantsArray
+              .at(target.index)
+              ?.get('stockQuantity')
+              ?.setValue(after, { emitEvent: false });
+          }
+          this.adjustTarget.set(null);
+          this.notify.apiSuccess(res, 'products.variants.history.adjusted', 'Stock adjusted');
+          if (this.openHistory().has(target.variantId)) this.loadHistory(target.variantId);
+        },
+        error: (err) => {
+          this.notify.apiError(
+            err,
+            'products.variants.history.adjustFailed',
+            'The stock could not be adjusted',
+          );
+        },
+      });
+  }
+
+  /** The signed delta of a movement, printed with an explicit sign. */
+  movementDelta(movement: StockMovement): string {
+    return movement.delta > 0 ? `+${movement.delta}` : String(movement.delta);
+  }
 
   stockLevel(group: AbstractControl): 'out' | 'low' | 'ok' {
     return resolveStockLevel(

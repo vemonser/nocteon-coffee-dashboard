@@ -90,6 +90,19 @@ export class NotifyService {
     toast.warning(this.t(messageKey, fallback));
   }
 
+  /**
+   * A warning whose text may come from the backend.
+   *
+   * The backend writes its own sentences (already in the reader's language) for
+   * outcomes that are neither success nor failure — "the provider has not
+   * accepted the message yet, a retry is queued". When it sends one, that
+   * sentence wins; otherwise the translated key speaks.
+   */
+  warningMessage(message: string | null, fallbackKey: string, fallback: string): void {
+    const text = typeof message === 'string' && message.length > 0 ? message : this.t(fallbackKey, fallback);
+    toast.warning(text);
+  }
+
   /** Backend message first, translated fallback second — never silent. */
   apiError(err: unknown, fallbackKey: string, fallback: string): void {
     toast.error(this.backendMessage(err) ?? this.t(fallbackKey, fallback));

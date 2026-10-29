@@ -1,5 +1,6 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
+import type { StockMovement } from '../models/stock-movement.model';
 import { environment } from '../../../../environments/environment';
 import {
   ProductDetail,
@@ -155,6 +156,38 @@ export class ProductService {
     return this.http.get<ApiResponse<Record<string, string[]>>>(`${this.base}/variant-barcodes`, {
       params,
     });
+  }
+
+  /**
+   * FE-13: the last stock movements of one variant, newest first.
+   *
+   * Read on demand (when the history of a variant is opened), not with the page:
+   * a product with eight variants would otherwise fire eight requests nobody
+   * looked at.
+   */
+  getVariantMovements(variantId: number, limit = 10): Observable<ApiResponse<StockMovement[]>> {
+    const params = new HttpParams().set('limit', limit);
+    return this.http.get<ApiResponse<StockMovement[]>>(
+      `${this.base}/variants/${variantId}/movements`,
+      { params },
+    );
+  }
+
+  /**
+   * FE-13: change a variant's stock by hand.
+   *
+   * `delta` is the CHANGE, not the new count, and `reason` is required by the
+   * server — a blank one is a 400 whose message the caller shows as it is.
+   */
+  adjustVariantStock(
+    variantId: number,
+    delta: number,
+    reason: string,
+  ): Observable<ApiResponse<StockMovement>> {
+    return this.http.post<ApiResponse<StockMovement>>(
+      `${this.base}/variants/${variantId}/stock-adjustment`,
+      { delta, reason },
+    );
   }
 
   /** DELETE /media/{mediaId} — remove a product media record. */
