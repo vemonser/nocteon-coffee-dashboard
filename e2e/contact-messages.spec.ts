@@ -87,4 +87,42 @@ test('opening a message shows the dialog with the reply box', async () => {
   await expect(dialog).toBeVisible();
   await expect(dialog.locator('textarea')).toBeVisible();
 });
+
+test('the saved helper is not shown before any reply action', async () => {
+  await page.keyboard.press('Escape');
+  await page.getByTestId('message-row').first().click();
+  const dialog = page.getByRole('dialog');
+  await expect(dialog).toBeVisible();
+  await expect(dialog.getByText('The reply was saved.')).not.toBeVisible();
+  await page.screenshot({ path: 'evidence/verify-01/before-save-1440.png' });
+});
+
+test('saving a draft shows the saved helper only after the save', async () => {
+  await page.getByTestId('message-row').first().click();
+  const dialog = page.getByRole('dialog');
+  await expect(dialog).toBeVisible();
+  const textarea = dialog.locator('textarea');
+  await textarea.fill('Thanks for reaching out — we will look into this.');
+  await expect(dialog.getByText('The reply was saved.')).not.toBeVisible();
+  await dialog.getByRole('button', { name: /save draft/i }).click();
+  await expect(dialog.getByText('The reply was saved.')).toBeVisible();
+  await page.screenshot({ path: 'evidence/verify-01/after-save-1440.png' });
+});
+
+test('a failed send shows the error state', async () => {
+  await page.keyboard.press('Escape');
+  await expect(page.getByTestId('contact-messages-count')).toBeVisible();
+  await page.getByTestId('message-row').first().click();
+  const dialog = page.getByRole('dialog');
+  await expect(dialog).toBeVisible();
+  const textarea = dialog.locator('textarea');
+  await textarea.fill('Retry me');
+  await page.route('**/api/dashboard/contact-messages/*/reply', (route) =>
+    route.fulfill({ status: 500, body: JSON.stringify({ success: false }) }),
+  );
+  await dialog.getByRole('button', { name: /send reply/i }).click();
+  await expect(dialog.getByText(/could not send/i)).toBeVisible();
+  await page.screenshot({ path: 'evidence/verify-01/error-state-1440.png' });
+  await page.unroute('**/api/dashboard/contact-messages/*/reply');
+});
 });

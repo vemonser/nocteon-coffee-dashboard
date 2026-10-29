@@ -114,8 +114,10 @@ export class ContactMessagesListComponent {
   readonly selected = signal<ContactResponse | null>(null);
   readonly replyText = signal('');
   readonly replying = signal(false);
+  readonly savingDraft = signal(false);
   readonly replyError = signal<string | null>(null);
   readonly replyFeedback = signal<string | null>(null);
+  readonly draftSaved = signal(false);
   readonly deleting = signal<ContactResponse | null>(null);
   readonly deletingBusy = signal(false);
   readonly selectedIds = signal<Set<number>>(new Set());
@@ -281,6 +283,7 @@ export class ContactMessagesListComponent {
     this.replyText.set('');
     this.replyError.set(null);
     this.replyFeedback.set(null);
+    this.draftSaved.set(false);
     if (!item.read) {
       this.service.markAsRead(item.id).subscribe({
         next: (res) => {
@@ -299,6 +302,7 @@ export class ContactMessagesListComponent {
     this.replyText.set('');
     this.replyError.set(null);
     this.replyFeedback.set(null);
+    this.draftSaved.set(false);
   }
 
   protected sendReply(): void {
@@ -315,6 +319,7 @@ export class ContactMessagesListComponent {
           this.selected.set(res.data);
           this.items.update((list) => list.map((m) => (m.id === item.id ? res.data! : m)));
           this.replyText.set('');
+          this.draftSaved.set(false);
           if (res.data.emailStatus === 'SENT') {
             this.replyFeedback.set(`Reply sent to ${item.email}`);
             this.notify.success('contactMessages.replySent', `Reply sent to ${item.email}`);
@@ -333,6 +338,26 @@ export class ContactMessagesListComponent {
         this.notify.apiError(err, 'notify.errorFallback', 'Could not send the reply');
       },
     });
+  }
+
+  protected saveDraft(): void {
+    const item = this.selected();
+    const text = this.replyText().trim();
+    if (!item || !text) return;
+
+    this.savingDraft.set(true);
+    this.replyError.set(null);
+    try {
+      localStorage.setItem(`nocteon-contact-draft:${item.id}`, text);
+      this.savingDraft.set(false);
+      this.draftSaved.set(true);
+      this.replyFeedback.set(null);
+      this.notify.success('contactMessages.replySaved', 'The reply was saved.');
+    } catch {
+      this.savingDraft.set(false);
+      this.replyError.set('Could not save the reply');
+      this.notify.apiError(null, 'notify.errorFallback', 'Could not save the reply');
+    }
   }
 
   protected archive(item: ContactResponse): void {

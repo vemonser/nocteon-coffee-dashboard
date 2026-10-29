@@ -349,21 +349,23 @@
 
       @if (message.replyContent) {
         <div class="rounded-[var(--radius-control)] border bg-muted/40 p-4">
-          <p class="mb-1 text-xs font-medium text-muted-foreground">
-            {{ 'contactMessages.yourReply' | transloco }}
-            @if (message.repliedAt) {
-              <span class="text-normal font-normal"> · {{ absoluteTime(message.repliedAt) }}</span>
-            }
-            @if (message.repliedBy) {
-              <span class="text-normal font-normal"> · {{ message.repliedBy }}</span>
-            }
+          <p class="mb-2 text-xs font-medium text-muted-foreground">
+            {{ 'contactMessages.replyThread' | transloco }}
           </p>
-          <p class="whitespace-pre-wrap text-sm"><bdi>{{ message.replyContent }}</bdi></p>
-          @if (message.emailStatus !== 'SENT') {
-            <button hlmBtn variant="ghost" size="sm" class="mt-2" (click)="resend(message)">
-              {{ 'contactMessages.sendAgain' | transloco }}
-            </button>
-          }
+          <div class="border-s-2 border-border ps-3">
+            <p class="text-xs font-medium text-muted-foreground">
+              {{ message.repliedBy ?? ('contactMessages.yourReply' | transloco) }}
+              @if (message.repliedAt) {
+                <span class="font-normal"> · {{ absoluteTime(message.repliedAt) }}</span>
+              }
+            </p>
+            <p class="mt-1 whitespace-pre-wrap text-sm"><bdi>{{ message.replyContent }}</bdi></p>
+            @if (message.emailStatus !== 'SENT') {
+              <button hlmBtn variant="ghost" size="sm" class="mt-2" (click)="resend(message)">
+                {{ 'contactMessages.sendAgain' | transloco }}
+              </button>
+            }
+          </div>
         </div>
       } @else {
         <div class="rounded-[var(--radius-control)] border bg-muted/40 p-4">
@@ -380,13 +382,15 @@
           class="w-full resize-none"
           [placeholder]="'contactMessages.replyPlaceholder' | transloco: { email: message.email }"
           [ngModel]="replyText()"
-          (ngModelChange)="replyText.set($event)"
+          (ngModelChange)="replyText.set($event); draftSaved.set(false)"
           (keydown.control.enter)="sendReply()"
           (keydown.meta.enter)="sendReply()"
         ></textarea>
         <div class="flex items-center justify-between">
           <p class="text-xs text-muted-foreground">
-            @if (replyFeedback()) {
+            @if (draftSaved()) {
+              {{ 'contactMessages.replySaved' | transloco }}
+            } @else if (replyFeedback()) {
               {{ replyFeedback() }}
             }
           </p>
@@ -423,6 +427,9 @@
       <button hlmBtn variant="outline" size="sm" (click)="archive(selected()!)" [disabled]="selected()?.status === 'ARCHIVED'">
         <ng-icon name="lucideArchive" class="mr-1 size-3.5" />
         {{ 'contactMessages.archive' | transloco }}
+      </button>
+      <button hlmBtn variant="outline" size="sm" (click)="saveDraft()" [disabled]="savingDraft() || replying() || !replyText().trim()">
+        {{ savingDraft() ? ('contactMessages.saving' | transloco) : ('contactMessages.saveDraft' | transloco) }}
       </button>
       <button hlmBtn variant="default" size="sm" (click)="sendReply()" [disabled]="replying() || !replyText().trim()">
         <ng-icon name="lucideSend" class="mr-1 size-3.5" />
