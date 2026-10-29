@@ -32,6 +32,8 @@ import {
   lucideClipboard,
   lucideLink,
   lucideEye,
+  lucideUndo2,
+  lucidePlus,
 } from '@ng-icons/lucide';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
@@ -46,9 +48,11 @@ import { ProductService } from '../../products/services/product.service';
 import type { ProductDetail } from '../../products/models/product.models';
 import { OrderResponse, OrderStatus, PaymentStatus, PaymentMethod } from '../models/order.model';
 import {
+  CreateReturnPayload,
   OrderNote,
   OrderPaymentDetails,
   OrderRefund,
+  OrderReturn,
   OrderShipment,
   OrderStatusHistoryEntry,
 } from '../models/order-activity.model';
@@ -66,9 +70,12 @@ import {
 import { LocalizedNameService } from '../../../core/i18n/localized-name.service';
 import { LocalizedDateService } from '../../../core/i18n/localized-date.service';
 import { LanguageService } from '../../../core/i18n/language.service';
+import { countMessage } from '../../../core/i18n/plural';
 import { NotifyService } from '../../../core/notify/notify.service';
 import { PermissionService } from '../../../core/auth/permission.service';
 import { BreadcrumbService } from '../../../shared/components/breadcrumb/service/breadcrumb.service';
+import { EmptyStateComponent } from '../../../shared/components/empty-state/empty-state.component';
+import { ErrorStateComponent } from '../../../shared/components/error-state/error-state.component';
 import { StatusBadgeComponent } from '../../../shared/ui/status-badge/status-badge.component';
 import { MoneyPipe } from '../../../shared/pipes/money.pipe';
 import { PluralPipe } from '../../../shared/pipes/plural.pipe';
@@ -76,6 +83,8 @@ import { OrderStatusDialogComponent } from '../components/order-status-dialog/or
 import { OrderCancelDialogComponent } from '../components/order-cancel-dialog/order-cancel-dialog.component';
 import { OrderRefundDialogComponent } from '../components/order-refund-dialog/order-refund-dialog.component';
 import { OrderProgressComponent, type OrderStepRecord } from '../components/order-progress/order-progress.component';
+import { OrderReturnDialogComponent } from '../components/order-return-dialog/order-return-dialog.component';
+import { OrderReturnDecisionDialogComponent } from '../components/order-return-decision-dialog/order-return-decision-dialog.component';
 import {
   OrderShipmentDialogComponent,
   type ShipmentDraft,
@@ -118,11 +127,15 @@ interface OrderEventView extends OrderEvent {
     OrderCancelDialogComponent,
     OrderProgressComponent,
     OrderRefundDialogComponent,
+    OrderReturnDecisionDialogComponent,
+    OrderReturnDialogComponent,
     OrderShipmentDialogComponent,
     OrderStatusDialogComponent,
     PluralPipe,
     RouterModule,
     StatusBadgeComponent,
+    EmptyStateComponent,
+    ErrorStateComponent,
     TranslocoPipe,
   ],
   providers: [
@@ -154,6 +167,8 @@ interface OrderEventView extends OrderEvent {
       lucideClipboard,
       lucideLink,
       lucideEye,
+      lucideUndo2,
+      lucidePlus,
     }),
   ],
   templateUrl: './order-detail.component.html',
@@ -187,6 +202,12 @@ export class OrderDetailComponent {
   protected readonly payment = signal<OrderPaymentDetails | null>(null);
   /** The shipment, as the store recorded it. */
   protected readonly shipment = signal<OrderShipment | null>(null);
+  /** The returns of this order, newest first. */
+  protected readonly returns = signal<OrderReturn[]>([]);
+  /** The returns are loading / failed — their own little surface. */
+  protected readonly returnsLoading = signal(false);
+  protected readonly returnsError = signal<string | null>(null);
+  protected readonly returnsLoaded = signal(false);
   /** What could not be loaded. */
   protected readonly activityErrors = signal<string[]>([]);
   protected readonly activityLoaded = signal(false);
@@ -202,6 +223,13 @@ export class OrderDetailComponent {
   protected readonly cancelDialogOpen = signal(false);
   protected readonly refundDialogOpen = signal(false);
   protected readonly shipmentDialogOpen = signal(false);
+  protected readonly returnDialogOpen = signal(false);
+  protected readonly decisionDialogOpen = signal(false);
+  /** The return the decision dialog is about. */
+  protected readonly decisionTarget = signal<OrderReturn | null>(null);
+  protected readonly decisionMode = signal<'approve' | 'reject'>('approve');
+  protected readonly savingReturn = signal(false);
+  protected readonly decidingReturn = signal(false);
 
   /** The note being written. */
   protected readonly noteDraft = signal('');
@@ -265,6 +293,10 @@ export class OrderDetailComponent {
   protected readonly stepRecords = computed<Partial<Record<OrderStatus, OrderStepRecord>>>(() => {
     const records: Partial<Record<OrderStatus, OrderStepRecord>> = {};
     for (const entry of this.history()) {
+      // A row that is an EVENT (a return) carries the order's status at the
+      // time, not a step the order reached — it must not overwrite the step's
+      // real date and actor.
+      if (entry.eventType) continue;
       records[entry.toStatus as OrderStatus] = {
         at: entry.createdAt,
         actor: entry.changedBy,
@@ -407,6 +439,93 @@ export class OrderDetailComponent {
     return (status === 'SHIPPED' || status === 'DELIVERED') && !this.hasShipment();
   });
 
+  // ── returns / RMA (FE-20) ────────────────────────────────────────────────
+
+  /**
+   * Can this order carry a return?
+   *
+   * <p>A cancelled order was never delivered, so there is nothing to send
+   * back — the backend refuses it with the same rule. An order with no lines
+   * has nothing to return either.
+   */
+  protected readonly canHaveReturns = computed(() => {
+    const order = this.order();
+    return !!order && order.status !== 'CANCELLED' && (order.items?.length ?? 0) > 0;
+  });
+
+  /**
+   * Units already returned (or being returned) per order line.
+   *
+   * <p>This is the form's cap: a rejected return brought nothing back, so its
+   * units are still returnable. The server enforces the same sum.
+   */
+  protected readonly returnedByItem = computed<ReadonlyMap<number, number>>(() => {
+    const map = new Map<number, number>();
+    for (const ret of this.returns()) {
+      if (ret.status === 'REJECTED') continue;
+      for (const line of ret.items) {
+        map.set(line.orderItemId, (map.get(line.orderItemId) ?? 0) + line.quantity);
+      }
+    }
+    return map;
+  });
+
+  /** The order's lines, with what is still returnable — the dialog's rows. */
+  protected readonly returnableLines = computed(() => {
+    const order = this.order();
+    if (!order) return [];
+    return order.items.map((item) => {
+      const returned = this.returnedByItem().get(item.id) ?? 0;
+      return {
+        id: item.id,
+        productName: item.productName,
+        sku: item.sku,
+        ordered: item.quantity,
+        returned,
+        available: Math.max(0, item.quantity - returned),
+      };
+    });
+  });
+
+  /** Is anything still returnable? Otherwise there is no "Create return" to offer. */
+  protected readonly hasReturnableLines = computed(() =>
+    this.returnableLines().some((line) => line.available > 0),
+  );
+
+  /** Only a REQUESTED return can be decided, and only with `order:update`. */
+  protected readonly canDecideReturns = computed(() => this.permissions.has('order:update'));
+
+  protected canDecide(ret: OrderReturn): boolean {
+    return ret.status === 'REQUESTED' && this.canDecideReturns() && !this.decidingReturn();
+  }
+
+  /** The stock the catalog currently reports for a returned line's variant. */
+  protected stockOf(variantId: number | null): number | null {
+    if (variantId === null) return null;
+    return this.variants().get(variantId)?.stockQuantity ?? null;
+  }
+
+  /**
+   * "9 units in stock" / "9 وحدات في المخزون" — the catalog's figure, worded
+   * in the reader's grammar. Null when the catalog has not resolved it.
+   */
+  protected stockLabel(variantId: number | null): string | null {
+    const stock = this.stockOf(variantId);
+    if (stock === null) return null;
+    return countMessage(
+      (key, params) => this.transloco.translate(key, params),
+      this.language.language(),
+      'orders.returns.inStock',
+      stock,
+    );
+  }
+  /** The badge kind for a return status — one vocabulary for the whole app. */
+  protected returnKind(status: string): 'pending' | 'approved' | 'rejected' {
+    if (status === 'APPROVED') return 'approved';
+    if (status === 'REJECTED') return 'rejected';
+    return 'pending';
+  }
+
   /** The allowed next statuses for the dropdown. */
   protected readonly allowedNextStatuses = computed(() => {
     const order = this.order();
@@ -456,6 +575,7 @@ export class OrderDetailComponent {
       }
       this.loadOrder(this.currentId);
       this.loadActivity(this.currentId);
+      this.loadReturns(this.currentId);
       this.applyQueryIntent();
     });
 
@@ -500,6 +620,13 @@ export class OrderDetailComponent {
     this.notes.set([]);
     this.payment.set(null);
     this.shipment.set(null);
+    this.returns.set([]);
+    this.returnsLoading.set(false);
+    this.returnsError.set(null);
+    this.returnsLoaded.set(false);
+    this.decisionTarget.set(null);
+    this.decisionDialogOpen.set(false);
+    this.returnDialogOpen.set(false);
     this.activityErrors.set([]);
     this.activityLoaded.set(false);
     this.variants.set(new Map());
@@ -624,6 +751,36 @@ export class OrderDetailComponent {
   }
 
   /**
+   * The returns of this order, newest first.
+   *
+   * <p>Its own surface: a failing returns read must not blank the order, the
+   * timeline or the notes, so it has its own loading / error / retry state.
+   */
+  private loadReturns(id: number): void {
+    this.returnsLoading.set(true);
+    this.returnsError.set(null);
+    this.orderService
+      .getReturns(id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res) => {
+          if (this.currentId !== id) return;
+          this.returns.set(res.data ?? []);
+          this.returnsLoading.set(false);
+          this.returnsLoaded.set(true);
+        },
+        error: (err: unknown) => {
+          if (this.currentId !== id) return;
+          this.returnsLoading.set(false);
+          this.returnsLoaded.set(true);
+          this.returnsError.set(
+            this.apiMessage(err) ?? this.t('orders.returns.loadError', 'The returns could not be loaded'),
+          );
+        },
+      });
+  }
+
+  /**
    * Resolve the weight/grind/compare-at of every line from the catalog.
    *
    * <p>The order line carries `variantId` only; the product detail carries
@@ -665,6 +822,7 @@ export class OrderDetailComponent {
                 name: option.optionName,
                 value: option.value,
               })),
+              stockQuantity: variant.stockQuantity ?? null,
             });
           }
         }
@@ -983,6 +1141,111 @@ export class OrderDetailComponent {
       });
   }
 
+  // ── returns (FE-20) ──────────────────────────────────────────────────────
+
+  protected openReturnDialog(): void {
+    if (!this.canHaveReturns() || !this.hasReturnableLines()) return;
+    this.returnDialogOpen.set(true);
+  }
+
+  protected closeReturnDialog(): void {
+    this.returnDialogOpen.set(false);
+  }
+
+  /**
+   * Record a return.
+   *
+   * <p>Recording does not move stock: the returns list, the timeline and the
+   * stock figure are refreshed from the server rather than patched locally.
+   */
+  protected createReturn(payload: CreateReturnPayload): void {
+    const order = this.order();
+    if (!order || this.savingReturn()) return;
+    this.savingReturn.set(true);
+    this.orderService.createReturn(order.id, payload).subscribe({
+      next: () => {
+        this.savingReturn.set(false);
+        this.returnDialogOpen.set(false);
+        this.refreshAfterReturnChange(order.id);
+        this.notify.success('orders.returns.created', 'Return recorded');
+      },
+      error: (err: unknown) => {
+        this.savingReturn.set(false);
+        this.notify.apiError(err, 'orders.returns.createFailed', 'The return could not be recorded');
+      },
+    });
+  }
+
+  /** Open the confirm for a decision, stating what it will do. */
+  protected askDecision(ret: OrderReturn, mode: 'approve' | 'reject'): void {
+    if (!this.canDecide(ret)) return;
+    this.decisionTarget.set(ret);
+    this.decisionMode.set(mode);
+    this.decisionDialogOpen.set(true);
+  }
+
+  protected closeDecisionDialog(): void {
+    this.decisionDialogOpen.set(false);
+    this.decisionTarget.set(null);
+  }
+
+  /**
+   * Approve or reject.
+   *
+   * <p>Approving restocks the units through the backend's stock log; the page
+   * then re-reads the returns, the timeline and the catalog stock, so what is
+   * on screen is what the server did — never a locally assumed number.
+   */
+  protected applyDecision(): void {
+    const order = this.order();
+    const target = this.decisionTarget();
+    if (!order || !target || this.decidingReturn()) return;
+
+    const mode = this.decisionMode();
+    this.decidingReturn.set(true);
+    this.orderService.decideReturn(order.id, target.id, mode).subscribe({
+      next: () => {
+        this.decidingReturn.set(false);
+        this.decisionDialogOpen.set(false);
+        this.decisionTarget.set(null);
+        this.refreshAfterReturnChange(order.id);
+        this.notify.success(
+          mode === 'approve' ? 'orders.returns.approved' : 'orders.returns.rejected',
+          mode === 'approve' ? 'Return approved and restocked' : 'Return rejected',
+        );
+      },
+      error: (err: unknown) => {
+        this.decidingReturn.set(false);
+        this.notify.apiError(err, 'orders.returns.decisionFailed', 'The decision could not be saved');
+      },
+    });
+  }
+
+  /**
+   * What a return decision changed: the returns, the timeline and the stock.
+   *
+   * <p>The stock read is the catalog's variant figure (`getBySlug`), which the
+   * page already holds — re-reading it is what makes "in stock" on the return
+   * line the number the approval produced.
+   */
+  private refreshAfterReturnChange(orderId: number): void {
+    this.loadReturns(orderId);
+    this.loadActivity(orderId);
+    const order = this.order();
+    if (order) this.loadVariants(order);
+  }
+
+  /** The backend's own sentence from an error body, when it has one. */
+  private apiMessage(err: unknown): string | null {
+    const message = (err as { error?: { message?: unknown } })?.error?.message;
+    return typeof message === 'string' && message.trim().length > 0 ? message : null;
+  }
+
+  /** Retry the returns read — the error state's one action. */
+  protected retryReturns(): void {
+    if (this.currentId > 0) this.loadReturns(this.currentId);
+  }
+
   // ── the clipboard ────────────────────────────────────────────────────────
 
   /** The address as one block, for the clipboard. */
@@ -1144,6 +1407,8 @@ export class OrderDetailComponent {
         return 'lucideTruck';
       case 'refund':
         return 'lucideRotateCcw';
+      case 'return':
+        return 'lucideUndo2';
       case 'note':
         return 'lucideStickyNote';
       case 'email':
@@ -1171,12 +1436,35 @@ export class OrderDetailComponent {
           : this.t('orders.timeline.shipmentShipped', 'Shipment handed to the carrier');
       case 'refund':
         return this.t('orders.timeline.refund', 'Refund issued');
+      case 'return':
+        return this.returnEventTitle(event.returnEvent);
       case 'note':
         return this.t('orders.timeline.note', 'Note added');
       case 'email':
         return this.t('orders.timeline.email', 'Email sent');
       default:
         return this.t('orders.timeline.event', 'Activity');
+    }
+  }
+
+  /**
+   * The title of a RETURN event on the timeline.
+   *
+   * <p>`returnEvent` is the backend's own event name (`RETURN_REQUESTED` …),
+   * so the row says what happened without the page re-deriving it from the
+   * return's status — a return can be rejected after being requested, and the
+   * timeline keeps BOTH rows.
+   */
+  private returnEventTitle(event: string | undefined): string {
+    switch (event) {
+      case 'RETURN_APPROVED':
+        return this.t('orders.timeline.returnApproved', 'Return approved — units restocked');
+      case 'RETURN_REJECTED':
+        return this.t('orders.timeline.returnRejected', 'Return rejected');
+      case 'RETURN_REQUESTED':
+        return this.t('orders.timeline.returnRequested', 'Return requested');
+      default:
+        return this.t('orders.timeline.returnEvent', 'Return updated');
     }
   }
 

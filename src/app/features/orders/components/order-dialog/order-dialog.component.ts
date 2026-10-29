@@ -45,6 +45,15 @@ export class OrderDialogComponent {
   readonly pending = input<boolean>(false);
   /** A destructive action: the confirm button is destructive. */
   readonly danger = input<boolean>(false);
+  /**
+   * Put the confirm button FIRST instead of last.
+   *
+   * <p>For a dialog whose only action is destructive (rejecting a return):
+   * the footer reads "destructive, then secondary" instead of "secondary, then
+   * destructive". A dialog that also has a primary keeps the default order
+   * (destructive → secondary → primary).
+   */
+  readonly destructiveFirst = input<boolean>(false);
   /** The test id of the panel, so the evidence harness can find it. */
   readonly testId = input<string>('order-dialog');
 

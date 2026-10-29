@@ -463,7 +463,8 @@
         "reasons": {
           "ORDER": "بيع ضمن طلب",
           "MANUAL_ADJUSTMENT": "تعديل يدوي",
-          "PRODUCT_EDIT": "تغيّر من نموذج المنتج"
+          "PRODUCT_EDIT": "تغيّر من نموذج المنتج",
+          "RETURN": "مرتجع وأُعيد للمخزون"
         }
       },
       "weight": "الوزن (جرام)",
@@ -2135,11 +2136,74 @@
       "statusChangedFrom": "{{from}} → {{to}}",
       "shipmentShipped": "تم تسليم الشحنة لشركة الشحن",
       "shipmentDelivered": "تم توصيل الشحنة",
-      "event": "نشاط"
+      "event": "نشاط",
+      "returnRequested": "تم طلب إرجاع",
+      "returnApproved": "تم اعتماد الإرجاع — أُعيدت الوحدات للمخزون",
+      "returnRejected": "تم رفض الإرجاع",
+      "returnEvent": "تم تحديث الإرجاع"
     },
     "orderScope": {
       "all": "كل الطلبات",
       "allHelp": "كل طلبات المتجر، أيًّا كانت حالة الطلب وحالة الدفع — وتشمل الطلبات الملغاة والمعلّقة والمستردة."
+    },
+    "returns": {
+      "title": "الإرجاع",
+      "create": "تسجيل إرجاع",
+      "empty": "لا يوجد إرجاع مسجَّل",
+      "emptyHint": "عندما يعيد العميل منتجات، سجّلها هنا ثم اعتمدها لإعادة الوحدات إلى المخزون.",
+      "errorTitle": "تعذّر تحميل الإرجاع",
+      "errorHint": "فشل الطلب. أعد المحاولة.",
+      "loadError": "تعذّر تحميل الإرجاع",
+      "requestedOn": "تاريخ الطلب",
+      "approvedOn": "تاريخ الاعتماد",
+      "rejectedOn": "تاريخ الرفض",
+      "linkedToRefund": "مرتبط باسترداد",
+      "inStock_zero": "لا وحدات في المخزون",
+      "inStock_one": "وحدة واحدة في المخزون",
+      "inStock_two": "وحدتان في المخزون",
+      "inStock_few": "{{count}} وحدات في المخزون",
+      "inStock_many": "{{count}} وحدة في المخزون",
+      "inStock_other": "{{count}} وحدة في المخزون",
+      "created": "تم تسجيل الإرجاع",
+      "createFailed": "تعذّر تسجيل الإرجاع",
+      "approved": "تم اعتماد الإرجاع وإعادة الوحدات للمخزون",
+      "rejected": "تم رفض الإرجاع",
+      "decisionFailed": "تعذّر حفظ القرار",
+      "dialog": {
+        "title": "تسجيل إرجاع",
+        "description": "سجّل ما عاد من العميل. المخزون لا يتغيّر إلا عند اعتماد الإرجاع.",
+        "confirm": "تسجيل إرجاع",
+        "reason": "لماذا عاد؟",
+        "reasonPlaceholder": "تلف عند الوصول، درجة طحن خاطئة، …",
+        "reasonRequired": "يجب ذكر سبب للإرجاع.",
+        "lines": "البنود العائدة",
+        "lineRequired": "اختر بنداً واحداً على الأقل وأدخل الكمية.",
+        "ordered": "المطلوب",
+        "alreadyReturned": "المُرتجَع سابقاً",
+        "noneLeft": "لا يوجد متبقٍ للإرجاع",
+        "quantity": "الكمية",
+        "note": "ملاحظة (اختياري)",
+        "overLimit": "أكثر من الوحدات المتبقية في هذا البند.",
+        "refund": "الاسترداد (اختياري)",
+        "noRefund": "بدون استرداد",
+        "refundHint": "اربط استرداداً سجّله المتجر لهذا الطلب. الإرجاع لا ينشئ استرداداً."
+      },
+      "decision": {
+        "approveTitle": "اعتماد هذا الإرجاع",
+        "rejectTitle": "رفض هذا الإرجاع",
+        "approveDescription": "تعود الوحدات إلى المخزون، ويسجّل سجل المخزون التغيير.",
+        "rejectDescription": "لن تعود أي وحدة إلى المخزون. القرار نهائي.",
+        "approve": "اعتماد الإرجاع",
+        "reject": "رفض الإرجاع",
+        "approveHint": "يسجّل سجل المخزون التغيير بسبب هذا الإرجاع.",
+        "rejectHint": "يبقى الإرجاع في السجل، ولا تُعاد الوحدات إلى المخزون.",
+        "unitsOf_zero": "لا وحدات من {{product}}",
+        "unitsOf_one": "وحدة واحدة من {{product}}",
+        "unitsOf_two": "وحدتان من {{product}}",
+        "unitsOf_few": "{{count}} وحدات من {{product}}",
+        "unitsOf_many": "{{count}} وحدة من {{product}}",
+        "unitsOf_other": "{{count}} وحدة من {{product}}"
+      }
     }
   },
   "notifications": {

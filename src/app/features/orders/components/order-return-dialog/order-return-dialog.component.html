@@ -1,0 +1,161 @@
+<app-order-dialog
+  [open]="open()"
+  [title]="title()"
+  [description]="description()"
+  [confirmLabel]="confirmLabel()"
+  [cancelLabel]="cancelLabel()"
+  [confirmDisabled]="!canConfirm()"
+  [cancelDisabled]="pending()"
+  [pending]="pending()"
+  testId="return-dialog"
+  (confirmed)="submit()"
+  (closed)="closed.emit()"
+>
+  <div class="mt-4 space-y-4">
+    <!-- The lines: which came back, how many -->
+    <fieldset class="space-y-2">
+      <legend class="text-sm font-medium">{{ linesLabel() }}</legend>
+
+      <ul class="flex flex-col divide-y divide-border rounded-md border border-border">
+        @for (line of lines(); track line.id) {
+          <li class="flex flex-col gap-2 px-3 py-2.5" [attr.data-testid]="'return-line-' + line.id">
+            <div class="flex items-start gap-3">
+              <hlm-checkbox
+                [checked]="isSelected(line)"
+                [disabled]="available(line) === 0"
+                [aria-label]="(line.productName ?? line.sku) + ' — ' + (quantityLabel())"
+                (checkedChange)="toggle(line, $event)"
+              />
+              <div class="min-w-0 flex-1">
+                <p class="truncate text-sm font-medium" dir="auto">
+                  <bdi>{{ line.productName ?? line.sku }}</bdi>
+                </p>
+                <p class="text-xs text-muted-foreground tabular-nums">
+                  <span dir="ltr">{{ line.sku }}</span>
+                  <span aria-hidden="true"> · </span>
+                  {{ orderedLabel() }} {{ line.ordered }}
+                  <span aria-hidden="true"> · </span>
+                  {{ returnedLabel() }} {{ line.returned }}
+                </p>
+              </div>
+
+              @if (available(line) === 0) {
+                <p class="text-xs text-muted-foreground" data-testid="return-line-exhausted">
+                  {{ 'orders.returns.dialog.noneLeft' | transloco }}
+                </p>
+              } @else {
+                <div class="w-20 shrink-0 space-y-1">
+                  <label class="sr-only" [attr.for]="'return-qty-' + line.id">
+                    {{ quantityLabel() }}
+                  </label>
+                  <input
+                    [id]="'return-qty-' + line.id"
+                    hlmInput
+                    type="number"
+                    inputmode="numeric"
+                    min="1"
+                    [max]="available(line)"
+                    step="1"
+                    dir="ltr"
+                    class="text-end tabular-nums"
+                    [disabled]="!isSelected(line)"
+                    [attr.data-testid]="'return-qty-' + line.id"
+                    [ngModel]="quantities()[line.id] ?? ''"
+                    (ngModelChange)="setQuantity(line, $event)"
+                    (blur)="markTouched(line)"
+                  />
+                </div>
+              }
+            </div>
+
+            @if (isSelected(line) && available(line) > 0) {
+              <div class="ms-7 space-y-1">
+                <label class="sr-only" [attr.for]="'return-note-' + line.id">
+                  {{ noteLabel() }}
+                </label>
+                <input
+                  [id]="'return-note-' + line.id"
+                  hlmInput
+                  type="text"
+                  dir="auto"
+                  [placeholder]="noteLabel()"
+                  [attr.data-testid]="'return-note-' + line.id"
+                  [ngModel]="notes()[line.id] ?? ''"
+                  (ngModelChange)="setNote(line, $event)"
+                />
+              </div>
+            }
+
+            @if (showQuantityError(line)) {
+              <p class="ms-7 text-xs text-destructive" role="alert" data-testid="return-qty-error">
+                {{ overLimit() }}
+              </p>
+            }
+          </li>
+        }
+      </ul>
+
+      @if (submitted() && chosen().length === 0) {
+        <p class="text-xs text-destructive" role="alert" data-testid="return-lines-error">
+          {{ lineRequired() }}
+        </p>
+      }
+    </fieldset>
+
+    <!-- Why -->
+    <div class="space-y-1.5">
+      <label for="return-reason" class="text-sm font-medium">{{ reasonLabel() }}</label>
+      <input
+        id="return-reason"
+        hlmInput
+        type="text"
+        dir="auto"
+        required
+        data-testid="return-reason"
+        [placeholder]="reasonPlaceholder()"
+        [ngModel]="reason()"
+        (ngModelChange)="reason.set($event)"
+        (blur)="submitted.set(true)"
+      />
+      @if (submitted() && reason().trim().length === 0) {
+        <p class="text-xs text-destructive" role="alert" data-testid="return-reason-error">
+          {{ reasonRequired() }}
+        </p>
+      }
+    </div>
+
+    <!-- The refund link, when the store recorded one for this order -->
+    @if (refunds().length > 0) {
+      <div class="space-y-1.5 border-t border-border pt-3">
+        <p class="text-sm font-medium" id="return-refund-label">{{ refundLabel() }}</p>
+        <div class="flex flex-wrap gap-2" role="group" aria-labelledby="return-refund-label">
+          <button
+            hlmBtn
+            type="button"
+            size="sm"
+            [variant]="refundId() === null ? 'default' : 'outline'"
+            [attr.aria-pressed]="refundId() === null"
+            data-testid="return-refund-none"
+            (click)="pickRefund(null)"
+          >
+            {{ refundNone() }}
+          </button>
+          @for (refund of refunds(); track refund.id) {
+            <button
+              hlmBtn
+              type="button"
+              size="sm"
+              [variant]="refundId() === refund.id ? 'default' : 'outline'"
+              [attr.aria-pressed]="refundId() === refund.id"
+              [attr.data-testid]="'return-refund-' + refund.id"
+              (click)="pickRefund(refund.id)"
+            >
+              {{ refund.amount | money }}
+            </button>
+          }
+        </div>
+        <p class="text-xs text-muted-foreground">{{ refundHint() }}</p>
+      </div>
+    }
+  </div>
+</app-order-dialog>

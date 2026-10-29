@@ -13,10 +13,12 @@ import {
 } from '../models/order.model';
 import { invoiceFilenameFrom } from '../utils/invoice-filename';
 import {
+  CreateReturnPayload,
   OrderConfirmationResend,
   OrderNote,
   OrderPaymentDetails,
   OrderRefund,
+  OrderReturn,
   OrderShipment,
   OrderStats,
   OrderStatusHistoryEntry,
@@ -197,6 +199,42 @@ export class OrderService {
    */
   refund(id: number, amount: number, reason: string): Observable<ApiResponse<OrderRefund>> {
     return this.http.post<ApiResponse<OrderRefund>>(`${this.base}/${id}/refund`, { amount, reason });
+  }
+
+  /**
+   * The returns of an order, newest first.
+   *
+   * A return is part of the order, not a module of its own: it is read with
+   * the same `order:read` the rest of the page uses.
+   */
+  getReturns(id: number): Observable<ApiResponse<OrderReturn[]>> {
+    return this.http.get<ApiResponse<OrderReturn[]>>(`${this.base}/${id}/returns`);
+  }
+
+  /**
+   * Record a return: which lines came back, how many, and why.
+   *
+   * Recording does NOT move stock — approving does.
+   */
+  createReturn(id: number, payload: CreateReturnPayload): Observable<ApiResponse<OrderReturn>> {
+    return this.http.post<ApiResponse<OrderReturn>>(`${this.base}/${id}/returns`, payload);
+  }
+
+  /**
+   * Decide a return.
+   *
+   * `approve` restocks the returned units through the stock log; `reject`
+   * moves nothing. Both are idempotent on the server, so a retry is safe.
+   */
+  decideReturn(
+    id: number,
+    returnId: number,
+    decision: 'approve' | 'reject',
+  ): Observable<ApiResponse<OrderReturn>> {
+    return this.http.post<ApiResponse<OrderReturn>>(
+      `${this.base}/${id}/returns/${returnId}/${decision}`,
+      {},
+    );
   }
 
   /**

@@ -24,25 +24,47 @@
       <ng-content></ng-content>
 
       <div class="mt-6 flex justify-end gap-3">
-        <button
-          hlmBtn
-          variant="outline"
-          type="button"
-          [disabled]="cancelDisabled()"
-          (click)="closed.emit()"
-        >
-          {{ cancelLabel() }}
-        </button>
-        <button
-          hlmBtn
-          [variant]="danger() ? 'destructive' : 'default'"
-          type="button"
-          [disabled]="confirmDisabled() || pending()"
-          [attr.data-testid]="testId() + '-confirm'"
-          (click)="confirmed.emit()"
-        >
-          {{ confirmLabel() }}
-        </button>
+        @if (destructiveFirst()) {
+          <button
+            hlmBtn
+            [variant]="danger() ? 'destructive' : 'default'"
+            type="button"
+            [disabled]="confirmDisabled() || pending()"
+            [attr.data-testid]="testId() + '-confirm'"
+            (click)="confirmed.emit()"
+          >
+            {{ confirmLabel() }}
+          </button>
+          <button
+            hlmBtn
+            variant="outline"
+            type="button"
+            [disabled]="cancelDisabled()"
+            (click)="closed.emit()"
+          >
+            {{ cancelLabel() }}
+          </button>
+        } @else {
+          <button
+            hlmBtn
+            variant="outline"
+            type="button"
+            [disabled]="cancelDisabled()"
+            (click)="closed.emit()"
+          >
+            {{ cancelLabel() }}
+          </button>
+          <button
+            hlmBtn
+            [variant]="danger() ? 'destructive' : 'default'"
+            type="button"
+            [disabled]="confirmDisabled() || pending()"
+            [attr.data-testid]="testId() + '-confirm'"
+            (click)="confirmed.emit()"
+          >
+            {{ confirmLabel() }}
+          </button>
+        }
       </div>
     </div>
   </div>

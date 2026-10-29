@@ -1870,3 +1870,91 @@ first.
 `outputs[<chunk>].inputs[*].bytesInOutput`; add `--verbose` to list all 150
 chunks. The metafile is the source of truth — a `main` that grows again should be
 diagnosed by reading it, not by raising the number.
+
+# Decisions — FE-20 · Returns / RMA (29 Oct 2026)
+
+## The refund link goes on the RETURN, not on the refund
+
+`order_refunds` has no `return_id` and no `order_refunds` write path was
+touched: migration V22 adds `returns.refund_id` (nullable, FK →
+`order_refunds.id`). A return points at the refund that pays it back, which
+is the direction the question is asked in ("what did this return refund?").
+
+The gap this leaves, stated plainly: **a refund does not know it belongs to a
+return.** The refund dialog on the order page still records money on its own,
+and linking is a choice made when the return is created — the create dialog
+offers the refunds the store already recorded for that order, and "No refund"
+is the default. Nothing auto-links, because guessing which refund pays which
+return would be inventing a fact. If a later feature needs
+"refund → return", it is an `ALTER TABLE order_refunds ADD COLUMN return_id`
+plus a backfill, not a second refund model. **Needs backend:** none for the
+acceptance criteria; this is a modelling note.
+
+## Why `REQUESTED → APPROVED | REJECTED` and nothing else
+
+`RECEIVED` and `COMPLETED` were considered and left out. The dashboard has no
+warehouse-intake step to move a row into them, and the refund model has no
+state machine to mirror. A status the UI cannot reach is a value that exists
+only to look finished.
+
+## The restock writes THROUGH the FE-13 log (not beside it)
+
+`InventoryMovementService.restockForReturn(...)` is a new method on the ONE
+writer of stock, with `reason = RETURN`, `source = RETURN`,
+`source_id = returns.id`. Two new enum values were added
+(`InventoryMovementReason.RETURN`, `InventoryMovementSource.RETURN`); the
+columns are `varchar(32)` with no DB enum, so no migration was needed for
+them. The variant history panel now renders the row as "Returned and
+restocked · <the return's reason>" — the `products.variants.history.reasons.RETURN`
+key and the TS unions were extended, so a raw enum never reaches the screen.
+
+## Approving twice: a row lock, not a hope
+
+`OrderReturnRepository.findByIdForUpdate` takes a `PESSIMISTIC_WRITE` lock on
+the return row, then the service checks the status:
+
+| Second call | Result |
+|---|---|
+| same decision (approve, approve) | 200 with the row unchanged — no restock, no timeline row, no error |
+| opposite decision (approve a rejected return) | 409 `error.return.alreadyDecided` |
+
+A retry after a dropped response must be safe (that is what a retry IS), and
+a decision that contradicts the recorded one must not rewrite history. The
+test `approvingTwiceRestocksOnce` pins the stock at 9 and the movement rows at
+1 after two approvals.
+
+## The return is on the order TIMELINE, in the existing table
+
+V22 adds `order_status_history.event_type`. A return writes one row per event
+(`RETURN_REQUESTED`, `RETURN_APPROVED`, `RETURN_REJECTED`) in the SAME
+transaction as the change, with `from_status = NULL` (nothing transitioned)
+and `to_status` = the order's status AT THE TIME (a true statement about the
+order). The order page's activity adapter draws those rows as return events
+and keeps them out of every status test — otherwise a return row's null
+`from_status` would be mistaken for the "order placed" row, and its
+`to_status = DELIVERED` would swallow the shipment milestone. Three specs pin
+exactly those three mistakes.
+
+There is no second timeline table and no second timeline component.
+
+## Cancelled orders cannot have returns
+
+The service refuses a return on a `CANCELLED` order (`error.return.orderCancelled`)
+and the page hides the section for one. A cancelled order was never delivered,
+so a return on it would put stock back that never left the shelf.
+
+## What the page shows after a decision
+
+The returns list, the timeline and the catalog's stock figure are all
+re-read from the server (`loadReturns`, `loadActivity`, `loadVariants`). The
+stock figure is the catalog variant's `stockQuantity`, shown on an approved
+return's line as "N units in stock" — the measurement that the restock
+happened, not a number the page assumed.
+
+## Service worker / list page
+
+Out of scope and not built: there is no "Returns" list page in the sidebar
+and no return counter on the orders list. The backlog's acceptance criteria
+are about the order detail; a global returns queue would need its own filters,
+counts and permission review, and inventing it here would have shipped a
+half-wired screen.

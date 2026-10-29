@@ -96,3 +96,64 @@ describe('buildOrderEvents', () => {
     expect(note?.actor).toBe('ops@store');
   });
 });
+
+describe('buildOrderEvents — returns (FE-20)', () => {
+  const returnRows = [
+    {
+      id: 10,
+      fromStatus: null,
+      toStatus: 'DELIVERED',
+      note: '2 × Ethiopia Yirgacheffe',
+      changedBy: 'ops@store',
+      notifyCustomer: false,
+      eventType: 'RETURN_REQUESTED',
+      createdAt: '2026-10-23T09:00:00Z',
+    },
+    {
+      id: 11,
+      fromStatus: null,
+      toStatus: 'DELIVERED',
+      note: '2 × Ethiopia Yirgacheffe',
+      changedBy: 'ops@store',
+      notifyCustomer: false,
+      eventType: 'RETURN_APPROVED',
+      createdAt: '2026-10-24T09:00:00Z',
+    },
+  ];
+
+  it('draws a return row as a return event, never as a status change', () => {
+    const events = buildOrderEvents({ order: { createdAt: placedAt }, history: returnRows });
+
+    expect(events.filter((e) => e.kind === 'status')).toHaveLength(0);
+    expect(events.filter((e) => e.kind === 'return').map((e) => e.returnEvent)).toEqual([
+      'RETURN_APPROVED',
+      'RETURN_REQUESTED',
+    ]);
+    const approved = events.find((e) => e.returnEvent === 'RETURN_APPROVED');
+    expect(approved?.detail).toBe('2 × Ethiopia Yirgacheffe');
+    expect(approved?.actor).toBe('ops@store');
+  });
+
+  /**
+   * A return row has a null fromStatus, exactly like the "order placed" row —
+   * and it must NOT be mistaken for it.
+   */
+  it('does not let a return row suppress the placement', () => {
+    const events = buildOrderEvents({ order: { createdAt: placedAt }, history: returnRows });
+    expect(events.filter((e) => e.kind === 'placed')).toHaveLength(1);
+  });
+
+  /**
+   * A return row carries the order's status AT THE TIME. On a delivered order
+   * it must not be read as the delivery milestone, which would swallow the
+   * shipment event.
+   */
+  it('does not let a return row hide the shipment milestone', () => {
+    const events = buildOrderEvents({
+      order: { createdAt: placedAt },
+      history: returnRows,
+      shipment: { shippedAt: '2026-10-22T08:00:00Z', deliveredAt: '2026-10-23T08:00:00Z' },
+    });
+    expect(events.filter((e) => e.kind === 'shipment')).toHaveLength(2);
+  });
+});

@@ -13,6 +13,7 @@ export type OrderEventKind =
   | 'payment'
   | 'shipment'
   | 'refund'
+  | 'return'
   | 'note'
   | 'email';
 
@@ -33,6 +34,12 @@ export interface OrderEvent {
   amount?: number | null;
   /** Which shipment milestone this is. */
   shipmentStage?: 'shipped' | 'delivered';
+  /**
+   * Which RETURN event this is (`RETURN_REQUESTED`, `RETURN_APPROVED`,
+   * `RETURN_REJECTED`) — the value the backend stored in `eventType`, so the
+   * page can title the row without inventing a status.
+   */
+  returnEvent?: string;
   /** Was the customer to be told? */
   notify?: boolean;
 }
@@ -48,6 +55,8 @@ export interface OrderActivitySources {
     note: string | null;
     changedBy: string | null;
     notifyCustomer: boolean;
+    /** Set on an EVENT row (a return); null on a status change. */
+    eventType?: string | null;
     createdAt: string;
   }>;
   notes?: ReadonlyArray<{
@@ -95,7 +104,13 @@ export function buildOrderEvents(sources: OrderActivitySources): OrderEvent[] {
   const events: OrderEvent[] = [];
   const history = sources.history ?? [];
 
-  const historyHasPlacedRow = history.some((entry) => entry.fromStatus === null);
+  // A row with an `eventType` is an EVENT, not a transition (a return). It
+  // must not be read as "the status changed", and its `toStatus` is the
+  // order's status AT THE TIME — so it is kept out of every transition test
+  // below and drawn, with its own title, further down.
+  const transitions = history.filter((entry) => !entry.eventType);
+
+  const historyHasPlacedRow = transitions.some((entry) => entry.fromStatus === null);
   if (!historyHasPlacedRow && sources.order.createdAt) {
     events.push({
       id: 'placed',
@@ -104,7 +119,7 @@ export function buildOrderEvents(sources: OrderActivitySources): OrderEvent[] {
     });
   }
 
-  for (const entry of history) {
+  for (const entry of transitions) {
     events.push({
       id: `history-${entry.id}`,
       kind: 'status',
@@ -114,6 +129,22 @@ export function buildOrderEvents(sources: OrderActivitySources): OrderEvent[] {
       actor: entry.changedBy,
       detail: entry.note,
       notify: entry.notifyCustomer,
+    });
+  }
+
+  // The returns of the order: the backend records each one as a row of the
+  // SAME history the status chain uses, with `eventType` naming the event.
+  // The title is the event, the detail is the line summary the backend wrote
+  // ("2 × Ethiopia Yirgacheffe"), and the actor is who did it.
+  for (const entry of history) {
+    if (!entry.eventType) continue;
+    events.push({
+      id: `return-${entry.id}`,
+      kind: 'return',
+      at: entry.createdAt,
+      actor: entry.changedBy,
+      detail: entry.note,
+      returnEvent: entry.eventType,
     });
   }
 
@@ -129,10 +160,10 @@ export function buildOrderEvents(sources: OrderActivitySources): OrderEvent[] {
   // A shipment stamp that duplicates a status transition the history already
   // records is folded into that transition's row instead of becoming a second
   // line ("Shipped → Delivered" and "Shipment delivered" are the same event).
-  const hasShippedTransition = (sources.history ?? []).some(
+  const hasShippedTransition = transitions.some(
     (entry) => entry.toStatus === 'SHIPPED',
   );
-  const hasDeliveredTransition = (sources.history ?? []).some(
+  const hasDeliveredTransition = transitions.some(
     (entry) => entry.toStatus === 'DELIVERED',
   );
 

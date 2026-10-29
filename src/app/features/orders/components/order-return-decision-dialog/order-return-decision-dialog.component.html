@@ -1,0 +1,26 @@
+<app-order-dialog
+  [open]="open()"
+  [title]="title()"
+  [description]="description()"
+  [confirmLabel]="confirmLabel()"
+  [cancelLabel]="cancelLabel()"
+  [danger]="!isApprove()"
+  [destructiveFirst]="!isApprove()"
+  [cancelDisabled]="pending()"
+  [pending]="pending()"
+  testId="return-decision-dialog"
+  (confirmed)="confirmed.emit()"
+  (closed)="closed.emit()"
+>
+  <ul class="mt-4 flex flex-col gap-1 rounded-md border border-border bg-muted/40 px-3 py-2.5 text-sm">
+    @for (line of lines(); track line.id) {
+      <li class="text-start tabular-nums" dir="auto" data-testid="return-decision-line">
+        {{ restockSentence(line) }}
+      </li>
+    }
+  </ul>
+
+  <p class="mt-2 text-xs text-muted-foreground">
+    {{ (isApprove() ? 'orders.returns.decision.approveHint' : 'orders.returns.decision.rejectHint') | transloco }}
+  </p>
+</app-order-dialog>
