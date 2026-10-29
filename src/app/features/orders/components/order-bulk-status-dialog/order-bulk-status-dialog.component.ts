@@ -36,10 +36,8 @@ export class OrderBulkStatusDialogComponent {
   readonly open = input<boolean>(false);
   /** The selected rows: the dialog decides what is possible from their statuses. */
   readonly rows = input<readonly BulkStatusRow[]>([]);
-  /** A run is in flight: the buttons lock and the progress line shows. */
+  /** The one request is in flight: the buttons lock. */
   readonly pending = input<boolean>(false);
-  /** How far the run has got, one order at a time. */
-  readonly progress = input<{ done: number; total: number } | null>(null);
 
   readonly confirmed = output<OrderStatus>();
   readonly closed = output<void>();
@@ -73,7 +71,7 @@ export class OrderBulkStatusDialogComponent {
   protected readonly description = computed(() =>
     this.t(
       'orders.bulk.dialog.description',
-      'Each order is updated one at a time, and only to a status its current one allows.',
+      'One request updates the selection, and each order takes the change only if its current status allows it.',
     ),
   );
 
@@ -117,14 +115,16 @@ export class OrderBulkStatusDialogComponent {
     () => this.selected() !== null && this.targetCount() > 0 && !this.pending(),
   );
 
-  protected readonly progressLabel = computed(() => {
-    const progress = this.progress();
-    if (!progress) return '';
-    return this.t('orders.bulk.progress', 'Updating…', {
-      done: progress.done,
-      total: progress.total,
-    });
-  });
+  /**
+   * The in-flight line.
+   *
+   * <p>There is no per-row progress any more: the batch is ONE request
+   * (FE-18b), so a counter would be a lie. "Sending the change…" is what is
+   * actually true, and the dialog stays open until the answer arrives.
+   */
+  protected readonly pendingLabel = computed(() =>
+    this.t('orders.bulk.sending', 'Sending the change…'),
+  );
 
   /** Each opening starts clean: no status left from the last run. */
   constructor() {

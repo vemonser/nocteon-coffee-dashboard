@@ -20,6 +20,7 @@ use it as it is, and say so where the API is silent.
 | The order list | `GET /api/dashboard/orders?page&size&sort&direction&status&userId` | works | the list, with the filters the API does not support applied in the browser (see §1.1) |
 | One order | `GET /api/dashboard/orders/{id}` | works | the detail page |
 | The status change | `PUT /api/dashboard/orders/{id}/status` body `{ status }` | works, but the transition check is **too loose** (see §2.1) | the "Update status" dialog, which enforces the STRICT matrix itself |
+| The bulk status change | `PUT /api/dashboard/orders/bulk-status` body `{ ids, status, note? }` | works (FE-18b): one result per id, one transaction per row | the bulk bar: one request, the per-row failures dialog, `Retry failed` |
 | The order number | `orders.order_number` → `ORD-<year>-<6 digits>` | works | shown exactly as the backend gives it; never re-formatted |
 | The items | `orders.items[]` with `unitPrice`, `totalPrice`, `sku`, `productName`, `primaryImageUrl` | works | the items card |
 | The totals | `orders.total_amount`, `shipping_cost`, `discount_amount` | works, but the **seeded values disagree with the items** (see §1.2) | the totals card, which shows the stored total AND the items' subtotal, and says when they disagree |
@@ -190,6 +191,42 @@ PUT /api/dashboard/orders/{id}/status
 sends them when the backend declares support for them
 (`OrderService.updateStatus(id, update, { supportsNote: true })`), so the
 UI is not broken by a backend that ignores them.
+
+### 3.2.1 `PUT /api/dashboard/orders/bulk-status` — the bulk change (FE-18b)
+
+**Today, and it works:** the dashboard used to send one request per selected
+row, sequentially, because this operation did not exist. It does now:
+
+```
+PUT /api/dashboard/orders/bulk-status
+{
+  "ids": [1, 2, 3],                                // 1..100, duplicates collapse
+  "status": "CONFIRMED",
+  "note": "Picked in the warehouse"                // optional, ≤ 500 chars
+}
+
+200 { "success": true, "message": "Order statuses updated",
+      "data": [
+        { "id": 1, "orderNumber": "ORD-2026-000001", "success": true,
+          "message": "Order status updated" },
+        { "id": 2, "orderNumber": "ORD-2026-000002", "success": false,
+          "message": "Cannot change order status from CONFIRMED to CONFIRMED" }
+      ] }
+400 { "success": false, "message": "Validation failed",
+      "errors": [ { "field": "ids", "message": "Select at most 100 orders at a time" } ] }
+403 — the caller does not hold `order:update`.
+```
+
+- One result per id, **in the order the ids were sent**.
+- The transition rules are the single endpoint's (the same service method),
+  and **every row commits in its own transaction**: a refusal later in the
+  batch cannot roll back a row that already committed. The call is a `200`
+  even when every row was refused — a refused order is a row outcome, not a
+  failure of the call.
+- An unknown id is a row with `success: false` and `orderNumber: null`.
+- `notifyCustomer` is deliberately absent: there is one shared note for the
+  batch, and mailing the customer would quote it to every one of them.
+- **Permission:** `order:update` (the single endpoint's).
 
 ### 3.3 `order_status_history` — the timeline
 

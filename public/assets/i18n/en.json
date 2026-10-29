@@ -1830,7 +1830,7 @@
       "changeStatus": "Change status",
       "clear": "Clear selection",
       "dialog": {
-        "description": "Each order is updated one at a time, and only to a status its current one allows.",
+        "description": "One request updates the selection, and each order takes the change only if its current status allows it.",
         "selectLabel": "New status",
         "hint": "Orders that cannot take this status are skipped, and any failure is listed afterwards.",
         "cancelNote": "Cancelling stays with each order — it needs a reason.",
@@ -1841,17 +1841,18 @@
       "notEligible": "No selected order can move to this status",
       "updateCount_one": "Update {{count}} order",
       "updateCount_other": "Update {{count}} orders",
-      "progress": "Updating {{done}} of {{total}}…",
+      "sending": "Sending the change…",
       "updated_one": "{{count}} order updated",
       "updated_other": "{{count}} orders updated",
       "failed_one": "{{count}} order was not updated",
       "failed_other": "{{count}} orders were not updated",
       "reviewFailures": "Review failures",
+      "error": "The status change could not be sent — try again.",
       "failures": {
         "title": "Some orders were not updated",
         "hint": "They are still selected, so you can retry the change.",
         "reason": "The order could not be updated",
-        "aborted": "Not attempted — the run stopped after a permission error.",
+        "denied": "You do not have permission to change order statuses, so nothing was updated.",
         "retry": "Retry failed",
         "close": "Close"
       }

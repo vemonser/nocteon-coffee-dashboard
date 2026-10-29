@@ -2,7 +2,7 @@
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { forkJoin } from 'rxjs';
+import { forkJoin, map } from 'rxjs';
 import { ColumnDef, createColumnHelper } from '@tanstack/table-core';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
@@ -68,7 +68,7 @@ import { computeKpi, tabToApiParams, type KpiValues } from '../utils/order-kpi';
 import {
   bulkStatusToast,
   eligibleRows,
-  runBulkStatus,
+  sendBulkStatus,
   summarizeBulkStatus,
   type BulkStatusResult,
   type BulkStatusRow,
@@ -191,13 +191,12 @@ export class OrdersListComponent {
   protected readonly size = signal(20);
   protected readonly selectedIds = signal<ReadonlySet<number>>(new Set());
 
-  /** ── the bulk status run (FE-18) ─────────────────────────────────────── */
+  /** ── the bulk status run (FE-18 / FE-18b) ────────────────────────────── */
 
   /** The bulk dialog: pick one status for the selection. */
   protected readonly bulkStatusOpen = signal(false);
-  /** A run is in flight — one order at a time. */
+  /** The one bulk request is in flight. */
   protected readonly bulkStatusPending = signal(false);
-  protected readonly bulkStatusProgress = signal<{ done: number; total: number } | null>(null);
   /** The rows the last run could not change, with the reason each gave. */
   protected readonly bulkFailures = signal<readonly BulkStatusResult[]>([]);
   protected readonly bulkFailuresOpen = signal(false);
@@ -841,39 +840,54 @@ export class OrdersListComponent {
   }
 
   /**
-   * Apply the chosen status to the rows that can take it — SEQUENTIALLY.
+   * Apply the chosen status to the rows that can take it — in ONE request.
    *
-   * <p>`runBulkStatus` sends one request at a time (`concatMap`), records a
-   * per-row outcome, and stops only on a `403`: a permission error is not
-   * per-row, so the remaining rows are reported as "not attempted" instead of
-   * firing eleven more refusals (which would also mean eleven permission
-   * toasts on top of the interceptor's one).
+   * <p>FE-18b: the backend takes the batch, so the twelve rows are one round
+   * trip instead of twelve. The server answers per row, so a refused order
+   * still does not stop the others; the outcomes are added up the same way
+   * they were when the requests were sequential.
+   *
+   * <p>Two failures are decided here, not per row: a `403` (the interceptor
+   * has already shown its one permission toast, so no second one) and a call
+   * the server could not route at all — a `404` from an older backend, or a
+   * `501` — which shows the app's one error toast and keeps the selection,
+   * instead of pretending nothing happened.
    */
   protected applyBulkStatus(status: OrderStatus): void {
     const targets = eligibleRows(this.selectedRows(), status);
     if (targets.length === 0) return;
 
     this.bulkStatusPending.set(true);
-    this.bulkStatusProgress.set({ done: 0, total: targets.length });
     this.bulkFailures.set([]);
 
-    runBulkStatus(targets, {
-      update: (row) => this.orderService.updateStatus(row.id, { status }),
+    sendBulkStatus(targets, status, {
+      send: (ids, target) => this.orderService.bulkUpdateStatus(ids, target).pipe(map((res) => res.data ?? [])),
       fallbackReason: this.t('orders.bulk.failures.reason', 'The order could not be updated'),
-      abortedReason: this.t(
-        'orders.bulk.failures.aborted',
-        'Not attempted — the run stopped after a permission error.',
+      deniedReason: this.t(
+        'orders.bulk.failures.denied',
+        'You do not have permission to change order statuses, so nothing was updated.',
       ),
-      onProgress: (done, total) => this.bulkStatusProgress.set({ done, total }),
-      backendMessage: (err) => this.notify.backendMessage(err),
-    }).subscribe((results) => this.finishBulkStatus(results));
+    }).subscribe((outcome) => {
+      if (outcome.error) {
+        // Nothing ran: one toast, and the rows stay selected so the change can
+        // be sent again once the backend has the endpoint.
+        this.bulkStatusPending.set(false);
+        this.bulkStatusOpen.set(false);
+        this.notify.apiError(
+          outcome.error,
+          'orders.bulk.error',
+          'The status change could not be sent — try again.',
+        );
+        return;
+      }
+      this.finishBulkStatus(outcome.results);
+    });
   }
 
   /** Add the outcomes up, tell the reader once, and settle the selection. */
   private finishBulkStatus(results: readonly BulkStatusResult[]): void {
     const summary = summarizeBulkStatus(results);
     this.bulkStatusPending.set(false);
-    this.bulkStatusProgress.set(null);
     this.bulkStatusOpen.set(false);
     this.bulkFailures.set(summary.failures);
 

@@ -1,24 +1,28 @@
 import { describe, expect, it } from 'vitest';
-import { Subject, of, throwError } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import {
   BULK_STATUS_ORDER,
   bulkStatusChoices,
   bulkStatusToast,
   eligibleRows,
-  runBulkStatus,
+  sendBulkStatus,
   skippedRows,
   summarizeBulkStatus,
+  type BulkStatusOutcome,
   type BulkStatusResult,
   type BulkStatusRow,
 } from './bulk-status';
+import type { BulkStatusRowResult } from '../models/order.model';
 import { ALLOWED_TRANSITIONS } from '../models/order-status.model';
 
 /**
- * FE-18 — the decisions a bulk status run makes without a browser.
+ * FE-18 / FE-18b — the decisions a bulk status run makes without a browser.
  *
  * These tests are the contract of the bulk dialog and the toast:
  *  - only statuses the SHARED transition map allows may be offered, and a
  *    status nobody can reach is still listed (disabled), never invented;
+ *  - the run is ONE request whose per-row answer is mapped onto the outcomes
+ *    the dialog shows — including the rows the server refused;
  *  - a run that partly fails reports the failures per row and keeps them;
  *  - a fully successful run clears; the one toast says what happened.
  */
@@ -210,144 +214,142 @@ describe('bulkStatusToast', () => {
   });
 });
 
-describe('runBulkStatus', () => {
+describe('sendBulkStatus', () => {
   const rows = [row(1, 'PENDING'), row(2, 'PENDING'), row(3, 'PENDING')];
 
-  /** A per-order call the test settles by hand, so "in flight" is observable. */
-  function controlledRun(count: number) {
-    const calls: number[] = [];
-    const subjects: Subject<unknown>[] = [];
-    let inFlight = 0;
-    let maxInFlight = 0;
-    const progress: Array<{ done: number; total: number }> = [];
+  /** Collect what the run answers with (the API's `of()` is synchronous). */
+  function run(
+    sent: readonly BulkStatusRow[],
+    status: BulkStatusRow['status'],
+    options: Partial<Parameters<typeof sendBulkStatus>[2]> & {
+      answer?: readonly BulkStatusRowResult[];
+      fail?: unknown;
+    } = {},
+  ) {
+    const calls: Array<{ ids: number[]; status: string }> = [];
+    let outcome: BulkStatusOutcome | null = null;
 
-    const run = runBulkStatus(rows.slice(0, count), {
-      update: (r) => {
-        calls.push(r.id);
-        inFlight += 1;
-        maxInFlight = Math.max(maxInFlight, inFlight);
-        const subject = new Subject<unknown>();
-        subjects.push(subject);
-        subject.subscribe({
-          complete: () => {
-            inFlight -= 1;
-          },
-        });
-        return subject;
+    sendBulkStatus(sent, status, {
+      send: (ids, target) => {
+        calls.push({ ids, status: target });
+        return options.fail !== undefined
+          ? throwError(() => options.fail)
+          : of(options.answer ?? []);
       },
-      fallbackReason: 'Could not update',
-      abortedReason: 'Not attempted',
-      onProgress: (done, total) => progress.push({ done, total }),
-    });
+      fallbackReason: options.fallbackReason ?? 'Could not update',
+      deniedReason: options.deniedReason ?? 'Denied',
+    }).subscribe((value) => (outcome = value));
 
-    return { run, calls, subjects, progress, maxInFlight: () => maxInFlight };
+    return { calls, outcome: outcome as unknown as BulkStatusOutcome };
   }
 
-  it('sends ONE request at a time, in the order of the selection', () => {
-    const { run, calls, subjects, maxInFlight } = controlledRun(3);
-    const results: BulkStatusResult[] = [];
-    run.subscribe((value) => results.push(...value));
-
-    // The first row is asked; nothing else is until it settles.
-    expect(calls).toEqual([1]);
-
-    subjects[0].next(null);
-    subjects[0].complete();
-    expect(calls).toEqual([1, 2]);
-
-    subjects[1].next(null);
-    subjects[1].complete();
-    subjects[2].next(null);
-    subjects[2].complete();
-
-    expect(calls).toEqual([1, 2, 3]);
-    expect(maxInFlight()).toBe(1);
-    expect(results.map((r) => r.id)).toEqual([1, 2, 3]);
-    expect(results.every((r) => r.ok)).toBe(true);
+  const answered = (id: number, success: boolean, message: string | null = null) => ({
+    id,
+    orderNumber: `ORD-2026-00000${id}`,
+    success,
+    message,
   });
 
-  it('records a refused row and keeps going', () => {
-    const calls: number[] = [];
-    const run = runBulkStatus(rows, {
-      update: (r) => {
-        calls.push(r.id);
-        return r.id === 2
-          ? throwError(() => ({ status: 400, error: { message: 'Order is already confirmed' } }))
-          : of(null);
-      },
-      fallbackReason: 'Could not update',
-      abortedReason: 'Not attempted',
-      backendMessage: (err) => (err as { error?: { message?: string } })?.error?.message ?? null,
+  it('sends ONE request carrying every id and the target status', () => {
+    const { calls } = run(rows, 'CONFIRMED', {
+      answer: rows.map((r) => answered(r.id, true)),
     });
 
-    let results: BulkStatusResult[] = [];
-    run.subscribe((value) => (results = [...value]));
+    expect(calls).toHaveLength(1);
+    expect(calls[0]).toEqual({ ids: [1, 2, 3], status: 'CONFIRMED' });
+  });
 
-    expect(calls).toEqual([1, 2, 3]);
-    expect(results).toEqual([
-      { id: 1, orderNumber: 'ORD-2026-000001', ok: true },
+  it('maps the server rows onto the outcomes the dialog shows', () => {
+    const { outcome } = run(rows, 'CONFIRMED', {
+      answer: [
+        answered(1, true),
+        answered(2, false, 'Cannot change order status from CONFIRMED to CONFIRMED'),
+        answered(3, true),
+      ],
+    });
+
+    expect(outcome.error).toBeNull();
+    expect(outcome.results).toEqual([
+      { id: 1, orderNumber: 'ORD-2026-000001', ok: true, reason: undefined },
       {
         id: 2,
         orderNumber: 'ORD-2026-000002',
         ok: false,
-        reason: 'Order is already confirmed',
+        reason: 'Cannot change order status from CONFIRMED to CONFIRMED',
       },
-      { id: 3, orderNumber: 'ORD-2026-000003', ok: true },
+      { id: 3, orderNumber: 'ORD-2026-000003', ok: true, reason: undefined },
+    ]);
+  });
+
+  it('keeps the row it sent when the server has no number to give', () => {
+    // An id that is not an order comes back with orderNumber: null.
+    const { outcome } = run([row(7, 'PENDING')], 'CONFIRMED', {
+      answer: [{ id: 7, orderNumber: null, success: false, message: 'Order not found' }],
+    });
+
+    expect(outcome.results).toEqual([
+      { id: 7, orderNumber: 'ORD-2026-000007', ok: false, reason: 'Order not found' },
     ]);
   });
 
   it('falls back to the app wording when the server sends no message', () => {
-    const run = runBulkStatus([row(1, 'PENDING')], {
-      update: () => throwError(() => ({ status: 500 })),
-      fallbackReason: 'Could not update',
-      abortedReason: 'Not attempted',
-      backendMessage: () => null,
+    const { outcome } = run([row(1, 'PENDING')], 'CONFIRMED', {
+      answer: [{ id: 1, orderNumber: null, success: false, message: null }],
     });
 
-    let results: BulkStatusResult[] = [];
-    run.subscribe((value) => (results = [...value]));
-    expect(results[0].reason).toBe('Could not update');
-    expect(results[0].ok).toBe(false);
+    expect(outcome.results[0].ok).toBe(false);
+    expect(outcome.results[0].reason).toBe('Could not update');
   });
 
-  it('STOPS on a 403 instead of firing the rest, and reports them as not attempted', () => {
-    const calls: number[] = [];
-    const run = runBulkStatus(rows, {
-      update: (r) => {
-        calls.push(r.id);
-        return throwError(() => ({ status: 403 }));
-      },
-      fallbackReason: 'Could not update',
-      abortedReason: 'Not attempted after a permission error',
-      backendMessage: () => null,
-    });
+  it('does not call a row a success when the server never answered for it', () => {
+    // A missing row must stay selected: claiming it moved would hide it.
+    const { outcome } = run(rows, 'CONFIRMED', { answer: [answered(1, true)] });
 
-    let results: BulkStatusResult[] = [];
-    run.subscribe((value) => (results = [...value]));
+    expect(outcome.results.map((result) => result.ok)).toEqual([true, false, false]);
+    expect(outcome.results[2].reason).toBe('Could not update');
+  });
 
-    // One refusal, not three: the permission toast stays a single toast.
-    expect(calls).toEqual([1]);
-    expect(results).toEqual([
-      { id: 1, orderNumber: 'ORD-2026-000001', ok: false, reason: 'Could not update' },
-      { id: 2, orderNumber: 'ORD-2026-000002', ok: false, reason: 'Not attempted after a permission error' },
-      { id: 3, orderNumber: 'ORD-2026-000003', ok: false, reason: 'Not attempted after a permission error' },
+  it('reports a 403 as every row refused, in ONE request and without an error toast', () => {
+    const { calls, outcome } = run(rows, 'CONFIRMED', { fail: { status: 403 } });
+
+    // One refusal, not three: the interceptor's permission toast stays one.
+    expect(calls).toHaveLength(1);
+    expect(outcome.error).toBeNull();
+    expect(outcome.results).toEqual([
+      { id: 1, orderNumber: 'ORD-2026-000001', ok: false, reason: 'Denied' },
+      { id: 2, orderNumber: 'ORD-2026-000002', ok: false, reason: 'Denied' },
+      { id: 3, orderNumber: 'ORD-2026-000003', ok: false, reason: 'Denied' },
     ]);
   });
 
-  it('reports progress one row at a time', () => {
-    const progress: Array<{ done: number; total: number }> = [];
-    const run = runBulkStatus(rows, {
-      update: () => of(null),
-      fallbackReason: 'Could not update',
-      abortedReason: 'Not attempted',
-      onProgress: (done, total) => progress.push({ done, total }),
-    });
+  it.each([404, 501, 500])(
+    'reports a %i for the whole call as ONE error, with no per-row story and no retry',
+    (status) => {
+      const { calls, outcome } = run(rows, 'CONFIRMED', { fail: { status } });
 
-    run.subscribe();
-    expect(progress).toEqual([
-      { done: 1, total: 3 },
-      { done: 2, total: 3 },
-      { done: 3, total: 3 },
-    ]);
+      expect(calls).toHaveLength(1);
+      expect(outcome.error).toEqual({ status });
+      // Nothing ran, so nothing may be reported as failed per row.
+      expect(outcome.results).toEqual([]);
+    },
+  );
+
+  it('makes no request when the selection is empty', () => {
+    const { calls, outcome } = run([], 'CONFIRMED');
+    expect(calls).toEqual([]);
+    expect(outcome).toEqual({ results: [], error: null });
+  });
+
+  it('summarises the same way the sequential run did', () => {
+    // The AGGREGATION is what the screen shows, and it must not depend on how
+    // the requests were sent.
+    const { outcome } = run(rows, 'CONFIRMED', {
+      answer: [answered(1, true), answered(2, false, 'Refused'), answered(3, false, 'Refused')],
+    });
+    const summary = summarizeBulkStatus(outcome.results);
+    expect(summary.updated).toBe(1);
+    expect(summary.failed).toBe(2);
+    expect(summary.failedIds).toEqual([2, 3]);
   });
 });
+
