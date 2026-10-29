@@ -977,8 +977,9 @@ and page 2 do not show the same rows.
 
 ## Needs backend
 
-### Polish pass 1 — nav-counts (W2)
-- `GET /api/dashboard/nav-counts` does not exist (probed 2026-10-25); sidebar shows NO count badges. Write "nav-counts" here per spec. A dev-only `?mockNavCounts=1` (or `localStorage.devMockNavCounts=1`) flag mocks badges for screenshots.
+### Polish pass 1 — nav-counts (W2) — resolved 29 Oct 2026
+- Originally: `GET /api/dashboard/nav-counts` did not exist (probed 2026-10-25); the sidebar showed NO count badges. A dev-only `?mockNavCounts=1` (or `localStorage.devMockNavCounts=1`) flag mocked badges for screenshots.
+- Resolved: `NavCountController` serves `GET /api/dashboard/nav-counts` with `{ openOrders, abandonedCarts, pendingReviews, contactUnread }` (each key only when the role may read that area). The service reads those keys directly; the 404-disable path, the field-name aliases and the mock flag are gone. A failed count keeps the last good numbers, logs once, and never breaks the sidebar.
 
 ### Polish pass 1 — mark unread (W3)
 - No `mark as unread` endpoint (only `PATCH /read`); Mark unread omitted from row actions and bulk bar.
@@ -1052,10 +1053,17 @@ lets old rows render during the migration.
 | Need | Requested endpoint | Current state |
 |---|---|---|
 | Delete one | `DELETE /api/dashboard/notifications/{id}` | absent |
-| Bulk delete | `DELETE /api/dashboard/notifications` with ids | absent |
+| Bulk delete | `DELETE /api/dashboard/notifications` with ids | present as `POST /bulk-delete` with `{ ids }` (29 Oct 2026) |
 | Mark unread | `PATCH /api/dashboard/notifications/{id}/unread` | absent |
 | Type filter | `GET /api/dashboard/notifications?type=order.new` | only `unreadOnly` |
-| Bulk read | `PATCH /api/dashboard/notifications/read` with ids | absent; client loops `/{id}/read` |
+| Bulk read | `PATCH /api/dashboard/notifications/read` with ids | present as `PATCH /bulk-read` with `{ ids }` (29 Oct 2026) |
+
+**Resolved 29 Oct 2026 (NOTIF-01).** The bulk endpoints shipped, so the store
+no longer loops per row: `markManyAsRead` sends one `PATCH /bulk-read` and
+`deleteMany` sends one `POST /bulk-delete`, both with the whole `{ ids }` list
+(the spec pins the request shape and the absence of per-row DELETEs). The
+unused `forkJoin`/`map` imports left over from the loop are removed. Mark-all
+uses `PATCH /read-all`.
 
 ## Permissions
 
@@ -1130,12 +1138,13 @@ permission, but the server must enforce them before these actions are safe.
 - `ProductMediaResponse` serializes `isPrimary` as `primary`; existing media is mapped
   to the form's `isPrimary` on load.
 
-### The list API has no stock or variant count
-- `GET /api/dashboard/products` returns `ProductCardResponse`, which has no
-  `totalStock`, `lowStockVariantCount`, or `variantsCount`.
-- The list shows an honest `—` (with a tooltip) for those cells instead of inventing
-  numbers. Needs backend: add these fields to `ProductCardResponse` (or a batch
-  summary endpoint) before the list can show real stock badges.
+### The list API has no stock or variant count — resolved 29 Oct 2026
+- Originally: `GET /api/dashboard/products` returned `ProductCardResponse`, which had no
+  `totalStock`, `lowStockVariantCount`, or `variantsCount`; the list showed an honest `—`
+  instead of inventing numbers, and the Stock column was gated behind `hasStockData()`.
+- Resolved: `ProductCardResponse` now returns `variantCount`/`variantsCount`, `totalStock`
+  and `lowStockVariantCount`. The Stock column renders in every view with no gate; a
+  genuinely null row stays an empty cell rather than a fake zero.
 
 ### No default-variant field
 - The backend has no `defaultVariantId`/`isDefault` field. The variants editor does
@@ -1158,9 +1167,9 @@ permission, but the server must enforce them before these actions are safe.
 
 ## Products pass 3 notes
 
-- Y4: `GET /api/dashboard/products` (`ProductCardResponse`) does not return `totalStock`, `variantCount`, or `lowStockVariantCount`. The Stock column is hidden entirely until those fields exist. Needs backend: list stock fields.
+- Y4 — resolved 29 Oct 2026: `GET /api/dashboard/products` (`ProductCardResponse`) returns `totalStock`, `variantCount`/`variantsCount` and `lowStockVariantCount`; the Stock column is unconditional and the `hasStockData()` gate is deleted.
 - Y6: `ProductTranslationRequest` has no per-language `story` field. Story remains product-level in the Coffee details card. Needs backend: story translations.
-- Y7: Product options have no `appliesTo` field yet. Temporary config file `src/app/features/products/product-option-applicability.ts` keys allowed option slugs by product type (COFFEE: weight, grind; EQUIPMENT: size) with a TODO. Needs backend: option applicability field.
+- Y7 — resolved 29 Oct 2026: product options carry `appliesTo` (`Set<ProductType>`, default all; `ProductOptionResponse` + `ProductOptionResponseDashboard`). The wizard reads it through `optionAppliesTo`; an option without the field (or with an empty set) applies to every type and is never hidden. The temporary slug config and its TODO are deleted.
 
 ## Security — journal HTML (FE-01, 28 Oct 2026)
 

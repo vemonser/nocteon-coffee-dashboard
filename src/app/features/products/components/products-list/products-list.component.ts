@@ -225,7 +225,6 @@ export class ProductsListComponent {
   currentPage = signal(0);
   pageSize = signal(20);
   selectedIds = signal<ReadonlySet<number>>(new Set());
-  readonly hasStockData = signal(false);
   /**
    * FE-14: does the API send rating fields at all?
    *
@@ -560,7 +559,8 @@ export class ProductsListComponent {
           minPrice: p.minPrice ?? 0,
           maxPrice: p.maxPrice ?? 0,
           discountPercentage: p.discountPercentage ?? null,
-          // ProductCardResponse does not carry these yet — see DECISIONS.md.
+          // ProductCardResponse carries the stock aggregate; a null is a row
+          // the API genuinely has no number for and the cell stays empty.
           totalStock: p.totalStock ?? null,
           variantsCount: p.variantsCount ?? null,
           lowStockVariantCount: p.lowStockVariantCount ?? null,
@@ -571,8 +571,6 @@ export class ProductsListComponent {
           reviewCount: p.reviewCount ?? null,
           stockStatus: 'unknown' as const,
         }));
-
-        this.hasStockData.set(products.some((p: any) => p.totalStock != null || p.variantsCount != null || p.lowStockVariantCount != null));
 
         // Fetch category names for display
         const categorySlugs = [...new Set(products.map((p: any) => p.categorySlug).filter(Boolean))];
@@ -639,8 +637,6 @@ export class ProductsListComponent {
           reviewCount: null,
           stockStatus: 'unknown' as const,
         }));
-
-        this.hasStockData.set(products.some((p: any) => p.totalStock != null || p.variantsCount != null || p.lowStockVariantCount != null));
 
         // Fetch category names for display
         const categorySlugs = [...new Set(products.map((p: any) => p.categorySlug).filter(Boolean))];

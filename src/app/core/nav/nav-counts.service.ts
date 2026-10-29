@@ -16,21 +16,13 @@ export class NavCountsService {
   private readonly auth = inject(AuthService);
 
   private readonly _counts = signal<NavCounts | null>(null);
-  private readonly _available = signal(false);
+  private errorLogged = false;
 
   readonly counts = this._counts.asReadonly();
-  readonly available = this._available.asReadonly();
 
   private timer: ReturnType<typeof setInterval> | null = null;
 
   constructor() {
-    // Dev-only mock flag: ?mockNavCounts=1 or localStorage devMockNavCounts=1
-    if (this.isMock()) {
-      this._counts.set({ orders: 5, carts: 2, reviews: 3, contact: 4 });
-      this._available.set(true);
-      return;
-    }
-
     // Poll only while a session exists. This is a root service: started at
     // boot it fetched on the login screen and kept 401-ing every minute after
     // logout, while the badge kept showing the previous admin's counts.
@@ -67,16 +59,6 @@ export class NavCountsService {
       this.timer = null;
     }
     this._counts.set(null);
-    this._available.set(false);
-  }
-
-  private isMock(): boolean {
-    try {
-      if (localStorage.getItem('devMockNavCounts') === '1') return true;
-      return new URLSearchParams(window.location.search).get('mockNavCounts') === '1';
-    } catch {
-      return false;
-    }
   }
 
   fetch(): void {
@@ -85,35 +67,25 @@ export class NavCountsService {
       .get<any>(`${environment.apiUrl}/api/dashboard/nav-counts`, { withCredentials: true })
       .subscribe({
         next: (res) => {
-          const d = res?.data ?? res ?? {};
-          const next: NavCounts = {};
-          let has = false;
-          const pick = (keys: string[]): number | undefined => {
-            for (const k of keys) {
-              if (Object.prototype.hasOwnProperty.call(d, k) && d[k] != null) {
-                const n = Number(d[k]);
-                if (Number.isFinite(n)) return n;
-              }
-            }
-            return undefined;
-          };
-          const o = pick(['ordersOpen', 'openOrders', 'orders']);
-          if (o !== undefined) { next.orders = o; has = true; }
-          const c = pick(['cartsAbandoned', 'abandonedCarts', 'carts']);
-          if (c !== undefined) { next.carts = c; has = true; }
-          const r = pick(['reviewsPending', 'pendingReviews', 'reviews']);
-          if (r !== undefined) { next.reviews = r; has = true; }
-          const ct = pick(['contactUnread', 'unreadContact', 'contactMessages', 'contact']);
-          if (ct !== undefined) { next.contact = ct; has = true; }
-          if (has) {
-            this._counts.set(next);
-            this._available.set(true);
-          }
+          // GET /api/dashboard/nav-counts. A key is omitted when the signed-in
+          // role cannot read that area, so a missing key means "no badge" —
+          // it is not a zero and never an error.
+          const d = res?.data ?? {};
+          this._counts.set({
+            orders: toCount(d.openOrders),
+            carts: toCount(d.abandonedCarts),
+            reviews: toCount(d.pendingReviews),
+            contact: toCount(d.contactUnread),
+          });
         },
         error: () => {
-          // endpoint missing or forbidden: no badges
-          this._available.set(false);
-          this._counts.set(null);
+          // A failed count is not a reason to break the sidebar: keep the last
+          // good badge numbers and log the failure once instead of spamming the
+          // console on every poll.
+          if (!this.errorLogged) {
+            this.errorLogged = true;
+            console.warn('Nav counts could not be loaded; keeping the last known values.');
+          }
         },
       });
   }
@@ -123,7 +95,6 @@ export class NavCountsService {
   }
 
   badgeFor(route: string): number | null {
-    if (!this._available()) return null;
     const c = this._counts();
     if (!c) return null;
     if (route.includes('/orders')) return c.orders ?? null;
@@ -137,4 +108,9 @@ export class NavCountsService {
     if (route.includes('/contact-messages')) return `${n} unread`;
     return `${n} pending`;
   }
+}
+
+function toCount(value: unknown): number | undefined {
+  const n = typeof value === 'number' ? value : typeof value === 'string' ? Number(value) : NaN;
+  return Number.isFinite(n) ? n : undefined;
 }
