@@ -315,23 +315,98 @@ quill-editor .ql-container {
   min-height: 200px;
 }
 /*
- * Printing an order.
+ * Printing a page that is meant to reach paper.
  *
- * A printed invoice is paper, not the dashboard: the navigation chrome and
- * the fixed sidebar are dropped, and the page is left at full width. The
- * rules are scoped to `html.order-print`, the class the order page adds only
- * while ITS invoice is printing, so Ctrl+P on any other screen keeps its
- * normal layout. The order page removes `.dark` at the same time, so the
+ * Two pages print their OWN content on the LIGHT stylesheet — the order
+ * invoice and the dashboard report. A print is paper, not the dashboard: the
+ * navigation chrome and the fixed sidebar are dropped, and the page is left
+ * at full width.
+ *
+ * The rules are scoped to a class the page adds only while IT is printing
+ * (`html.order-print`, `html.dashboard-print`), so Ctrl+P on any other screen
+ * keeps its normal layout. The page removes `.dark` at the same time, so the
  * light tokens are the ones that reach paper.
  */
 @media print {
   html.order-print [data-slot='sidebar-container'],
   html.order-print [data-slot='sidebar-gap'],
-  html.order-print app-navigation-bar {
+  html.order-print app-navigation-bar,
+  html.dashboard-print [data-slot='sidebar-container'],
+  html.dashboard-print [data-slot='sidebar-gap'],
+  html.dashboard-print app-navigation-bar,
+  /* A toast is a screen event: it must not land on the report. */
+  html.dashboard-print hlm-toaster {
     display: none !important;
   }
 
-  html.order-print .main-container {
+  html.order-print .main-container,
+  html.dashboard-print .main-container {
     width: 100% !important;
+  }
+}
+
+/*
+ * The dashboard report is A4 portrait with a 12mm margin. `@page` cannot be
+ * scoped by a selector, so the page box is selected by name: the dashboard's
+ * page shell asks for `page: report` while it prints, and every other print
+ * (the order invoice included) keeps the browser's default margins.
+ */
+@page report {
+  size: A4 portrait;
+  margin: 12mm;
+}
+
+/*
+ * How the REPORT is laid out on the sheet.
+ *
+ * These rules live in the global sheet rather than in dashboard.component.css
+ * because half of the paper is drawn by the widget components (the breakdown
+ * cards, the attention panel, the revenue chart) and a component's styles
+ * cannot reach into a child view. Everything is scoped to
+ * `html.dashboard-print`, which the page adds only while ITS report prints.
+ */
+@media print {
+  html.dashboard-print .page-shell {
+    page: report;
+    /* The gutter comes from `@page report`, not from the shell: a second
+       inset would waste a third of the sheet. */
+    max-width: none;
+    padding: 0;
+  }
+
+  /* Four ~160px KPI cards are unreadable on paper. Two columns keep the
+     label, the value and the delta at their body size, and the row still
+     reads as a row. */
+  html.dashboard-print [data-testid='kpi-primary-row'],
+  html.dashboard-print [data-testid='kpi-secondary-strip'],
+  html.dashboard-print [data-testid='kpi-primary-skeleton'],
+  html.dashboard-print [data-testid='kpi-secondary-skeleton'] {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  /* A card is one idea: it is never split across two sheets, and its screen
+     elevation is a lie on paper. */
+  html.dashboard-print hlm-card,
+  html.dashboard-print .card-surface,
+  html.dashboard-print [data-testid^='kpi-'] {
+    break-inside: avoid;
+    box-shadow: none;
+  }
+
+  /* The revenue chart is an SVG with a viewBox, so letting it shrink to the
+     paper width is what keeps its right edge (and the last label) from being
+     clipped at A4. */
+  html.dashboard-print app-revenue-chart svg {
+    max-width: 100% !important;
+    height: auto !important;
+  }
+
+  /* Whatever the widgets animated on screen, the sheet shows the end state:
+     a skeleton pulse or a count-up captured mid-flight would print the wrong
+     number. */
+  html.dashboard-print .kpi-skeleton,
+  html.dashboard-print [data-testid^='kpi-'] * {
+    animation: none !important;
+    transition: none !important;
   }
 }

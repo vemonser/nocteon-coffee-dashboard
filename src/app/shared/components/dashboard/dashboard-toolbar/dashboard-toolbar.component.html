@@ -3,9 +3,10 @@
 >
   <!-- The range: the SAME tab group the cards use (a radiogroup here,
        because the range is one option out of a set, not a view). It stays
-       on ONE row on a phone and scrolls sideways instead of wrapping. -->
+       on ONE row on a phone and scrolls sideways instead of wrapping.
+       On paper the group is gone: the range in effect is printed below it. -->
   <app-tabs
-    class="min-w-0 max-w-full"
+    class="print-hidden min-w-0 max-w-full"
     role="radio"
     [scrollable]="true"
     [label]="'dashboard.rangeLabel' | transloco"
@@ -39,15 +40,18 @@
     </span>
   </div>
 
-  <!-- Updated time and refresh button -->
+  <!-- Updated time and refresh button. On paper the RELATIVE time is
+       replaced by the absolute one: "Updated 3 minutes ago" is wrong by the
+       time the sheet reaches a desk. -->
   <div class="flex items-center gap-2 text-xs text-muted-foreground">
-    <span>{{ 'dashboard.updated' | transloco }} {{ relativeTime() }}</span>
+    <span class="print-only">{{ 'dashboard.updated' | transloco }} {{ updatedAt() }}</span>
+    <span class="print-hidden">{{ 'dashboard.updated' | transloco }} {{ relativeTime() }}</span>
     <button
       hlmBtn
       type="button"
       variant="ghost"
       size="sm"
-      class="shrink-0"
+      class="print-hidden shrink-0"
       [title]="'dashboard.refresh' | transloco"
       [attr.aria-label]="'dashboard.refresh' | transloco"
       (click)="refresh()"
@@ -56,41 +60,53 @@
     </button>
   </div>
 
-  <!-- The export: dropdown with CSV and PDF options -->
-  <div class="relative shrink-0">
+  <!--
+    The export: a menu, so the two ways a report leaves the screen sit in one
+    place. Both are REAL — the CSV is a file, the PDF opens the browser's
+    print dialog on the report print sheet (no PDF library, no "coming soon"
+    placeholder). The range the file covers is in the trigger's tooltip.
+  -->
+  <div class="print-hidden shrink-0">
     <button
       hlmBtn
       type="button"
       variant="outline"
       size="sm"
       class="gap-1"
+      data-testid="dashboard-export"
+      [hlmDropdownMenuTrigger]="exportMenu"
+      align="end"
       [title]="exportTooltip()"
       [attr.aria-label]="exportTooltip()"
-      (click)="toggleExportMenu()"
     >
       <ng-icon name="lucideDownload" class="size-4" aria-hidden="true" />
       <span class="hidden sm:inline">{{ 'dashboard.exportReport' | transloco }}</span>
       <ng-icon name="lucideChevronDown" class="size-3.5" aria-hidden="true" />
     </button>
-    
-    @if (exportMenuOpen()) {
-      <div class="absolute end-0 mt-1 w-40 rounded-md border bg-popover p-1 shadow-md z-50">
+
+    <ng-template #exportMenu>
+      <hlm-dropdown-menu class="min-w-48 rounded-md">
         <button
-          class="w-full text-start px-3 py-2 text-sm rounded-md hover:bg-accent"
+          hlmDropdownMenuItem
+          class="flex items-center gap-2"
+          data-testid="dashboard-export-csv"
           (click)="exportCsv()"
         >
-          {{ 'dashboard.exportCsv' | transloco }}
+          <ng-icon name="lucideFileSpreadsheet" aria-hidden="true" />
+          <span>{{ 'dashboard.exportCsv' | transloco }}</span>
         </button>
         <button
-          class="w-full text-start px-3 py-2 text-sm rounded-md hover:bg-accent disabled:opacity-50"
-          [disabled]="true"
-          [title]="'dashboard.exportPdfSoon' | transloco"
+          hlmDropdownMenuItem
+          class="flex items-center gap-2"
+          data-testid="dashboard-export-pdf"
+          [attr.title]="'dashboard.exportPdfHint' | transloco"
+          (click)="printReport()"
         >
-          {{ 'dashboard.exportPdf' | transloco }}
-          <span class="ms-1 text-xs text-muted-foreground">({{ 'dashboard.soon' | transloco }})</span>
+          <ng-icon name="lucidePrinter" aria-hidden="true" />
+          <span>{{ 'dashboard.exportPdf' | transloco }}</span>
         </button>
-      </div>
-    }
+      </hlm-dropdown-menu>
+    </ng-template>
   </div>
 
   <!-- Custom date range popover -->

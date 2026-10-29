@@ -24,3 +24,13 @@
     opacity: 0.7;
   }
 }
+
+/*
+ * The report's PRINT layout is NOT here: a page's print rules have to reach
+ * the cards inside the widget components (the breakdowns, the attention
+ * panel), and component styles cannot cross that boundary. They live in the
+ * global print sheet, scoped to `html.dashboard-print` — see the
+ * "Printing a page that is meant to reach paper" section in
+ * src/styles/index.css.
+ */
+

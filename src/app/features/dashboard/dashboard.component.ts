@@ -1,4 +1,4 @@
-﻿import { Component, inject, signal, computed } from '@angular/core';
+﻿import { Component, DestroyRef, inject, signal, computed } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
@@ -25,6 +25,7 @@ import { AuthService } from '../../core/auth/auth.service';
 import { DashboardToolbarComponent } from '../../shared/components/dashboard/dashboard-toolbar/dashboard-toolbar.component';
 import { StoreSettingsService } from '../../core/settings/store-settings.service';
 import { computeDelta } from '../../core/dashboard/delta';
+import { PrintMode } from '../../core/print/print-mode';
 
 /** The ranges the dashboard toolbar offers, in days. `?days=` outside this
     list is a hand-edited or stale URL and is ignored. */
@@ -62,8 +63,16 @@ export class DashboardComponent {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
+  private readonly destroyRef = inject(DestroyRef);
   readonly statsService = inject(DashboardStatsService);
   readonly storeSettings = inject(StoreSettingsService);
+
+  /**
+   * The report prints on the LIGHT stylesheet with the shell chrome removed.
+   * This page owns that state, so Ctrl+P (which fires `beforeprint` without
+   * any button) produces the same clean sheet as the export menu does.
+   */
+  private readonly printMode = new PrintMode();
 
   /** Every widget is gated by its own permission.  If the user lacks the
       specific permission the widget simply does not render — no empty card. */
@@ -149,6 +158,20 @@ export class DashboardComponent {
   readonly missingPermission = this.route.snapshot.queryParamMap.get('permission') ?? null;
 
   constructor() {
+    // A printed report is paper, not a dashboard: the page drops dark mode
+    // and the shell chrome for as long as the print lasts, and puts the
+    // screen back exactly as it was afterwards. Bound to the browser events
+    // (not only to the button) so Ctrl+P prints the same clean sheet.
+    const enterPrint = () => this.printMode.enter();
+    const exitPrint = () => this.printMode.exit();
+    window.addEventListener('beforeprint', enterPrint);
+    window.addEventListener('afterprint', exitPrint);
+    this.destroyRef.onDestroy(() => {
+      window.removeEventListener('beforeprint', enterPrint);
+      window.removeEventListener('afterprint', exitPrint);
+      this.printMode.exit();
+    });
+
     // The range lives in the URL (`?days=90`): the toolbar writes it on every
     // pick, so the reader's choice survives a reload and the back button can
     // walk back through the ranges. The stats service starts at 30 days, so
@@ -160,5 +183,19 @@ export class DashboardComponent {
       if (days === this.statsService.days()) return;
       this.statsService.setDays(days);
     });
+  }
+
+  /**
+   * Print the report — the "Export PDF" action.
+   *
+   * The browser's print dialog IS the PDF writer here ("Save as PDF"): the
+   * dashboard already is the report, so a client-side PDF library would only
+   * re-draw it worse and add a dependency. The light stylesheet is applied
+   * BEFORE `window.print()`, because the preview is rendered from the current
+   * DOM — waiting for `beforeprint` would be a race in some browsers.
+   */
+  printReport(): void {
+    this.printMode.enter();
+    window.print();
   }
 }
