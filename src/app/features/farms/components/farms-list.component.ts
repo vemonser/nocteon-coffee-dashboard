@@ -36,6 +36,7 @@ import {
   lucideLoader2,
 } from '@ng-icons/lucide';
 
+import { EmptyStateComponent } from '../../../shared/components/empty-state/empty-state.component';
 import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
 import { ClickOutsideDirective } from '../../../shared/directives/click-outside.directive';
 import { LifecycleTabsComponent } from '../../../shared/components/lifecycle-tabs/lifecycle-tabs.component';
@@ -54,6 +55,7 @@ import { AuthService } from '../../../core/auth/auth.service';
     FormsModule,
     ReactiveFormsModule,
     HasPermissionDirective,
+    EmptyStateComponent,
     DataTableComponent,
     ClickOutsideDirective,
     LifecycleTabsComponent,
@@ -82,6 +84,11 @@ import { AuthService } from '../../../core/auth/auth.service';
   templateUrl: './farms-list.component.html',
 })
 export class FarmsListComponent extends BaseListComponent<FarmResponse, FarmRequest> {
+
+  /** The create action's own copy, for the empty state's button. */
+  protected override createActionLabel(): string {
+    return this.t('farms.add', 'Add farm');
+  }
   private farmService = inject(FarmService);
   private originService = inject(OriginService);
   private auth = inject(AuthService);

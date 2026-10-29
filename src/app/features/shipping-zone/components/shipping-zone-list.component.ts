@@ -31,6 +31,7 @@ import {
   lucideList,
 } from '@ng-icons/lucide';
 
+import { EmptyStateComponent } from '../../../shared/components/empty-state/empty-state.component';
 import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
 import { ClickOutsideDirective } from '../../../shared/directives/click-outside.directive';
 import { PagerComponent } from '../../../shared/components/pager/pager.component';
@@ -46,6 +47,7 @@ import { TranslocoPipe } from '@jsverse/transloco';
     FormsModule,
     ReactiveFormsModule,
     HasPermissionDirective,
+    EmptyStateComponent,
     DataTableComponent,
     ClickOutsideDirective,
     PagerComponent,
@@ -81,6 +83,11 @@ export class ShippingZoneListComponent extends BaseListComponent<
   ShippingZoneRequest,
   number
 > {
+
+  /** The create action's own copy, for the empty state's button. */
+  protected override createActionLabel(): string {
+    return this.t('shippingZones.add', 'Add shipping zone');
+  }
   private shippingZoneService = inject(ShippingZoneService);
   protected readonly language = inject(LanguageService);
   private auth = inject(AuthService);

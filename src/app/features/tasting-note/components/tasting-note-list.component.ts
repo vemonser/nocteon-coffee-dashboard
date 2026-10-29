@@ -39,6 +39,7 @@ import {
   lucideChevronRight,
 } from '@ng-icons/lucide';
 
+import { EmptyStateComponent } from '../../../shared/components/empty-state/empty-state.component';
 import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
 import { ClickOutsideDirective } from '../../../shared/directives/click-outside.directive';
 import { PagerComponent } from '../../../shared/components/pager/pager.component';
@@ -53,6 +54,7 @@ import { TrashBannerComponent } from '../../../shared/components/trash-banner/tr
     FormsModule,
     ReactiveFormsModule,
     HasPermissionDirective,
+    EmptyStateComponent,
     DataTableComponent,
     ClickOutsideDirective,
     PagerComponent,
@@ -88,6 +90,11 @@ import { TrashBannerComponent } from '../../../shared/components/trash-banner/tr
   templateUrl: './tasting-note-list.component.html',
 })
 export class TastingNoteListComponent extends BaseListComponent<TastingNoteResponse, TastingNoteRequest> {
+
+  /** The create action's own copy, for the empty state's button. */
+  protected override createActionLabel(): string {
+    return this.t('tastingNotes.add', 'Add tasting note');
+  }
   private tastingNoteService = inject(TastingNoteService);
   protected readonly language = inject(LanguageService);
   protected translationHelper = inject(TranslationFormHelper);

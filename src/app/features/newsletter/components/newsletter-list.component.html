@@ -55,14 +55,21 @@
     </div>
   }
 
+  <!-- Error: a failed fetch is a state of its own, never an empty list. -->
+  @if (!loading() && loadError()) {
+    <app-error-state (retry)="load()" />
+  }
+
   <!-- The table, like every other list -->
-  @if (!loading()) {
+  @if (!loading() && !loadError()) {
     <div class="card-surface">
       <app-data-table
         [data]="items()"
         [columns]="columns"
         [loading]="loading()"
-        [emptyMessage]="'newsletter.empty' | transloco"
+        [emptyMessage]="hasSearch() ? ('common.noSearchResults' | transloco) : ('newsletter.empty' | transloco)"
+        [emptyHint]="hasSearch() ? ('common.tryAdjusting' | transloco) : ('newsletter.emptyHint' | transloco)"
+        [emptyAction]="hasSearch() ? listEmptyAction() : null"
         [showEdit]="false"
         [showDelete]="false"
         [showView]="false"

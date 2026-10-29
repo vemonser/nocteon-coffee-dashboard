@@ -3,6 +3,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HasPermissionDirective } from '../../../core/auth/permission.directive';
 import { AuthService } from '../../../core/auth/auth.service';
+import { ErrorStateComponent } from '../../../shared/components/error-state/error-state.component';
 import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
 import { PagerComponent } from '../../../shared/components/pager/pager.component';
 import { LifecycleTabsComponent } from '../../../shared/components/lifecycle-tabs/lifecycle-tabs.component';
@@ -46,6 +47,7 @@ import { KpiCardComponent } from '../../../shared/components/dashboard/kpi-card/
     FormsModule,
     ReactiveFormsModule,
     HasPermissionDirective,
+    ErrorStateComponent,
     DataTableComponent,
     PagerComponent,
     LifecycleTabsComponent,

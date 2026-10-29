@@ -41,11 +41,19 @@
   }
 
   <!-- Options grid -->
-  @if (!loading() && items().length === 0) {
-    <div class="rounded-xl border border-dashed py-16 text-center text-muted-foreground">
-      <ng-icon name="lucideSlidersHorizontal" class="mx-auto mb-3 size-10 opacity-50" />
-      {{ 'productOptions.empty' | transloco }}
-    </div>
+  @if (!loading() && loadError()) {
+    <app-error-state (retry)="load()" />
+  }
+
+  @if (!loading() && !loadError() && items().length === 0) {
+    <app-empty-state
+      icon="lucideSlidersHorizontal"
+      class="card-surface"
+      [title]="hasSearch() ? ('common.noSearchResults' | transloco) : ('productOptions.empty' | transloco)"
+      [hint]="hasSearch() ? ('common.tryAdjusting' | transloco) : ('productOptions.emptyHint' | transloco)"
+      [actionLabel]="listEmptyAction()?.label ?? ''"
+      (action)="listEmptyAction()?.action()"
+    />
   }
 
   @if (!loading() && items().length > 0) {

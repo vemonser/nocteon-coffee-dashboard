@@ -40,6 +40,7 @@ import {
   lucideChevronRight,
 } from '@ng-icons/lucide';
 
+import { EmptyStateComponent } from '../../../shared/components/empty-state/empty-state.component';
 import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
 import { ClickOutsideDirective } from '../../../shared/directives/click-outside.directive';
 import { PagerComponent } from '../../../shared/components/pager/pager.component';
@@ -55,6 +56,7 @@ import { TrashBannerComponent } from '../../../shared/components/trash-banner/tr
     FormsModule,
     ReactiveFormsModule,
     HasPermissionDirective,
+    EmptyStateComponent,
     DataTableComponent,
     ClickOutsideDirective,
     PagerComponent,
@@ -91,6 +93,11 @@ import { TrashBannerComponent } from '../../../shared/components/trash-banner/tr
   templateUrl: './processing-method-list.component.html',
 })
 export class ProcessingMethodListComponent extends BaseListComponent<ProcessingMethodResponse, ProcessingMethodRequest> {
+
+  /** The create action's own copy, for the empty state's button. */
+  protected override createActionLabel(): string {
+    return this.t('processingMethods.add', 'Add processing method');
+  }
   private processingMethodService = inject(ProcessingMethodService);
   protected readonly language = inject(LanguageService);
   protected translationHelper = inject(TranslationFormHelper);

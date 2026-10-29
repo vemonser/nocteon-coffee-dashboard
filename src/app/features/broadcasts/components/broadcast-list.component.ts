@@ -33,6 +33,8 @@ import { PagerComponent } from '../../../shared/components/pager/pager.component
 import { MultiSelect, MultiSelectOption } from '../../../shared/components/multi-select/multi-select.component';
 import { LocalizedDateComponent } from '../../../shared/ui/localized-date/localized-date.component';
 import { PluralPipe } from '../../../shared/pipes/plural.pipe';
+import { EmptyStateComponent } from '../../../shared/components/empty-state/empty-state.component';
+import { ErrorStateComponent } from '../../../shared/components/error-state/error-state.component';
 
 /**
  * The broadcasts list.
@@ -57,6 +59,8 @@ import { PluralPipe } from '../../../shared/pipes/plural.pipe';
   selector: 'app-broadcast-list',
   standalone: true,
   imports: [
+    EmptyStateComponent,
+    ErrorStateComponent,
     LocalizedDateComponent,
     PluralPipe,
     PagerComponent,
@@ -90,6 +94,11 @@ import { PluralPipe } from '../../../shared/pipes/plural.pipe';
   templateUrl: './broadcast-list.component.html',
 })
 export class BroadcastListComponent extends BaseListComponent<BroadcastResponse, BroadcastRequest> {
+
+  /** The create action's own copy, for the empty state's button. */
+  protected override createActionLabel(): string {
+    return this.t('broadcasts.create', 'New broadcast');
+  }
 
   protected override createPermission = 'broadcast:create';
   protected override updatePermission = 'broadcast:update';

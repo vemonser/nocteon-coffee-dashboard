@@ -11,6 +11,7 @@ import { PluralPipe } from '../../shared/pipes/plural.pipe';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { DashboardStatsService } from './services/dashboard-stats.service';
 import { KpiCardComponent } from '../../shared/components/dashboard/kpi-card/kpi-card.component';
+import { ErrorStateComponent } from '../../shared/components/error-state/error-state.component';
 import { NeedsAttentionPanelComponent } from '../../shared/components/dashboard/needs-attention-panel/needs-attention-panel.component';
 import { DeviceListComponent } from '../../shared/components/dashboard/device-list/device-list.component';
 import { LowStockProductsComponent } from '../../shared/components/dashboard/low-stock-products/low-stock-products.component';
@@ -35,6 +36,7 @@ const RANGE_DAYS = [1, 7, 30, 90, 365];
   selector: 'app-dashboard',
   standalone: true,
   imports: [
+    ErrorStateComponent,
     HlmButtonImports,
     HlmCardImports,
     NgIcon,

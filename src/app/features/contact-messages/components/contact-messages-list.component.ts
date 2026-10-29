@@ -40,6 +40,8 @@ import { ContactResponse, ContactStats } from '../models/contact-message.model';
 import { ContactMessageService } from '../services/contact-message.service';
 import { UserService } from '../../users/services/user.service';
 import { AuthService } from '../../../core/auth/auth.service';
+import { EmptyStateComponent } from '../../../shared/components/empty-state/empty-state.component';
+import { ErrorStateComponent } from '../../../shared/components/error-state/error-state.component';
 
 type MessageTab = 'all' | 'unread' | 'replied' | 'archived';
 
@@ -47,6 +49,8 @@ type MessageTab = 'all' | 'unread' | 'replied' | 'archived';
   selector: 'app-contact-messages-list',
   standalone: true,
   imports: [
+    ErrorStateComponent,
+    EmptyStateComponent,
     CommonModule,
     FormsModule,
     RouterModule,
@@ -100,6 +104,8 @@ export class ContactMessagesListComponent {
     unreadCount: 0,
   });
   readonly loading = signal(false);
+  /** The last page load failed: the list cannot tell "empty" from "broken". */
+  readonly loadError = signal(false);
   readonly total = signal(0);
   readonly unreadTotal = signal(0);
   readonly tab = signal<MessageTab>('all');
@@ -175,6 +181,7 @@ export class ContactMessagesListComponent {
 
   protected loadPage(): void {
     this.loading.set(true);
+    this.loadError.set(false);
     const tab = this.tab();
     let request;
     if (tab === 'all') {
@@ -213,6 +220,7 @@ export class ContactMessagesListComponent {
       },
       error: (err) => {
         this.loading.set(false);
+        this.loadError.set(true);
         this.notify.apiError(err, 'notify.errorFallback', 'Could not load messages');
       },
     });

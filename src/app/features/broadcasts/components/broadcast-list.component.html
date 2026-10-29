@@ -54,10 +54,19 @@
   }
 
   <!-- Empty -->
-  @if (!loading() && items().length === 0) {
-    <div class="py-16 text-center text-muted-foreground border-2 border-dashed rounded-md">
-      {{ 'broadcasts.empty' | transloco }}
-    </div>
+  @if (!loading() && loadError()) {
+    <app-error-state (retry)="load()" />
+  }
+
+  @if (!loading() && !loadError() && items().length === 0) {
+    <app-empty-state
+      icon="lucideMegaphone"
+      class="card-surface"
+      [title]="hasSearch() ? ('common.noSearchResults' | transloco) : ('broadcasts.empty' | transloco)"
+      [hint]="hasSearch() ? ('common.tryAdjusting' | transloco) : ('broadcasts.emptyHint' | transloco)"
+      [actionLabel]="listEmptyAction()?.label ?? ''"
+      (action)="listEmptyAction()?.action()"
+    />
   }
 
   <!-- List -->

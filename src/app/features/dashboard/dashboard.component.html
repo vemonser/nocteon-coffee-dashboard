@@ -200,6 +200,20 @@
           </hlm-card>
         }
       </div>
+    } @else {
+      <!--
+        FE-27: a failed overview used to leave the page as a header and a
+        toolbar — no numbers, no message and no way forward. A whole-page
+        failure is a state: it says what happened, repeats the API's reason
+        and offers the retry that really refetches.
+      -->
+      <app-error-state
+        data-testid="dashboard-error"
+        [titleKey]="'dashboard.overviewErrorTitle'"
+        [hintKey]="'common.loadFailedHint'"
+        [message]="statsService.overviewError() ?? ''"
+        (retry)="statsService.retry()"
+      />
     }
   }
 </div>
