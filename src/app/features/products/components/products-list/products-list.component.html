@@ -6,10 +6,30 @@
       <p class="text-muted-foreground">{{ totalItems() }} {{ 'products.total' | transloco }}</p>
     </div>
     @if (!isTrash()) {
-      <button *hasPermission="'product:create'" hlmBtn (click)="goToCreate()">
-        <ng-icon name="lucidePlus" class="mr-2 size-4" />
-        {{ 'products.add' | transloco }}
-      </button>
+      <div class="flex items-center gap-2">
+        <span
+          hlmTooltip
+          position="bottom"
+          [brnTooltip]="'products.export.hint' | transloco"
+          class="inline-flex"
+        >
+          <button
+            hlmBtn
+            variant="outline"
+            type="button"
+            data-testid="products-export"
+            [disabled]="exporting() || items().length === 0"
+            (click)="exportCsv()"
+          >
+            <ng-icon name="lucideDownload" class="me-2 size-4" aria-hidden="true" />
+            {{ 'products.export.button' | transloco }}
+          </button>
+        </span>
+        <button *hasPermission="'product:create'" hlmBtn (click)="goToCreate()">
+          <ng-icon name="lucidePlus" class="mr-2 size-4" />
+          {{ 'products.add' | transloco }}
+        </button>
+      </div>
     }
   </div>
 

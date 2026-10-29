@@ -9,6 +9,8 @@ import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmBadgeImports } from '@spartan-ng/helm/badge';
 import { HlmInputImports } from '@spartan-ng/helm/input';
 import { HlmSelectImports } from '@spartan-ng/helm/select';
+import { HlmTooltipImports } from '@spartan-ng/helm/tooltip';
+import { BrnTooltip } from '@spartan-ng/brain/tooltip';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
   lucideSearch,
@@ -20,6 +22,7 @@ import {
   lucideCopy,
   lucideExternalLink,
   lucideTrash2,
+  lucideDownload,
 } from '@ng-icons/lucide';
 import { PageResponse } from '../../../../core/models/api-response.model';
 import { ProductListItem, ProductListParams, ProductType } from '../../models/product.models';
@@ -36,7 +39,11 @@ import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { PagerComponent } from '../../../../shared/components/pager/pager.component';
 import { NotifyService } from '../../../../core/notify/notify.service';
 import { RowMenuAction } from '../../../../shared/ui/actions-cell/actions-cell.component';
-import { Observable } from 'rxjs';
+import { Observable, map, of, switchMap } from 'rxjs';
+import { LanguageService } from '../../../../core/i18n/language.service';
+import { StoreSettingsService } from '../../../../core/settings/store-settings.service';
+import { formatCurrencyPlain } from '../../../../shared/utils/locale-format';
+import { buildProductsCsv, withUtf8Bom } from '../../products-csv';
 
 @Component({
   selector: 'app-products-list',
@@ -53,6 +60,8 @@ import { Observable } from 'rxjs';
     HlmBadgeImports,
     HlmInputImports,
     HlmSelectImports,
+    HlmTooltipImports,
+    BrnTooltip,
     HasPermissionDirective,
     NgIcon,
     TranslocoPipe,
@@ -68,6 +77,7 @@ import { Observable } from 'rxjs';
       lucideCopy,
       lucideExternalLink,
       lucideTrash2,
+      lucideDownload,
     }),
   ],
   templateUrl: './products-list.component.html',
@@ -84,6 +94,8 @@ export class ProductsListComponent {
   private confirmDialog = inject(ConfirmDialogService);
   private readonly transloco = inject(TranslocoService);
   private readonly productTagService = inject(ProductTagService);
+  private readonly language = inject(LanguageService);
+  private readonly storeSettings = inject(StoreSettingsService);
 
   /** FE-10: the tag vocabulary for the filter, loaded once. */
   readonly productTags = signal<ProductTag[]>([]);
@@ -213,6 +225,9 @@ export class ProductsListComponent {
   readonly bulkProgress = signal<{ done: number; total: number } | null>(null);
   readonly bulkErrors = signal<string[]>([]);
   readonly bulkBusy = signal(false);
+
+  /** FE-15: the export reads every filtered page (and one barcode query), so it shows progress. */
+  readonly exporting = signal(false);
 
   private columnHelper = createColumnHelper<ProductListItem>();
 
@@ -671,6 +686,90 @@ export class ProductsListComponent {
       this.currentPage.set(0);
       this.load();
     }, 400);
+  }
+
+  // ── FE-15: products CSV export ─────────────────────────────────────────────
+
+  /**
+   * Export the whole filtered VIEW — not just the page on screen — as a CSV with a UTF-8 BOM,
+   * the same contract the orders and broadcasts exports follow.
+   *
+   * <p>The list rows carry no variants, so the barcode column comes from one extra read for every
+   * exported product id ({@code /variant-barcodes}) instead of one product-detail request per row:
+   * the export is a whole catalogue operation, and an N+1 here would be the slowest thing on the
+   * page. A product with several barcoded variants lists them all; a product with none leaves the
+   * cell empty rather than printing "-" or "undefined".
+   */
+  exportCsv(): void {
+    if (this.exporting()) return;
+    this.exporting.set(true);
+
+    this.collectExportRows().subscribe({
+      next: ({ rows, barcodes }) => {
+        this.exporting.set(false);
+        this.writeCsv(rows, barcodes);
+        this.notify.success('products.export.done', 'Products exported');
+      },
+      error: (err) => {
+        this.exporting.set(false);
+        this.notify.apiError(err, 'products.export.error', 'Could not export the products');
+      },
+    });
+  }
+
+  /** Every page the current filter matches, plus the barcode map for those rows. */
+  private collectExportRows(): Observable<{
+    rows: Record<string, any>[];
+    barcodes: Record<string, string[]>;
+  }> {
+    const f = this.filters.value;
+    const params = {
+      size: 100,
+      search: f.search || undefined,
+      categorySlug: this.categorySlug() ?? undefined,
+      isActive: !f.status || f.status === 'all' ? undefined : f.status === 'active',
+      featured: !f.featured || f.featured === 'all' ? undefined : f.featured === 'featured',
+      productType: !f.type || f.type === 'all' ? undefined : (f.type as ProductType),
+      tagSlug: f.tag || undefined,
+      sort: this.currentSort,
+      direction: this.currentDirection,
+    };
+
+    const page = (index: number, acc: Record<string, any>[]): Observable<Record<string, any>[]> =>
+      this.productService.getAll({ ...params, page: index }).pipe(
+        switchMap((res) => {
+          const content = (res.data.content ?? []) as Record<string, any>[];
+          const all = [...acc, ...content];
+          const total = res.data.totalElements ?? all.length;
+          // Stop on the last page, and on an empty one: a total that disagrees with the rows
+          // must not turn into an endless walk.
+          return content.length === 0 || all.length >= total ? of(all) : page(index + 1, all);
+        }),
+      );
+
+    return page(0, []).pipe(
+      switchMap((rows) =>
+        this.productService
+          .getVariantBarcodes(rows.map((row) => row['id']))
+          .pipe(map((res) => ({ rows, barcodes: res.data ?? {} }))),
+      ),
+    );
+  }
+
+  private writeCsv(rows: Record<string, any>[], barcodes: Record<string, string[]>): void {
+    const money = (value: unknown): string =>
+      formatCurrencyPlain(value, this.language.current(), this.storeSettings.currency());
+
+    // The BOM, so Excel opens the Arabic names as UTF-8 rather than as Latin-1.
+    const blob = new Blob([withUtf8Bom(buildProductsCsv(rows, barcodes, money))], {
+      type: 'text/csv;charset=utf-8;',
+    });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = `products-${new Date().toISOString().slice(0, 10)}.csv`;
+    anchor.click();
+    URL.revokeObjectURL(url);
   }
 
   protected onSelectionChange(event: { id: number; checked: boolean }): void {

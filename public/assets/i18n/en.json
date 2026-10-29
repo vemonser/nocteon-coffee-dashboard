@@ -431,6 +431,9 @@
       "noVariants": "No variants yet. a product needs at least one (e.g. 250g, 500g, 1kg).",
       "sku": "SKU",
       "skuPlaceholder": "e.g. aURUM-ETH-250",
+      "barcode": "Barcode",
+      "barcodePlaceholder": "e.g. 4006381333931",
+      "barcodeHint": "Optional. Scan or type the code printed on the packaging.",
       "weight": "Weight (g)",
       "price": "Price",
       "compareAtPrice": "Compare at price",
@@ -478,7 +481,8 @@
         "priceRequired": "Price is required",
         "priceMin": "Price must be greater than 0",
         "compareAtGreater": "Compare-at price must be greater than the price",
-        "margin": "Margin: {{value}}%"
+        "margin": "Margin: {{value}}%",
+        "barcodeMax": "A barcode cannot be longer than 64 characters"
       }
     },
     "media": {
@@ -631,6 +635,12 @@
       "moveToTrash": "Move to trash",
       "clear": "Clear",
       "someFailed": "{{count}} action(s) failed"
+    },
+    "export": {
+      "button": "Export CSV",
+      "hint": "Export the products in this view, with their variant barcodes",
+      "done": "Products exported",
+      "error": "Could not export the products"
     }
   },
   "categories": {

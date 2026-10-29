@@ -262,6 +262,17 @@ as a column.
 **Acceptance** Optional `barcode` field (unique when set), searchable in the
 products list, included in the CSV export.
 **Effort** 0.5 day. **Deps** none.
+**Shipped** V20 adds `product_variants.barcode varchar(64)` with a partial unique
+index (`WHERE barcode IS NOT NULL`), so "unique when set" still allows any number
+of variants with none; blank input is stored as NULL, trimmed on write, and a
+duplicate answers 409 with a localized message (`error.productVariant.duplicateBarcode`).
+The dashboard list search reaches `barcode` and `sku` through one `EXISTS`
+subquery (no row multiplication); the variants step of the wizard carries the
+field in both the card and table views; the products list gained a CSV export
+(`Export CSV`, UTF-8 BOM, whole filtered view) whose `Barcode` column lists every
+variant code of the product and stays empty when there is none. Evidence:
+`ProductVariantBarcodeIntegrationTest`, `products-csv.spec.ts`,
+`product-wizard-state.service.spec.ts`.
 
 ---
 
