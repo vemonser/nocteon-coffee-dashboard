@@ -1,4 +1,7 @@
-import { Component, input, computed } from '@angular/core';
+import { Component, computed, inject, input } from '@angular/core';
+import { LanguageService } from '../../../core/i18n/language.service';
+import { TranslocoService } from '@jsverse/transloco';
+import { formatCount, formatRating } from '../../../shared/utils/locale-format';
 
 /**
  * Read-only star rating.
@@ -17,7 +20,7 @@ import { Component, input, computed } from '@angular/core';
     <span
       class="inline-flex items-center gap-1"
       role="img"
-      [attr.aria-label]="rating() + ' out of ' + max()"
+      [attr.aria-label]="ariaLabel()"
     >
       @for (i of stars(); track i) {
         @if (isFull(i)) {
@@ -60,6 +63,16 @@ export class RatingStarsComponent {
   readonly rating = input<number>(0);
   readonly max = input<number>(5);
   readonly showText = input<boolean>(false);
+
+  protected readonly language = inject(LanguageService);
+  protected readonly transloco = inject(TranslocoService);
+
+  protected readonly ariaLabel = computed(() =>
+    this.transloco.translate('common.rating.outOf', {
+      value: formatRating(this.rating(), this.language.language()),
+      max: formatCount(this.max(), this.language.language()),
+    }),
+  );
 
   /** Unique per instance so gradient ids never collide across the page. */
   private readonly uid = Math.random().toString(36).slice(2, 8);

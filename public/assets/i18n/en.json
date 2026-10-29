@@ -223,6 +223,9 @@
     "previousPage": "Previous page",
     "price": "Price",
     "priceRange": "Price range",
+    "rating": {
+      "outOf": "{{value}} out of {{max}}"
+    },
     "profile": "Profile",
     "removeImage": "Remove image",
     "required": "is required",
@@ -615,7 +618,6 @@
       "lowStockBadge": "Low stock",
       "inStock": "{{count}} in stock",
       "variants": "{{count}} variants",
-      "ratingValue": "{{rating}} out of 5",
       "reviewCount_one": "{{count}} review",
       "reviewCount_other": "{{count}} reviews",
       "noRating": "No rating",

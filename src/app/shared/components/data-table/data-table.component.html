@@ -350,7 +350,7 @@
                   @let rating = $any(cell.getValue());
                   @if (hasRating(rating)) {
                     @let ratingLabel =
-                      ('products.table.ratingValue' | transloco: { rating: formatRating(rating.averageRating) }) +
+                      ('common.rating.outOf' | transloco: { value: formatRating(rating.averageRating), max: 5 }) +
                       ' — ' +
                       (rating.reviewCount | plural: 'products.table.reviewCount');
                     <span
