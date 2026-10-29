@@ -114,7 +114,9 @@
     "shippingZones": "Shipping zones",
     "contactMessages": "Contact messages",
     "carts": "Carts",
-    "categories": "Categories"
+    "categories": "Categories",
+    "esc": "Esc",
+    "searchFailed": "Search failed. Please try again."
   },
   "StoreSettingPage": {
     "title": "Store settings"
@@ -323,7 +325,12 @@
     "restoreNotFound": "This item is no longer in the trash."
   },
   "products": {
-    "draft": {"title":"Restore unsaved draft?","message":"There is an unsaved draft from {{time}}. Restore it?","restore":"Restore draft","discard":"Discard draft"},
+    "draft": {
+      "title": "Restore unsaved draft?",
+      "message": "There is an unsaved draft from {{time}}. Restore it?",
+      "restore": "Restore draft",
+      "discard": "Discard draft"
+    },
     "title": "Products",
     "total": "total",
     "add": "Add product",
@@ -494,7 +501,12 @@
       "socialImageHint": "Used in search results and link previews. Defaults to the cover image.",
       "useCoverImage": "Use the cover image",
       "imageNumber": "Image {{n}}",
-      "customSocialImage": "Custom image"
+      "customSocialImage": "Custom image",
+      "unsupportedType": "Unsupported file type. Use an image or a video.",
+      "fileTooLarge": "File is larger than 10 MB.",
+      "removeTitle": "Remove media",
+      "removeMessage": "Remove this media?",
+      "reorder": "Reorder"
     },
     "tastingNotes": {
       "title": "Tasting notes",

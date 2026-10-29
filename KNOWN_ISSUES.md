@@ -16,7 +16,7 @@ PRODUCTS-03 [fixed] Edit: Description and Story textareas are one line tall. Evi
 PRODUCTS-04 [open] Tasting notes and Pairings tabs use different UIs; unify with one chip-multiselect component. Evidence: no shared chip-multiselect component; both steps duplicate chip UI.
 PRODUCTS-05 [needs-decision] Story is not translated (needs a decision: EN/AR?). Evidence: CoffeeDetails.story is a single string; ProductTranslation has no story field.
 PRODUCTS-06 [needs-backend] Variants show options that do not apply to the product type (Size on coffee). Temporary config until the API provides appliesTo. Evidence: frontend reads option.appliesTo when present; fallback config remains until backend supplies it.
-PRODUCTS-07 [open] Media tile hover actions (set cover, alt text, delete, reorder) and the Variants Table view are unverified. Evidence: no test/audit artifact covering these.
+PRODUCTS-07 [fixed] Media tile hover actions (set cover, alt text, delete, reorder) and the Variants Table view are verified. Evidence: e2e/products-media-variants.spec.ts (5 passing); evidence/products-07/ before+after screenshots.
 PRODUCTS-08 [fixed] The Add product wizard was never audited. Evidence: QA harness audits /dashboard/products/new (products-new route).
 OPTIONS-01 [fixed] The "Add value" popover is not anchored to its trigger and opens in a page corner. Evidence: popover uses hlmPopoverTrigger on the button with sideOffset=8.
 OPTIONS-02 [fixed] A required field shows a red border before being touched. Evidence: default ErrorStateMatcher gates invalid styling on touched/submitted; no forceInvalid used.
