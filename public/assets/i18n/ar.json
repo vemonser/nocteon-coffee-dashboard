@@ -310,6 +310,7 @@
     "processing": "جارٍ التنفيذ…",
     "clear": "مسح",
     "refresh": "تحديث",
+    "showMoreOptions": "عرض المزيد من الخيارات",
     "countItems_zero": "لا منتجات",
     "countItems_one": "منتج واحد",
     "countItems_two": "منتجان",
@@ -2515,6 +2516,10 @@
   "appearance": {
     "light": "فاتح",
     "dark": "داكن",
+    "switchToDark": "التبديل إلى المظهر الداكن",
+    "switchToLight": "التبديل إلى المظهر الفاتح",
+    "darkEnabled": "تم تفعيل المظهر الداكن",
+    "lightEnabled": "تم تفعيل المظهر الفاتح",
     "accent": "لون التمييز",
     "accentChange": "تغيير لون التمييز",
     "burgundy": "عنابي",

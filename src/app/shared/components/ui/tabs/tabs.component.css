@@ -1,3 +1,32 @@
 :host {
   display: inline-block;
 }
+
+/*
+ * The "there is more past this edge" fade.
+ *
+ * It sits at the INLINE END, so it is on the right in English and on the left
+ * in Arabic. The gradient is written per direction (a gradient has no logical
+ * property) and it fades from the card to transparent, so it only ever hides
+ * the surface the group is painted on, never a colour of its own.
+ */
+.tabs-fade {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-end: 0;
+  width: 2rem;
+  border-start-end-radius: var(--radius-control);
+  border-end-end-radius: var(--radius-control);
+  background: linear-gradient(to left, var(--card) 30%, transparent);
+  pointer-events: none;
+}
+
+[dir='rtl'] .tabs-fade {
+  background: linear-gradient(to right, var(--card) 30%, transparent);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .tabs-fade {
+    transition: opacity 160ms ease;
+  }
+}

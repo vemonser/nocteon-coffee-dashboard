@@ -30,6 +30,7 @@ import {
 } from '@ng-icons/lucide';
 import { HlmSidebarImports } from '@spartan-ng/helm/sidebar';
 import { HlmSeparator } from '@spartan-ng/helm/separator';
+import { TranslocoPipe } from '@jsverse/transloco';
 import { filter } from 'rxjs';
 
 import { AuthService } from '../../../core/auth/auth.service';
@@ -49,6 +50,7 @@ import { UserMenuComponent } from '../../../shared/ui/user-menu/user-menu.compon
     NgIcon,
     HlmSeparator,
     UserMenuComponent,
+    TranslocoPipe,
   ],
   providers: [
     provideIcons({

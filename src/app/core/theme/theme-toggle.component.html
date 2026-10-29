@@ -1,7 +1,7 @@
 <button
   (click)="toggle($event)"
   class="theme-btn hidden items-center justify-center sm:flex"
-  [attr.aria-label]="(theme.isDark() ? 'appearance.light' : 'appearance.dark') | transloco"
+  [attr.aria-label]="nextThemeLabel() | transloco"
 >
   <svg width="24" height="24" viewBox="0 0 44 44" fill="none" aria-hidden="true">
     <!-- Body — sun/moon. Sun uses --primary (brand copper, adapts per theme —
@@ -41,3 +41,13 @@
     />
   </svg>
 </button>
+
+<!--
+  The result of the switch, announced. It stays in the DOM (always the same
+  element) and only its TEXT changes, because a live region that is created
+  together with its text is not announced by most screen readers — the region
+  has to exist first, then be updated.
+-->
+<span class="sr-only" role="status" aria-live="polite">
+  {{ announcementKey() ? (announcementKey() | transloco) : '' }}
+</span>

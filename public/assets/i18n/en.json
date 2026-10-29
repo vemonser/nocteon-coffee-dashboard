@@ -310,6 +310,7 @@
     "processing": "Processing…",
     "clear": "Clear",
     "refresh": "Refresh",
+    "showMoreOptions": "Show more options",
     "countItems_one": "{{count}} item",
     "countItems_other": "{{count}} items",
     "noItemsWarning": "This order has no line items — its total is the shipping, less the discount.",
@@ -2407,6 +2408,10 @@
   "appearance": {
     "light": "Light",
     "dark": "Dark",
+    "switchToDark": "Switch to dark theme",
+    "switchToLight": "Switch to light theme",
+    "darkEnabled": "Dark theme enabled",
+    "lightEnabled": "Light theme enabled",
     "accent": "Accent color",
     "accentChange": "Accent change",
     "burgundy": "Burgundy",
