@@ -98,17 +98,7 @@
   "src/app/features/products/components/steps/media-step/media-step.component.html": {
     "input": 3,
     "select": 0,
-    "button": 6
-  },
-  "src/app/features/products/components/steps/pairings-step/pairings-step.component.html": {
-    "input": 0,
-    "select": 0,
-    "button": 2
-  },
-  "src/app/features/products/components/steps/tasting-notes-step/tasting-notes-step.component.html": {
-    "input": 0,
-    "select": 0,
-    "button": 2
+    "button": 8
   },
   "src/app/features/products/components/steps/variants-step/variants-step.component.html": {
     "input": 0,
@@ -216,6 +206,11 @@
     "button": 1
   },
   "src/app/shared/ui/actions-cell/actions-cell.component.html": {
+    "input": 0,
+    "select": 0,
+    "button": 1
+  },
+  "src/app/shared/ui/chip-multiselect/chip-multiselect.component.html": {
     "input": 0,
     "select": 0,
     "button": 1

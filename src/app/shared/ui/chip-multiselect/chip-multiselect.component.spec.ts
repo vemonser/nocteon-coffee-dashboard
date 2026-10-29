@@ -1,5 +1,6 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { TestBed } from '@angular/core/testing';
+import { TranslocoService } from '@jsverse/transloco';
 import { ChipMultiselectComponent, ChipMultiselectItem } from './chip-multiselect.component';
 
 const ITEMS: ChipMultiselectItem[] = [
@@ -8,7 +9,28 @@ const ITEMS: ChipMultiselectItem[] = [
   { slug: 'c', name: 'Cherry' },
 ];
 
+/**
+ * The two labels that carry a value are translated with their parameters.
+ * A stub is enough: the shape of the sentence is the locale files' job
+ * (i18n-keys.spec guards those).
+ */
+const transloco = {
+  translate: (key: string, params?: Record<string, unknown>) => {
+    if (key === 'common.chipMultiselect.remove') return `Remove ${String(params?.['name'])}`;
+    if (key === 'common.chipMultiselect.counter') {
+      return `${String(params?.['count'])} of ${String(params?.['max'])}`;
+    }
+    return key;
+  },
+};
+
 describe('ChipMultiselectComponent', () => {
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [{ provide: TranslocoService, useValue: transloco }],
+    });
+  });
+
   it('toggles selection and emits the new list', () => {
     const fixture = TestBed.createComponent(ChipMultiselectComponent);
     fixture.componentRef.setInput('items', ITEMS);
@@ -45,6 +67,22 @@ describe('ChipMultiselectComponent', () => {
     // removing still works
     cmp.toggle('a');
     expect(emitted[0]).toEqual([]);
+  });
+
+  it('gives every chip its own remove label and interpolates the counter', () => {
+    const fixture = TestBed.createComponent(ChipMultiselectComponent);
+    fixture.componentRef.setInput('items', ITEMS);
+    fixture.componentRef.setInput('selected', ['a', 'b']);
+    fixture.componentRef.setInput('max', 3);
+    fixture.detectChanges();
+    const cmp = fixture.componentInstance;
+
+    // The chip's accessible name carries the item, so a screen reader does not
+    // hear five identical "Remove" buttons.
+    expect(cmp.removeAriaLabel('Alpha')).toBe('Remove Alpha');
+    expect(cmp.removeAriaLabel('Beta')).toBe('Remove Beta');
+    expect(cmp.counterText()).toBe('2 of 3');
+    expect(fixture.nativeElement.querySelector('button[aria-label="Remove Alpha"]')).toBeTruthy();
   });
 
   it('filters items by search term after debounce', async () => {

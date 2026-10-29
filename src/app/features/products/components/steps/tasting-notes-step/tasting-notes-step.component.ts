@@ -1,4 +1,6 @@
 import { Component, computed, inject, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { map, startWith } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormControl } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -35,7 +37,19 @@ export class TastingNotesStepComponent {
     })),
   );
 
-  readonly selected = computed<string[]>(() => this.state.tastingNotesArray.value as string[]);
+  /**
+   * The selected slugs. A FormArray is not a signal, so a `computed` over its
+   * `.value` kept the empty first read forever: the picked note never showed
+   * as a chip, its Add button never disabled, and the next pick silently
+   * replaced it. Follow the form's own stream instead.
+   */
+  readonly selected = toSignal(
+    this.state.form.valueChanges.pipe(
+      startWith(null),
+      map(() => [...(this.state.tastingNotesArray.value as string[])]),
+    ),
+    { initialValue: [...(this.state.tastingNotesArray.value as string[])] },
+  );
 
   constructor() {
     this.tastingNoteService.getAll({ size: 200 }).subscribe({

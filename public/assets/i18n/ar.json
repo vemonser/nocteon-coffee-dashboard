@@ -293,6 +293,11 @@
     "selectAll": "تحديد الكل",
     "selectRow": "تحديد الصف",
     "loadError": "تعذّر تحميل البيانات",
+    "chipMultiselect": {
+      "add": "إضافة",
+      "remove": "إزالة {{name}}",
+      "counter": "{{count}} من {{max}}"
+    },
     "farm": "مزرعة",
     "selectAllRows": "تحديد كل الصفوف",
     "moveToTrash": "نقل إلى سلة المهملات",
