@@ -27,5 +27,5 @@ NOTIF-02 [fixed] The /notifications page and wiring to the real API. Evidence: n
 JOURNAL-01 [fixed] Never audited: run the QA harness and list the findings. Evidence: QA harness audits /dashboard/journal (journal route).
 SEARCH-01 [open] Never audited: run the QA harness and list the findings. Evidence: global search palette not covered by route-based audit.
 BROADCAST-01 [fixed] Never audited: run the QA harness and list the findings. Evidence: QA harness audits /dashboard/broadcasts (broadcasts route).
-VERIFY-01 [open] Contact dialog: "The reply was saved" helper shown before any action, send-vs-save semantics, reply thread. Evidence: replySaved key exists but unused; send-vs-save semantics unverified.
+VERIFY-01 [fixed] Contact dialog: "The reply was saved" helper shown before any action, send-vs-save semantics, reply thread. Evidence: replySaved helper now gated behind saveDraft(); "Send reply" vs "Save draft" buttons; reply rendered as thread with author + timestamp; e2e/contact-messages.spec.ts passes (8 tests); evidence/verify-01/*.png.
 VERIFY-02 [open] Reviews: reviewer full name link, delete confirm. Roles: the role editor flow (new role, diff, delete). Evidence: reviews delete confirm exists; roles editor flow unverified.
