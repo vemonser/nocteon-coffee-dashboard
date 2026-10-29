@@ -205,21 +205,42 @@ holds. Evidence: `ProductTagServiceTest`, `ProductTagMapperTest`,
 viewport captures in `evidence/fe-10/`, Gate.
 **Storefront** not in this cycle — see DECISIONS.md, the contract is live.
 
-### FE-11 · Related / upsell products
+### FE-11 · Related / upsell products — done 29 Oct 2026
 **Why** Pairings are taste pairings, not cross-sell.
 **Scope** FS.
 **Acceptance** A product can reference 1-6 "You may also like" products; the
 wizard picks them; the public product page renders the block (hidden when
 empty).
 **Effort** 0.5 day. **Deps** none.
+**Shipped** `V19` adds `product_relations` with a `position` column, so the
+admin's order is the display order. `ProductRequest.relatedProductSlugs` takes
+at most six; a seventh, the product itself, or an unknown slug is refused
+rather than trimmed. The wizard's pairings step gained a "You may also like"
+picker (catalogue search, thumbnails, an n-of-6 counter) and the dashboard
+response returns slug/name/thumbnail for the chips. `GET /api/products/{slug}`
+returns `relatedProducts[]` as ready-to-render cards, empty when nothing is
+curated. Evidence: `ProductRelationServiceTest`,
+`ProductRelationsPersistenceTest` (the @OrderColumn round trip),
+`ProductSeoResponseMapperTest`, `evidence/fe-11/related-picker-1440.png`, Gate.
+**Storefront** still renders its same-category fallback; swapping it for this
+block belongs to the storefront cycle (contract recorded in DECISIONS.md).
 
-### FE-12 · Duplicate product
+### FE-12 · Duplicate product — done 29 Oct 2026
 **Why** Creating a near-identical product is manual today.
 **Scope** FS.
 **Acceptance** A row action duplicates the product (translations, variants,
 media, relations) with a `-copy` slug and inactive status; the wizard opens on
 the copy.
 **Effort** 0.5 day. **Deps** none.
+**Shipped** `POST /api/dashboard/products/{slug}/duplicate` (`product:create`)
+copies translations, variants, media, coffee details, tasting notes, pairings,
+brewing methods, tags and related products into an inactive draft. The slug is
+`<slug>-copy` (checked against trashed rows), every variant gets its own SKU,
+and stock starts at 0 so the inventory report is not doubled. The row action
+now calls it and opens the wizard on the copy — the old `/duplicate` route it
+navigated to never existed. Evidence: `ProductDuplicateIntegrationTest` (real
+database, both the copy and the untouched original),
+`evidence/fe-12/duplicate-copy-1440.png`, Gate.
 
 ### FE-13 · Inventory movement log
 **Why** Stock is a number with no history, so reconciliation is manual.

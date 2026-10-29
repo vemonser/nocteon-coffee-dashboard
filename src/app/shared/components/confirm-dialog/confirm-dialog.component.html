@@ -1,5 +1,5 @@
 @if (svc.state(); as opts) {
-  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm" (click)="svc.resolve(false)">
+  <div class="motion-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm" (click)="svc.resolve(false)">
     <div
       #surface
       role="dialog"
@@ -7,7 +7,7 @@
       tabindex="-1"
       cdkTrapFocus
       [cdkTrapFocusAutoCapture]="true"
-      class="dialog-surface w-full max-w-md p-6 outline-none"
+      class="motion-dialog dialog-surface w-full max-w-md p-6 outline-none"
       (click)="$event.stopPropagation()"
     >
       <h2 class="text-lg font-medium">{{ opts.title }}</h2>

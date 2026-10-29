@@ -1,0 +1,142 @@
+/*
+ * The motion system, in one place (UX_AUDIT_dashboard.md #4 / products #8).
+ *
+ * Rules this file encodes:
+ * - four durations, never above 400ms;
+ * - three easings (enter / exit / move);
+ * - only transform and opacity are animated (plus a sparing clip-path/filter);
+ * - every pattern collapses to a <=100ms fade (or nothing) under
+ *   prefers-reduced-motion.
+ *
+ * Components use the tokens (`--motion-duration-fast`, ...) instead of
+ * bespoke keyframes, so a change here changes the whole app.
+ */
+
+:root {
+  --motion-duration-instant: 100ms;
+  --motion-duration-fast: 160ms;
+  --motion-duration-base: 220ms;
+  --motion-duration-slow: 320ms;
+
+  --motion-ease-enter: cubic-bezier(0.16, 1, 0.3, 1);
+  --motion-ease-exit: cubic-bezier(0.4, 0, 1, 1);
+  --motion-ease-move: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* 1 in LTR, -1 in RTL: drawers and slides mirror through this. */
+  --motion-dir: 1;
+}
+
+[dir='rtl'] {
+  --motion-dir: -1;
+}
+
+/* ── Dialog / confirm: fade + scale from 0.97 ───────────────────────────── */
+
+.motion-dialog {
+  animation: motion-dialog-in var(--motion-duration-base) var(--motion-ease-enter);
+}
+
+.motion-overlay {
+  animation: motion-fade-in var(--motion-duration-fast) var(--motion-ease-enter);
+}
+
+@keyframes motion-dialog-in {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes motion-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ── Popovers / menus: fade + 4px in the opening direction ──────────────── */
+
+.motion-pop {
+  animation: motion-pop-in var(--motion-duration-fast) var(--motion-ease-enter);
+}
+
+@keyframes motion-pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── Rows: fade + 6px on FIRST load only (the host adds the class once) ─── */
+
+.motion-row-in {
+  animation: motion-row-in var(--motion-duration-fast) var(--motion-ease-enter) both;
+}
+
+@keyframes motion-row-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── Route change: cross-fade 180ms (View Transitions API) ──────────────── */
+
+/* The default group animation morphs width/height — forbidden. The
+   cross-fade of old/new is the whole transition. */
+::view-transition-group(root) {
+  animation: none;
+}
+
+::view-transition-old(root) {
+  animation: motion-fade-out var(--motion-duration-fast) var(--motion-ease-exit) both;
+}
+
+::view-transition-new(root) {
+  animation: motion-fade-in var(--motion-duration-fast) var(--motion-ease-enter) both;
+}
+
+@keyframes motion-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* ── Reduced motion: movement out, a short fade is the most that remains ── */
+
+@media (prefers-reduced-motion: reduce) {
+  .motion-dialog,
+  .motion-overlay,
+  .motion-pop,
+  .motion-row-in {
+    animation-duration: var(--motion-duration-instant);
+    animation-name: motion-fade-in;
+  }
+
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: var(--motion-duration-instant);
+  }
+
+  /* The dialog keeps its end state without a transform. */
+  .motion-dialog {
+    transform: none;
+  }
+}

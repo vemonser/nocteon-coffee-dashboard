@@ -1383,3 +1383,55 @@ Live evidence: saved SEO values through the wizard, read them back from
   - `GET /api/products?tagSlug=<slug>` filters the public list.
 - Remaining work there: swap the gallery image when a variant is selected, and render a tag
   filter that links to `?tagSlug=`. Must land on a clean branch.
+
+## Products — related products and duplicate (FE-11, FE-12, 29 Oct 2026)
+
+### "You may also like" is a curated, ordered relation — not a category query
+- `product_relations(product_id, related_product_id, position)` (V19). The storefront currently
+  fills its related block from the same category; that is a guess, and the admin now says
+  explicitly which products to show and in what order.
+- `@OrderColumn` is what carries that order; `ProductRelationsPersistenceTest` writes the rows,
+  drops the persistence context and reads them back, because a mocked test cannot see whether
+  the position column is honoured.
+- Three refusals instead of silent fixes: a seventh entry (the block is a merchandising pick, not
+  a catalogue dump), the product itself (a dead link on its own page), and an unknown slug (the
+  admin typed it — dropping it would look like a successful save).
+- The public response carries full cards, the dashboard response carries slug/name/thumbnail: the
+  wizard needs the picture for the chip, the storefront needs the card.
+
+### Duplicate copies everything except the three things that must differ
+- `POST /dashboard/products/{slug}/duplicate` is gated on `product:create` — it creates a product,
+  even though it starts from an existing one.
+- The slug is `<slug>-copy`, checked with a native query that **includes trashed rows**: the unique
+  index covers them, and `existsBySlug` (which carries `@SQLRestriction`) cannot see them.
+- Every variant gets `<sku>-copy`; two live rows cannot share a SKU.
+- Stock starts at **0**. Copying the count would double the inventory report for a product that
+  physically exists once.
+- The copy is inactive and not featured, so it cannot reach the storefront before it is edited.
+- The row action opens the wizard on the copy. It used to navigate to
+  `/dashboard/products/:slug/duplicate`, a route that was never registered — a 404 in production
+  code that no test covered.
+- Not copied on purpose: orders, reviews, journal links and the AI document (a copy has no
+  history; its index entry is built from its own content after the commit).
+
+### The dev database drifted and the seed tests caught it
+- `ReviewStatsIntegrationTest` and `SeedDataIntegrityTest` assert the seed is the truth (17
+  reviews, 2 pending). A parallel session moderated review #5 to REJECTED, so the suite reported
+  2 failures unrelated to this change. The seeded status was restored before the final run; the
+  lesson is that these two tests depend on mutable demo data — worth making them seed-invariant
+  rather than fixing the row each time.
+
+### Two duplicate edge cases, decided
+- **Duplicating a trashed product is a 404.** The trash view has no Duplicate action, and a copy of
+  a discarded product is almost always a mistake; restoring first is one click away.
+- **Soft-deleted variants are not copied.** They are retired rows kept for order history, and a new
+  draft resurrecting them would reappear on the storefront as selectable options.
+- Related products must be **active**: the picker only searches active products, and the API now
+  refuses an inactive slug, so a crafted request cannot put a dead link on a live product page.
+
+### Ordered relations are rows, not an ordered collection
+The first implementation mapped `product_relations` as a `@ManyToMany` with `@OrderColumn`. A
+reorder test showed why that is wrong here: Hibernate updates the positions in place and the
+write collides on the primary key as soon as two entries swap. The mapping is now an explicit
+`ProductRelation` row (`id`, `product_id`, `related_product_id`, `position`), and a change replaces
+the product's rows — one delete plus N inserts, at most six rows.

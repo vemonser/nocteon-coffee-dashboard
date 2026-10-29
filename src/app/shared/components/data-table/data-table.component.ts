@@ -47,6 +47,12 @@ export interface TableSortEvent {
 })
 export class DataTableComponent {
   /**
+   * A boolean cell (a switch-like setting) renders as a status badge instead
+   * of the raw "true"/"false" the value would print — the same vocabulary the
+   * rest of the app uses (common.active = Enabled, common.inactive = Disabled).
+   */
+  protected readonly isBooleanValue = (value: unknown): value is boolean => typeof value === 'boolean';
+  /**
    * Column headers are hardcoded English across every list. This dictionary
    * translates the shared vocabulary through Transloco (reactive on language
    * change); anything unmapped passes through untouched.
@@ -83,6 +89,8 @@ export class DataTableComponent {
     Customer: 'common.customer',
     Expires: 'common.expires',
     'Free Shipping Threshold': 'common.freeShippingThreshold',
+    'Free Shipping Active': 'common.freeShippingActive',
+    Currency: 'common.currency',
     'Full Name': 'common.fullName',
     'Shipping Cost': 'common.shippingCost',
     Items: 'common.items',
@@ -532,7 +540,8 @@ export class DataTableComponent {
     fullName: '150px',
     cities: '170px',
     shippingCost: '120px',
-    freeShippingThreshold: '120px',
+    freeShippingThreshold: '200px',
+    isFreeShippingActive: '160px',
     totalAmount: '110px',
     total: '100px',
     itemCount: '90px',

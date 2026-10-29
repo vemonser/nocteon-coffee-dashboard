@@ -4,6 +4,7 @@
 @import './themes/copper.css';
 
 @import './radius.css';
+@import './motion.css';
 
 @layer base {
   * {

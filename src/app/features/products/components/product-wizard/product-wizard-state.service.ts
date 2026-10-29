@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { AbstractControl, FormArray, FormBuilder, FormGroup, ValidationErrors, Validators } from '@angular/forms';
 import { signal } from '@angular/core';
-import { ProductDetail, ProductVariant, StagedMedia } from '../../models/product.models';
+import { ProductDetail, ProductVariant, RelatedProductSummary, StagedMedia } from '../../models/product.models';
 import { ProductOption, ProductOptionValueSummary } from '../../../product-options/models/product-option.model';
 import { ExistingMedia } from '../../models/product.models';
 /**
@@ -70,6 +70,9 @@ export class ProductWizardStateService {
     // Merchandising tags (slugs only). Optional; assigned from the tag vocabulary.
     tagSlugs: this.fb.array([]),
 
+    // "You may also like" (FE-11): slugs, ordered, at most 6.
+    relatedProductSlugs: this.fb.array([]),
+
     // Step 5 — Pairings (slugs only)
     pairingSlugs: this.fb.array([]),
   });
@@ -94,6 +97,30 @@ export class ProductWizardStateService {
   /** FE-10: the merchandising tags this product carries, by slug. */
   get tagSlugsArray(): FormArray {
     return this.form.get('tagSlugs') as FormArray;
+  }
+
+  /** FE-11: the display data for the selected related products (slug, name, thumbnail). */
+  readonly relatedProducts = signal<RelatedProductSummary[]>([]);
+
+  get relatedProductSlugsArray(): FormArray {
+    return this.form.get('relatedProductSlugs') as FormArray;
+  }
+
+  hasRelated(slug: string): boolean {
+    return (this.relatedProductSlugsArray.value as string[]).includes(slug);
+  }
+
+  addRelated(summary: RelatedProductSummary): void {
+    if (!summary?.slug || this.hasRelated(summary.slug)) return;
+    if ((this.relatedProductSlugsArray.value as string[]).length >= 6) return;
+    this.relatedProductSlugsArray.push(this.fb.control(summary.slug));
+    this.relatedProducts.update((list) => [...list, summary]);
+  }
+
+  removeRelated(slug: string): void {
+    const index = (this.relatedProductSlugsArray.value as string[]).indexOf(slug);
+    if (index !== -1) this.relatedProductSlugsArray.removeAt(index);
+    this.relatedProducts.update((list) => list.filter((item) => item.slug !== slug));
   }
 
   hasTag(slug: string): boolean {
@@ -368,6 +395,13 @@ export class ProductWizardStateService {
       if (tag?.slug) this.tagSlugsArray.push(this.fb.control(tag.slug));
     });
 
+    this.relatedProductSlugsArray.clear();
+    const related = detail.relatedProducts ?? [];
+    related.forEach((item) => {
+      if (item?.slug) this.relatedProductSlugsArray.push(this.fb.control(item.slug));
+    });
+    this.relatedProducts.set([...related]);
+
     this.pairingsArray.clear();
     detail.pairings.forEach((slug) => {
       if (slug) this.pairingsArray.push(this.fb.control(slug));
@@ -424,6 +458,8 @@ export class ProductWizardStateService {
     this.brewingMethodsArray.clear();
     this.tastingNotesArray.clear();
     this.tagSlugsArray.clear();
+    this.relatedProductSlugsArray.clear();
+    this.relatedProducts.set([]);
     this.pairingsArray.clear();
     this.translationsArray.clear();
     this.productOptions.set([]);

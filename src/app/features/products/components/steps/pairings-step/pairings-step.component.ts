@@ -11,11 +11,23 @@ import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmInputImports } from '@spartan-ng/helm/input';
 import { NotifyService } from '../../../../../core/notify/notify.service';
 import { LanguageService } from '../../../../../core/i18n/language.service';
+import { ProductService } from '../../../services/product.service';
+import { ProductListItem } from '../../../models/product.models';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { lucideSearch, lucideX } from '@ng-icons/lucide';
 
 @Component({
   selector: 'app-pairings-step',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, TranslocoPipe, HlmButtonImports, HlmInputImports],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    TranslocoPipe,
+    HlmButtonImports,
+    HlmInputImports,
+    NgIcon,
+  ],
+  providers: [provideIcons({ lucideSearch, lucideX })],
   templateUrl: './pairings-step.component.html',
 })
 export class PairingsStepComponent {
@@ -25,6 +37,7 @@ export class PairingsStepComponent {
   private language = inject(LanguageService);
   private wizard = inject(ProductWizardComponent);
   private router = inject(Router);
+  private productService = inject(ProductService);
 
   readonly allPairings = signal<PairingResponse[]>([]);
   readonly search = signal('');
@@ -48,6 +61,67 @@ export class PairingsStepComponent {
       error: (err) =>
         this.notify.apiError(err, 'notify.errorFallback', 'Could not load pairings'),
     });
+  }
+
+  // ── "You may also like" (FE-11) ────────────────────────────────────────────
+
+  /** At most six are shown on the product page; the API enforces the same rule. */
+  readonly MAX_RELATED = 6;
+  readonly relatedSearch = signal('');
+  readonly relatedResults = signal<ProductListItem[]>([]);
+  readonly relatedSearching = signal(false);
+  private searchTimer: ReturnType<typeof setTimeout> | null = null;
+
+  readonly selectedRelated = computed(() => this.state.relatedProducts());
+  readonly canAddMore = computed(() => this.selectedRelated().length < this.MAX_RELATED);
+
+  onRelatedSearchInput(value: string): void {
+    this.relatedSearch.set(value);
+    if (this.searchTimer) clearTimeout(this.searchTimer);
+    const term = value.trim();
+    if (term.length < 2) {
+      this.relatedResults.set([]);
+      this.relatedSearching.set(false);
+      return;
+    }
+    this.relatedSearching.set(true);
+    this.searchTimer = setTimeout(() => this.runRelatedSearch(term), 300);
+  }
+
+  private runRelatedSearch(term: string): void {
+    this.productService.getAll({ search: term, size: 8, isActive: true }).subscribe({
+      next: (res) => {
+        const selfSlug = this.state.editingSlug();
+        this.relatedResults.set(
+          (res.data.content ?? []).filter(
+            (p) => p.slug !== selfSlug && !this.state.hasRelated(p.slug),
+          ),
+        );
+        this.relatedSearching.set(false);
+      },
+      error: (err) => {
+        this.relatedSearching.set(false);
+        this.notify.apiError(err, 'notify.errorFallback', 'Could not search products');
+      },
+    });
+  }
+
+  addRelated(product: ProductListItem): void {
+    if (!this.canAddMore()) return;
+    this.state.addRelated({
+      slug: product.slug,
+      name: product.name,
+      primaryImageUrl: product.primaryImageUrl,
+    });
+    // Clear the search after a pick: the term now matches only a product that is already in the
+    // list, and leaving it there would read as "no results".
+    this.relatedSearch.set('');
+    this.relatedResults.set([]);
+    if (this.searchTimer) clearTimeout(this.searchTimer);
+  }
+
+  removeRelated(slug: string): void {
+    this.state.removeRelated(slug);
   }
 
   saveCurrentStep(): void {
