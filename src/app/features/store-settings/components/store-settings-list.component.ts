@@ -50,6 +50,10 @@ import { DataTableComponent } from '../../../shared/components/data-table/data-t
   templateUrl: './store-settings-list.component.html',
 })
 export class StoreSettingsListComponent extends BaseListComponent<StoreSettingResponse, StoreSetting> {
+
+  protected override createPermission: string | null = null;
+  protected override updatePermission = 'settings:update';
+  protected override deletePermission: string | null = null;
   /** Esc closes the edit dialog — every overlay in the app must have that. */
   @HostListener('document:keydown.escape')
   onEscape(): void {

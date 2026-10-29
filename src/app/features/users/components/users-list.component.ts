@@ -62,6 +62,10 @@ type QuickFilter = 'ALL' | 'BLOCKED' | 'UNVERIFIED' | (string & {});
   styles: [':host ::ng-deep app-data-table tbody tr { height: 72px !important; }'],
 })
 export class UsersListComponent extends BaseListComponent<UserResponse, UserRequest, string> {
+
+  protected override createPermission = 'user:create';
+  protected override updatePermission = 'user:update';
+  protected override deletePermission = 'user:delete';
   private userService = inject(UserService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);

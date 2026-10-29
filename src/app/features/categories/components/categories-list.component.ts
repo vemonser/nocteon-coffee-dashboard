@@ -164,6 +164,9 @@ export class CategoriesListComponent extends BaseListComponent<CategoryResponse,
     return this.listView() === 'trash' ? null : ['/dashboard/categories', row.slug];
   }
   protected override canManageTrash = this.auth.hasPermission('category:delete');
+  protected override createPermission = 'category:create';
+  protected override updatePermission = 'category:update';
+  protected override deletePermission = 'category:delete';
   protected override statusFilterValue: boolean | undefined = undefined;
 
   readonly isActiveFilterString = computed(() => {

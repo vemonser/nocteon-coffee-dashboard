@@ -107,6 +107,9 @@ export class RoastLevelListComponent extends BaseListComponent<
   /** Opt into the shared soft-delete capability (tabs, counts, undo, restore). */
   protected override softDeleteEnabled = true;
   protected override canManageTrash = this.auth.hasPermission('roast_level:delete');
+  protected override createPermission = 'roast_level:create';
+  protected override updatePermission = 'roast_level:update';
+  protected override deletePermission = 'roast_level:delete';
   protected readonly isTrashAllowed = computed(() => this.auth.hasPermission('roast_level:delete'));
 
   protected override getId(item: RoastLevelResponse): string {

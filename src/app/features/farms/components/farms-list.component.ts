@@ -92,6 +92,9 @@ export class FarmsListComponent extends BaseListComponent<FarmResponse, FarmRequ
   /** Opt into the shared soft-delete capability (tabs, counts, undo, restore). */
   protected override softDeleteEnabled = true;
   protected override canManageTrash = this.auth.hasPermission('farm:delete');
+  protected override createPermission = 'farm:create';
+  protected override updatePermission = 'farm:update';
+  protected override deletePermission = 'farm:delete';
   protected readonly isTrashAllowed = computed(() => this.auth.hasPermission('farm:delete'));
 
   protected override getId(item: FarmResponse): string {

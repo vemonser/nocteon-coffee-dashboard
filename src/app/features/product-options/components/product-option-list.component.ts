@@ -84,6 +84,9 @@ export class ProductOptionListComponent extends BaseListComponent<
   ProductOptionRequest,
   number
 > {
+  protected override createPermission = 'product_option:create';
+  protected override updatePermission = 'product_option:update';
+  protected override deletePermission = 'product_option:delete';
   private optionService = inject(ProductOptionService);
   protected translationHelper = inject(TranslationFormHelper);
   protected language = inject(LanguageService);

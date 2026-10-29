@@ -15,6 +15,7 @@ import { HlmNativeSelectImports } from '@spartan-ng/helm/native-select';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 
 import { AuthService } from '../../../../core/auth/auth.service';
+import { HasPermissionDirective } from '../../../../core/auth/permission.directive';
 import { LanguageService } from '../../../../core/i18n/language.service';
 import { pluralKey } from '../../../../core/i18n/plural';
 import { NotifyService } from '../../../../core/notify/notify.service';
@@ -39,7 +40,7 @@ const ROLE_NAME_PATTERN = /^[A-Z][A-Z0-9_]{2,31}$/;
   imports: [
     CommonModule, FormsModule, ReactiveFormsModule, RouterLink, HlmBadgeImports,
     HlmButtonImports, HlmInputImports, HlmLabelImports, HlmNativeSelectImports, NgIcon,
-    TranslocoPipe, PermissionMatrixComponent,
+    TranslocoPipe, PermissionMatrixComponent, HasPermissionDirective,
   ],
   providers: [provideIcons({
     lucidePlus, lucideShield, lucideLock, lucidePencil, lucideTrash2, lucideX, lucideCheck,

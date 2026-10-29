@@ -5,6 +5,7 @@
       <p class="text-sm text-muted-foreground">{{ 'users.rolesPage.subtitle' | transloco }}</p>
     </div>
     <button
+      *hasPermission="'user:create'"
       hlmBtn
       [disabled]="newRoleUnavailable"
       [attr.title]="newRoleUnavailable && newRoleTooltip ? newRoleTooltip : null"

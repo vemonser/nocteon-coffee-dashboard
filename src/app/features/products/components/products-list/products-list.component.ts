@@ -165,6 +165,8 @@ export class ProductsListComponent {
 
   readonly canManageTrash = this.authService.hasPermission('product:delete');
   readonly isTrashAllowed = computed(() => this.authService.hasPermission('product:delete'));
+  readonly canUpdate = this.authService.hasPermission('product:update');
+  readonly canDelete = this.authService.hasPermission('product:delete');
 
   viewMode = signal<'active' | 'trash'>('active');
   readonly isTrash = computed(() => this.viewMode() === 'trash');
@@ -274,7 +276,7 @@ export class ProductsListComponent {
   readonly editHref = (row: ProductListItem) => ['/dashboard/products', row.slug, 'edit'];
 
   readonly menuActionsFor = (row: ProductListItem): RowMenuAction[] => [
-    { id: 'edit', label: 'common.edit', icon: 'lucidePencil' },
+    ...(this.canUpdate ? [{ id: 'edit', label: 'common.edit', icon: 'lucidePencil' }] : []),
     {
       id: 'view',
       label: 'products.actions.viewOnStorefront',
@@ -285,23 +287,21 @@ export class ProductsListComponent {
     // Duplicating creates a product, so it needs the create grant — not the update grant that
     // opens the menu at all.
     ...(this.canCreate ? [{ id: 'duplicate', label: 'products.actions.duplicate', icon: 'lucideCopy' }] : []),
-    {
-      id: 'toggleActive',
-      label: row.isActive ? 'products.actions.disable' : 'products.actions.enable',
-      icon: 'lucideCircleSlash',
-    },
-    {
-      id: 'toggleFeatured',
-      label: row.featured ? 'products.actions.unfeature' : 'products.actions.feature',
-      icon: 'lucideStar',
-    },
-    { id: 'separator', label: '' },
-    {
-      id: 'trash',
-      label: 'products.actions.moveToTrash',
-      icon: 'lucideTrash2',
-      danger: true,
-    },
+    ...(this.canUpdate
+      ? [
+          {
+            id: 'toggleActive',
+            label: row.isActive ? 'products.actions.disable' : 'products.actions.enable',
+            icon: 'lucideCircleSlash',
+          },
+          {
+            id: 'toggleFeatured',
+            label: row.featured ? 'products.actions.unfeature' : 'products.actions.feature',
+            icon: 'lucideStar',
+          },
+        ]
+      : []),
+    ...(this.canDelete ? [{ id: 'separator', label: '' }, { id: 'trash', label: 'products.actions.moveToTrash', icon: 'lucideTrash2', danger: true }] : []),
   ];
 
   constructor() {
