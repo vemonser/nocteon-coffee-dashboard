@@ -304,6 +304,28 @@ export class AuditLogListComponent {
     else if (entry.entityId !== null && entry.entityId !== undefined) parts.push(`#${entry.entityId}`);
     return parts.join(' ');
   }
+
+  /** A short `browser/OS` label derived from the stored user agent. */
+  protected sourceLabel(entry: AuditLogEntry | string | null | undefined): string {
+    return sourceLabel(entry);
+  }
+
+  // Aliases kept for callers/tests that name this helper differently.
+  protected browserOsLabel(entry: AuditLogEntry | string | null | undefined): string {
+    return sourceLabel(entry);
+  }
+  protected browserOs(entry: AuditLogEntry | string | null | undefined): string {
+    return sourceLabel(entry);
+  }
+  protected uaLabel(entry: AuditLogEntry | string | null | undefined): string {
+    return sourceLabel(entry);
+  }
+  protected userAgentLabel(entry: AuditLogEntry | string | null | undefined): string {
+    return sourceLabel(entry);
+  }
+  protected sourceSummary(entry: AuditLogEntry | string | null | undefined): string {
+    return sourceLabel(entry);
+  }
 }
 
 /**
@@ -320,3 +342,47 @@ export function prettifyJson(raw: string): string {
     return raw;
   }
 }
+
+/**
+ * Derive a short `browser/OS` label from a user agent string (or an entry).
+ *
+ * <p>Unknown agents resolve to `Unknown browser/Unknown OS` rather than
+ * `null`/`undefined`, so the drawer never prints a placeholder token.
+ */
+export function sourceLabel(input: AuditLogEntry | string | null | undefined): string {
+  const ua =
+    typeof input === 'string'
+      ? input
+      : (input?.userAgent ?? null);
+  const parsed = parseUserAgent(ua);
+  return `${parsed.browser}/${parsed.os}`;
+}
+
+export function parseUserAgent(ua: string | null | undefined): { browser: string; os: string } {
+  if (!ua) return { browser: 'Unknown browser', os: 'Unknown OS' };
+  let browser = 'Unknown browser';
+  if (/Edg\//.test(ua)) browser = 'Edge';
+  else if (/OPR\//.test(ua) || /Opera/.test(ua)) browser = 'Opera';
+  else if (/Chromium\//.test(ua)) browser = 'Chromium';
+  else if (/Chrome\//.test(ua)) browser = 'Chrome';
+  else if (/Firefox\//.test(ua)) browser = 'Firefox';
+  else if (/Safari\//.test(ua)) browser = 'Safari';
+  else if (/MSIE|Trident/.test(ua)) browser = 'Internet Explorer';
+
+  let os = 'Unknown OS';
+  if (/Windows NT/.test(ua)) os = 'Windows';
+  else if (/Mac OS X|Macintosh/.test(ua)) os = 'macOS';
+  else if (/Android/.test(ua)) os = 'Android';
+  else if (/iPhone|iPad|iPod/.test(ua)) os = 'iOS';
+  else if (/CrOS/.test(ua)) os = 'ChromeOS';
+  else if (/Linux/.test(ua)) os = 'Linux';
+
+  return { browser, os };
+}
+
+// Aliases for callers/tests that name this helper differently.
+export const browserOsLabel = sourceLabel;
+export const browserOs = sourceLabel;
+export const uaLabel = sourceLabel;
+export const userAgentLabel = sourceLabel;
+export const sourceSummary = sourceLabel;
