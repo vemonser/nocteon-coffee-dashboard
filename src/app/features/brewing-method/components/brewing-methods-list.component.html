@@ -119,7 +119,7 @@
           (selectionChange)="onSelectionChange($event)"
           (toggleAllChange)="toggleAll($event)"
           (edit)="onEditAction($event)"
-          (delete)="confirmDelete($event)"
+          (delete)="softDelete($event)"
           (restore)="restore($event)"
           (permanentDelete)="openPermanentDelete($event)"
           (sortChange)="onSortChange($event)"
@@ -231,34 +231,6 @@
 <!-- ══════════════════════════════════════════════════════════
      Delete Confirm Dialog
      ══════════════════════════════════════════════════════════ -->
-@if (deleting()) {
-  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-    <div class="dialog-surface w-full max-w-sm p-6">
-      <h2 class="text-lg font-bold mb-2">{{ 'brewingMethods.deleteTitle' | transloco }}</h2>
-      <p class="text-muted-foreground mb-6">
-        {{ 'brewingMethods.deleteConfirm' | transloco }}
-        <strong class="text-foreground">{{ deleting()!.slug }}</strong>?
-      </p>
-      <div class="flex gap-3">
-        <button hlmBtn variant="outline" class="flex-1" (click)="deleting.set(null)">
-          {{ 'common.cancel' | transloco }}
-        </button>
-        <button
-          hlmBtn
-          variant="destructive"
-          class="flex-1"
-          [disabled]="submitting()"
-          (click)="submitDelete()"
-        >
-          @if (submitting()) {
-            <span class="animate-spin mr-2">⟳</span>
-          }
-          {{ submitting() ? ('common.deleting' | transloco) : ('common.delete' | transloco) }}
-        </button>
-      </div>
-    </div>
-  </div>
-}
 @if (permanentDeleteTarget()) {
   <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
     <div class="dialog-surface w-full max-w-sm p-6">

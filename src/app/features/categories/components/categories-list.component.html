@@ -217,7 +217,7 @@
           (selectionChange)="onSelectionChange($event)"
           (toggleAllChange)="toggleAll($event)"
           (edit)="onEditAction($event)"
-          (delete)="confirmDelete($event)"
+          (delete)="softDelete($event)"
           (restore)="restore($event)"
           (permanentDelete)="openPermanentDelete($event)"
           (sortChange)="onSortChange($event)"
@@ -309,35 +309,6 @@
      The backend may still refuse (409: the category has products); the toast
      then shows the backend's own reason.
 ══════════════════════════════════════════════════════════ -->
-
-@if (deleting()) {
-  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-    <div
-      class="dialog-surface w-full max-w-sm p-6"
-      role="alertdialog"
-      aria-modal="true"
-      [attr.aria-label]="'categories.trash.moveToTrash' | transloco"
-    >
-      <h2 class="mb-2 text-lg font-medium">
-        {{ 'categories.trash.moveToTrash' | transloco }}
-      </h2>
-      <p class="mb-6 text-muted-foreground">
-        {{ 'categories.deleteConfirm' | transloco: { name: rowName(deleting()!) } }}
-      </p>
-      <div class="flex gap-3">
-        <button hlmBtn variant="outline" class="flex-1" (click)="deleting.set(null)">
-          {{ 'common.cancel' | transloco }}
-        </button>
-        <button hlmBtn class="flex-1" [disabled]="submitting()" (click)="submitDelete()">
-          @if (submitting()) {
-            <ng-icon name="lucideLoader2" class="me-2 size-4 animate-spin" />
-          }
-          {{ 'categories.trash.moveToTrash' | transloco }}
-        </button>
-      </div>
-    </div>
-  </div>
-}
 
 @if (permanentDeleteTarget()) {
   <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
