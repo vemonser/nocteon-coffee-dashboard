@@ -4,6 +4,16 @@ import { navI18n, NavKey } from '../i18n/nav-i18n';
 
 export type NavSectionKey = 'operations' | 'access' | 'content' | 'catalog' | 'coffeeData' | 'settings';
 
+/**
+ * A labelled group of links.
+ *
+ * `items` are the section's IMPLICIT parents: each one carries the permission and
+ * the children of the whole section, and its label is a copy of `label`. The sidebar
+ * renders the section heading once (from `label`) and drops the parent row
+ * (FE-25 D4+A), so a section never shows its own name twice. The parent route is
+ * still what `sectionKeyForRoute()` matches on, which is how the breadcrumb and the
+ * auto-open logic find the section for a page.
+ */
 export interface NavSection {
   key: NavSectionKey;
   label: string;

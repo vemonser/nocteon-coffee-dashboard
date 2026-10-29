@@ -54,95 +54,77 @@
       </ul>
 
       <!--
-        One <ul> per section. The group labels and their links are real list items —
-        they used to be bare <li> elements stacked straight into this flex column,
-        which no screen reader announces as a list.
+        One <ul> per section, and exactly ONE heading row per section (FE-25 D4+A).
+
+        The section label used to be rendered twice: once as an empty heading that
+        nothing rendered, and once as a collapsible PARENT row whose label was a copy
+        of the section name. The parent row is gone; the heading IS the section name
+        and the disclosure control, and its children sit directly under it. The DOM
+        therefore carries each name once, and collapsing a section collapses straight
+        to its heading.
+
+        The heading is a real <button> (native keyboard support) with
+        aria-expanded/aria-controls wired to the panel below. The panel keeps the
+        existing .nav-collapse grid animation and its visibility:hidden, so closed
+        links leave the tab order instead of sitting there focusable.
       -->
       @for (section of sections(); track section.key) {
         <ul hlmSidebarMenu class="pt-2 pb-1">
-          @for (parentItem of section.items; track parentItem.route) {
-            <li hlmSidebarMenuItem class="py-0">
-              @if (parentItem.children && parentItem.children.length === 1) {
-                <!-- Single child: render as a direct item, no expander. -->
-                @let child = parentItem.children[0];
-                <a
-                  hlmSidebarMenuButton
-                  [closeMobileSidebarOnClick]="true"
-                  [routerLink]="child.route"
-                  ariaCurrentWhenActive="page"
-                  routerLinkActive="bg-sidebar-accent text-sidebar-accent-foreground"
-                  class="group flex items-center gap-2.5"
-                >
-                  <ng-icon [name]="child.icon" class="size-4 shrink-0 text-sidebar-foreground/60 group-hover:text-sidebar-foreground transition-colors duration-150" aria-hidden="true" />
-                  <span class="flex-1 truncate">{{ child.label }}</span>
-                  @if (badgeCount(child.route); as n) {
-                    @if (n > 0) {
-                      @if (isRailCollapsed()) {
-                        <span class="size-2 shrink-0 rounded-full bg-primary" [attr.aria-label]="badgeAria(child.route, n)"></span>
-                      } @else {
-                        <span class="inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-primary px-1 text-[10px] font-medium text-primary-foreground" [attr.aria-label]="badgeAria(child.route, n)">{{ n > 99 ? '99+' : n }}</span>
-                      }
-                    }
-                  }
-                </a>
-              } @else {
-              <!-- Group label: the control that opens and closes the group. -->
-              <button
-                type="button"
-                (click)="toggleItem(parentItem.route)"
-                [attr.aria-expanded]="!isItemCollapsed(parentItem.route)"
-                class="flex h-9 w-full cursor-pointer items-center gap-2.5 rounded-[0.625rem] px-2.5 text-start text-[0.8125rem] font-medium text-sidebar-foreground/80 transition-colors duration-150 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
-              >
-                <ng-icon
-                  [name]="parentItem.icon"
-                  class="size-4 shrink-0 text-sidebar-foreground/60"
-                  aria-hidden="true"
-                />
-                <span class="flex-1 truncate">{{ parentItem.label }}</span>
-                <ng-icon
-                  name="lucideChevronDown"
-                  class="size-3.5 shrink-0 text-sidebar-foreground/50 transition-transform duration-150"
-                  [class]="isItemCollapsed(parentItem.route) ? 'ltr:-rotate-90 rtl:rotate-90' : ''"
-                />
-              </button>
+          <li hlmSidebarMenuItem class="py-0">
+            <!-- Section heading: the control that opens and closes this section. -->
+            <button
+              type="button"
+              [id]="headingId(section.key)"
+              (click)="toggleSection(section.key)"
+              [attr.aria-expanded]="!isSectionCollapsed(section.key)"
+              [attr.aria-controls]="panelId(section.key)"
+              class="flex h-9 w-full cursor-pointer items-center gap-2 rounded-[0.625rem] px-2.5 text-start text-xs font-medium text-sidebar-foreground/70 outline-hidden transition-colors duration-150 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground focus-visible:ring-2 focus-visible:ring-sidebar-ring ltr:uppercase ltr:tracking-wider"
+            >
+              <span class="flex-1 truncate">{{ section.label }}</span>
+              <ng-icon
+                name="lucideChevronDown"
+                class="size-3.5 shrink-0 text-sidebar-foreground/50 transition-transform duration-150"
+                [class]="isSectionCollapsed(section.key) ? 'ltr:-rotate-90 rtl:rotate-90' : ''"
+                aria-hidden="true"
+              />
+            </button>
 
-              <div
-                class="nav-collapse"
-                [class.nav-collapse-open]="!isItemCollapsed(parentItem.route)"
-              >
-                <ul hlmSidebarMenu class="min-h-0 overflow-hidden ps-8">
-                  @for (child of parentItem.children; track child.route) {
-                    <li hlmSidebarMenuItem class="py-0">
-                      <a
-                        hlmSidebarMenuButton
-                        [closeMobileSidebarOnClick]="true"
-                        [routerLink]="child.route"
-                        ariaCurrentWhenActive="page"
-                        routerLinkActive="bg-sidebar-accent text-sidebar-accent-foreground [&_span:first-of-type]:bg-sidebar-accent-foreground [&_span:first-of-type]:opacity-100"
-                        class="group flex items-center gap-2"
-                      >
-                        <span
-                          class="size-1.5 shrink-0 rounded-full bg-sidebar-foreground/40 transition-colors duration-150 group-hover:bg-sidebar-foreground/70"
-                          aria-hidden="true"
-                        ></span>
-                        <span class="flex-1 truncate">{{ child.label }}</span>
-                        @if (badgeCount(child.route); as n) {
-                          @if (n > 0) {
-                            @if (isRailCollapsed()) {
-                              <span class="size-2 shrink-0 rounded-full bg-primary" [attr.aria-label]="badgeAria(child.route, n)"></span>
-                            } @else {
-                              <span class="inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-primary px-1 text-[10px] font-medium text-primary-foreground" [attr.aria-label]="badgeAria(child.route, n)">{{ n > 99 ? '99+' : n }}</span>
-                            }
+            <div
+              [id]="panelId(section.key)"
+              class="nav-collapse"
+              [class.nav-collapse-open]="!isSectionCollapsed(section.key)"
+            >
+              <ul hlmSidebarMenu class="min-h-0 overflow-hidden ps-6">
+                @for (child of section.rows; track child.route) {
+                  <li hlmSidebarMenuItem class="py-0">
+                    <a
+                      hlmSidebarMenuButton
+                      [closeMobileSidebarOnClick]="true"
+                      [routerLink]="child.route"
+                      ariaCurrentWhenActive="page"
+                      routerLinkActive="bg-sidebar-accent text-sidebar-accent-foreground [&_span:first-of-type]:bg-sidebar-accent-foreground [&_span:first-of-type]:opacity-100"
+                      class="group flex items-center gap-2"
+                    >
+                      <span
+                        class="size-1.5 shrink-0 rounded-full bg-sidebar-foreground/40 transition-colors duration-150 group-hover:bg-sidebar-foreground/70"
+                        aria-hidden="true"
+                      ></span>
+                      <span class="flex-1 truncate">{{ child.label }}</span>
+                      @if (badgeCount(child.route); as n) {
+                        @if (n > 0) {
+                          @if (isRailCollapsed()) {
+                            <span class="size-2 shrink-0 rounded-full bg-primary" [attr.aria-label]="badgeAria(child.route, n)"></span>
+                          } @else {
+                            <span class="inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-primary px-1 text-[10px] font-medium text-primary-foreground" [attr.aria-label]="badgeAria(child.route, n)">{{ n > 99 ? '99+' : n }}</span>
                           }
                         }
-                      </a>
-                    </li>
-                  }
-                </ul>
-              </div>
-              }
-            </li>
-          }
+                      }
+                    </a>
+                  </li>
+                }
+              </ul>
+            </div>
+          </li>
         </ul>
       }
     </hlm-sidebar-content>

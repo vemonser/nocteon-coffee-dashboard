@@ -1,6 +1,6 @@
 <header class="flex h-16 shrink-0 items-center rounded-se-md rounded-ss-md gap-2 border-b bg-background px-4">
-  <!-- Left -->
-  <div class="flex items-center gap-2">
+  <!-- Left. `min-w-0` lets the breadcrumb truncate instead of pushing the header wide. -->
+  <div class="flex min-w-0 items-center gap-2">
     <!--
     The library's trigger renders a hardcoded English "Toggle Sidebar" as
     its screen-reader text, so BOTH are given the translated label.
@@ -13,8 +13,14 @@
 >
       <ng-icon name="lucideMenu" class="size-5" />
     </button>
-    <hlm-separator orientation="vertical" class="h-4" />
-    <app-breadcrumb />
+    <hlm-separator orientation="vertical" class="h-4 shrink-0" />
+    <!--
+      The breadcrumb owns its own hide breakpoint: it disappears below 400px, where
+      the row (menu trigger + breadcrumb + search, notifications, theme, avatar) no
+      longer fits at 375px. It truncates rather than wrapping, so the header keeps
+      one row and never scrolls sideways.
+    -->
+    <app-breadcrumb class="min-w-0" />
   </div>
 
   <!-- Right -->
