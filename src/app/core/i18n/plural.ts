@@ -90,6 +90,15 @@ export function countMessage(
   count: number,
   params: Record<string, unknown> = {},
 ): string {
+  // Zero is special in every language that defines a `_zero` form (Arabic via
+  // Intl.PluralRules, English via an explicit `_zero` key). Prefer it before
+  // the category lookup so "No unread notifications" wins over "0 unread".
+  if (count === 0) {
+    const zeroKey = `${base}_zero`;
+    const zero = translate(zeroKey, { count, ...params });
+    if (typeof zero === 'string' && zero.length > 0 && zero !== zeroKey) return zero;
+  }
+
   const key = pluralKey(base, count, lang);
   const value = translate(key, { count, ...params });
   if (typeof value === 'string' && value.length > 0 && value !== key) return value;

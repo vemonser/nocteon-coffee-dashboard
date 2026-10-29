@@ -83,6 +83,8 @@ const PLURAL_BASES = [
   'users.roleCard.users',
   // The audit log counts the entries it found; Arabic has all six forms.
   'audit.countEntries',
+  // The notification bell's accessible name counts unread notifications.
+  'notifications.unreadCount',
 ];
 const EN_SUFFIXES = ['one', 'other'];
 const AR_SUFFIXES = ['zero', 'one', 'two', 'few', 'many', 'other'];

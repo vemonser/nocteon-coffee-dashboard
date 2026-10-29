@@ -13,6 +13,7 @@ import {
   lucideChevronRight,
 } from '@ng-icons/lucide';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
+import { PluralPipe } from '../../../shared/pipes/plural.pipe';
 import { NotificationService } from '../services/notification.service';
 import { NotificationItem } from '../../notification/models/notification.model';
 import { NotificationItemComponent } from '../../notification/components/notification-item.component';
@@ -34,6 +35,7 @@ import { DialogShellComponent } from '../../../shared/ui/dialog-shell/dialog-she
     HlmSeparatorImports,
     NgIcon,
     TranslocoPipe,
+    PluralPipe,
     NotificationItemComponent,
     DialogShellComponent,
   ],

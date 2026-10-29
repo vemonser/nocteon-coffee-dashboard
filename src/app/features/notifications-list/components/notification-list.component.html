@@ -5,7 +5,7 @@
       <p class="text-sm text-muted-foreground">
         {{ 'notifications.totalCount' | transloco: { count: totalElements() } }}
         ·
-        {{ 'notifications.unreadCount' | transloco: { count: unreadCount() } }}
+        {{ unreadCount() | plural: 'notifications.unreadCount' }}
       </p>
     </div>
 
