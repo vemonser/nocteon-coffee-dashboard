@@ -28,3 +28,8 @@ Requested directly (not a full audit): the table header "Free shipping…" was t
 - Removed the **Created at** and **Updated at** columns (headers measured: Currency / Free shipping threshold / Free shipping active / Actions only).
 - The edit modal's **checkbox is now a toggle** (`hlm-switch`, label associated via `for`, `aria-label`), verified `hasSwitch: true`, `hasCheckbox: false`; screenshot `evidence/ux-audit/store-settings/after-toggle-dialog-en.png`.
 - Same pass fixed the modal's keyboard path (it had none): `role="dialog"`, `aria-modal`, labelled by its title, CDK focus trap with auto-capture, and **Esc closes** (measured `escCloses: true`).
+
+### Pairing + shared list behaviour (2026-10-29, `3a207a59` + `189309aa` + `c326ca3f`)
+- **Columns-open popover** now closes on outside click AND Esc in all 10 lists that have the toggle (verified on pairing + categories: outsideCloses true, escCloses true).
+- **Row delete** on pairing (and the other 10 soft-delete-enabled lists) runs immediately with an **Undo toast (6s)** instead of a confirm dialog that wrongly said "cannot be undone"; the confirm survives only for permanent delete from the Trash view. Verified on pairing + categories: no dialog, toast "Moved to trash [Undo]", Undo restores the row.
+- Pushed to `main`: `2bf1ac0e` (build clean, 317 unit tests pass).
