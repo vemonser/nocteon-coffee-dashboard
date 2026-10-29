@@ -191,8 +191,12 @@ test.describe('dashboard states and interactions', () => {
     await expect(page.locator('[role="radiogroup"]').first()).toBeVisible();
     await expect(page.locator('[role="radio"][aria-checked="true"]').first()).toBeVisible();
 
-    // The live region that announces the change.
-    const live = page.locator('[role="status"][aria-live="polite"]').first();
+    // The live region that announces the change. Scope it to the toolbar: the
+    // shared loading skeleton also carries a polite status region, and picking
+    // the first one on the page would assert against the skeleton instead.
+    const live = page
+      .locator('app-dashboard-toolbar [role="status"][aria-live="polite"]')
+      .first();
     await expect(live).toBeAttached();
 
     await page.locator('[role="radio"][aria-checked]').filter({ hasText: /90/ }).first().click();
