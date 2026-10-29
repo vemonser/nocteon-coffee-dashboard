@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, HostListener, computed, effect, inject, model, signal, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { A11yModule } from '@angular/cdk/a11y';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { NgIcon, provideIcons } from '@ng-icons/core';
@@ -23,22 +24,22 @@ const RECENT_KEY = 'nocteon.globalSearch.recent';
   selector: 'app-global-search-palette',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule, FormsModule, NgIcon, HlmButtonImports, HlmBadgeImports, HlmSeparatorImports, TranslocoPipe, StatusBadgeComponent, RatingStarsComponent],
+  imports: [CommonModule, RouterModule, FormsModule, NgIcon, HlmButtonImports, HlmBadgeImports, HlmSeparatorImports, TranslocoPipe, StatusBadgeComponent, RatingStarsComponent, A11yModule],
   providers: [provideIcons({ lucideSearch, lucideX, lucidePackage, lucideShoppingCart, lucideUsers, lucideTag, lucideStar, lucideMail, lucidePlus, lucideArrowUp, lucideArrowDown, lucideCornerDownLeft, lucideCoffee })],
   template: `
     @if (open()) {
       <div class="fixed inset-0 z-50 flex items-start justify-center bg-overlay p-4 pt-[10vh] backdrop-blur-sm" (click)="onBackdrop($event)">
-        <div #panel role="dialog" aria-modal="true" class="flex w-full max-w-[720px] max-h-[70vh] flex-col overflow-hidden rounded-[var(--radius-card)] border bg-card shadow-2xl outline-none" (keydown)="onKeydown($event)">
+        <div #panel role="dialog" aria-modal="true" tabindex="-1" cdkTrapFocus [cdkTrapFocusAutoCapture]="true" class="flex w-full max-w-[720px] max-h-[70vh] flex-col overflow-hidden rounded-[var(--radius-card)] border bg-card shadow-2xl outline-none" (keydown)="onKeydown($event)">
           <div class="flex items-center gap-2 border-b px-3 py-2">
             <ng-icon name="lucideSearch" class="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-            <input #searchInput type="text" class="h-9 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground" [placeholder]="'nav.search'|transloco" [attr.aria-label]="'nav.search'|transloco" [attr.aria-autocomplete]="'list'" [attr.aria-controls]="'gsp-listbox'" [attr.aria-activedescendant]="activeDescendant()" [(ngModel)]="query" (ngModelChange)="onQueryChange($event)" />
-            @if (query().trim().length) { <button type="button" hlmBtn variant="ghost" size="icon" class="size-7" (click)="clearQuery()"><ng-icon name="lucideX" class="size-4" aria-hidden="true" /></button> }
-            <span class="hidden text-xs text-muted-foreground sm:inline">esc</span>
-            <button type="button" hlmBtn variant="ghost" size="icon" class="size-7" (click)="close()"><ng-icon name="lucideX" class="size-4" aria-hidden="true" /></button>
+            <input #searchInput type="text" class="h-[var(--filter-control-height)] flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground" [placeholder]="'nav.search'|transloco" [attr.aria-label]="'nav.search'|transloco" [attr.aria-autocomplete]="'list'" [attr.aria-controls]="'gsp-listbox'" [attr.aria-activedescendant]="activeDescendant()" [(ngModel)]="query" (ngModelChange)="onQueryChange($event)" />
+            @if (query().trim().length) { <button type="button" hlmBtn variant="ghost" size="icon" class="size-7" [attr.aria-label]="'common.clear'|transloco" (click)="clearQuery()"><ng-icon name="lucideX" class="size-4" aria-hidden="true" /></button> }
+            <span class="hidden text-xs text-muted-foreground sm:inline">{{'nav.esc'|transloco}}</span>
+            <button type="button" hlmBtn variant="ghost" size="icon" class="size-7" [attr.aria-label]="'common.close'|transloco" (click)="close()"><ng-icon name="lucideX" class="size-4" aria-hidden="true" /></button>
           </div>
           <div class="min-h-0 flex-1 overflow-y-auto" id="gsp-listbox" role="listbox" [attr.aria-label]="'nav.search'|transloco">
             @if (loading()) { <div class="space-y-2 p-3">@for (i of [1,2,3,4]; track i) { <div class="flex items-center gap-3 rounded-md px-2 py-2"><div class="h-8 w-8 animate-pulse rounded-full bg-muted"></div><div class="flex-1 space-y-1"><div class="h-3 w-1/2 animate-pulse rounded bg-muted"></div><div class="h-2.5 w-1/3 animate-pulse rounded bg-muted"></div></div></div> }</div> }
-            @if (error() && !loading()) { <div class="flex flex-col items-center gap-2 p-6 text-center"><p class="text-sm text-destructive">{{error()}}</p><button type="button" hlmBtn variant="outline" size="sm" (click)="retry()">Retry</button></div> }
+            @if (error() && !loading()) { <div class="flex flex-col items-center gap-2 p-6 text-center"><p class="text-sm text-destructive">{{error()|transloco}}</p><button type="button" hlmBtn variant="outline" size="sm" (click)="retry()">{{'common.retry'|transloco}}</button></div> }
             @if (!loading() && !error() && query().trim().length >= 2 && flatItems().length === 0) { <div class="flex flex-col items-center gap-2 p-6 text-center"><p class="text-sm text-muted-foreground">{{'nav.noResultsFor'|transloco:{q:query()} }}</p><p class="text-xs text-muted-foreground">{{'nav.noResultsHint'|transloco}}</p></div> }
             @if (!loading() && query().trim().length < 2) {
               <div class="space-y-4 p-3">
@@ -120,7 +121,7 @@ export class GlobalSearchPaletteComponent {
       const trimmed = q.trim();
       if (trimmed.length < 2) { this.groups.set([]); this.loading.set(false); this.error.set(null); return of(null); }
       this.loading.set(true); this.error.set(null);
-      return this.searchService.search(trimmed, 5).pipe(catchError(() => { this.error.set('Search failed. Please try again.'); this.loading.set(false); return of(null); }));
+      return this.searchService.search(trimmed, 5).pipe(catchError(() => { this.error.set('nav.searchFailed'); this.loading.set(false); return of(null); }));
     })).subscribe((res: SearchResponse | null) => {
       if (res) { this.groups.set(res.groups ?? []); this.loading.set(false); this.saveRecent(this.query().trim()); this.activeIndex.set(this.flatItems().length ? 0 : -1); }
     });
@@ -130,6 +131,7 @@ export class GlobalSearchPaletteComponent {
     const isMod = event.ctrlKey || event.metaKey;
     if (isMod && (event.key === 'k' || event.key === 'K')) { event.preventDefault(); this.open.set(true); return; }
     if (event.key === '/' && !this.isTypingTarget(event.target)) { event.preventDefault(); this.open.set(true); return; }
+    if (this.open() && event.key === 'Escape') { event.preventDefault(); this.close(); return; }
   }
   private isTypingTarget(target: EventTarget | null): boolean { const el = target as HTMLElement | null; if (!el) return false; const tag = el.tagName?.toLowerCase(); return tag === 'input' || tag === 'textarea' || el.isContentEditable; }
   protected onQueryChange(q: string): void { this.query.set(q); }
@@ -138,8 +140,9 @@ export class GlobalSearchPaletteComponent {
   protected onBackdrop(event: MouseEvent): void { if (event.target === event.currentTarget) this.close(); }
   protected onKeydown(event: KeyboardEvent): void {
     if (event.key === 'Escape') { event.preventDefault(); this.close(); return; }
-    if (event.key === 'ArrowDown') { event.preventDefault(); const len = this.flatItems().length; if (len === 0) return; this.activeIndex.update((i) => (i + 1) % len); this.scrollActiveIntoView(); return; }
-    if (event.key === 'ArrowUp') { event.preventDefault(); const len = this.flatItems().length; if (len === 0) return; this.activeIndex.update((i) => (i <= 0 ? len - 1 : i - 1)); this.scrollActiveIntoView(); return; }
+    const typing = this.isTypingTarget(event.target);
+    if (event.key === 'ArrowDown' || (!typing && (event.key === 'j' || event.key === 'J'))) { event.preventDefault(); const len = this.flatItems().length; if (len === 0) return; this.activeIndex.update((i) => (i + 1) % len); this.scrollActiveIntoView(); return; }
+    if (event.key === 'ArrowUp' || (!typing && (event.key === 'k' || event.key === 'K'))) { event.preventDefault(); const len = this.flatItems().length; if (len === 0) return; this.activeIndex.update((i) => (i <= 0 ? len - 1 : i - 1)); this.scrollActiveIntoView(); return; }
     if (event.key === 'Enter') { event.preventDefault(); const items = this.flatItems(); const idx = this.activeIndex(); if (idx < 0 || idx >= items.length) return; const it = items[idx]; if (event.ctrlKey || event.metaKey) { window.open(this.fullRoute(it.item), '_blank'); } else { this.selectItem(it.item); } return; }
   }
   private scrollActiveIntoView(): void { setTimeout(() => { const fi = this.flatItems(); const idx = this.activeIndex(); if (idx < 0 || idx >= fi.length) return; const el = document.getElementById('gsp-opt-' + fi[idx].group + '-' + fi[idx].item.id); el?.scrollIntoView({ block: 'nearest' }); }, 0); }
