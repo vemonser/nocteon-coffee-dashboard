@@ -64,7 +64,12 @@ test.describe('dashboard states and interactions', () => {
           await alerts.count(),
           `the overview failure must produce an error state (body: ${body.slice(0, 200)})`,
         ).toBeGreaterThan(0);
-        await expect(alerts.first()).toContainText(/could not load|تعذّر التحميل/i);
+        // The wording is per widget ("The attention queue could not be
+        // loaded", "Could not load"), so match the load-failure family
+        // rather than one widget's sentence.
+        await expect(alerts.first()).toContainText(
+          /could not (be )?load(ed)?|تعذّر التحميل/i,
+        );
         // And a retry that really retries.
         await expect(
           page.getByRole('button', { name: /retry|إعادة المحاولة/i }).first(),
