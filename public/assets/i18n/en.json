@@ -293,6 +293,11 @@
     "selectAll": "Select all",
     "selectRow": "Select row",
     "loadError": "Could not load data",
+    "chipMultiselect": {
+      "add": "Add",
+      "remove": "Remove {{name}}",
+      "counter": "{{count}} of {{max}}"
+    },
     "farm": "Farm",
     "selectAllRows": "Select all rows",
     "moveToTrash": "Move to trash",
