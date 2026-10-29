@@ -15,6 +15,11 @@ import {
 import { environment } from '../../../../environments/environment';
 import { ApiResponse, PageResponse } from '../../../core/models/api-response.model';
 import { NotificationItem, NotificationFilter } from '../models/notification.model';
+import {
+  NotificationStreamEvent,
+  NotificationStreamService,
+  NotificationStreamStatus,
+} from './notification-stream.service';
 import { NotifyService } from '../../../core/notify/notify.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import {
@@ -28,6 +33,7 @@ export class NotificationService {
   private http = inject(HttpClient);
   private notify = inject(NotifyService);
   private auth = inject(AuthService);
+  private stream = inject(NotificationStreamService);
 
   private baseUrl = `${environment.apiUrl}/api/dashboard/notifications`;
 
@@ -44,8 +50,15 @@ export class NotificationService {
 
   private polling?: Subscription;
   private visibility?: Subscription;
+  private streamEvents?: Subscription;
+  private streamStatus?: Subscription;
   private mockMode = false;
   private mockItems: NotificationItem[] = [];
+  /**
+   * True once a list request has answered. A pushed notification is only prepended
+   * into a list that is already on screen; before that the first load includes it.
+   */
+  private listLoaded = false;
 
   constructor() {
     this.mockMode = this.isMockEnabled();
@@ -71,6 +84,63 @@ export class NotificationService {
     this.visibility = fromEvent(document, 'visibilitychange')
       .pipe(rxFilter(() => document.visibilityState === 'visible'))
       .subscribe(() => this.refreshUnreadCount());
+
+    // The stream is the fast path; the poll above is the fallback. Both write the
+    // same signals, so the bell and the list can never disagree.
+    this.streamEvents = this.stream.events.subscribe((event) => this.onStreamEvent(event));
+    let previous: NotificationStreamStatus = 'idle';
+    this.streamStatus = this.stream.statusChanges.subscribe((status) => {
+      // A stream that just died leaves a gap until the next tick: close it now.
+      if (status === 'offline' && previous === 'connected') this.refreshUnreadCount();
+      previous = status;
+    });
+  }
+
+  /**
+   * One event from the SSE stream. `ready` and `heartbeat` are handled by the stream
+   * service (liveness); the store only cares about data.
+   */
+  private onStreamEvent({ event, data }: NotificationStreamEvent): void {
+    if (event === 'unread-count') {
+      const count = Number.parseInt(data.trim(), 10);
+      // The server's number is authoritative: this is a set, never an increment, so
+      // a stream event and a poll answering the same fact cannot double-count.
+      if (Number.isFinite(count) && count >= 0) this.unreadCount.set(count);
+      return;
+    }
+    if (event === 'notification') {
+      const item = this.parseNotification(data);
+      if (item) this.prependLive(item);
+    }
+  }
+
+  private parseNotification(data: string): NotificationItem | null {
+    try {
+      const raw = JSON.parse(data) as NotificationItem;
+      if (raw == null || raw.id == null || !raw.type) return null;
+      return this.normalize(raw);
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * The API sends `readAt`, the UI models `read`. Normalising in one place keeps a
+   * pushed row and a fetched row rendered identically.
+   */
+  private normalize(raw: NotificationItem): NotificationItem {
+    return {
+      ...raw,
+      read: typeof raw.read === 'boolean' ? raw.read : !!raw.readAt,
+    };
+  }
+
+  /** A new row arrives at the top of the list, at most once. */
+  private prependLive(item: NotificationItem): void {
+    if (!this.listLoaded) return;
+    if (this.notifications().some((n) => String(n.id) === String(item.id))) return;
+    this.notifications.update((list) => [item, ...list]);
+    this.totalElements.update((total) => total + 1);
   }
 
   private isMockEnabled(): boolean {
@@ -91,11 +161,16 @@ export class NotificationService {
 
   private startPolling(): void {
     if (this.polling) return;
+    this.stream.start(() => this.auth.accessToken());
     this.polling = interval(60000)
       .pipe(
         startWith(0),
         switchMap(() => {
           if (document.visibilityState !== 'visible') return of(null);
+          // Connected means the stream already pushes the count; a poll on top of it
+          // is pure duplication. The moment the stream drops this branch stops
+          // short-circuiting and the poll resumes, which is the fallback.
+          if (this.stream.status() === 'connected') return of(null);
           return this.http
             .get<ApiResponse<number>>(`${this.baseUrl}/unread-count`)
             .pipe(catchError(() => of(null)));
@@ -109,6 +184,8 @@ export class NotificationService {
   private stopPolling(): void {
     this.polling?.unsubscribe();
     this.polling = undefined;
+    this.stream.stop();
+    this.listLoaded = false;
   }
 
   refreshUnreadCount(): void {
@@ -156,9 +233,21 @@ export class NotificationService {
 
     this.http.get<ApiResponse<PageResponse<NotificationItem>>>(this.baseUrl, { params }).subscribe({
       next: (res) => {
-        const content = res.data?.content ?? [];
+        const content = (res.data?.content ?? []).map((n) => this.normalize(n));
         const current = mode === 'append' ? this.notifications() : [];
-        this.notifications.set([...current, ...content]);
+        // Merging by id (not plain concatenation) is what stops a pushed row from
+        // appearing twice: the stream may have prepended it before this page
+        // arrived, and shifting rows can repeat one at a page boundary.
+        const seen = new Set(current.map((n) => String(n.id)));
+        const merged = [...current];
+        for (const item of content) {
+          const id = String(item.id);
+          if (seen.has(id)) continue;
+          seen.add(id);
+          merged.push(item);
+        }
+        this.notifications.set(merged);
+        this.listLoaded = true;
         this.hasMore.set(!(res.data?.last ?? true));
         this.totalElements.set(res.data?.totalElements ?? content.length);
         this.totalPages.set(res.data?.totalPages ?? 1);

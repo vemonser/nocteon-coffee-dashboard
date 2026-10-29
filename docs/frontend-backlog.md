@@ -375,6 +375,31 @@ pass (light/dark/RTL) still needs a run after merge.
 **Acceptance** SSE (or WebSocket) pushes the unread count and new items; the
 poll stays as a fallback; reconnect backoff is visible in the console only.
 **Effort** 2 days. **Deps** none.
+**Shipped** Server-sent events end to end. Backend:
+`GET /api/dashboard/notifications/stream` emits `ready`, `notification` (the
+list DTO), `unread-count` (the number) and `heartbeat` (25 s keep-alive) from
+one thread-safe in-memory registry that drops an emitter on completion, timeout
+or a failed write, with publishing deferred to after-commit. The fan-out in
+`NotificationEventListener` now goes through a single creation path,
+`NotificationService.createAndPublish`, which is insert-if-absent and pushes
+only when a row was really created, so the DB unique constraint and the stream
+agree. Auth is the REST path unchanged (`JwtAuthFilter` + `notification:read`);
+the client reads the stream with `fetch()` and the bearer header instead of
+`EventSource`, so no token ever appears in a query string.
+Frontend: the existing store subscribes to the stream (`unread-count` is always
+a set, never an increment; a pushed row is prepended once and merged by id on
+every reload). The poll short-circuits while the stream is connected and resumes
+the moment it drops, with an immediate count refresh on `connected -> offline`.
+Reconnect is exponential with equal jitter: 1 s base doubling to a 30 s cap
+(500–1000, 1000–2000, … 15000–30000 ms), reset by any real event or heartbeat
+(not by a bare handshake), plus a 70 s watchdog for a silent socket. All of that
+is `console.debug` only — no banner, no toast per event.
+Evidence: `notification-stream.service.spec.ts` (11),
+`notification.service.spec.ts` (16, 5 new), backend
+`NotificationStreamRegistryTest` (5), `NotificationStreamIntegrationTest` (5,
+real HTTP: headers, heartbeat, both events, duplicate suppressed, disconnect
+removed, 401/403), `NotificationEventListenerTest` (4); dev build, full unit
+suite (398) and `i18n:check` pass.
 
 ### FE-24 · Export menu completion
 **Why** "Export report" offers a PDF that is disabled ("soon").

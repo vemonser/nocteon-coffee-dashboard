@@ -2,12 +2,18 @@ import { TestBed } from '@angular/core/testing';
 import { signal } from '@angular/core';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
+import { Subject } from 'rxjs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { environment } from '../../../../environments/environment';
 import { NotifyService } from '../../../core/notify/notify.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { NotificationService } from './notification.service';
+import {
+  NotificationStreamEvent,
+  NotificationStreamService,
+  NotificationStreamStatus,
+} from './notification-stream.service';
 import { NotificationItem } from '../models/notification.model';
 
 const BASE = `${environment.apiUrl}/api/dashboard/notifications`;
@@ -34,6 +40,16 @@ describe('NotificationService', () => {
   let service: NotificationService;
   let http: HttpTestingController;
   let loggedIn: ReturnType<typeof signal<boolean>>;
+  let streamStatus: ReturnType<typeof signal<NotificationStreamStatus>>;
+  let streamEvents: Subject<NotificationStreamEvent>;
+  let streamStatusChanges: Subject<NotificationStreamStatus>;
+  let stream: {
+    status: () => NotificationStreamStatus;
+    events: Subject<NotificationStreamEvent>;
+    statusChanges: Subject<NotificationStreamStatus>;
+    start: ReturnType<typeof vi.fn>;
+    stop: ReturnType<typeof vi.fn>;
+  };
   let notify: {
     apiError: ReturnType<typeof vi.fn>;
     success: ReturnType<typeof vi.fn>;
@@ -47,6 +63,17 @@ describe('NotificationService', () => {
       success: vi.fn(),
       backendMessage: vi.fn(() => null),
     };
+    // The real service opens a socket; the store only needs its seams.
+    streamStatus = signal<NotificationStreamStatus>('idle');
+    streamEvents = new Subject<NotificationStreamEvent>();
+    streamStatusChanges = new Subject<NotificationStreamStatus>();
+    stream = {
+      status: () => streamStatus(),
+      events: streamEvents,
+      statusChanges: streamStatusChanges,
+      start: vi.fn(),
+      stop: vi.fn(),
+    };
 
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({
@@ -54,14 +81,34 @@ describe('NotificationService', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         { provide: NotifyService, useValue: notify },
-        { provide: AuthService, useValue: { isLoggedIn: () => loggedIn() } },
+        {
+          provide: AuthService,
+          useValue: { isLoggedIn: () => loggedIn(), accessToken: () => 'jwt-token' },
+        },
+        { provide: NotificationStreamService, useValue: stream },
       ],
     });
     service = TestBed.inject(NotificationService);
     http = TestBed.inject(HttpTestingController);
   });
 
+  let realTimers = false;
+
+  function setStreamStatus(status: NotificationStreamStatus): void {
+    streamStatus.set(status);
+    streamStatusChanges.next(status);
+  }
+
+  /** Pushes one SSE event into the store. */
+  function pushEvent(event: string, data: unknown): void {
+    streamEvents.next({ event, data: typeof data === 'string' ? data : JSON.stringify(data) });
+  }
+
   afterEach(() => {
+    if (realTimers) {
+      vi.useRealTimers();
+      realTimers = false;
+    }
     http.verify();
     vi.restoreAllMocks();
   });
@@ -239,5 +286,107 @@ describe('NotificationService', () => {
 
     expect(service.error()).toBe('Notifications service unavailable');
     expect(notify.apiError).toHaveBeenCalled();
+  });
+  it('prepends a pushed notification once, even when a reload returns the same row', () => {
+    loggedIn.set(true);
+    TestBed.tick();
+    http.expectOne((r) => r.url === `${BASE}/unread-count`).flush({ success: true, data: 0 });
+
+    service.loadItems(true);
+    http.expectOne((r) => r.url === BASE).flush(page([item(1), item(2)], true));
+
+    pushEvent('notification', {
+      id: 9,
+      type: 'order.new',
+      params: { orderNumber: 'ORD-9' },
+      entityType: 'order',
+      entityId: 9009,
+      createdAt: '2026-10-29T10:00:00Z',
+      readAt: null,
+    });
+    pushEvent('unread-count', '1');
+
+    expect(service.notifications().map((n) => n.id)).toEqual([9, 1, 2]);
+    // A pushed row is unread, and the DTO's `readAt` drives the rendered state.
+    expect(service.notifications()[0].read).toBe(false);
+    expect(service.unreadCount()).toBe(1);
+
+    // The fallback reload returns the same row: it must not appear twice.
+    service.loadItems(true);
+    http
+      .expectOne((r) => r.url === BASE)
+      .flush(page([item(9), item(1), item(2)], true));
+
+    expect(service.notifications().map((n) => n.id)).toEqual([9, 1, 2]);
+    expect(service.unreadCount()).toBe(1);
+  });
+
+  it('never adds the stream count to the polled count', () => {
+    loggedIn.set(true);
+    TestBed.tick();
+    http.expectOne((r) => r.url === `${BASE}/unread-count`).flush({ success: true, data: 0 });
+
+    pushEvent('unread-count', '5');
+    expect(service.unreadCount()).toBe(5);
+
+    // The poll answering the same fact must set it, not add to it.
+    service.refreshUnreadCount();
+    http.expectOne((r) => r.url === `${BASE}/unread-count`).flush({ success: true, data: 5 });
+    expect(service.unreadCount()).toBe(5);
+
+    // Two stream events in a row are two snapshots, still not a sum.
+    pushEvent('unread-count', '5');
+    pushEvent('unread-count', '6');
+    expect(service.unreadCount()).toBe(6);
+  });
+
+  it('does not insert a pushed row before the list has ever loaded', () => {
+    loggedIn.set(true);
+    TestBed.tick();
+    http.expectOne((r) => r.url === `${BASE}/unread-count`).flush({ success: true, data: 0 });
+
+    pushEvent('notification', { id: 9, type: 'order.new', readAt: null });
+    pushEvent('unread-count', '1');
+
+    // The first page request will contain it; a one-row list here would look like a
+    // broken page and skip the real rows.
+    expect(service.notifications()).toEqual([]);
+    expect(service.unreadCount()).toBe(1);
+  });
+
+  it('starts the stream with a session and stops it on logout', () => {
+    loggedIn.set(true);
+    TestBed.tick();
+    http.expectOne((r) => r.url === `${BASE}/unread-count`).flush({ success: true, data: 0 });
+    expect(stream.start).toHaveBeenCalledTimes(1);
+
+    loggedIn.set(false);
+    TestBed.tick();
+    expect(stream.stop).toHaveBeenCalled();
+  });
+
+  it('pauses the poll while the stream is connected and resumes when it drops', () => {
+    vi.useFakeTimers();
+    realTimers = true;
+
+    loggedIn.set(true);
+    TestBed.tick();
+    // The first count is fetched straight away (the stream is still connecting).
+    http.expectOne((r) => r.url === `${BASE}/unread-count`).flush({ success: true, data: 3 });
+
+    setStreamStatus('connected');
+    vi.advanceTimersByTime(60_000);
+    // Connected: the stream owns the count, so the poll stays silent.
+    http.expectNone((r) => r.url === `${BASE}/unread-count`);
+
+    // The stream drops: refresh at once instead of waiting for the next tick...
+    setStreamStatus('offline');
+    http.expectOne((r) => r.url === `${BASE}/unread-count`).flush({ success: true, data: 4 });
+    expect(service.unreadCount()).toBe(4);
+
+    // ...and the 60s fallback poll is running again.
+    vi.advanceTimersByTime(60_000);
+    http.expectOne((r) => r.url === `${BASE}/unread-count`).flush({ success: true, data: 5 });
+    expect(service.unreadCount()).toBe(5);
   });
 });
