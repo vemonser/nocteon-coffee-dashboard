@@ -5,6 +5,7 @@
   [confirmLabel]="confirmLabel()"
   [cancelLabel]="cancelLabel()"
   [confirmDisabled]="!canConfirm()"
+  [cancelDisabled]="pending()"
   [pending]="pending()"
   testId="bulk-status-dialog"
   (confirmed)="confirm()"

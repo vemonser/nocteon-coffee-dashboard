@@ -40,6 +40,8 @@ export class OrderDialogComponent {
   readonly confirmLabel = input<string>('');
   readonly cancelLabel = input<string>('Cancel');
   readonly confirmDisabled = input<boolean>(false);
+  /** The cancel / close control is locked too (a request is in flight). */
+  readonly cancelDisabled = input<boolean>(false);
   readonly pending = input<boolean>(false);
   /** A destructive action: the confirm button is destructive. */
   readonly danger = input<boolean>(false);

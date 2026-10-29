@@ -24,7 +24,13 @@
       <ng-content></ng-content>
 
       <div class="mt-6 flex justify-end gap-3">
-        <button hlmBtn variant="outline" type="button" (click)="closed.emit()">
+        <button
+          hlmBtn
+          variant="outline"
+          type="button"
+          [disabled]="cancelDisabled()"
+          (click)="closed.emit()"
+        >
           {{ cancelLabel() }}
         </button>
         <button
