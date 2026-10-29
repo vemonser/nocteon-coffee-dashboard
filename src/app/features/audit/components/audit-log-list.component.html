@@ -257,10 +257,26 @@
         </dd>
       </div>
 
-      @if (entry.ipAddress) {
-        <div class="min-w-0">
-          <dt class="text-xs font-medium text-muted-foreground">{{ 'audit.detail.ip' | transloco }}</dt>
-          <dd class="mt-1 font-mono text-sm" dir="ltr">{{ entry.ipAddress }}</dd>
+      <div class="min-w-0 sm:col-span-2">
+        <dt class="text-xs font-medium text-muted-foreground">{{ 'audit.source' | transloco }}</dt>
+        <dd class="mt-1 text-sm" dir="ltr">
+          @if (entry.ipAddress || entry.userAgent) {
+            {{ entry.ipAddress ?? ('audit.sourceUnknown' | transloco) }} · {{ entry.userAgent ? sourceLabel(entry) : ('audit.sourceUnknown' | transloco) }}
+          } @else {
+            {{ 'audit.sourceUnknown' | transloco }}
+          }
+        </dd>
+      </div>
+
+      @if (entry.userAgent) {
+        <div class="min-w-0 sm:col-span-2">
+          <dt class="text-xs font-medium text-muted-foreground">{{ 'audit.rawSource' | transloco }}</dt>
+          <dd class="mt-1 break-words font-mono text-xs text-muted-foreground" dir="ltr">{{ entry.userAgent }}</dd>
+        </div>
+      } @else {
+        <div class="min-w-0 sm:col-span-2">
+          <dt class="text-xs font-medium text-muted-foreground">{{ 'audit.rawSource' | transloco }}</dt>
+          <dd class="mt-1 text-sm text-muted-foreground">{{ 'audit.sourceUnknown' | transloco }}</dd>
         </div>
       }
 
@@ -271,12 +287,6 @@
         </div>
       }
 
-      @if (entry.userAgent) {
-        <div class="min-w-0 sm:col-span-2">
-          <dt class="text-xs font-medium text-muted-foreground">{{ 'audit.detail.userAgent' | transloco }}</dt>
-          <dd class="mt-1 break-all text-xs text-muted-foreground" dir="ltr">{{ entry.userAgent }}</dd>
-        </div>
-      }
     </dl>
 
     @if (detailJson().length > 0) {
