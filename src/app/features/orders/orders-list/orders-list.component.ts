@@ -68,6 +68,7 @@ import type { RowMenuAction } from '../../../shared/ui/actions-cell/actions-cell
 import { formatCurrencyPlain } from '../../../shared/utils/locale-format';
 import { formatOrderNumber } from '../utils/order-number';
 import { orderItemsCount } from '../utils/order-items-count';
+import { exportCountLabel } from '../utils/export-count-label';
 
 /**
  * The orders list — v4.
@@ -233,6 +234,20 @@ export class OrdersListComponent {
     const value = this.transloco.translate(key);
     return typeof value === 'string' && value.length > 0 && value !== key ? value : fallback;
   }
+
+  /**
+   * The export buttons' label — "Export 128 orders" / "تصدير 128 طلبًا".
+   *
+   * The count is `pageTotal()` — `totalElements` for the VIEW (filter ∩ tab),
+   * which is exactly the set `exportCsv()` walks. No extra request, and no
+   * second definition of the number the pager and the header already show.
+   */
+  protected readonly exportLabel = computed(() =>
+    exportCountLabel(this.pageTotal(), this.language.current(), (key, params) => {
+      const value = this.transloco.translate(key, params);
+      return typeof value === 'string' ? value : '';
+    }),
+  );
 
   /** Status counts for the FILTERED SET (for tab counts). */
   protected readonly counts = computed(() => this.statusCounts());
