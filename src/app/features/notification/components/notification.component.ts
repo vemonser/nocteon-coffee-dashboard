@@ -9,6 +9,7 @@ import { BrnPopover } from '@spartan-ng/brain/popover';
 import { HlmBadgeImports } from '@spartan-ng/helm/badge';
 import { HlmSeparatorImports } from '@spartan-ng/helm/separator';
 import { TranslocoPipe } from '@jsverse/transloco';
+import { PluralPipe } from '../../../shared/pipes/plural.pipe';
 import { NotificationService } from '../services/notification.service';
 import { PermissionService } from '../../../core/auth/permission.service';
 import { NotificationItem } from '../models/notification.model';
@@ -28,6 +29,7 @@ import { DialogShellComponent } from '../../../shared/ui/dialog-shell/dialog-she
     HlmBadgeImports,
     HlmSeparatorImports,
     TranslocoPipe,
+    PluralPipe,
     NotificationItemComponent,
     DialogShellComponent,
   ],

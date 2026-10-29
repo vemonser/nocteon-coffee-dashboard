@@ -9,7 +9,7 @@
         size="icon"
         class="relative rounded-full! text-muted-foreground hover:text-foreground"
         data-testid="notifications-bell"
-        [attr.aria-label]="'notifications.ariaLabel' | transloco: { n: unreadCount() }"
+        [attr.aria-label]="unreadCount() | plural: 'notifications.unreadCount'"
         [attr.aria-expanded]="isOpen()"
         aria-haspopup="dialog"
       >
