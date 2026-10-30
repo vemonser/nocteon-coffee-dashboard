@@ -25,6 +25,14 @@ describe('isProductActive', () => {
     expect(isProductActive(undefined)).toBe(false);
   });
 
+  it('treats a trashed row (soft-deleted, disabled) as not live', () => {
+    const trashed = {
+      active: false,
+      deletedAt: '2026-10-29T10:00:00Z',
+    } as { active: boolean; deletedAt: string };
+    expect(isProductActive(trashed)).toBe(false);
+  });
+
   it('prefers `active` when both fields disagree', () => {
     expect(isProductActive({ active: true, isActive: false })).toBe(true);
     expect(isProductActive({ active: false, isActive: true })).toBe(false);
