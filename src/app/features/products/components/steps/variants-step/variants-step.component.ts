@@ -13,7 +13,6 @@ import {
   ReactiveFormsModule,
 } from '@angular/forms';
 import { ProductWizardStateService } from '../../product-wizard/product-wizard-state.service';
-import { ProductWizardComponent } from '../../product-wizard/product-wizard.component';
 import { ProductOption, ProductOptionValue } from '../../../../product-options/models/product-option.model';
 import { filterOptionsByProductType } from '../../../product-option-applicability';
 import { ProductOptionService } from '../../../../product-options/services/product-option.service';
@@ -72,7 +71,6 @@ export class VariantsStepComponent implements OnInit {
   private productService = inject(ProductService);
   private language = inject(LanguageService);
   private notify = inject(NotifyService);
-  private wizard = inject(ProductWizardComponent);
   private confirmDialog = inject(ConfirmDialogService);
   private destroyRef = inject(DestroyRef);
   protected readonly dates = inject(LocalizedDateService);
@@ -458,22 +456,6 @@ export class VariantsStepComponent implements OnInit {
     const control = group.get('imageUrl');
     control?.setValue('');
     control?.markAsDirty();
-  }
-
-  saveCurrentStep(): void {
-    this.wizard.saveCurrentStep();
-  }
-
-  onBack(): void {
-    this.wizard.onBack();
-  }
-
-  isCurrentStepDirty(): boolean {
-    return this.wizard.isCurrentStepDirty();
-  }
-
-  isCurrentStepValid(): boolean {
-    return this.state.isCurrentStepValid();
   }
 
   removeVariant(index: number): void {

@@ -605,7 +605,17 @@
       "saving": "جارٍ الحفظ...",
       "saveChanges": "حفظ التغييرات",
       "createProduct": "إنشاء منتج",
-      "variantsCount": "{{count}} متغيرات"
+      "variantsCount": "{{count}} متغيرات",
+      "missing": "المفقود: {{fields}}",
+      "completeToCreate": "أكمل الحقول الناقصة لإنشاء المنتج",
+      "loadError": "تعذّر تحميل المنتج. ربما حُذف.",
+      "disabledStorefront": "فعّل المنتج لتفتحه في المتجر",
+      "fieldProductType": "نوع المنتج",
+      "fieldCategory": "الفئة",
+      "fieldNameEn": "الاسم (الإنجليزية)",
+      "fieldNameAr": "الاسم (العربية)",
+      "fieldVariants": "متغير واحد على الأقل",
+      "fieldVariantDetails": "بيانات المتغير"
     },
     "table": {
       "variantCount_zero": "بدون متغيرات",

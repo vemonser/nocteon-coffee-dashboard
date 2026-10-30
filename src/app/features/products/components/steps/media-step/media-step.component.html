@@ -193,18 +193,4 @@
       <p class="text-xs text-muted-foreground">{{ 'products.media.socialImageHint' | transloco }}</p>
     </div>
   </section>
-
-  @if (!state.isEditMode()) {
-    <!-- Sticky footer for navigation (create mode only) -->
-    <div class="sticky-footer">
-      <button hlmBtn variant="outline" (click)="onBack()">
-        {{ 'common.back' | transloco }}
-      </button>
-      <button hlmBtn
-              [disabled]="!isCurrentStepDirty() || !isCurrentStepValid()"
-              (click)="saveCurrentStep()">
-        {{ 'common.saveChanges' | transloco }}
-      </button>
-    </div>
-  }
 </div>

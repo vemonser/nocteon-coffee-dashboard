@@ -3,7 +3,6 @@ import { ConfirmDialogService } from '../../../../../core/services/confirm-dialo
 import { CommonModule } from '@angular/common';
 import { CdkDragDrop, DragDropModule } from '@angular/cdk/drag-drop';
 import { ProductWizardStateService } from '../../product-wizard/product-wizard-state.service';
-import { ProductWizardComponent } from '../../product-wizard/product-wizard.component';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { HlmSelectImports } from '@spartan-ng/helm/select';
 import { HlmLabel } from '@spartan-ng/helm/label';
@@ -35,7 +34,6 @@ interface MediaFileError {
 })
 export class MediaStepComponent {
   protected state = inject(ProductWizardStateService);
-  private wizard = inject(ProductWizardComponent);
   private confirmDialog = inject(ConfirmDialogService);
   private transloco = inject(TranslocoService);
 
@@ -68,22 +66,6 @@ export class MediaStepComponent {
   readonly editingAlt = signal<Set<string>>(new Set());
 
   private static readonly MAX_BYTES = 10 * 1024 * 1024;
-
-  saveCurrentStep(): void {
-    this.wizard.saveCurrentStep();
-  }
-
-  onBack(): void {
-    this.wizard.onBack();
-  }
-
-  isCurrentStepDirty(): boolean {
-    return this.wizard.isCurrentStepDirty();
-  }
-
-  isCurrentStepValid(): boolean {
-    return this.state.isCurrentStepValid();
-  }
 
   setPrimary(source: 'existing' | 'staged', index: number): void {
     this.state.setPrimaryMedia(source, index);

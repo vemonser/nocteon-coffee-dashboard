@@ -5,7 +5,6 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormControl } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ProductWizardStateService } from '../../product-wizard/product-wizard-state.service';
-import { ProductWizardComponent } from '../../product-wizard/product-wizard.component';
 import { PairingService } from '../../../../pairing/services/pairing.service';
 import { PairingResponse } from '../../../../pairing/models/pairing.model';
 import { TranslocoPipe } from '@jsverse/transloco';
@@ -39,7 +38,6 @@ export class PairingsStepComponent {
   private pairingService = inject(PairingService);
   private notify = inject(NotifyService);
   private language = inject(LanguageService);
-  private wizard = inject(ProductWizardComponent);
   private router = inject(Router);
   private productService = inject(ProductService);
 
@@ -130,22 +128,6 @@ export class PairingsStepComponent {
     const arr = this.state.pairingsArray;
     while (arr.length) arr.removeAt(0);
     slugs.forEach((slug) => arr.push(new FormControl(slug)));
-  }
-
-  saveCurrentStep(): void {
-    this.wizard.saveCurrentStep();
-  }
-
-  onBack(): void {
-    this.wizard.onBack();
-  }
-
-  isCurrentStepDirty(): boolean {
-    return this.wizard.isCurrentStepDirty();
-  }
-
-  isCurrentStepValid(): boolean {
-    return this.state.isCurrentStepValid();
   }
 
   getPairingName(pairing: PairingResponse): string {

@@ -4,7 +4,6 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 import { signal } from '@angular/core';
 import { ProductWizardStateService } from '../../product-wizard/product-wizard-state.service';
-import { ProductWizardComponent } from '../../product-wizard/product-wizard.component';
 import { ProductType } from '../../../models/product.models';
 import { TranslationFormHelper } from '../../../../../shared/utils/translation.utils';
 import { CategoryService } from '../../../../categories/services/category.service';
@@ -76,7 +75,6 @@ export class BasicInfoStepComponent {
 
   protected state = inject(ProductWizardStateService);
   protected translationHelper = inject(TranslationFormHelper);
-  private wizard = inject(ProductWizardComponent);
 
   private categoryService = inject(CategoryService);
   private originService = inject(OriginService);
@@ -207,14 +205,6 @@ export class BasicInfoStepComponent {
     return this.state.form.get('productType')?.value === 'COFFEE';
   }
 
-  saveCurrentStep(): void {
-    this.wizard.saveCurrentStep();
-  }
-
-  onCancel(): void {
-    this.wizard.onCancel();
-  }
-
   onStoryEditorCreated(editor: Quill): void {
     const toolbar = editor.getModule('toolbar') as { addHandler: (name: string, fn: () => void) => void };
     toolbar.addHandler('image', () => this.pickStoryImage(editor));
@@ -293,14 +283,6 @@ export class BasicInfoStepComponent {
           this.notify.apiError(null, 'products.form.imageUploadFailed', 'Could not upload the image');
         },
       });
-  }
-
-  isCurrentStepDirty(): boolean {
-    return this.wizard.isCurrentStepDirty();
-  }
-
-  isCurrentStepValid(): boolean {
-    return this.state.isCurrentStepValid();
   }
 
   private localizedName(

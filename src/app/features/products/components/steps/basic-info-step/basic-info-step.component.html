@@ -385,18 +385,4 @@
       <p class="mt-3 text-xs text-warning">{{ 'products.form.featuredDisabledWarning' | transloco }}</p>
     }
   </section>
-
-  @if (!state.isEditMode()) {
-    <!-- Sticky footer for navigation (create mode only) -->
-    <div class="sticky-footer">
-      <button hlmBtn variant="outline" (click)="onCancel()">
-        {{ 'common.cancel' | transloco }}
-      </button>
-      <button hlmBtn
-              [disabled]="!isCurrentStepDirty() || !isCurrentStepValid()"
-              (click)="saveCurrentStep()">
-        {{ 'common.saveChanges' | transloco }}
-      </button>
-    </div>
-  }
 </div>

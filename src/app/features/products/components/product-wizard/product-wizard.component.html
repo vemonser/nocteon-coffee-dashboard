@@ -36,9 +36,9 @@
       </div>
       <div class="flex gap-2">
         @if (state.isEditMode() && state.editingSlug()) {
-          <span [title]="!state.form.get('isActive')?.value ? 'Product is disabled' : null">
+          <span [title]="!state.form.get('isActive')?.value ? ('products.wizard.disabledStorefront' | transloco) : null">
             <button hlmBtn variant="outline" (click)="viewOnStorefront()" [disabled]="!state.form.get('isActive')?.value">
-              <ng-icon name="lucideExternalLink" class="mr-2 size-4" />
+              <ng-icon name="lucideExternalLink" class="me-2 size-4" />
               {{ 'products.actions.viewOnStorefront' | transloco }}
             </button>
           </span>
@@ -120,7 +120,7 @@
         </div>
       </div>
     } @else {
-      <div class="sticky bottom-0 z-10 mt-6 flex justify-between border-t bg-background/80 px-6 py-4 backdrop-blur -mx-6">
+      <div class="sticky-footer" data-testid="wizard-footer">
         <div>
           @if (state.currentStep() > 0) {
             <button hlmBtn variant="outline" type="button" (click)="onBack()">
@@ -128,27 +128,51 @@
               {{ 'products.wizard.back' | transloco }}
             </button>
           } @else {
-            <button hlmBtn variant="outline" type="button" (click)="onCancel()">
-              <ng-icon name="lucideX" class="mr-2 size-4" />
+            <button hlmBtn variant="outline" type="button" data-testid="wizard-cancel" (click)="onCancel()">
+              <ng-icon name="lucideX" class="me-2 size-4" />
               {{ 'products.wizard.cancel' | transloco }}
             </button>
           }
         </div>
         <div class="flex items-center gap-2">
-          @if (state.currentStep() < state.steps.length - 1) {
-            <button hlmBtn type="button" (click)="onNext()" [disabled]="!state.isCurrentStepValid()">
+          @if (!isLastVisibleStep()) {
+            <button hlmBtn type="button" data-testid="wizard-next" (click)="onNext()" [disabled]="submitting()">
               {{ 'products.wizard.next' | transloco }}
               <ng-icon name="lucideArrowRight" class="ms-2 size-4 rtl:rotate-180" />
             </button>
+          } @else {
+            <!--
+              The last VISIBLE step owns the only create button. It reads as
+              disabled until the whole form is valid, but it stays focusable
+              and clickable: a disabled button cannot explain itself, so the
+              click runs validation and takes the admin to the first problem
+              (W3) while the tooltip lists what is missing.
+            -->
+            <span
+              hlmTooltip
+              position="top"
+              [brnTooltip]="isFormValid() ? '' : createHint()"
+              class="inline-flex"
+            >
+              <button
+                hlmBtn
+                type="button"
+                data-testid="wizard-create"
+                [attr.aria-disabled]="!isFormValid() || submitting()"
+                [class.opacity-50]="!isFormValid()"
+                [class.cursor-not-allowed]="!isFormValid()"
+                [disabled]="submitting()"
+                (click)="onCreate()"
+              >
+                @if (submitting()) {
+                  <ng-icon name="lucideLoader2" class="me-2 size-4 animate-spin" />
+                } @else {
+                  <ng-icon name="lucideCheck" class="me-2 size-4" />
+                }
+                {{ submitting() ? ('products.wizard.saving' | transloco) : ('products.wizard.createProduct' | transloco) }}
+              </button>
+            </span>
           }
-          <button hlmBtn type="button" (click)="onSubmit()" [disabled]="submitting() || !state.isCurrentStepValid()">
-            @if (submitting()) {
-              <ng-icon name="lucideLoader2" class="mr-2 size-4 animate-spin" />
-            } @else {
-              <ng-icon name="lucideCheck" class="mr-2 size-4" />
-            }
-            {{ submitting() ? ('products.wizard.saving' | transloco) : ('products.wizard.createProduct' | transloco) }}
-          </button>
         </div>
       </div>
     }

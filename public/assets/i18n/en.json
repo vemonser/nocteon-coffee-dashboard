@@ -601,7 +601,17 @@
       "saving": "Saving...",
       "saveChanges": "Save changes",
       "createProduct": "Create product",
-      "variantsCount": "{{count}} variants"
+      "variantsCount": "{{count}} variants",
+      "missing": "Missing: {{fields}}",
+      "completeToCreate": "Complete the missing fields to create the product",
+      "loadError": "Could not load the product. It may have been deleted.",
+      "disabledStorefront": "Enable the product to open it on the storefront",
+      "fieldProductType": "Product type",
+      "fieldCategory": "Category",
+      "fieldNameEn": "Name (English)",
+      "fieldNameAr": "Name (Arabic)",
+      "fieldVariants": "At least one variant",
+      "fieldVariantDetails": "Variant details"
     },
     "table": {
       "variantCount_one": "{{count}} variant",

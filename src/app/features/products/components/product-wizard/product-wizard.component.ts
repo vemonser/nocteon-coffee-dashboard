@@ -13,8 +13,10 @@ import { PairingsStepComponent } from '../steps/pairings-step/pairings-step.comp
 import { ProductWizardStateService } from './product-wizard-state.service';
 import { HlmTabsImports } from '@spartan-ng/helm/tabs';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
+import { HlmTooltipImports } from '@spartan-ng/helm/tooltip';
+import { BrnTooltip } from '@spartan-ng/brain/tooltip';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { TranslocoPipe } from '@jsverse/transloco';
+import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { NotifyService } from '../../../../core/notify/notify.service';
 import { ConfirmDialogService } from '../../../../core/services/confirm-dialog.service';
 import { LanguageService } from '../../../../core/i18n/language.service';
@@ -49,6 +51,8 @@ import {
     PairingsStepComponent,
     HlmTabsImports,
     HlmButtonImports,
+    HlmTooltipImports,
+    BrnTooltip,
     NgIcon,
     TranslocoPipe,
   ],
@@ -87,6 +91,7 @@ export class ProductWizardComponent implements CanComponentDeactivate, HasUnsave
   private notify = inject(NotifyService);
   private language = inject(LanguageService);
   private confirmDialog = inject(ConfirmDialogService);
+  private transloco = inject(TranslocoService);
 
   loadingDetail = signal(false);
   submitting = signal(false);
@@ -115,6 +120,61 @@ export class ProductWizardComponent implements CanComponentDeactivate, HasUnsave
       default:
         return false;
     }
+  }
+
+  /** The last step the product type actually shows (Pairings for coffee, Media for equipment). */
+  isLastVisibleStep(): boolean {
+    return this.state.currentStep() >= this.stepTabs.length - 1;
+  }
+
+  /**
+   * The fields that still block creation, in reading order. The same list feeds
+   * the tooltip on the disabled create button, so it can never disagree with
+   * `isFormValid()`.
+   */
+  missingFields(): string[] {
+    const missing: string[] = [];
+    const t = (key: string, fallback: string) => this.notify.t(key, fallback);
+
+    if (this.state.form.get('productType')?.invalid) {
+      missing.push(t('products.wizard.fieldProductType', 'Product type'));
+    }
+    if (this.state.form.get('categorySlug')?.invalid) {
+      missing.push(t('products.wizard.fieldCategory', 'Category'));
+    }
+
+    const controls = this.state.translationsArray.controls;
+    const nameOf = (code: string) =>
+      controls.find((control) => control.get('language')?.value === code)?.get('name');
+    if (nameOf('en')?.invalid) missing.push(t('products.wizard.fieldNameEn', 'Name (English)'));
+    if (nameOf('ar')?.invalid) missing.push(t('products.wizard.fieldNameAr', 'Name (Arabic)'));
+
+    if (this.state.variantsArray.length === 0) {
+      missing.push(t('products.wizard.fieldVariants', 'At least one variant'));
+    } else if (this.state.variantsArray.invalid) {
+      missing.push(t('products.wizard.fieldVariantDetails', 'Variant details'));
+    }
+
+    return missing;
+  }
+
+  /** The create button's tooltip: what is missing, or why it is unavailable. */
+  createHint(): string {
+    const missing = this.missingFields();
+    if (missing.length === 0) {
+      return this.transloco.translate('products.wizard.completeToCreate');
+    }
+    // Arabic lists with its own separator; a Latin comma between Arabic words
+    // reads as a direction break.
+    const separator = this.language.current() === 'ar' ? '، ' : ', ';
+    return this.transloco.translate('products.wizard.missing', {
+      fields: missing.join(separator),
+    });
+  }
+
+  /** Create: the last step is the only place this action exists. */
+  onCreate(): void {
+    this.onSubmit();
   }
 
   readonly activeTab = signal<string>('basic');
@@ -203,7 +263,12 @@ export class ProductWizardComponent implements CanComponentDeactivate, HasUnsave
           void this.offerDraftRestore();
         },
         error: () => {
-          this.loadError.set('Could not load product. It may have been deleted.');
+          this.loadError.set(
+            this.notify.t(
+              'products.wizard.loadError',
+              'Could not load the product. It may have been deleted.',
+            ),
+          );
           this.loadingDetail.set(false);
         },
       });
@@ -238,21 +303,11 @@ export class ProductWizardComponent implements CanComponentDeactivate, HasUnsave
     const targetIndex = this.stepTabs.findIndex((t) => t.id === tabId);
     if (targetIndex === -1) return;
 
-    if (targetIndex > this.state.currentStep()) {
-      if (this.state.isCurrentStepValid()) {
-        while (this.state.currentStep() < targetIndex) {
-          this.state.goNext();
-        }
-        this.activeTab.set(tabId);
-      } else {
-        this.markCurrentStepTouched();
-      }
-    } else {
-      while (this.state.currentStep() > targetIndex) {
-        this.state.goBack();
-      }
-      this.activeTab.set(tabId);
-    }
+    // Tabs are a table of contents, not a wizard gate: every step is reachable
+    // at any time (W2). Validation belongs to Next (current step) and Create
+    // (all steps), so a click here never marks a step as having errors.
+    this.state.goToStep(targetIndex);
+    this.activeTab.set(tabId);
     this.syncStepUrl();
   }
 
@@ -446,7 +501,7 @@ export class ProductWizardComponent implements CanComponentDeactivate, HasUnsave
       arr.find((x) => (x.language || '').toLowerCase() === lang) ??
       arr.find((x) => (x.language || '').toLowerCase() === 'en') ??
       arr[0];
-    return t?.name || this.state.editingName() || this.state.editingSlug() || 'Product';
+    return t?.name || this.state.editingName() || this.state.editingSlug() || this.transloco.translate('common.product');
   }
 
   arabicName(): string {

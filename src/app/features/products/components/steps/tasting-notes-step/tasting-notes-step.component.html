@@ -18,17 +18,4 @@
     [addLabel]="'common.chipMultiselect.add' | transloco"
     (selectionChange)="onSelectionChange($event)"
   ></app-chip-multiselect>
-
-  @if (!state.isEditMode()) {
-    <div class="sticky-footer">
-      <button hlmBtn variant="outline" (click)="onBack()">
-        {{ 'common.back' | transloco }}
-      </button>
-      <button hlmBtn
-              [disabled]="!isCurrentStepDirty() || !isCurrentStepValid()"
-              (click)="saveCurrentStep()">
-        {{ 'common.saveChanges' | transloco }}
-      </button>
-    </div>
-  }
 </div>

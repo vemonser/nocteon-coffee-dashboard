@@ -5,7 +5,6 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormControl } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ProductWizardStateService } from '../../product-wizard/product-wizard-state.service';
-import { ProductWizardComponent } from '../../product-wizard/product-wizard.component';
 import { TastingNoteService } from '../../../../tasting-note/services/tasting-note.service';
 import { TastingNoteResponse } from '../../../../tasting-note/models/tasting-note.model';
 import { TranslocoPipe } from '@jsverse/transloco';
@@ -25,7 +24,6 @@ export class TastingNotesStepComponent {
   private tastingNoteService = inject(TastingNoteService);
   private notify = inject(NotifyService);
   private language = inject(LanguageService);
-  private wizard = inject(ProductWizardComponent);
   private router = inject(Router);
 
   readonly allNotes = signal<TastingNoteResponse[]>([]);
@@ -63,22 +61,6 @@ export class TastingNotesStepComponent {
     const arr = this.state.tastingNotesArray;
     while (arr.length) arr.removeAt(0);
     slugs.forEach((slug) => arr.push(new FormControl(slug)));
-  }
-
-  saveCurrentStep(): void {
-    this.wizard.saveCurrentStep();
-  }
-
-  onBack(): void {
-    this.wizard.onBack();
-  }
-
-  isCurrentStepDirty(): boolean {
-    return this.wizard.isCurrentStepDirty();
-  }
-
-  isCurrentStepValid(): boolean {
-    return this.state.isCurrentStepValid();
   }
 
   getNoteName(note: TastingNoteResponse): string {
