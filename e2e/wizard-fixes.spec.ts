@@ -131,8 +131,21 @@ test.describe('product wizard fixes (wizard-fixes)', () => {
     // Next with an empty Basic info step: it stays red, Variants does not.
     await footer(page).getByRole('button', { name: /^Next$/ }).click();
     await expect(errorIcons).toHaveCount(1);
-    await expect(stepTab(page, /^Basic info/).getByRole('img', { name: 'Has errors' })).toBeVisible();
+    const basicError = stepTab(page, /^Basic info/).getByRole('img', { name: 'Has errors' });
+    await expect(basicError).toBeVisible();
     await expect(stepTab(page, /^Variants/).getByRole('img', { name: 'Has errors' })).toHaveCount(0);
+
+    // The indicator is red, not a neutral glyph that happens to be an icon.
+    const iconColor = await basicError.locator('ng-icon').evaluate((el) => getComputedStyle(el).color);
+    const destructive = await page.evaluate(() => {
+      const probe = document.createElement('span');
+      probe.style.color = 'var(--destructive)';
+      document.body.appendChild(probe);
+      const color = getComputedStyle(probe).color;
+      probe.remove();
+      return color;
+    });
+    expect(iconColor).toBe(destructive);
 
     // It did not leave the step.
     await expect(stepTab(page, /^Basic info/)).toHaveAttribute('aria-selected', 'true');
@@ -218,7 +231,7 @@ test.describe('product wizard fixes (wizard-fixes)', () => {
     await expect(page.getByText('0/2000')).toBeVisible();
 
     // The Arabic story edits right-to-left.
-    await page.getByRole('tab', { name: /^العربي$/ }).click();
+    await page.getByRole('tab', { name: /العربي/ }).click();
     await page.waitForTimeout(400);
     expect(
       await page.locator('quill-editor .ql-editor').first().evaluate((el) => getComputedStyle(el).direction),
@@ -345,7 +358,7 @@ test.describe('product wizard fixes (wizard-fixes)', () => {
 
     // Names in both languages (the segment switches the visible group).
     await page.locator('input[formcontrolname="name"]').first().fill(`${name} EN`);
-    await page.getByRole('tab', { name: /^العربي$/ }).click();
+    await page.getByRole('tab', { name: /العربي/ }).click();
     await page.locator('input[formcontrolname="name"]').first().fill(`${name} AR`);
 
     // One variant with a price and stock, plus one option value.

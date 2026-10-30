@@ -136,14 +136,20 @@ async function apiToken(): Promise<string> {
 
 async function call(method: string, path: string): Promise<number> {
   const token = await apiToken();
-  const response = await fetch(`${apiBase()}${path}`, {
-    method,
-    headers: {
-      Accept: 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-  });
-  return response.status;
+  // The API rate-limits by IP and a suite can exhaust the window while cleaning
+  // up several rows; a 429 is transient, not "the row is still there".
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const response = await fetch(`${apiBase()}${path}`, {
+      method,
+      headers: {
+        Accept: 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    if (response.status !== 429) return response.status;
+    await new Promise((resolve) => setTimeout(resolve, 2_000 * (attempt + 1)));
+  }
+  return 429;
 }
 
 /**

@@ -5,7 +5,7 @@
       <h1 class="text-2xl font-medium tracking-tight">{{ 'products.wizard.loading' | transloco }}</h1>
     </div>
   } @else if (loadError()) {
-    <div class="text-center py-20 text-destructive">
+    <div class="text-center py-20 text-destructive-text">
       <h1 class="text-2xl font-medium tracking-tight">{{ loadError() }}</h1>
     </div>
   } @else {
@@ -46,7 +46,7 @@
       </div>
     </div>
 
-    <form [formGroup]="state.form" (focusout)="onFormFocusOut()">
+    <form [formGroup]="state.form">
       <hlm-tabs [tab]="activeTab()" class="w-full">
         <hlm-tabs-list class="w-full grid" [style.grid-template-columns]="'repeat(' + stepTabs.length + ', minmax(0, 1fr))'" [attr.aria-label]="'products.wizard.stepsAriaLabel' | transloco">
           @for (step of stepTabs; track step.id; let i = $index) {
@@ -70,11 +70,11 @@
                     hlmTooltip
                     position="top"
                     [brnTooltip]="'products.wizard.hasErrors' | transloco"
-                    class="ms-1.5 inline-flex"
+                    class="ms-1.5 inline-flex text-destructive-text"
                     role="img"
                     [attr.aria-label]="'products.wizard.hasErrors' | transloco"
                   >
-                    <ng-icon name="lucideAlertCircle" class="size-3 text-destructive" aria-hidden="true" />
+                    <ng-icon name="lucideAlertCircle" class="size-3" aria-hidden="true" />
                   </span>
                 } @else if (isTabDirty(step.id) && hasUnsavedChanges()) {
                   <span class="ms-1.5 inline-block size-1.5 rounded-full bg-primary" aria-hidden="true"></span>

@@ -19,7 +19,7 @@
           </hlm-select-content>
         </hlm-select>
         @if (state.form.get('productType')?.invalid && state.form.get('productType')?.touched) {
-          <p class="text-destructive text-xs">{{ 'products.form.productTypeRequired' | transloco }}</p>
+          <p class="text-destructive-text text-xs">{{ 'products.form.productTypeRequired' | transloco }}</p>
         }
         @if (state.isEditMode()) {
           <p class="text-warning text-xs">{{ 'products.form.productTypeChangeWarning' | transloco }}</p>
@@ -41,7 +41,7 @@
           </hlm-select-content>
         </hlm-select>
         @if (state.form.get('categorySlug')?.invalid && state.form.get('categorySlug')?.touched) {
-          <p class="text-destructive text-xs">{{ 'products.form.categoryRequired' | transloco }}</p>
+          <p class="text-destructive-text text-xs">{{ 'products.form.categoryRequired' | transloco }}</p>
         }
       </div>
 
@@ -251,19 +251,21 @@
               empty, and the error icon only after a submit attempt or a blur.
             -->
             @if (isTranslationComplete(lang.code)) {
-              <ng-icon
-                name="lucideCheck"
-                class="size-3 text-success"
+              <span
+                class="inline-flex text-success"
                 role="img"
                 [attr.aria-label]="'products.wizard.complete' | transloco"
-              />
+              >
+                <ng-icon name="lucideCheck" class="size-3" aria-hidden="true" />
+              </span>
             } @else if (showLanguageError(lang.code)) {
-              <ng-icon
-                name="lucideAlertCircle"
-                class="size-3 text-destructive"
+              <span
+                class="inline-flex text-destructive-text"
                 role="img"
                 [attr.aria-label]="'products.wizard.missingField' | transloco"
-              />
+              >
+                <ng-icon name="lucideAlertCircle" class="size-3" aria-hidden="true" />
+              </span>
             } @else {
               <span class="size-2 rounded-full bg-muted-foreground/40" aria-hidden="true"></span>
             }
@@ -289,7 +291,7 @@
                     class="w-full"
                   />
                   @if (group.get('name')?.invalid && group.get('name')?.touched) {
-                    <p class="text-destructive text-xs">{{ 'products.form.nameRequired' | transloco }}</p>
+                    <p class="text-destructive-text text-xs">{{ 'products.form.nameRequired' | transloco }}</p>
                   }
                 </div>
 
@@ -346,7 +348,7 @@
                     <p class="text-xs text-muted-foreground">{{ 'products.form.storyHint' | transloco }}</p>
                     <p
                       class="shrink-0 text-xs tabular-nums"
-                      [class.text-destructive]="group.get('story')?.hasError('htmlMaxLength')"
+                      [class.text-destructive-text]="group.get('story')?.hasError('htmlMaxLength')"
                       [class.text-muted-foreground]="!group.get('story')?.hasError('htmlMaxLength')"
                       [attr.aria-label]="'products.form.storyCounter' | transloco: { count: formatStoryCharacters(group.get('story')?.value), max: 2000 }"
                     >
@@ -354,7 +356,7 @@
                     </p>
                   </div>
                   @if (group.get('story')?.hasError('htmlMaxLength')) {
-                    <p class="text-xs text-destructive">
+                    <p class="text-xs text-destructive-text">
                       {{ 'products.form.storyTooLong' | transloco: { max: 2000 } }}
                     </p>
                   }

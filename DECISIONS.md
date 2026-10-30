@@ -1992,3 +1992,32 @@ per-module `*.trash.permanentConfirm` keys untouched.
 
 Not built (no trash view exists to put it in): product tags and reviews have a
 working purge endpoint but no Active/Trash switch on their pages.
+
+## wizard-fixes: Needs backend
+
+The Add product wizard (and the same steps in Edit) were audited for fields the
+admin can see but the API cannot carry. Every gap below has a safe fallback
+shipped in the UI; none of them invents an endpoint or a field.
+
+1. **Story length is measured in two units.** `ProductTranslationRequest.story`
+   is `@Size(max = 20000)` over the RAW HTML, while the storefront prints
+   2000 characters of text. The wizard counts text (tags stripped) and blocks at
+   2000, so the two rules cannot agree in every case. Requested: a server-side
+   limit expressed in text characters, or `storyTextMax` in the product
+   response. Fallback: the UI keeps 2000 text characters and the server's 400
+   still surfaces through the existing error toast. Detail table:
+   `INPUT_AUDIT.md`.
+2. **Alt text is one string, not one per language.** `ProductMediaRequest`
+   carries a single `altText`. The media tile's "Add alt text" chip opens one
+   input for both storefront languages. Requested: `altTextEn` / `altTextAr` if
+   the storefront needs a translated description; the UI would then render two
+   fields inside the same editor.
+3. **SEO limits differ by design.** The editor caps the SEO title at 60 and the
+   SEO description at 160 (what search results show), while the columns allow
+   200 / 500. Recorded in `INPUT_AUDIT.md`; not a defect and not a blocker.
+4. **Option applicability is present.** `ProductOption.appliesTo` already
+   returns `COFFEE` / `EQUIPMENT`, and `/api/dashboard/product-options?
+   productType=` filters server-side. The wizard ALSO filters the response it
+   holds (`filterOptionsByProductType`) and re-fetches when the type changes, so
+   a stale response cannot offer "Size" on a coffee product. No temporary config
+   was needed; nothing is missing here.

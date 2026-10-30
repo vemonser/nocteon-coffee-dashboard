@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
+import { AbstractControl } from '@angular/forms';
 import { ProductRequest, ProductTranslation } from '../../models/product.models';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ProductService } from '../../services/product.service';
@@ -99,13 +100,6 @@ export class ProductWizardComponent implements CanComponentDeactivate, HasUnsave
   submitting = signal(false);
   loadError = signal<string | null>(null);
 
-  /**
-   * Steps the reader has left (a focusout inside the form). Together with
-   * `attemptedSteps` this gates the red indicator: an untouched, unvisited
-   * step is never marked as wrong.
-   */
-  private blurredSteps = signal<ReadonlySet<string>>(new Set());
-
   get stepTabs() {
     const isCoffee = this.state.form.get('productType')?.value === 'COFFEE';
     const tabs = [
@@ -135,38 +129,33 @@ export class ProductWizardComponent implements CanComponentDeactivate, HasUnsave
 
   /**
    * The red indicator, with the W3 timing: an invalid step stays neutral until
-   * the reader pressed Next on it, pressed Create, or left a field in it.
+   * the reader pressed Next on it, pressed Create, or LEFT AN INVALID FIELD in
+   * it. Selecting a valid field elsewhere in the step is not an error.
    */
   hasStepError(tabId: string): boolean {
     if (!this.hasTabError(tabId)) return false;
     return (
-      this.state.attemptedSteps().has(tabId) ||
-      this.blurredSteps().has(tabId) ||
-      this.stepHasTouchedControl(tabId)
+      this.state.attemptedSteps().has(tabId) || this.stepHasTouchedInvalidControl(tabId)
     );
   }
 
-  private stepHasTouchedControl(tabId: string): boolean {
+  private stepHasTouchedInvalidControl(tabId: string): boolean {
+    const invalidAndTouched = (control: AbstractControl | null | undefined): boolean =>
+      !!control && control.invalid && control.touched;
+
     if (tabId === 'basic') {
       const fields = ['productType', 'categorySlug'];
       return (
-        fields.some((field) => !!this.state.form.get(field)?.touched) ||
-        this.state.translationsArray.controls.some((control) => !!control.get('name')?.touched)
+        fields.some((field) => invalidAndTouched(this.state.form.get(field))) ||
+        this.state.translationsArray.controls.some((control) =>
+          invalidAndTouched(control.get('name')),
+        )
       );
     }
     if (tabId === 'variants') {
-      return this.state.variantsArray.controls.some(
-        (control) => !!control.get('sku')?.touched || !!control.get('price')?.touched,
-      );
+      return this.state.variantsArray.controls.some((control) => control.invalid && control.touched);
     }
     return false;
-  }
-
-  /** A field was left: that step may now show an error, if it has one. */
-  onFormFocusOut(): void {
-    const id = this.stepTabs[this.state.currentStep()]?.id;
-    if (!id) return;
-    this.blurredSteps.update((set) => new Set(set).add(id));
   }
 
   /** The last step the product type actually shows (Pairings for coffee, Media for equipment). */
