@@ -759,9 +759,12 @@
                     [title]="cell.getValue() ? ('products.actions.unfeature' | transloco) : ('products.actions.feature' | transloco)"
                   >
                     @if (cell.getValue()) {
-                      <ng-icon name="heroStarSolid" class="size-4 text-primary" aria-hidden="true" />
+                      <!-- `text-primary` on the icon host lost to the icon
+                           component's own `color: inherit`; the copper token is
+                           set as an inline style so it cannot be overridden. -->
+                      <ng-icon name="heroStarSolid" class="size-4" [style.color]="'var(--primary)'" aria-hidden="true" />
                     } @else {
-                      <ng-icon name="heroStar" class="size-4 text-muted-foreground/40" aria-hidden="true" />
+                      <ng-icon name="heroStar" class="size-4 opacity-40" [style.color]="'var(--muted-foreground)'" aria-hidden="true" />
                     }
                   </button>
                 }
