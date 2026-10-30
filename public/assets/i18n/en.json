@@ -120,8 +120,25 @@
   },
   "StoreSettingPage": {
     "title": "Store settings",
+    "subtitle": "How the store charges for shipping and which currency every price uses.",
     "empty": "No store settings yet",
-    "emptyHint": "Settings created on the storefront appear here, ready to edit."
+    "emptyHint": "Settings created on the storefront appear here, ready to edit.",
+    "currencyTitle": "Currency",
+    "currencyLabel": "Currency",
+    "currencyHelp": "Every price in the store and the dashboard uses this currency.",
+    "currencyCodeHelp": "ISO 4217 code. EGP is the store's default.",
+    "currencyChangeWarning": "Changing the currency affects every price in the store.",
+    "shippingTitle": "Shipping",
+    "shippingHelp": "When free shipping is on, orders above the threshold ship free.",
+    "thresholdLabel": "Free shipping threshold",
+    "thresholdHelp": "Orders above this amount ship free.",
+    "thresholdError": "Enter 0 or more, with at most 2 decimals.",
+    "freeShipping": "Free shipping",
+    "freeShippingHelp": "When off, shipping is charged on every order.",
+    "readOnly": "You can view these settings but not change them.",
+    "saved": "Store settings saved",
+    "saveFailed": "Could not save the settings.",
+    "loadError": "Could not load store settings"
   },
   "common": {
     "freeShippingActive": "Free shipping active",

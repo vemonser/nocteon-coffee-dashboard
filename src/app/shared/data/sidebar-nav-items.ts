@@ -202,20 +202,20 @@ export function getNavItems(lang: Language) {
     [
       { label: t.shippingZones, icon: icons.shippingZones, route: '/dashboard/shipping-zones', permission: 'shipping:read' },
       { label: t.promoCodes, icon: icons.promoCodes, route: '/dashboard/promo-codes', permission: 'promo:read' },
-      { label: t.storeSettings, icon: icons.storeSettings, route: '/dashboard/store-settings', permission: 'settings:update' },
+      { label: t.storeSettings, icon: icons.storeSettings, route: '/dashboard/store-settings', permission: 'settings:read' },
     ],
     t,
     s
   );
 
-  // Settings parent with child
+  // Settings: the audit trail. Store settings now live in the Store group;
+  // keeping a second link here would render the same row twice.
   const settingsParent = makeParent(
     'settings',
     icons.storeSettings,
-    '/dashboard/store-settings',
-    'settings:update',
+    '/dashboard/settings/audit',
+    'audit:read',
     [
-      { label: t.storeSettings, icon: icons.storeSettings, route: '/dashboard/store-settings', permission: 'settings:update' },
       // The audit trail: its own permission, so a role can read the log
       // without being able to change the store's settings (see V13).
       { label: t.auditLog, icon: icons.auditLog, route: '/dashboard/settings/audit', permission: 'audit:read' },
