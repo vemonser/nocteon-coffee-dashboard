@@ -46,7 +46,7 @@
       </div>
     </div>
 
-    <form [formGroup]="state.form">
+    <form [formGroup]="state.form" (focusout)="onFormFocusOut()">
       <hlm-tabs [tab]="activeTab()" class="w-full">
         <hlm-tabs-list class="w-full grid" [style.grid-template-columns]="'repeat(' + stepTabs.length + ', minmax(0, 1fr))'" [attr.aria-label]="'products.wizard.stepsAriaLabel' | transloco">
           @for (step of stepTabs; track step.id; let i = $index) {
@@ -56,18 +56,36 @@
               (click)="onTabChange(step.id)"
               class="relative"
             >
-              {{ 'products.wizard.steps.' + step.id | transloco }}
-              @if (isTabDirty(step.id) && hasUnsavedChanges()) {
-                <span class="ms-1.5 inline-block h-1.5 w-1.5 rounded-full bg-primary" style="margin-inline-start: 6px"></span>
-              }
-              @if (step.count > 0) {
-                <span class="ml-1 px-1.5 py-0.5 text-xs bg-primary/20 text-primary rounded-full">
-                  {{ step.count }}
-                </span>
-              }
-              @if (hasTabError(step.id)) {
-                <span class="absolute -top-1 -right-1 w-2 h-2 bg-destructive rounded-full"></span>
-              }
+              <span class="inline-flex items-center">
+                <span>{{ 'products.wizard.steps.' + step.id | transloco }}</span>
+
+                <!--
+                  Indicators live INSIDE the label, after the text (W3): an
+                  absolutely positioned dot floated above the tab bar and read
+                  as a notification badge of its own. Red is an icon, not a
+                  colour alone, and appears only after an attempt or a blur.
+                -->
+                @if (hasStepError(step.id)) {
+                  <span
+                    hlmTooltip
+                    position="top"
+                    [brnTooltip]="'products.wizard.hasErrors' | transloco"
+                    class="ms-1.5 inline-flex"
+                    role="img"
+                    [attr.aria-label]="'products.wizard.hasErrors' | transloco"
+                  >
+                    <ng-icon name="lucideAlertCircle" class="size-3 text-destructive" aria-hidden="true" />
+                  </span>
+                } @else if (isTabDirty(step.id) && hasUnsavedChanges()) {
+                  <span class="ms-1.5 inline-block size-1.5 rounded-full bg-primary" aria-hidden="true"></span>
+                }
+
+                @if (step.count > 0) {
+                  <span class="ms-1.5 rounded-full bg-primary/20 px-1.5 py-0.5 text-xs text-primary" aria-hidden="true">
+                    {{ step.count }}
+                  </span>
+                }
+              </span>
             </button>
           }
         </hlm-tabs-list>

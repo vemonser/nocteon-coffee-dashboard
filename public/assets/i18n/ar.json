@@ -615,7 +615,14 @@
       "fieldNameEn": "الاسم (الإنجليزية)",
       "fieldNameAr": "الاسم (العربية)",
       "fieldVariants": "متغير واحد على الأقل",
-      "fieldVariantDetails": "بيانات المتغير"
+      "fieldVariantDetails": "بيانات المتغير",
+      "hasErrors": "به أخطاء",
+      "complete": "مكتمل",
+      "missingField": "حقل مطلوب ناقص",
+      "languages": {
+        "en": "الإنجليزية",
+        "ar": "العربية"
+      }
     },
     "table": {
       "variantCount_zero": "بدون متغيرات",

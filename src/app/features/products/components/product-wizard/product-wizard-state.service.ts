@@ -23,6 +23,32 @@ export class ProductWizardStateService {
   currentStep = signal(0);
   readonly steps = ['Basic Info', 'Variants', 'Media', 'Tasting Notes', 'Pairings'];
 
+  /**
+   * Steps whose errors are allowed to be VISIBLE (W3).
+   *
+   * A pristine form is never red: a step enters this set when the admin clicks
+   * Next on it (or Create, which marks every step) or when a field in it was
+   * left. Until then the step may be invalid — a red dot on first load tells
+   * the reader they did something wrong before they started.
+   */
+  readonly attemptedSteps = signal<ReadonlySet<string>>(new Set());
+  /** True once Next or Create was pressed: the language segment may show red. */
+  readonly submitAttempted = signal(false);
+
+  markStepAttempted(stepId: string): void {
+    this.attemptedSteps.update((set) => new Set(set).add(stepId));
+    this.submitAttempted.set(true);
+  }
+
+  markStepsAttempted(stepIds: string[]): void {
+    this.attemptedSteps.update((set) => {
+      const next = new Set(set);
+      stepIds.forEach((id) => next.add(id));
+      return next;
+    });
+    this.submitAttempted.set(true);
+  }
+
   // ─── Mode ────────────────────────────────────────────────────────────────────
   isEditMode = signal(false);
   editingSlug = signal<string | null>(null);
@@ -458,6 +484,8 @@ export class ProductWizardStateService {
   /** Resets everything — call when leaving the wizard or starting create mode fresh. */
   reset(): void {
     this.currentStep.set(0);
+    this.attemptedSteps.set(new Set());
+    this.submitAttempted.set(false);
     this.isEditMode.set(false);
     this.editingSlug.set(null);
     this.stagedMedia.set([]);

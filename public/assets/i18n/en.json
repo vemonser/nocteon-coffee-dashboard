@@ -611,7 +611,14 @@
       "fieldNameEn": "Name (English)",
       "fieldNameAr": "Name (Arabic)",
       "fieldVariants": "At least one variant",
-      "fieldVariantDetails": "Variant details"
+      "fieldVariantDetails": "Variant details",
+      "hasErrors": "Has errors",
+      "complete": "Complete",
+      "missingField": "Required field missing",
+      "languages": {
+        "en": "English",
+        "ar": "العربي"
+      }
     },
     "table": {
       "variantCount_one": "{{count}} variant",

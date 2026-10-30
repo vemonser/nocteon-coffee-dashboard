@@ -36,6 +36,7 @@ import {
   lucideLoader2,
   lucideSave,
   lucideExternalLink,
+  lucideAlertCircle,
 } from '@ng-icons/lucide';
 
 @Component({
@@ -68,7 +69,8 @@ import {
       lucideCheck,
       lucideLoader2,
       lucideSave,
-      lucideExternalLink
+      lucideExternalLink,
+      lucideAlertCircle
     }),
   ],
   templateUrl: './product-wizard.component.html',
@@ -97,6 +99,13 @@ export class ProductWizardComponent implements CanComponentDeactivate, HasUnsave
   submitting = signal(false);
   loadError = signal<string | null>(null);
 
+  /**
+   * Steps the reader has left (a focusout inside the form). Together with
+   * `attemptedSteps` this gates the red indicator: an untouched, unvisited
+   * step is never marked as wrong.
+   */
+  private blurredSteps = signal<ReadonlySet<string>>(new Set());
+
   get stepTabs() {
     const isCoffee = this.state.form.get('productType')?.value === 'COFFEE';
     const tabs = [
@@ -116,15 +125,59 @@ export class ProductWizardComponent implements CanComponentDeactivate, HasUnsave
       case 'basic':
         return this.state.form.get('categorySlug')?.invalid || this.state.form.get('productType')?.invalid || this.state.translationsArray.invalid;
       case 'variants':
-        return this.state.variantsArray.invalid;
+        // At least one variant is a rule of its own: an empty FormArray can
+        // report valid status before its minLength validator runs.
+        return this.state.variantsArray.length === 0 || this.state.variantsArray.invalid;
       default:
         return false;
     }
   }
 
+  /**
+   * The red indicator, with the W3 timing: an invalid step stays neutral until
+   * the reader pressed Next on it, pressed Create, or left a field in it.
+   */
+  hasStepError(tabId: string): boolean {
+    if (!this.hasTabError(tabId)) return false;
+    return (
+      this.state.attemptedSteps().has(tabId) ||
+      this.blurredSteps().has(tabId) ||
+      this.stepHasTouchedControl(tabId)
+    );
+  }
+
+  private stepHasTouchedControl(tabId: string): boolean {
+    if (tabId === 'basic') {
+      const fields = ['productType', 'categorySlug'];
+      return (
+        fields.some((field) => !!this.state.form.get(field)?.touched) ||
+        this.state.translationsArray.controls.some((control) => !!control.get('name')?.touched)
+      );
+    }
+    if (tabId === 'variants') {
+      return this.state.variantsArray.controls.some(
+        (control) => !!control.get('sku')?.touched || !!control.get('price')?.touched,
+      );
+    }
+    return false;
+  }
+
+  /** A field was left: that step may now show an error, if it has one. */
+  onFormFocusOut(): void {
+    const id = this.stepTabs[this.state.currentStep()]?.id;
+    if (!id) return;
+    this.blurredSteps.update((set) => new Set(set).add(id));
+  }
+
   /** The last step the product type actually shows (Pairings for coffee, Media for equipment). */
   isLastVisibleStep(): boolean {
     return this.state.currentStep() >= this.stepTabs.length - 1;
+  }
+
+  /** The first invalid tab, in step order, or null when the form is valid. */
+  private firstInvalidTab(): { id: string; index: number } | null {
+    const index = this.stepTabs.findIndex((tab) => this.hasTabError(tab.id));
+    return index === -1 ? null : { id: this.stepTabs[index].id, index };
   }
 
   /**
@@ -172,9 +225,34 @@ export class ProductWizardComponent implements CanComponentDeactivate, HasUnsave
     });
   }
 
-  /** Create: the last step is the only place this action exists. */
+  /**
+   * Create: the last step is the only place this action exists.
+   *
+   * <p>It validates EVERY step (W3), marks them so their indicators turn red,
+   * jumps to the first one with a problem and focuses its first invalid field.
+   * The button deliberately keeps working while the form is invalid
+   * (aria-disabled only): a truly disabled button cannot say what is missing,
+   * and its tooltip already lists it.
+   */
   onCreate(): void {
-    this.onSubmit();
+    if (this.submitting()) return;
+    if (this.isFormValid()) {
+      this.onSubmit();
+      return;
+    }
+
+    const first = this.firstInvalidTab();
+    this.state.markStepsAttempted(this.stepTabs.map((tab) => tab.id));
+    this.markCurrentStepTouched();
+    this.state.translationsArray.markAllAsTouched();
+    this.state.variantsArray.markAllAsTouched();
+
+    if (first) {
+      this.state.goToStep(first.index);
+      this.activeTab.set(first.id);
+      this.syncStepUrl();
+      this.focusFirstInvalidField();
+    }
   }
 
   readonly activeTab = signal<string>('basic');
@@ -312,12 +390,17 @@ export class ProductWizardComponent implements CanComponentDeactivate, HasUnsave
   }
 
   onNext(): void {
+    // Next validates the CURRENT step only (W3). Failing it does not move the
+    // reader; it marks this step so its indicator explains why.
     if (this.state.isCurrentStepValid()) {
       this.state.goNext();
       this.activeTab.set(this.stepTabs[this.state.currentStep()].id);
       this.syncStepUrl();
     } else {
+      const id = this.stepTabs[this.state.currentStep()]?.id;
+      if (id) this.state.markStepAttempted(id);
       this.markCurrentStepTouched();
+      this.focusFirstInvalidField();
     }
   }
 
@@ -368,8 +451,10 @@ export class ProductWizardComponent implements CanComponentDeactivate, HasUnsave
   }
 
   onSubmit(): void {
-    if (!this.state.isCurrentStepValid()) {
-      this.markCurrentStepTouched();
+    // Create owns the all-step validation; this is the last gate before the
+    // request, so an invalid form must never reach the API.
+    if (!this.isFormValid()) {
+      this.onCreate();
       return;
     }
 
@@ -575,11 +660,27 @@ export class ProductWizardComponent implements CanComponentDeactivate, HasUnsave
   }
 
   private focusFirstInvalidField(): void {
+    // The target panel is rendered by the tab switch, so the lookup waits for
+    // the next frame instead of racing change detection.
     setTimeout(() => {
-      const el = document.querySelector(
-        '.ng-invalid, [aria-invalid="true"]',
-      ) as HTMLElement | null;
-      el?.focus();
-    }, 0);
+      const panel = Array.from(
+        document.querySelectorAll<HTMLElement>('[role="tabpanel"], hlm-tabs-content'),
+      ).find((element) => element.getClientRects().length > 0);
+      const scope = panel ?? document;
+      // Custom controls (hlm-select) expose their focusable trigger, not an
+      // <input>; the host itself matches `.ng-invalid` but cannot take focus,
+      // so only focusable candidates are listed and the first visible one wins.
+      const candidates = Array.from(
+        scope.querySelectorAll<HTMLElement>(
+          '[aria-invalid="true"], input.ng-invalid, textarea.ng-invalid, select.ng-invalid, hlm-select.ng-invalid button, hlm-select.ng-invalid [role="combobox"]',
+        ),
+      );
+      const target = candidates.find(
+        (element) =>
+          element.getClientRects().length > 0 &&
+          !(element as HTMLButtonElement).disabled,
+      );
+      target?.focus();
+    }, 50);
   }
 }

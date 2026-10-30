@@ -27,7 +27,7 @@ import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmSwitchImports } from '@spartan-ng/helm/switch';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucidePencil } from '@ng-icons/lucide';
+import { lucidePencil, lucideCheck, lucideAlertCircle } from '@ng-icons/lucide';
 import { LanguageService } from '../../../../../core/i18n/language.service';
 import { QuillEditorComponent } from 'ngx-quill';
 import { QUILL_CONFIG_TOKEN } from 'ngx-quill/config';
@@ -61,7 +61,7 @@ import { RouterLink } from '@angular/router';
   ],
   providers: [
     { provide: QUILL_CONFIG_TOKEN, useValue: RICH_TEXT_QUILL_CONFIG },
-    provideIcons({ lucidePencil }),
+    provideIcons({ lucidePencil, lucideCheck, lucideAlertCircle }),
   ],
   templateUrl: './basic-info-step.component.html',
 })
@@ -109,9 +109,9 @@ export class BasicInfoStepComponent {
 
   readonly activeLanguage = signal<'en' | 'ar'>('en');
   readonly slugUnlocked = signal(false);
-  readonly translationLanguages: { code: 'en' | 'ar'; label: string; dir: 'ltr' | 'rtl' }[] = [
-    { code: 'en', label: 'English', dir: 'ltr' },
-    { code: 'ar', label: 'العربي', dir: 'rtl' },
+  readonly translationLanguages: { code: 'en' | 'ar'; dir: 'ltr' | 'rtl' }[] = [
+    { code: 'en', dir: 'ltr' },
+    { code: 'ar', dir: 'rtl' },
   ];
 
   readonly productTypeLabel = (value: string): string =>
@@ -129,6 +129,19 @@ export class BasicInfoStepComponent {
       (c) => c.get('language')?.value === code,
     );
     return String(group?.get('name')?.value ?? '').trim().length >= 2;
+  }
+
+  /**
+   * Red on a language segment only after the reader submitted the step or left
+   * the name empty (W3). A pristine form shows neutral dots.
+   */
+  showLanguageError(code: string): boolean {
+    if (this.isTranslationComplete(code)) return false;
+    if (this.state.submitAttempted()) return true;
+    const group = this.state.translationsArray.controls.find(
+      (control) => control.get('language')?.value === code,
+    );
+    return !!group?.get('name')?.touched;
   }
 
   constructor() {

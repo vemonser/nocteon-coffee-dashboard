@@ -244,13 +244,29 @@
             [attr.aria-selected]="activeLanguage() === lang.code"
             (click)="activeLanguage.set(lang.code)"
           >
-            {{ lang.label }}
-            <span
-              class="size-2 rounded-full"
-              [class.bg-success]="isTranslationComplete(lang.code)"
-              [class.bg-destructive]="!isTranslationComplete(lang.code)"
-              [attr.aria-label]="isTranslationComplete(lang.code) ? 'Complete' : 'Missing required field'"
-            ></span>
+            {{ 'products.wizard.languages.' + lang.code | transloco }}
+            <!--
+              The language segment is never red on a pristine form (W3):
+              green check when the name is complete, a neutral dot while it is
+              empty, and the error icon only after a submit attempt or a blur.
+            -->
+            @if (isTranslationComplete(lang.code)) {
+              <ng-icon
+                name="lucideCheck"
+                class="size-3 text-success"
+                role="img"
+                [attr.aria-label]="'products.wizard.complete' | transloco"
+              />
+            } @else if (showLanguageError(lang.code)) {
+              <ng-icon
+                name="lucideAlertCircle"
+                class="size-3 text-destructive"
+                role="img"
+                [attr.aria-label]="'products.wizard.missingField' | transloco"
+              />
+            } @else {
+              <span class="size-2 rounded-full bg-muted-foreground/40" aria-hidden="true"></span>
+            }
           </button>
         }
       </div>
