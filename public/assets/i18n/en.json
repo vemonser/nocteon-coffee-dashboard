@@ -2173,7 +2173,9 @@
     "markedRead": "Marked as read",
     "deleted": "Deleted",
     "deleteTitle": "Delete notification?",
-    "deleteMessage": "Delete {{count}} selected notifications? this cannot be undone.",
+    "deleteMessage_one": "Delete this notification? this cannot be undone.",
+    "deleteMessage_other": "Delete {{count}} selected notifications? this cannot be undone.",
+    "deleteMessage_zero": "Delete the selected notifications? this cannot be undone.",
     "deleteOneMessage": "Delete this notification? this cannot be undone.",
     "kebab": {
       "more": "More actions",

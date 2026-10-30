@@ -14,6 +14,7 @@ import {
 } from '@ng-icons/lucide';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { PluralPipe } from '../../../shared/pipes/plural.pipe';
+import { countMessage } from '../../../core/i18n/plural';
 import { NotificationService } from '../services/notification.service';
 import { NotificationItem } from '../../notification/models/notification.model';
 import { NotificationItemComponent } from '../../notification/components/notification-item.component';
@@ -154,9 +155,14 @@ export class NotificationListComponent {
     if (!this.canDelete() || this.selectedItems().length === 0) return;
     this.confirmState.set({
       items: this.selectedItems(),
-      message: this.transloco.translate('notifications.deleteMessage', {
-        count: this.selectedItems().length,
-      }),
+      // A count inside a sentence: Arabic has six plural categories and a
+      // single-form string is wrong at 3–10 and 11+.
+      message: countMessage(
+        (key, params) => this.transloco.translate(key, params),
+        this.transloco.getActiveLang() as 'en' | 'ar',
+        'notifications.deleteMessage',
+        this.selectedItems().length,
+      ),
     });
   }
 
