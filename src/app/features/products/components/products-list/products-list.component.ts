@@ -45,6 +45,7 @@ import { Observable, map, of, switchMap } from 'rxjs';
 import { LanguageService } from '../../../../core/i18n/language.service';
 import { StoreSettingsService } from '../../../../core/settings/store-settings.service';
 import { formatCurrencyPlain } from '../../../../shared/utils/locale-format';
+import { isProductActive } from '../../../../shared/utils/product-status';
 import { buildProductsCsv, withUtf8Bom } from '../../products-csv';
 
 @Component({
@@ -551,8 +552,8 @@ export class ProductsListComponent {
           categorySlug: p.categorySlug || '',
           productType: p.productType || 'COFFEE',
           featured: p.featured ?? false,
-          active: p.active ?? p.isActive ?? true,
-          isActive: p.active ?? p.isActive ?? true,
+          active: isProductActive(p),
+          isActive: isProductActive(p),
           name: p.name ?? (p.translations?.find((t: any) => t.language === 'en')?.name ?? ''),
           shortDescription: p.shortDescription ?? null,
           primaryImageUrl: p.primaryImageUrl ?? p.imageUrl ?? null,
@@ -624,8 +625,8 @@ export class ProductsListComponent {
           primaryImageUrl: p.primaryImageUrl ?? p.imageUrl ?? null,
           minPrice: p.minPrice ?? 0,
           maxPrice: p.maxPrice ?? 0,
-          active: p.active ?? p.isActive ?? true,
-          isActive: p.active ?? p.isActive ?? true,
+          active: isProductActive(p),
+          isActive: isProductActive(p),
           featured: p.featured ?? false,
           totalStock: null,
           variantsCount: null,

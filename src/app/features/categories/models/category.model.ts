@@ -29,12 +29,15 @@ export interface ProductCardResponse {
   categorySlug: string;
   productType: string;
   shortDescription: string;
-  featured :  boolean;
+  featured: boolean;
   primaryImageUrl: string | null;
   maxPrice: string;
   minPrice: string;
   discountPercentage: string;
-  isActive: boolean;
+  /** The list endpoint's flag name. */
+  active?: boolean;
+  /** Legacy/alias name kept for payloads that send it instead. */
+  isActive?: boolean;
 }
 
 export interface DashboardCategoryResponse {
