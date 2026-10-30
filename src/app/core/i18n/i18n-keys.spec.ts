@@ -88,6 +88,9 @@ const PLURAL_BASES = [
   // The notifications list counts what it is showing next to the unread
   // count, so the header reads "4 notifications · 4 unread".
   'notifications.totalCount',
+  // The chip multiselect's summary counts the picks ("3 selected"); Arabic
+  // needs all six categories ("عنصران محددان" is not "2 عنصر").
+  'common.chipMultiselect.selectedCount',
 ];
 const EN_SUFFIXES = ['one', 'other'];
 const AR_SUFFIXES = ['zero', 'one', 'two', 'few', 'many', 'other'];

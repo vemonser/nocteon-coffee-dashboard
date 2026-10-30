@@ -1,8 +1,9 @@
 import { Component, computed, inject, input, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslocoService } from '@jsverse/transloco';
-import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmInputImports } from '@spartan-ng/helm/input';
+import { HlmButtonImports } from '@spartan-ng/helm/button';
+import { PluralPipe } from '../../pipes/plural.pipe';
 
 export interface ChipMultiselectItem {
   slug: string;
@@ -20,7 +21,7 @@ export interface ChipMultiselectItem {
 @Component({
   selector: 'app-chip-multiselect',
   standalone: true,
-  imports: [CommonModule, HlmButtonImports, HlmInputImports],
+  imports: [CommonModule, HlmInputImports, HlmButtonImports, PluralPipe],
   templateUrl: './chip-multiselect.component.html',
 })
 export class ChipMultiselectComponent {
@@ -31,7 +32,6 @@ export class ChipMultiselectComponent {
   readonly emptyLabel = input<string>('');
   readonly noMatchesLabel = input<string>('');
   readonly searchPlaceholder = input<string>('');
-  readonly addLabel = input<string>('Add');
 
   /**
    * The two labels that carry a value. They are translated HERE, with their

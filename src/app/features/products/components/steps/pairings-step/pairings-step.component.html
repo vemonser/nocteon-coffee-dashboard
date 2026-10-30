@@ -1,27 +1,30 @@
 <!-- pairings-step.component.html -->
 <div class="space-y-4">
-  <div class="flex flex-wrap items-start justify-between gap-3">
-    <div>
-      <h2 class="text-lg font-medium">{{ 'products.pairings.title' | transloco }}</h2>
-      <p class="text-sm text-muted-foreground">{{ 'products.pairings.description' | transloco }}</p>
+  <section class="card-surface p-5">
+    <div class="flex flex-wrap items-start justify-between gap-3">
+      <div>
+        <h2 class="text-lg font-medium">{{ 'products.pairings.title' | transloco }}</h2>
+        <p class="text-sm text-muted-foreground">{{ 'products.pairings.description' | transloco }}</p>
+      </div>
+      <button hlmBtn variant="link" size="sm" type="button" (click)="goManagePairings()">
+        {{ 'products.pairings.manage' | transloco }}
+      </button>
     </div>
-    <button hlmBtn variant="link" size="sm" type="button" (click)="goManagePairings()">
-      {{ 'products.pairings.manage' | transloco }}
-    </button>
-  </div>
 
-  <app-chip-multiselect
-    [items]="items()"
-    [selected]="selected()"
-    [emptyLabel]="'products.pairings.noPairings' | transloco"
-    [noMatchesLabel]="'products.pairings.noMatches' | transloco"
-    [searchPlaceholder]="'products.pairings.search' | transloco"
-    [addLabel]="'common.chipMultiselect.add' | transloco"
-    (selectionChange)="onSelectionChange($event)"
-  ></app-chip-multiselect>
+    <div class="mt-4">
+      <app-chip-multiselect
+        [items]="items()"
+        [selected]="selected()"
+        [emptyLabel]="'products.pairings.noPairings' | transloco"
+        [noMatchesLabel]="'products.pairings.noMatches' | transloco"
+        [searchPlaceholder]="'products.pairings.search' | transloco"
+        (selectionChange)="onSelectionChange($event)"
+      ></app-chip-multiselect>
+    </div>
+  </section>
 
   <!-- FE-11: "You may also like" — a different axis from pairings (which is a taste note). -->
-  <section class="card-surface mt-6 p-5">
+  <section class="card-surface p-5">
     <div class="mb-4 flex flex-wrap items-start justify-between gap-3">
       <div>
         <h2 class="text-lg font-medium">{{ 'products.related.title' | transloco }}</h2>

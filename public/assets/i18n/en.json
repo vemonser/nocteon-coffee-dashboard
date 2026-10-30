@@ -300,7 +300,8 @@
     "selectRow": "Select row",
     "loadError": "Could not load data",
     "chipMultiselect": {
-      "add": "Add",
+      "selectedCount_one": "{{count}} selected",
+      "selectedCount_other": "{{count}} selected",
       "remove": "Remove {{name}}",
       "counter": "{{count}} of {{max}}"
     },
@@ -556,7 +557,7 @@
       "description": "Select all flavor notes that apply to this coffee.",
       "noNotes": "No tasting notes available yet. add some in the tasting notes management page first.",
       "selected": "selected",
-      "manage": "Manage notes",
+      "manage": "Manage tasting notes",
       "remove": "Remove {{name}}",
       "search": "Search tasting notes...",
       "noMatches": "No tasting notes match your search."
@@ -566,7 +567,7 @@
       "description": "Suggest foods or treats that pair well with this coffee.",
       "noPairings": "No pairings available yet. add some in the pairings management page first.",
       "selected": "selected",
-      "manage": "Manage",
+      "manage": "Manage pairings",
       "remove": "Remove",
       "search": "Search",
       "noMatches": "No matches"

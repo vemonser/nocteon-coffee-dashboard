@@ -300,7 +300,12 @@
     "selectRow": "تحديد الصف",
     "loadError": "تعذّر تحميل البيانات",
     "chipMultiselect": {
-      "add": "إضافة",
+      "selectedCount_zero": "لا شيء محدد",
+      "selectedCount_one": "عنصر واحد محدد",
+      "selectedCount_two": "عنصران محددان",
+      "selectedCount_few": "{{count}} عناصر محددة",
+      "selectedCount_many": "{{count}} عنصرًا محددًا",
+      "selectedCount_other": "{{count}} عنصر محدد",
       "remove": "إزالة {{name}}",
       "counter": "{{count}} من {{max}}"
     },
@@ -560,7 +565,7 @@
       "description": "اختر جميع النكهات التي تنطبق على هذا القهوة.",
       "noNotes": "لا توجد ملاحظات تذوق متاحة بعد. أضف بعضها في صفحة إدارة ملاحظات التذوق أولاً.",
       "selected": "محدد",
-      "manage": "إدارة النكهات",
+      "manage": "إدارة ملاحظات التذوق",
       "remove": "إزالة {{name}}",
       "search": "ابحث في نكهات التذوق...",
       "noMatches": "لا توجد نكهات تطابق بحثك."
@@ -570,7 +575,7 @@
       "description": "اقترح أطعمة أو حلوى تتناسب جيداً مع هذا القهوة.",
       "noPairings": "لا توجد توائم متاحة بعد. أضف بعضها في صفحة إدارة التوائم أولاً.",
       "selected": "محدد",
-      "manage": "إدارة",
+      "manage": "إدارة التوائم",
       "remove": "إزالة",
       "search": "بحث",
       "noMatches": "لا توجد نتائج"

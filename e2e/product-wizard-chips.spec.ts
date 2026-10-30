@@ -2,14 +2,17 @@ import { test, expect, type BrowserContext, type Page } from '@playwright/test';
 import { creds, gotoLogin, fillLoginForm, submitLogin } from './helpers/auth';
 
 /**
- * PRODUCTS-04 — the shared chip-multiselect in the product wizard.
+ * PRODUCTS-04 / W4 — the shared chip-multiselect in the product wizard.
  *
  * The step passed the selection to the component as a `computed` over a
  * FormArray's `.value`, which is not a signal: the component kept the empty
- * first read, so a picked note never became a chip, its Add button stayed
- * enabled, and the next pick silently replaced the previous one. This test
- * holds the behaviour the step was always supposed to have — several picks
- * coexist, each shows a removable chip, and a picked row cannot be added twice.
+ * first read, so a picked note never became a chip and the next pick silently
+ * replaced the previous one. W4 also replaced the table row + "Add" button
+ * with SELECTABLE CHIPS, so this spec pins that contract:
+ *   - a chip toggles on click and reports `aria-pressed`
+ *   - the summary counts the picks and shows each one as a removable chip
+ *   - there is no "Add" button and no table row in the component
+ *   - no raw translation key reaches the screen
  */
 test.describe('product wizard — chip multiselect', () => {
   test.setTimeout(180_000);
@@ -38,7 +41,7 @@ test.describe('product wizard — chip multiselect', () => {
     await context?.close();
   });
 
-  test('tasting notes keep several picks, show them as chips and never show a raw key', async () => {
+  test('a chip toggles, the summary counts the picks and there is no Add button', async () => {
     await page.goto('/dashboard/products/new', { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(2500);
 
@@ -50,19 +53,22 @@ test.describe('product wizard — chip multiselect', () => {
     await page.waitForTimeout(1500);
 
     const chip = page.locator('app-chip-multiselect').first();
-    const row = (name: string) =>
-      chip.locator('li').filter({ has: page.getByText(name, { exact: true }) }).first();
+    const chipButton = (name: string) =>
+      chip.getByRole('button', { name, exact: true }).first();
 
-    // The label is a word, not `common.chipMultiselect.add`.
-    const firstLabel = (await row('Chocolate').getByRole('button').first().innerText()).trim();
-    expect(firstLabel, 'the Add label is translated, not a raw key').toBe('Add');
+    // The vocabulary renders as selectable chips, not table rows with "Add".
+    await expect(chip.getByRole('button', { name: 'Add' })).toHaveCount(0);
+    await expect(chip.locator('table')).toHaveCount(0);
+    await expect(chipButton('Chocolate')).toHaveAttribute('aria-pressed', 'false');
 
-    await row('Chocolate').getByRole('button').first().click();
-    await row('Caramel').getByRole('button').first().click();
-    await page.waitForTimeout(600);
+    await chipButton('Chocolate').click();
+    await chipButton('Caramel').click();
+    await page.waitForTimeout(500);
 
     // Both picks survive — the second must not replace the first.
-    await expect(chip.locator('button[aria-label]')).toHaveCount(2);
+    await expect(chipButton('Chocolate')).toHaveAttribute('aria-pressed', 'true');
+    await expect(chipButton('Caramel')).toHaveAttribute('aria-pressed', 'true');
+    await expect(chip.getByText('2 selected')).toBeVisible();
     await expect(chip.locator('button[aria-label="Remove Chocolate"]')).toBeVisible();
     await expect(chip.locator('button[aria-label="Remove Caramel"]')).toBeVisible();
     await expect(
@@ -70,14 +76,14 @@ test.describe('product wizard — chip multiselect', () => {
       'the step badge counts both picks',
     ).toContainText('2');
 
-    // A picked row cannot be added twice.
-    await expect(row('Chocolate').getByRole('button').first()).toBeDisabled();
+    // The manage link names the destination (W4).
+    await expect(page.getByRole('button', { name: 'Manage tasting notes' })).toBeVisible();
 
-    // And a chip can be taken back off.
-    await chip.locator('button[aria-label="Remove Chocolate"]').click();
+    // A selected chip toggles back off.
+    await chipButton('Chocolate').click();
     await page.waitForTimeout(400);
-    await expect(chip.locator('button[aria-label]')).toHaveCount(1);
-    await expect(row('Chocolate').getByRole('button').first()).toBeEnabled();
+    await expect(chipButton('Chocolate')).toHaveAttribute('aria-pressed', 'false');
+    await expect(chip.getByText('1 selected')).toBeVisible();
 
     // No raw key anywhere on the step.
     const body = await page.locator('body').innerText();

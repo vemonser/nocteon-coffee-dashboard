@@ -1,21 +1,24 @@
 ﻿<div class="space-y-4">
-  <div class="flex flex-wrap items-start justify-between gap-3">
-    <div>
-      <h2 class="text-lg font-medium">{{ 'products.tastingNotes.title' | transloco }}</h2>
-      <p class="text-sm text-muted-foreground">{{ 'products.tastingNotes.description' | transloco }}</p>
+  <section class="card-surface p-5">
+    <div class="flex flex-wrap items-start justify-between gap-3">
+      <div>
+        <h2 class="text-lg font-medium">{{ 'products.tastingNotes.title' | transloco }}</h2>
+        <p class="text-sm text-muted-foreground">{{ 'products.tastingNotes.description' | transloco }}</p>
+      </div>
+      <button hlmBtn variant="link" size="sm" type="button" (click)="goManageNotes()">
+        {{ 'products.tastingNotes.manage' | transloco }}
+      </button>
     </div>
-    <button hlmBtn variant="link" size="sm" type="button" (click)="goManageNotes()">
-      {{ 'products.tastingNotes.manage' | transloco }}
-    </button>
-  </div>
 
-  <app-chip-multiselect
-    [items]="items()"
-    [selected]="selected()"
-    [emptyLabel]="'products.tastingNotes.noNotes' | transloco"
-    [noMatchesLabel]="'products.tastingNotes.noMatches' | transloco"
-    [searchPlaceholder]="'products.tastingNotes.search' | transloco"
-    [addLabel]="'common.chipMultiselect.add' | transloco"
-    (selectionChange)="onSelectionChange($event)"
-  ></app-chip-multiselect>
+    <div class="mt-4">
+      <app-chip-multiselect
+        [items]="items()"
+        [selected]="selected()"
+        [emptyLabel]="'products.tastingNotes.noNotes' | transloco"
+        [noMatchesLabel]="'products.tastingNotes.noMatches' | transloco"
+        [searchPlaceholder]="'products.tastingNotes.search' | transloco"
+        (selectionChange)="onSelectionChange($event)"
+      ></app-chip-multiselect>
+    </div>
+  </section>
 </div>

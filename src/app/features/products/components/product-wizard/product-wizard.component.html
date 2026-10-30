@@ -138,7 +138,10 @@
         </div>
       </div>
     } @else {
-      <div class="sticky-footer" data-testid="wizard-footer">
+      <div
+        class="sticky bottom-0 z-10 mt-6 -mx-6 flex justify-between border-t bg-background/80 px-6 py-4 backdrop-blur"
+        data-testid="wizard-footer"
+      >
         <div>
           @if (state.currentStep() > 0) {
             <button hlmBtn variant="outline" type="button" (click)="onBack()">
