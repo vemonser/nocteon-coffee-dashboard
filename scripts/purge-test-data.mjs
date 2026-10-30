@@ -127,12 +127,15 @@ async function throttle() {
   nextRequestAt = Date.now() + REQUEST_INTERVAL_MS;
 }
 
-async function api(path, { method = 'GET', body } = {}) {
+async function api(
+  path,
+  { method = 'GET', body, maxRateLimitRetries = MAX_429_RETRIES, rateLimitWaitMs = 5000 } = {},
+) {
   const headers = { Accept: 'application/json' };
   if (token) headers.Authorization = `Bearer ${token}`;
   if (body !== undefined) headers['Content-Type'] = 'application/json';
 
-  for (let attempt = 0; attempt <= MAX_429_RETRIES; attempt += 1) {
+  for (let attempt = 0; attempt <= maxRateLimitRetries; attempt += 1) {
     await throttle();
     const res = await fetch(`${API_BASE}${path}`, {
       method,
@@ -140,9 +143,10 @@ async function api(path, { method = 'GET', body } = {}) {
       body: body === undefined ? undefined : JSON.stringify(body),
     });
 
-    if (res.status === 429 && attempt < MAX_429_RETRIES) {
+    if (res.status === 429 && attempt < maxRateLimitRetries) {
       const retryAfter = Number(res.headers.get('retry-after'));
-      const wait = Number.isFinite(retryAfter) && retryAfter > 0 ? retryAfter * 1000 : 5000;
+      const wait =
+        Number.isFinite(retryAfter) && retryAfter > 0 ? retryAfter * 1000 : rateLimitWaitMs;
       if (!quiet) console.error(`  rate limited; retrying in ${Math.round(wait / 1000)}s…`);
       await sleep(wait);
       continue;
@@ -160,9 +164,13 @@ async function api(path, { method = 'GET', body } = {}) {
 }
 
 async function login() {
+  // Login has its own 5-per-minute bucket; a full QA/E2E run can exhaust it.
+  // Wait a full refill window rather than failing the teardown after tests passed.
   const response = await api('/api/auth/login', {
     method: 'POST',
     body: { identifier: ADMIN_EMAIL, password: ADMIN_PASSWORD },
+    maxRateLimitRetries: 3,
+    rateLimitWaitMs: 65_000,
   });
   token = response?.data?.accessToken;
   if (!token) fail('login did not return an access token');
