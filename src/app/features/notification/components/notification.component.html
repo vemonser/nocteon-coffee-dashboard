@@ -41,7 +41,7 @@
               <span
                 class="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary"
               >
-                {{ 'notifications.newCount' | transloco: { count: unreadCount() } }}
+                {{ unreadCount() | plural: 'notifications.unreadCount' }}
               </span>
             }
           </div>
