@@ -43,6 +43,14 @@ export default defineConfig({
   use: {
     baseURL: BASE_URL,
     channel: 'chromium',
+    // The dev backend only allows http://localhost:4200 as a CORS origin. A
+    // second worktree cannot use that port, so a local run on another port can
+    // opt out of the browser's CORS check instead of changing the server:
+    //   PW_DISABLE_WEB_SECURITY=1 E2E_BASE_URL=http://localhost:4300
+    // Never set in CI — the default launch is untouched.
+    launchOptions: process.env['PW_DISABLE_WEB_SECURITY']
+      ? { args: ['--disable-web-security'] }
+      : undefined,
     // ⚠ Traces capture `fill()` values in plaintext, i.e. real credentials.
     //   /test-results/ is gitignored. Never share trace.zip or screenshots
     //   from a run that used real accounts.

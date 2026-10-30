@@ -34,24 +34,30 @@
       #nav is the scroll container; the component scrolls the active link into view after
       each navigation. Without it, deep sections (Catalog) sat below the fold with no cue.
     -->
-    <hlm-sidebar-content #nav class="thin-scroll">
-      <!-- Home: pinned above the scroll so it never scrolls out of view. -->
-      <ul hlmSidebarMenu class="sticky top-0 z-10 bg-sidebar pb-1">
-        <li hlmSidebarMenuItem class="py-1.5">
-          <a
-            hlmSidebarMenuButton
-            [closeMobileSidebarOnClick]="true"
-            [routerLink]="dashboardItem().route"
-            [routerLinkActiveOptions]="{ exact: true }"
-            ariaCurrentWhenActive="page"
-            routerLinkActive="bg-sidebar-accent text-sidebar-accent-foreground [&_ng-icon]:text-sidebar-accent-foreground"
-            class="group"
-          >
-            <ng-icon [name]="dashboardItem().icon" class="size-4 shrink-0 text-sidebar-foreground/60 group-hover:text-sidebar-foreground transition-colors duration-150" />
-            <span>{{ dashboardItem().label }}</span>
-          </a>
-        </li>
-      </ul>
+    <hlm-sidebar-content #nav class="thin-scroll sidebar-scroll">
+      <!-- Home: pinned above the scroll so it never scrolls out of view. The
+           8px gradient under it is the soft edge a section label fades into
+           as it scrolls beneath the pinned row — without it the label was
+           sliced in half at a hard line under "Dashboard". -->
+      <div class="sticky top-0 z-10 bg-sidebar">
+        <ul hlmSidebarMenu class="pb-1">
+          <li hlmSidebarMenuItem class="py-1.5">
+            <a
+              hlmSidebarMenuButton
+              [closeMobileSidebarOnClick]="true"
+              [routerLink]="dashboardItem().route"
+              [routerLinkActiveOptions]="{ exact: true }"
+              ariaCurrentWhenActive="page"
+              routerLinkActive="bg-sidebar-accent text-sidebar-accent-foreground [&_ng-icon]:text-sidebar-accent-foreground"
+              class="group"
+            >
+              <ng-icon [name]="dashboardItem().icon" class="size-4 shrink-0 text-sidebar-foreground/60 group-hover:text-sidebar-foreground transition-colors duration-150" />
+              <span>{{ dashboardItem().label }}</span>
+            </a>
+          </li>
+        </ul>
+        <div class="sidebar-scroll-fade" aria-hidden="true"></div>
+      </div>
 
       <!--
         One <ul> per section, and exactly ONE heading row per section (FE-25 D4+A).

@@ -222,4 +222,48 @@ describe('sidebar sections (FE-25 D4+A)', () => {
     // other sidebar links.
     expect(rows().length - panelRows.length).toBe(2);
   });
+
+  // P2: commerce rules live in their own "Store" group, not in Coffee data.
+  const routesOf = (sectionKey: string): string[] => {
+    const section = getNavItems('en').sections.find((s) => s.key === sectionKey)!;
+    return section.items.flatMap((parent) => parent.children ?? [parent]).map((item) => item.route);
+  };
+
+  it('separates Store (shipping, promo codes, settings) from Coffee data', () => {
+    expect(routesOf('store')).toEqual([
+      '/dashboard/shipping-zones',
+      '/dashboard/promo-codes',
+      '/dashboard/store-settings',
+    ]);
+    expect(routesOf('coffeeData')).toEqual([
+      '/dashboard/origins',
+      '/dashboard/farms',
+      '/dashboard/roast-levels',
+      '/dashboard/processing-methods',
+      '/dashboard/coffee-varieties',
+      '/dashboard/tasting-notes',
+      '/dashboard/brewing-methods',
+      '/dashboard/pairings',
+    ]);
+  });
+
+  it('renders the Store heading with the same style as every other group label', () => {
+    const storeHeading = headings().find((h) => h.textContent?.trim() === 'Store');
+    expect(storeHeading, 'Store heading').toBeTruthy();
+
+    // One renderer for all groups: identical class set, and no per-section icon.
+    // The only icon a heading carries is the disclosure chevron.
+    const classes = new Set(headings().map((h) => h.className));
+    expect(classes.size).toBe(1);
+    const icons = Array.from(storeHeading!.querySelectorAll('ng-icon'));
+    expect(icons.map((icon) => icon.getAttribute('name'))).toEqual(['lucideChevronDown']);
+  });
+
+  it('names the brewing section "Brewing methods"', () => {
+    const coffee = getNavItems('en').sections.find((s) => s.key === 'coffeeData')!;
+    const brewing = coffee.items
+      .flatMap((item) => item.children ?? [item])
+      .find((item) => item.route === '/dashboard/brewing-methods');
+    expect(brewing?.label).toBe('Brewing methods');
+  });
 });
