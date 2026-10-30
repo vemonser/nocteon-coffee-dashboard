@@ -4,6 +4,7 @@ dist/
 .angular/
 
 # Playwright / E2E
+/qa/.run/
 /test-results/
 /playwright-report/
 /blob-report/

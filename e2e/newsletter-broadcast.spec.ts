@@ -1,5 +1,6 @@
 import { test, expect, type BrowserContext, type Page } from '@playwright/test';
 import { creds, gotoLogin, fillLoginForm, submitLogin } from './helpers/auth';
+import { cleanupCreated, forgetCreated, recordResponse, testName } from './helpers/test-data';
 
 /**
  * The newsletter page and the broadcasts page.
@@ -42,6 +43,8 @@ test.describe('newsletter and broadcasts', () => {
   });
 
   test.afterAll(async () => {
+    // The delete test removes its own broadcast; this catches a failed run.
+    await cleanupCreated();
     await context?.close();
   });
 
@@ -125,20 +128,25 @@ test.describe('newsletter and broadcasts', () => {
     await page.waitForTimeout(1500);
 
     // A broadcast of its own, so the test deletes what it created.
-    const subject = `e2e delete probe ${Date.now()}`;
-    await page.locator('button:has-text("New Broadcast")').click();
+    const subject = testName('delete probe');
+    await page.getByRole('button', { name: /New broadcast/i }).first().click();
     await page.locator('input[formcontrolname="subject"]').fill(subject);
     await page.locator('textarea[formcontrolname="content"]').fill('created by the e2e suite');
+    const createdResponse = page.waitForResponse(
+      (r) => r.url().includes('/api/dashboard/broadcasts') && r.request().method() === 'POST',
+    );
     await page.locator('button[type="submit"]').click();
+    const created = await recordResponse(await createdResponse, 'broadcasts', subject);
     await expect(page.locator(`text=${subject}`).first()).toBeVisible({
       timeout: 20_000,
     });
 
     // The delete action, and the confirmation.
-    const card = page.locator('div.rounded-md.border.bg-card', { hasText: subject }).first();
-    await card.locator('button[aria-label*="Delete"]').click();
-    await page.locator('button:has-text("Delete")').last().click();
+    await page.getByRole('button', { name: /Delete the broadcast/i }).first().click();
+    await expect(page.getByRole('heading', { name: /Delete this broadcast/i })).toBeVisible();
+    await page.getByRole('button', { name: /^(Delete|حذف)$/ }).click();
     await expect(page.locator(`text=${subject}`)).toHaveCount(0, { timeout: 20_000 });
+    if (created) forgetCreated('broadcasts', created.id);
   });
 
   test('the Arabic pages carry no untranslated string', async () => {

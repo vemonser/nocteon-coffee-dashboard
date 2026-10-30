@@ -1,5 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import { creds, fillLoginForm, gotoLogin, submitLogin } from './helpers/auth';
+import { cleanupCreated, recordResponse, slugify, testName } from './helpers/test-data';
 
 /**
  * Evidence for FE-09 (variant images) and FE-10 (product tags).
@@ -57,14 +58,18 @@ async function login(page: Page) {
 }
 
 test.describe('FE-10 product tags', () => {
+  test.afterAll(async () => {
+    // Safety net: the tag is deleted in the flow, but a failed run must not leak.
+    await cleanupCreated();
+  });
+
   test('create a tag, assign it in the wizard, filter, refuse deleting it in use', async ({ page }) => {
     test.setTimeout(300_000);
     await page.setViewportSize(VIEWPORT);
     await login(page);
 
-    const suffix = Date.now().toString(36).slice(-5);
-    const nameEn = `Evidence ${suffix}`;
-    const slug = `evidence-${suffix}`;
+    const nameEn = testName('tag');
+    const slug = slugify(nameEn);
     const productUrl = '/dashboard/products/brazil-mogiana/edit';
 
     // ── 1. The tags page creates a tag ───────────────────────────────────────
@@ -75,65 +80,81 @@ test.describe('FE-10 product tags', () => {
     const dialog = page.locator('[data-testid="product-tag-editor"]');
     await expect(dialog).toBeVisible();
     await dialog.locator('#tag-name-en').fill(nameEn);
-    await dialog.locator('#tag-name-ar').fill(`وسم ${suffix}`);
+    await dialog.locator('#tag-name-ar').fill(`وسم ${nameEn}`);
+    const createdResponse = page.waitForResponse(
+      (r) => r.url().includes('/api/dashboard/product-tags') && r.request().method() === 'POST',
+    );
     await dialog.getByRole('button', { name: /Add tag|إضافة وسم/ }).click();
+    await recordResponse(await createdResponse, 'tags', nameEn);
     await expect(dialog).toBeHidden({ timeout: 20_000 });
 
     const card = page.locator('.card-surface', { hasText: `/${slug}` });
     await expect(card).toBeVisible({ timeout: 20_000 });
     await page.screenshot({ path: 'evidence/fe-10/tags-1440.png' });
 
-    // ── 2. The wizard assigns it to a product and saves ──────────────────────
-    await gotoProduct(page, `${productUrl}?step=basic`);
-    const tagChip = page.getByRole('button', { name: new RegExp(nameEn) });
-    await expect(tagChip).toBeVisible({ timeout: 30_000 });
-    await expect(tagChip).toHaveAttribute('aria-pressed', 'false');
-    await tagChip.click();
-    await expect(tagChip).toHaveAttribute('aria-pressed', 'true');
-    await page.screenshot({ path: 'evidence/fe-10/wizard-tags-1440.png' });
+    /** Detach the tag from the product; safe to call when it is already off. */
+    const detachTag = async (): Promise<void> => {
+      await gotoProduct(page, `${productUrl}?step=basic`);
+      const chip = page.getByRole('button', { name: new RegExp(nameEn) });
+      if ((await chip.count()) === 0) return;
+      if ((await chip.getAttribute('aria-pressed')) !== 'true') return;
+      await chip.click();
+      await saveAndReload(page, `${productUrl}?step=basic`);
+    };
 
-    // Reopen the product: the assignment round-trips through edit mode.
-    await saveAndReload(page, `${productUrl}?step=basic`);
-    await expect(page.getByRole('button', { name: new RegExp(nameEn) }))
-      .toHaveAttribute('aria-pressed', 'true', { timeout: 30_000 });
+    try {
+      // ── 2. The wizard assigns it to a product and saves ────────────────────
+      await gotoProduct(page, `${productUrl}?step=basic`);
+      const tagChip = page.getByRole('button', { name: new RegExp(nameEn) });
+      await expect(tagChip).toBeVisible({ timeout: 30_000 });
+      await expect(tagChip).toHaveAttribute('aria-pressed', 'false');
+      await tagChip.click();
+      await expect(tagChip).toHaveAttribute('aria-pressed', 'true');
+      await page.screenshot({ path: 'evidence/fe-10/wizard-tags-1440.png' });
 
-    // ── 3. The products list filters by it (the filter lives in the URL) ─────
-    await page.goto('/dashboard/products');
-    // Filter row order: type, tag, status, featured.
-    await page.locator('hlm-select-trigger').nth(1).click();
-    await page.getByRole('option', { name: nameEn }).click();
-    await expect(page).toHaveURL(new RegExp(`tag=${slug}`), { timeout: 20_000 });
-    await expect(page.getByText('Brazil Mogiana').first()).toBeVisible({ timeout: 20_000 });
-    await page.screenshot({ path: 'evidence/fe-10/products-tag-filter-1440.png' });
+      // Reopen the product: the assignment round-trips through edit mode.
+      await saveAndReload(page, `${productUrl}?step=basic`);
+      await expect(page.getByRole('button', { name: new RegExp(nameEn) }))
+        .toHaveAttribute('aria-pressed', 'true', { timeout: 30_000 });
 
-    // The filter is read back from the URL, not only written to it: a reload keeps it applied.
-    await page.reload();
-    await expect(page.locator('hlm-select-trigger').nth(1)).toContainText(nameEn, { timeout: 20_000 });
-    await expect(page.getByText('Brazil Mogiana').first()).toBeVisible();
+      // ── 3. The products list filters by it (the filter lives in the URL) ───
+      await page.goto('/dashboard/products');
+      // Filter row order: type, tag, status, featured.
+      await page.locator('hlm-select-trigger').nth(1).click();
+      await page.getByRole('option', { name: nameEn }).click();
+      await expect(page).toHaveURL(new RegExp(`tag=${slug}`), { timeout: 20_000 });
+      await expect(page.getByText('Brazil Mogiana').first()).toBeVisible({ timeout: 20_000 });
+      await page.screenshot({ path: 'evidence/fe-10/products-tag-filter-1440.png' });
 
-    // ── 4. Deleting a tag a product carries is refused, with the count ───────
-    await page.goto('/dashboard/product-tags');
-    const usedCard = page.locator('.card-surface', { hasText: `/${slug}` });
-    await usedCard.getByRole('button', { name: /actions|إجراءات/i }).click();
-    await page.getByRole('menuitem', { name: /delete|حذف/i }).click();
-    await page.getByRole('dialog').getByRole('button', { name: /^(Delete|حذف)$/ }).click();
-    await expect(page.getByText(/used by 1 product/i)).toBeVisible({ timeout: 20_000 });
+      // The filter is read back from the URL, not only written to it: a reload keeps it applied.
+      await page.reload();
+      await expect(page.locator('hlm-select-trigger').nth(1)).toContainText(nameEn, { timeout: 20_000 });
+      await expect(page.getByText('Brazil Mogiana').first()).toBeVisible();
 
-    // ── 5. Cleanup: detach the tag, then the delete succeeds ─────────────────
-    await gotoProduct(page, `${productUrl}?step=basic`);
-    const attachedChip = page.getByRole('button', { name: new RegExp(nameEn) });
-    await expect(attachedChip).toHaveAttribute('aria-pressed', 'true', { timeout: 30_000 });
-    await attachedChip.click();
-    await saveAndReload(page, `${productUrl}?step=basic`);
-    await expect(page.getByRole('button', { name: new RegExp(nameEn) }))
-      .toHaveAttribute('aria-pressed', 'false', { timeout: 30_000 });
+      // ── 4. Deleting a tag a product carries is refused, with the count ─────
+      await page.goto('/dashboard/product-tags');
+      const usedCard = page.locator('.card-surface', { hasText: `/${slug}` });
+      await usedCard.getByRole('button', { name: /actions|إجراءات/i }).click();
+      await page.getByRole('menuitem', { name: /delete|حذف/i }).click();
+      await page.getByRole('dialog').getByRole('button', { name: /^(Delete|حذف)$/ }).click();
+      await expect(page.getByText(/still linked to 1 product/i)).toBeVisible({ timeout: 20_000 });
 
-    await page.goto('/dashboard/product-tags');
-    const freeCard = page.locator('.card-surface', { hasText: `/${slug}` });
-    await freeCard.getByRole('button', { name: /actions|إجراءات/i }).click();
-    await page.getByRole('menuitem', { name: /delete|حذف/i }).click();
-    await page.getByRole('dialog').getByRole('button', { name: /^(Delete|حذف)$/ }).click();
-    await expect(page.locator('.card-surface', { hasText: `/${slug}` })).toHaveCount(0, { timeout: 20_000 });
+      // ── 5. Detach the tag, then the delete succeeds ────────────────────────
+      await detachTag();
+      await expect(page.getByRole('button', { name: new RegExp(nameEn) }))
+        .toHaveAttribute('aria-pressed', 'false', { timeout: 30_000 });
+
+      await page.goto('/dashboard/product-tags');
+      const freeCard = page.locator('.card-surface', { hasText: `/${slug}` });
+      await freeCard.getByRole('button', { name: /actions|إجراءات/i }).click();
+      await page.getByRole('menuitem', { name: /delete|حذف/i }).click();
+      await page.getByRole('dialog').getByRole('button', { name: /^(Delete|حذف)$/ }).click();
+      await expect(page.locator('.card-surface', { hasText: `/${slug}` })).toHaveCount(0, { timeout: 20_000 });
+    } finally {
+      // A failure between assignment and step 5 must not leave the tag linked:
+      // a linked tag cannot be trashed, so afterAll cleanup would fail too.
+      await detachTag().catch((error) => console.error('detach cleanup failed:', error));
+    }
   });
 });
 

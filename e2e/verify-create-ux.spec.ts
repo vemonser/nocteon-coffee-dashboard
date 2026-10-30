@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { creds, fillLoginForm, gotoLogin, submitLogin } from './helpers/auth';
+import { cleanupCreated, recordResponse, testName } from './helpers/test-data';
 
 /**
  * Create-category UX ticket:
@@ -36,14 +37,16 @@ test.afterEach(async () => {
   await page.close();
 });
 
+test.afterAll(async () => {
+  // Trash + permanent delete every id this run created, even if the test failed.
+  await cleanupCreated();
+});
+
 test('cleanup: trash probe/cooldown duplicates from earlier runs', async () => {
   for (const marker of ['coffee-3', 'e2e-create-ux-cat']) {
     const dupRow = page.locator('tbody tr').filter({ hasText: marker });
     if ((await dupRow.count()) === 0) continue; // already cleaned
     await dupRow.first().getByRole('button', { name: /Move to trash|نقل إلى المهملات/ }).click();
-    const confirm = page.getByRole('alertdialog');
-    await expect(confirm).toBeVisible();
-    await confirm.getByRole('button', { name: /Move to trash|نقل إلى المهملات/ }).click();
     await expect(dupRow).toHaveCount(0, { timeout: 8000 });
   }
 });
@@ -95,15 +98,19 @@ test('backend 400 → backend message shown inline in the dialog', async () => {
 });
 
 test('happy path → POST 201, dialog closes, detail page opens + toast', async () => {
-  const uniq = 'E2E create ux cat ' + Date.now();
+  const uniq = testName('create ux cat');
   await page.getByRole('button', { name: /Add category|إضافة فئة/ }).click();
   await expect(dialog()).toBeVisible();
 
   await nameInputs().nth(0).fill(uniq);
   await nameInputs().nth(1).fill('فئة إنشاء تجريبية');
 
+  const createdResponse = page.waitForResponse(
+    (r) => r.url().includes('/api/dashboard/categories') && r.request().method() === 'POST',
+  );
   const t0 = Date.now();
   await save().click();
+  await recordResponse(await createdResponse, 'categories', uniq);
   await page.waitForURL(/\/dashboard\/categories\//, { timeout: 15000 });
   const elapsed = Date.now() - t0;
   console.log('CREATE-TIMING click→detail ms =', elapsed);
@@ -113,12 +120,11 @@ test('happy path → POST 201, dialog closes, detail page opens + toast', async 
   await expect(page.locator('brn-sonner-toast').first()).toContainText(/created/i, { timeout: 8000 });
   console.log('TOAST =', await page.locator('brn-sonner-toast').first().innerText());
 
-  // Cleanup: trash what we just created
+  // Cleanup: trash what we just created. afterAll then permanently deletes it.
   await page.goto('/dashboard/categories');
   await expect(page.locator('table tbody tr').first()).toBeVisible();
-  const row = page.locator('tbody tr').filter({ hasText: 'e2e-create-ux-cat' });
+  const row = page.locator('tbody tr').filter({ hasText: uniq });
+  await expect(row, 'the created row is missing from the list').toHaveCount(1);
   await row.first().getByRole('button', { name: /Move to trash|نقل إلى المهملات/ }).click();
-  const confirm = page.getByRole('alertdialog');
-  await confirm.getByRole('button', { name: /Move to trash|نقل إلى المهملات/ }).click();
   await expect(row).toHaveCount(0, { timeout: 8000 });
 });

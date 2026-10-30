@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { creds, fillLoginForm, gotoLogin, submitLogin } from './helpers/auth';
+import { cleanupCreated, recordResponse, slugify, testName } from './helpers/test-data';
 
 /** Evidence screenshots for the create-category UX ticket — evidence/create-ux/. */
 
@@ -31,8 +32,8 @@ import { creds, fillLoginForm, gotoLogin, submitLogin } from './helpers/auth';
             await expect(dialog()).toBeVisible();
           };
           const stamp = Date.now();
-          const unique = `E2E shot ${lang} ${stamp}`;
-          const slug = `e2e-shot-${lang}-${stamp}`;
+          const unique = testName(`shot ${lang} ${stamp}`);
+          const slug = slugify(unique);
           let createdSlug: string | null = null;
 
           if (state === 'empty' || state === 'duplicate') {
@@ -74,7 +75,13 @@ import { creds, fillLoginForm, gotoLogin, submitLogin } from './helpers/auth';
             await open();
             await nameInputs().nth(0).fill(unique);
             await nameInputs().nth(1).fill(`فئة إنشاء تجريبية`);
+            const createdResponse = page.waitForResponse(
+              (r) =>
+                r.url().includes('/api/dashboard/categories') &&
+                r.request().method() === 'POST',
+            );
             await save().click();
+            await recordResponse(await createdResponse, 'categories', unique);
             await page.waitForURL(/\/dashboard\/categories\//, { timeout: 15000 });
             createdSlug = slug;
             await page.waitForTimeout(1200); // detail page settle
@@ -96,10 +103,6 @@ import { creds, fillLoginForm, gotoLogin, submitLogin } from './helpers/auth';
                 .first()
                 .getByRole('button', { name: /Move to trash|نقل إلى المهملات/ })
                 .click();
-              const confirm = page.getByRole('alertdialog');
-              await confirm
-                .getByRole('button', { name: /Move to trash|نقل إلى المهملات/ })
-                .click();
               await expect(row).toHaveCount(0, { timeout: 8000 });
             }
           }
@@ -108,4 +111,9 @@ import { creds, fillLoginForm, gotoLogin, submitLogin } from './helpers/auth';
       }
     }
   }
+
+  // Permanently remove every category this run created (the UI only trashes).
+  test.afterAll(async () => {
+    await cleanupCreated();
+  });
 })();

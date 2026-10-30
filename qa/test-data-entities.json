@@ -1,0 +1,107 @@
+[
+  {
+    "key": "origins",
+    "label": "Origins",
+    "path": "/api/dashboard/origins",
+    "trashPath": "/api/dashboard/origins/deleted",
+    "softDelete": "slug"
+  },
+  {
+    "key": "farms",
+    "label": "Farms",
+    "path": "/api/dashboard/farms",
+    "trashPath": "/api/dashboard/farms/deleted",
+    "softDelete": "slug"
+  },
+  {
+    "key": "roast-levels",
+    "label": "Roast levels",
+    "path": "/api/dashboard/roast-levels",
+    "trashPath": "/api/dashboard/roast-levels/deleted",
+    "softDelete": "slug"
+  },
+  {
+    "key": "processing-methods",
+    "label": "Processing methods",
+    "path": "/api/dashboard/processing-methods",
+    "trashPath": "/api/dashboard/processing-methods/deleted",
+    "softDelete": "slug"
+  },
+  {
+    "key": "coffee-varieties",
+    "label": "Coffee varieties",
+    "path": "/api/dashboard/coffee-varieties",
+    "trashPath": "/api/dashboard/coffee-varieties/deleted",
+    "softDelete": "slug"
+  },
+  {
+    "key": "tasting-notes",
+    "label": "Tasting notes",
+    "path": "/api/dashboard/tasting-notes",
+    "trashPath": "/api/dashboard/tasting-notes/deleted",
+    "softDelete": "slug"
+  },
+  {
+    "key": "brewing-methods",
+    "label": "Brewing methods",
+    "path": "/api/dashboard/brewing-methods",
+    "trashPath": "/api/dashboard/brewing-methods/deleted",
+    "softDelete": "slug"
+  },
+  {
+    "key": "pairings",
+    "label": "Pairings",
+    "path": "/api/dashboard/pairings",
+    "trashPath": "/api/dashboard/pairings/deleted",
+    "softDelete": "slug"
+  },
+  {
+    "key": "tags",
+    "label": "Tags",
+    "path": "/api/dashboard/product-tags",
+    "trashPath": "/api/dashboard/product-tags/deleted",
+    "softDelete": "id"
+  },
+  {
+    "key": "categories",
+    "label": "Categories",
+    "path": "/api/dashboard/categories",
+    "trashPath": "/api/dashboard/categories/deleted",
+    "softDelete": "slug"
+  },
+  {
+    "key": "shipping-zones",
+    "label": "Shipping zones",
+    "path": "/api/dashboard/shipping-zones",
+    "trashPath": "/api/dashboard/shipping-zones/deleted",
+    "softDelete": "id"
+  },
+  {
+    "key": "promo-codes",
+    "label": "Promo codes",
+    "path": "/api/dashboard/promo-codes",
+    "trashPath": "/api/dashboard/promo-codes/deleted",
+    "softDelete": "id"
+  },
+  {
+    "key": "products",
+    "label": "Products",
+    "path": "/api/dashboard/products",
+    "trashPath": "/api/dashboard/products/deleted",
+    "softDelete": "slug"
+  },
+  {
+    "key": "journal-posts",
+    "label": "Journal posts",
+    "path": "/api/dashboard/journal",
+    "trashPath": "/api/dashboard/journal/deleted",
+    "softDelete": "slug"
+  },
+  {
+    "key": "broadcasts",
+    "label": "Broadcasts",
+    "path": "/api/dashboard/broadcasts",
+    "trashPath": null,
+    "softDelete": null
+  }
+]

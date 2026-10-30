@@ -1,0 +1,4 @@
+{
+  "$comment": "Prefixes that identify data created by automated QA. A record matches only when its English/Arabic name or slug STARTS with one of these (never in the middle). scripts/purge-test-data.mjs reads this list; e2e/helpers/test-data.ts derives the run prefix from it.",
+  "prefixes": ["Auditcov", "QA ", "e2e-"]
+}

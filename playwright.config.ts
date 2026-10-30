@@ -4,12 +4,19 @@ import { config as loadEnv } from 'dotenv';
 
 // process.cwd() over __dirname: stays valid if package.json ever gains
 // "type": "module".
-loadEnv({ path: resolve(process.cwd(), '.env.local') });
+loadEnv({ path: resolve(process.cwd(), '.env.local'), quiet: true });
 
 const BASE_URL = process.env['E2E_BASE_URL'] ?? 'http://localhost:4200';
 
+// One unique test-data prefix per run. Workers inherit the env, and the global
+// teardown uses it to purge anything a failed spec left behind.
+const RUN_ID = process.env['QA_RUN_ID'] ?? new Date().toISOString().replace(/[:.]/g, '-');
+process.env['QA_RUN_ID'] = RUN_ID;
+process.env['QA_RUN_PREFIX'] = process.env['QA_RUN_PREFIX'] ?? `e2e-${RUN_ID}-`;
+
 export default defineConfig({
   testDir: './e2e',
+  globalTeardown: './e2e/global-teardown.ts',
   // The artifacts directory can be moved, so two Playwright runs in the same
   // repository (a shared working tree) do not clean each other's traces.
   outputDir: process.env['PW_OUTPUT_DIR'] ?? 'test-results',
