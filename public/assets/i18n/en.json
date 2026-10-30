@@ -153,6 +153,7 @@
     "common.deletedPermanently": "Deleted permanently",
     "common.permanentDeleteFailed": "Could not delete permanently",
     "confirmDelete": "Are you sure you want to delete",
+    "permanentDeleteConfirm": "Delete permanently? This cannot be undone.",
     "confirmPassword": "Confirm password",
     "copyId": "Copy ID",
     "country": "Country",

@@ -159,6 +159,9 @@
           [showPermanentDelete]="isTrash() && canDelete()"
           [restoreLabel]="'common.restore' | transloco"
           [permanentDeleteLabel]="'common.deletePermanently' | transloco"
+          [deletePermission]="deletePermission || ''"
+          [restorePermission]="deletePermission || ''"
+          [permanentDeletePermission]="deletePermission || ''"
           (selectionChange)="onSelectionChange($event)"
           (toggleAllChange)="toggleAll($event)"
           (edit)="openEditDialog($event)"
@@ -334,3 +337,37 @@
 }
 
 <!-- Delete Confirm Dialog -->
+
+<!-- ══════════════════════════════════════════════════════════
+     Permanent delete — the trash view's second, irreversible step.
+     Reuses the app's dialog surface; the backend's refusal (409) is
+     shown as-is by notify.apiError, so nothing is restyled here.
+     ══════════════════════════════════════════════════════════ -->
+@if (permanentDeleteTarget()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+    <div class="dialog-surface w-full max-w-sm p-6">
+      <h2 class="text-lg font-bold mb-2">{{ 'common.deletePermanently' | transloco }}</h2>
+      <p class="text-muted-foreground mb-6">
+        {{ 'common.permanentDeleteConfirm' | transloco }}
+        <strong class="text-foreground">{{ permanentDeleteTarget()!.slug }}</strong>
+      </p>
+      <div class="flex gap-3">
+        <button hlmBtn variant="outline" class="flex-1" (click)="closePermanentDelete()">
+          {{ 'common.cancel' | transloco }}
+        </button>
+        <button
+          hlmBtn
+          variant="destructive"
+          class="flex-1"
+          [disabled]="permanentDeletePending()"
+          (click)="confirmPermanentDelete()"
+        >
+          @if (permanentDeletePending()) {
+            <ng-icon name="lucideLoader2" class="me-2 size-4 animate-spin" />
+          }
+          {{ 'common.deletePermanently' | transloco }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

@@ -1958,3 +1958,37 @@ and no return counter on the orders list. The backlog's acceptance criteria
 are about the order detail; a global returns queue would need its own filters,
 counts and permission review, and inventing it here would have shipped a
 half-wired screen.
+
+## Trash: "Delete permanently" wherever a trash exists
+
+The API now exposes `DELETE /api/dashboard/{entity}/{id}/permanent` for every
+entity with a trash screen, and refuses (409) a row that is still referenced or
+still live. The dashboard needed almost no new behaviour — the shared
+`BaseListComponent` already called `deletePermanently` and showed the backend's
+sentence on failure — but three wiring gaps made the button lie:
+
+- **Farms** had the trash tab, the trash listing and the restore endpoint, but no
+  `permanentDeleteSrv()` (confirming the dialog threw "not implemented"), no
+  `callRestore` (Restore silently did nothing) and no confirm dialog at all.
+- **Origins** had the service hook but no dialog, so "Delete permanently" set a
+  target that nothing rendered.
+- The row actions for every trash screen were permission-checked against
+  `category:delete` (the `data-table` default input and the `actions-cell`
+  default), not against the entity's own permission. All ten soft-delete screens
+  now pass `[deletePermission]`, `[restorePermission]` and
+  `[permanentDeletePermission]` from their `deletePermission` field, so
+  "Move to trash", "Restore" and "Delete permanently" all ask the same question —
+  `farm:delete`, `tasting_note:delete`, … — and the server stays the source of
+  truth for a 403.
+
+A refusal is shown exactly once, verbatim: `NotifyService.apiError` prefers
+`ApiResponse.message`, which is the backend's localized sentence naming the
+referencing thing ("Move to trash refused — still linked to 3 product(s)…"). No
+generic "please try again" is ever shown over it.
+
+New i18n key: `common.permanentDeleteConfirm` (en + ar) — the irreversible-step
+sentence used by the farm and origin dialogs. Existing dialogs keep their
+per-module `*.trash.permanentConfirm` keys untouched.
+
+Not built (no trash view exists to put it in): product tags and reviews have a
+working purge endpoint but no Active/Trash switch on their pages.
