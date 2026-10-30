@@ -108,6 +108,22 @@ export class FarmsListComponent extends BaseListComponent<FarmResponse, FarmRequ
     return item.slug;
   }
 
+  /**
+   * The trash view's permanent delete. Trash rows are addressed by id, not slug, so the shared
+   * base class needs the id and the service that owns the `DELETE /{id}/permanent` route.
+   */
+  protected override restoreIdOf(item: FarmResponse): number | null {
+    return typeof item.id === 'number' ? item.id : null;
+  }
+
+  protected override callRestore(id: number) {
+    return this.farmService.restore(id);
+  }
+
+  protected override permanentDeleteSrv() {
+    return this.farmService;
+  }
+
 
   readonly showId = signal(false);
   readonly showDates = signal(true);

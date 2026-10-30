@@ -153,6 +153,7 @@
     "common.deletedPermanently": "تم الحذف نهائياً",
     "common.permanentDeleteFailed": "تعذّر الحذف النهائي",
     "confirmDelete": "هل أنت متأكد أنك تريد حذف",
+    "permanentDeleteConfirm": "حذف نهائي؟ لا يمكن التراجع عن هذا الإجراء.",
     "confirmPassword": "تأكيد كلمة المرور",
     "copyId": "نسخ المعرّف",
     "country": "الدولة",
