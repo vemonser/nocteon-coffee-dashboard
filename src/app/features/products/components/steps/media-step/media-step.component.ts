@@ -6,6 +6,9 @@ import { ProductWizardStateService } from '../../product-wizard/product-wizard-s
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { HlmSelectImports } from '@spartan-ng/helm/select';
 import { HlmLabel } from '@spartan-ng/helm/label';
+import { HlmButtonImports } from '@spartan-ng/helm/button';
+import { PluralPipe } from '../../../../../shared/pipes/plural.pipe';
+import { formatFileSize } from '../../../../../shared/utils/file-size';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
   lucideUpload,
@@ -14,11 +17,13 @@ import {
   lucideStar,
   lucideTrash2,
   lucideGripVertical,
+  lucideAlertCircle,
 } from '@ng-icons/lucide';
 
 interface MediaFileError {
   name: string;
   message: string;
+  params?: Record<string, unknown>;
 }
 
 /**
@@ -28,8 +33,8 @@ interface MediaFileError {
 @Component({
   selector: 'app-media-step',
   standalone: true,
-  imports: [CommonModule, DragDropModule, HlmSelectImports, HlmLabel, TranslocoPipe, NgIcon],
-  providers: [provideIcons({ lucideUpload, lucidePlay, lucidePencil, lucideStar, lucideTrash2, lucideGripVertical })],
+  imports: [CommonModule, DragDropModule, HlmSelectImports, HlmLabel, HlmButtonImports, PluralPipe, TranslocoPipe, NgIcon],
+  providers: [provideIcons({ lucideUpload, lucidePlay, lucidePencil, lucideStar, lucideTrash2, lucideGripVertical, lucideAlertCircle })],
   templateUrl: './media-step.component.html',
 })
 export class MediaStepComponent {
@@ -66,6 +71,8 @@ export class MediaStepComponent {
   readonly editingAlt = signal<Set<string>>(new Set());
 
   private static readonly MAX_BYTES = 10 * 1024 * 1024;
+  /** W7: the one file-size formatter, used for the hint and the error text. */
+  readonly maxFileSize = formatFileSize(MediaStepComponent.MAX_BYTES);
 
   setPrimary(source: 'existing' | 'staged', index: number): void {
     this.state.setPrimaryMedia(source, index);
@@ -83,7 +90,11 @@ export class MediaStepComponent {
         return;
       }
       if (file.size > MediaStepComponent.MAX_BYTES) {
-        errors.push({ name: file.name, message: 'products.media.fileTooLarge' });
+        errors.push({
+          name: file.name,
+          message: 'products.media.fileTooLarge',
+          params: { size: this.maxFileSize },
+        });
         return;
       }
 

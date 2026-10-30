@@ -2,7 +2,7 @@
   <div class="flex flex-wrap items-center justify-between gap-2">
     <h2 class="text-lg font-medium">{{ 'products.media.title' | transloco }}</h2>
     <span class="text-sm text-muted-foreground">
-      {{ 'products.media.fileCount' | transloco: { count: state.existingMedia().length + state.stagedMedia().length } }}
+      {{ state.existingMedia().length + state.stagedMedia().length | plural: 'products.media.fileCount' }}
     </span>
   </div>
 
@@ -12,7 +12,7 @@
     <label class="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-md border-2 border-dashed border-input p-8 text-center transition hover:bg-muted/40">
       <ng-icon name="lucideUpload" class="size-8 text-muted-foreground" />
       <span class="text-sm font-medium">{{ 'products.media.dropHint' | transloco }}</span>
-      <span class="text-xs text-muted-foreground">{{ 'products.media.fileTypes' | transloco }}</span>
+      <span class="text-xs text-muted-foreground">{{ 'products.media.fileTypes' | transloco: { size: maxFileSize } }}</span>
       <input type="file" accept="image/*,video/*" multiple (change)="onFilesSelected($event)" class="sr-only" />
     </label>
   </div>
@@ -22,7 +22,7 @@
       @for (error of fileErrors(); track error.name) {
         <p class="flex items-start gap-2 text-xs text-destructive">
           <span class="font-mono">{{ error.name }}</span>
-          <span>{{ error.message | transloco }}</span>
+          <span>{{ error.message | transloco: (error.params ?? {}) }}</span>
         </p>
       }
     </div>
@@ -81,8 +81,25 @@
                 [attr.aria-label]="'products.media.editAltText' | transloco"
                 class="mt-2 w-full rounded border px-2 py-1 text-xs"
               />
+            } @else if (media.altText) {
+              <p class="mt-2 truncate text-xs text-muted-foreground" [title]="media.altText">{{ media.altText }}</p>
             } @else {
-              <p class="mt-2 truncate text-xs text-muted-foreground" [title]="media.altText">{{ media.altText || ('products.media.noAltText' | transloco) }}</p>
+              <!-- W7: "No alt text" was a dead label. The warning chip names
+                   the fix and opens the same inline editor the pencil does. -->
+              <button
+                hlmBtn
+                variant="outline"
+                size="sm"
+                type="button"
+                class="mt-2 h-7 w-fit gap-1 rounded-full border-warning/40 bg-warning-soft px-2 text-xs text-warning"
+                data-testid="add-alt-text"
+                [attr.aria-label]="'products.media.addAltText' | transloco"
+                [title]="'products.media.addAltText' | transloco"
+                (click)="toggleAlt('existing-' + i)"
+              >
+                <ng-icon name="lucideAlertCircle" class="size-3.5" aria-hidden="true" />
+                {{ 'products.media.addAltText' | transloco }}
+              </button>
             }
           </div>
         }
@@ -146,8 +163,23 @@
                 [attr.aria-label]="'products.media.editAltText' | transloco"
                 class="mt-2 w-full rounded border px-2 py-1 text-xs"
               />
+            } @else if (media.altText) {
+              <p class="mt-2 truncate text-xs text-muted-foreground" [title]="media.altText">{{ media.altText }}</p>
             } @else {
-              <p class="mt-2 truncate text-xs text-muted-foreground" [title]="media.altText">{{ media.altText || ('products.media.noAltText' | transloco) }}</p>
+              <button
+                hlmBtn
+                variant="outline"
+                size="sm"
+                type="button"
+                class="mt-2 h-7 w-fit gap-1 rounded-full border-warning/40 bg-warning-soft px-2 text-xs text-warning"
+                data-testid="add-alt-text"
+                [attr.aria-label]="'products.media.addAltText' | transloco"
+                [title]="'products.media.addAltText' | transloco"
+                (click)="toggleAlt('staged-' + i)"
+              >
+                <ng-icon name="lucideAlertCircle" class="size-3.5" aria-hidden="true" />
+                {{ 'products.media.addAltText' | transloco }}
+              </button>
             }
 
             <div class="mt-2 h-1 w-full overflow-hidden rounded-full bg-muted">

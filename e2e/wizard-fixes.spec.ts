@@ -42,32 +42,48 @@ async function openWizard(page: Page, lang: 'en' | 'ar' = 'en'): Promise<void> {
     }
   }, lang);
   await page.reload({ waitUntil: 'domcontentloaded' });
-  await expect(page.getByRole('tablist', { name: /Product wizard steps/ })).toBeVisible({
-    timeout: 30_000,
-  });
+  // Language-agnostic: the wizard's step tablist exists in both locales.
+  await expect(page.getByRole('tablist').first()).toBeVisible({ timeout: 30_000 });
   await expect(page.locator('quill-editor .ql-editor').first()).toBeVisible({ timeout: 30_000 });
 }
 
 /** The step tab whose label contains the given text. */
 function stepTab(page: Page, label: RegExp) {
-  return page
-    .getByRole('tablist', { name: /Product wizard steps/ })
-    .getByRole('tab', { name: label });
+  // The first tablist is the step bar in both locales; its accessible name is
+  // translated, so it cannot be the selector.
+  return page.getByRole('tablist').first().getByRole('tab', { name: label });
 }
 
 /** Pick a value from the nth hlm-select on the page. */
 async function pickSelect(page: Page, index: number, option: RegExp): Promise<void> {
-  const trigger = page.getByRole('combobox').nth(index);
-  await trigger.click();
-  await page.getByRole('option', { name: option }).first().click();
-  await page.waitForTimeout(250);
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    await page.getByRole('combobox').nth(index).click();
+    const item = page.getByRole('option', { name: option }).first();
+    if (await item.isVisible().catch(() => false)) {
+      await item.click();
+      await page.waitForTimeout(250);
+      return;
+    }
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(500);
+  }
+  throw new Error(`no option matching ${option} in select #${index}`);
 }
 
 /** Pick the first real option of the nth hlm-select (its placeholder is not one). */
 async function pickFirstOption(page: Page, index: number): Promise<void> {
-  await page.getByRole('combobox').nth(index).click();
-  await page.getByRole('option').first().click();
-  await page.waitForTimeout(250);
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    await page.getByRole('combobox').nth(index).click();
+    const item = page.getByRole('option').first();
+    if (await item.isVisible().catch(() => false)) {
+      await item.click();
+      await page.waitForTimeout(250);
+      return;
+    }
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(500);
+  }
+  throw new Error(`select #${index} offered no options`);
 }
 
 const footer = (page: Page) => page.locator('[data-testid="wizard-footer"]');
@@ -157,8 +173,11 @@ test.describe('product wizard fixes (wizard-fixes)', () => {
     await expect(desc).toHaveAttribute('rows', '4');
     expect(await desc.evaluate((el) => el.getBoundingClientRect().height)).toBeGreaterThanOrEqual(90);
 
-    // Every toolbar control has an accessible name and a tooltip.
-    const controls = page.locator('quill-editor .ql-toolbar button, quill-editor .ql-toolbar select');
+    // Every toolbar control has an accessible name and a tooltip. The heading
+    // picker is a role=button span, so it is included with the real buttons.
+    const controls = page.locator(
+      'quill-editor .ql-toolbar button, quill-editor .ql-toolbar select, quill-editor .ql-toolbar .ql-picker-label',
+    );
     const total = await controls.count();
     expect(total).toBeGreaterThanOrEqual(11);
     for (let i = 0; i < total; i += 1) {
@@ -167,6 +186,15 @@ test.describe('product wizard fixes (wizard-fixes)', () => {
       const title = await control.getAttribute('title');
       expect(aria, `toolbar control #${i} has an aria-label`).toBeTruthy();
       expect(title, `toolbar control #${i} has a tooltip`).toBeTruthy();
+    }
+
+    // The heading menu is not a row of blank items.
+    const headingItems = page.locator('quill-editor .ql-picker.ql-header .ql-picker-item');
+    const headingCount = await headingItems.count();
+    expect(headingCount).toBe(3);
+    for (let i = 0; i < headingCount; i += 1) {
+      expect((await headingItems.nth(i).innerText()).trim().length).toBeGreaterThan(0);
+      expect(await headingItems.nth(i).getAttribute('aria-label')).toBeTruthy();
     }
 
     // The simplified toolbar: no font/size/colour/script/code/table/video/indent.
@@ -266,6 +294,45 @@ test.describe('product wizard fixes (wizard-fixes)', () => {
       ['stockQuantity', 'reorderThreshold'],
     ]);
     await page.setViewportSize({ width: 1440, height: 900 });
+  });
+
+  // ── W7 ─────────────────────────────────────────────────────────────────────
+  test('media: "1 file", the limit prints "10 MB" and a tile without alt text offers the fix', async () => {
+    // 1×1 transparent PNG — enough to exercise the staged-tile path.
+    const png = Buffer.from(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
+      'base64',
+    );
+
+    await openWizard(page, 'en');
+    await stepTab(page, /^Media/).click();
+    await expect(page.getByText(/Images or videos · max 10 MB each/)).toBeVisible();
+    await expect(page.getByText(/max 10 mB/)).toHaveCount(0);
+
+    await page.locator('app-media-step input[type="file"]').setInputFiles({
+      name: 'w7.png',
+      mimeType: 'image/png',
+      buffer: png,
+    });
+    const media = page.locator('app-media-step');
+    await expect(media).toContainText('1 file');
+    await expect(media).not.toContainText('1 files');
+
+    const addAlt = page.locator('[data-testid="add-alt-text"]').first();
+    await expect(addAlt).toBeVisible();
+    await addAlt.click();
+    await expect(page.locator('app-media-step input[type="text"]').last()).toBeVisible();
+
+    // Arabic has its own word for one file, not "1 ملفات".
+    await openWizard(page, 'ar');
+    await stepTab(page, /^الوسائط/).click();
+    await page.locator('app-media-step input[type="file"]').setInputFiles({
+      name: 'w7.png',
+      mimeType: 'image/png',
+      buffer: png,
+    });
+    await expect(page.locator('app-media-step')).toContainText('ملف واحد');
+    await expect(page.locator('app-media-step')).not.toContainText('1 ملفات');
   });
 
   // ── W8: the whole flow ─────────────────────────────────────────────────────

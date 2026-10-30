@@ -30,6 +30,7 @@ import { MoneyPipe } from '../../../../../shared/pipes/money.pipe';
 import { LanguageService } from '../../../../../core/i18n/language.service';
 import { NotifyService } from '../../../../../core/notify/notify.service';
 import { stockLevel as resolveStockLevel } from '../../../../../shared/utils/stock-level';
+import { formatFileSize } from '../../../../../shared/utils/file-size';
 import { StockMovement } from '../../../models/stock-movement.model';
 import {
   StockAdjustmentDialogComponent,
@@ -83,6 +84,8 @@ export class VariantsStepComponent implements OnInit {
   readonly uploadingIndex = signal<number | null>(null);
 
   private static readonly MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+  /** W7: one formatter for every size the step prints. */
+  readonly maxImageSize = formatFileSize(VariantsStepComponent.MAX_IMAGE_BYTES);
   private static readonly IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
 
   // ─── FE-13: the stock history, per saved variant ────────────────────────
@@ -472,7 +475,11 @@ export class VariantsStepComponent implements OnInit {
       return;
     }
     if (file.size > VariantsStepComponent.MAX_IMAGE_BYTES) {
-      this.notify.error('products.variants.image.tooLarge', 'The image must be 5 MB or smaller.');
+      this.notify.error(
+        'products.variants.image.tooLarge',
+        `The image must be ${this.maxImageSize} or smaller.`,
+        { size: this.maxImageSize },
+      );
       return;
     }
 

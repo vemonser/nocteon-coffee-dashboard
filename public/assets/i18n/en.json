@@ -521,14 +521,14 @@
       "removeMessage": "Remove this variant? Its stock and price settings go with it.",
       "image": {
         "title": "Variant image",
-        "hint": "Shown instead of the product gallery when this variant is selected. JPG, PNG, GIF or WebP, up to 5 MB.",
+        "hint": "Shown instead of the product gallery when this variant is selected. JPG, PNG, GIF or WebP, up to {{size}}.",
         "upload": "Upload image",
         "replace": "Replace image",
         "remove": "Remove image",
         "uploading": "Uploading…",
         "failed": "Could not upload the image",
         "wrongType": "Use a JPEG, PNG, GIF or WebP image.",
-        "tooLarge": "The image must be 5 MB or smaller."
+        "tooLarge": "The image must be {{size}} or smaller."
       },
       "validation": {
         "skuRequired": "SKU is required",
@@ -551,8 +551,9 @@
       "upload": "Upload",
       "uploading": "Uploading…",
       "dropHint": "Drag & drop files here or click to browse",
-      "fileTypes": "Images or videos · max 10 mB each",
-      "fileCount": "{{count}} files",
+      "fileTypes": "Images or videos · max {{size}} each",
+      "fileCount_one": "{{count}} file",
+      "fileCount_other": "{{count}} files",
       "cover": "Cover",
       "setAsCover": "Set as cover",
       "editAltText": "Edit alt text",
@@ -566,7 +567,8 @@
       "imageNumber": "Image {{n}}",
       "customSocialImage": "Custom image",
       "unsupportedType": "Unsupported file type. Use an image or a video.",
-      "fileTooLarge": "File is larger than 10 MB.",
+      "fileTooLarge": "File is larger than {{size}}.",
+      "addAltText": "Add alt text",
       "removeTitle": "Remove media",
       "removeMessage": "Remove this media?",
       "reorder": "Reorder"

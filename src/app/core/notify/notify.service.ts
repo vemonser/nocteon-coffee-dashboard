@@ -19,9 +19,9 @@ export class NotifyService {
   private readonly language = inject(LanguageService);
 
   /** Translate with English fallback (mirrors BaseListComponent.t). */
-  t(key: string, fallback: string): string {
+  t(key: string, fallback: string, params?: Record<string, unknown>): string {
     if (!key) return fallback;
-    const value = this.transloco.translate(key);
+    const value = this.transloco.translate(key, params);
     return typeof value === 'string' && value.length > 0 && value !== key ? value : fallback;
   }
 
@@ -76,8 +76,8 @@ export class NotifyService {
    * A client-side rejection the API never saw (a file of the wrong type, before
    * the upload is attempted). No backend message exists, so the key is the answer.
    */
-  error(messageKey: string, fallback: string): void {
-    toast.error(this.t(messageKey, fallback));
+  error(messageKey: string, fallback: string, params?: Record<string, unknown>): void {
+    toast.error(this.t(messageKey, fallback, params));
   }
 
   /**

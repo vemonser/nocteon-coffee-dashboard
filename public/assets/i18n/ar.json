@@ -529,14 +529,14 @@
       "removeMessage": "هل تريد إزالة هذا المتغير؟ سيذهب معه إعدادا المخزون والسعر.",
       "image": {
         "title": "صورة المتغير",
-        "hint": "تُعرض بدلاً من معرض المنتج عند اختيار هذا المتغير. JPG أو PNG أو GIF أو WebP، بحد أقصى 5 ميجابايت.",
+        "hint": "تُعرض بدلاً من معرض المنتج عند اختيار هذا المتغير. JPG أو PNG أو GIF أو WebP، بحد أقصى {{size}}.",
         "upload": "رفع صورة",
         "replace": "استبدال الصورة",
         "remove": "إزالة الصورة",
         "uploading": "جارٍ الرفع…",
         "failed": "تعذر رفع الصورة",
         "wrongType": "استخدم صورة بصيغة JPG أو PNG أو GIF أو WebP.",
-        "tooLarge": "يجب ألا يزيد حجم الصورة عن 5 ميجابايت."
+        "tooLarge": "يجب ألا يزيد حجم الصورة عن {{size}}."
       },
       "validation": {
         "skuRequired": "رمز المنتج مطلوب",
@@ -559,8 +559,13 @@
       "upload": "رفع",
       "uploading": "جارٍ الرفع…",
       "dropHint": "اسحب وأفلت الملفات هنا أو انقر للتصفح",
-      "fileTypes": "صور أو فيديو · حد أقصى 10 ميجابايت",
-      "fileCount": "{{count}} ملفات",
+      "fileTypes": "صور أو فيديو · حد أقصى {{size}} لكل ملف",
+      "fileCount_zero": "لا توجد ملفات",
+      "fileCount_one": "ملف واحد",
+      "fileCount_two": "ملفان",
+      "fileCount_few": "{{count}} ملفات",
+      "fileCount_many": "{{count}} ملفًا",
+      "fileCount_other": "{{count}} ملف",
       "cover": "الغلاف",
       "setAsCover": "تعيين كغلاف",
       "editAltText": "تحرير النص البديل",
@@ -574,7 +579,8 @@
       "imageNumber": "صورة {{n}}",
       "customSocialImage": "صورة مخصصة",
       "unsupportedType": "نوع ملف غير مدعوم. استخدم صورة أو فيديو.",
-      "fileTooLarge": "الملف أكبر من 10 ميغابايت.",
+      "fileTooLarge": "الملف أكبر من {{size}}.",
+      "addAltText": "إضافة نص بديل",
       "removeTitle": "إزالة الوسائط",
       "removeMessage": "إزالة هذه الوسائط؟",
       "reorder": "إعادة ترتيب"
