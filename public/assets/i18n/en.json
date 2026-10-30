@@ -463,7 +463,8 @@
           "ORDER": "Sold on an order",
           "MANUAL_ADJUSTMENT": "Manual adjustment",
           "PRODUCT_EDIT": "Changed in the product form",
-          "RETURN": "Returned and restocked"
+          "RETURN": "Returned and restocked",
+          "ORDER_CANCELLED": "Order cancelled"
         }
       },
       "weight": "Weight (g)",
