@@ -121,7 +121,7 @@
     }
 
     <div class="grid grid-cols-1 items-start gap-4 lg:grid-cols-3">
-      <hlm-card class="overflow-hidden pt-0 self-stretch">
+      <hlm-card class="overflow-hidden py-0 self-stretch">
         <div class="relative aspect-video max-h-[280px] bg-muted lg:aspect-square lg:max-h-none h-full">
           <input
             #imageInput
@@ -230,7 +230,7 @@
             </div>
             <div>
               <p class="text-xs text-muted-foreground">{{ 'common.createdAt' | transloco }}</p>
-              <p class="mt-1 text-sm"><app-localized-date [value]="origin()!.createdAt" variant="long" /></p>
+              <p class="mt-1 text-sm"><app-localized-date [value]="origin()!.createdAt" [showTime]="true" [withComma]="true" /></p>
             </div>
           </div>
         </hlm-card>

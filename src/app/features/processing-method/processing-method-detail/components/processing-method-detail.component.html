@@ -74,7 +74,7 @@
             </hlm-badge>
             <span class="text-xs text-muted-foreground">
               @if (method()!.createdAt) {
-                <app-localized-date [value]="method()!.createdAt" variant="long" />
+                <app-localized-date [value]="method()!.createdAt" [showTime]="true" [withComma]="true" />
               }
             </span>
           </div>
