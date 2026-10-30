@@ -546,7 +546,7 @@ export const routes: Routes = [
       },
       {
         path: 'products/:slug/edit',
-        data: { breadcrumb: 'products' },
+        data: { breadcrumb: 'editProduct' },
         canActivate: [permissionGuard('product:update')],
         canDeactivate: [unsavedChangesGuard],
         loadComponent: () =>

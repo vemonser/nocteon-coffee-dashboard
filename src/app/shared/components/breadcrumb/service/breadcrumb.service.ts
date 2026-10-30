@@ -4,7 +4,8 @@ import { filter } from 'rxjs';
 
 import { Breadcrumb } from '../model/breadcrumb.model';
 import { LanguageService } from '../../../../core/i18n/language.service';
-import { navI18n, NavKey } from '../../../i18n/nav-i18n';
+import { navI18n } from '../../../i18n/nav-i18n';
+import type { BreadcrumbNavKey } from '../../../i18n/nav-i18n';
 import { sectionKeyForRoute, sectionLabel } from '../../../data/sidebar-nav-items';
 
 @Injectable({ providedIn: 'root' })
@@ -84,11 +85,16 @@ export class BreadcrumbService {
       const segment = route.snapshot.url.map((s) => s.path).join('/');
       if (segment) url += `/${segment}`;
 
-      const key = route.snapshot.data['breadcrumb'] as NavKey | undefined;
+      const key = route.snapshot.data['breadcrumb'] as BreadcrumbNavKey | undefined;
       if (key && key !== 'dashboard' && !seen.has(url)) {
+        const label = navI18n[this.languageService.current()][key];
+        // A route data key without a translation used to fall back to the raw
+        // key ("newProduct" on screen). The label is the only thing a crumb may
+        // show, so an untranslated route contributes NO crumb — and
+        // `scripts/breadcrumb-check.mjs` fails the build before it can ship.
+        if (!label) continue;
         seen.add(url);
-        const lang = this.languageService.current();
-        crumbs.push({ label: navI18n[lang][key] ?? key, url });
+        crumbs.push({ label, url });
       }
     }
 
