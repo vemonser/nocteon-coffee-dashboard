@@ -517,6 +517,8 @@
       "cards": "بطاقات",
       "table": "جدول",
       "outOfStock": "غير متوفر",
+      "noStockYet": "لا يوجد مخزون بعد",
+      "chooseTypeFirst": "اختر نوع المنتج أولًا",
       "lowStock": "منخفض: {{count}}",
       "lowStockBadge": "مخزون منخفض",
       "inStock": "{{count}} متوفر",

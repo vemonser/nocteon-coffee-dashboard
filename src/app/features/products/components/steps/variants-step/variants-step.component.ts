@@ -109,6 +109,23 @@ export class VariantsStepComponent implements OnInit {
     return id === null || id === undefined || id === '' ? null : Number(id);
   }
 
+  /** W6: "Out of stock" accuses a saved row; a brand-new one reads neutral. */
+  isSavedVariant(group: AbstractControl): boolean {
+    return this.variantId(group) !== null;
+  }
+
+  /**
+   * W6: SKUs are upper case by convention. The placeholder says so
+   * ("e.g. AURUM-ETH-250") and the value follows on blur, so a typed
+   * `aurum-eth-250` is stored the way the catalog prints it.
+   */
+  onSkuBlur(group: AbstractControl): void {
+    const control = group.get('sku');
+    const current = String(control?.value ?? '');
+    const upper = current.trim().toUpperCase();
+    if (upper && upper !== current) control?.setValue(upper);
+  }
+
   isHistoryOpen(variantId: number): boolean {
     return this.openHistory().has(variantId);
   }
@@ -336,6 +353,33 @@ export class VariantsStepComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadOptions();
+    // W6: the option list depends on the product type. Choosing it AFTER this
+    // step was rendered used to leave the previous type's options ("Size" on a
+    // coffee product). Re-fetch when it changes, and drop the picks that no
+    // longer apply so the form cannot submit a value the type does not offer.
+    this.state.form
+      .get('productType')
+      ?.valueChanges.pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        this.loadOptions();
+      });
+  }
+
+  /**
+   * Remove option picks whose option is not in the new list. Called when the
+   * type changes: the variant keeps its price and stock, not a "Size" value
+   * that equipment only has.
+   */
+  private dropPicksForOptions(nextOptions: ProductOption[]): void {
+    const allowed = new Set(nextOptions.map((option) => option.id));
+    this.state.variantsArray.controls.forEach((group) => {
+      const picks = group.get('optionPicks') as FormArray | null;
+      if (!picks) return;
+      for (let i = picks.length - 1; i >= 0; i -= 1) {
+        const optionId = Number(picks.at(i).get('optionId')?.value);
+        if (!allowed.has(optionId)) picks.removeAt(i);
+      }
+    });
   }
 
   private loadOptions(): void {
@@ -344,7 +388,9 @@ export class VariantsStepComponent implements OnInit {
     this.optionService.getAll({ page: 0, size: 100, productType }).subscribe({
       next: (res) => {
         const productType = this.state.form.get('productType')?.value;
-        this.state.setProductOptions(filterOptionsByProductType(res.data.content, productType));
+        const applicable = filterOptionsByProductType(res.data.content, productType);
+        this.state.setProductOptions(applicable);
+        this.dropPicksForOptions(applicable);
         this.loadingOptions.set(false);
       },
       error: (err) => {

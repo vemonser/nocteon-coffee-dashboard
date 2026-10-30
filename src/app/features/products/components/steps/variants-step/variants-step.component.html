@@ -53,7 +53,15 @@
     </div>
   }
 
-  @if (!loadingOptions() && state.productOptions().length === 0) {
+  @if (!state.form.get('productType')?.value) {
+    <!-- W6: an option list is meaningless before the type exists: "Size" was
+         offered for coffee. Ask for the type instead, and offer no selects. -->
+    <p class="rounded-md border border-dashed p-3 text-sm text-muted-foreground" data-testid="options-need-type">
+      {{ 'products.variants.chooseTypeFirst' | transloco }}
+    </p>
+  }
+
+  @if (!loadingOptions() && state.form.get('productType')?.value && state.productOptions().length === 0) {
     <div class="rounded-md border border-dashed p-4 text-sm text-muted-foreground">
       {{ 'products.variants.noOptions' | transloco }}
     </div>
@@ -90,7 +98,17 @@
 
               @switch (stockLevel(group)) {
                 @case ('out') {
-                  <span class="rounded-full bg-destructive-soft px-2 py-0.5 text-xs font-medium text-destructive">{{ 'products.variants.outOfStock' | transloco }}</span>
+                  <!--
+                    W6: a variant that has never been saved has no stock history
+                    and a 0 that is simply the default — a red "Out of stock"
+                    would accuse a row that does not exist yet. It gets the
+                    neutral "No stock yet" chip; red is for SAVED variants only.
+                  -->
+                  @if (isSavedVariant(group)) {
+                    <span class="rounded-full bg-destructive-soft px-2 py-0.5 text-xs font-medium text-destructive">{{ 'products.variants.outOfStock' | transloco }}</span>
+                  } @else {
+                    <span class="rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground" data-testid="variant-no-stock">{{ 'products.variants.noStockYet' | transloco }}</span>
+                  }
                 }
                 @case ('low') {
                   <span class="rounded-full bg-warning-soft px-2 py-0.5 text-xs font-medium text-warning">{{ 'products.variants.lowStock' | transloco: { count: group.get('stockQuantity')?.value } }}</span>
@@ -156,16 +174,28 @@
                 </div>
               </div>
 
-              <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <div class="space-y-1.5">
+              <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-6">
+                <!--
+                  W6: the fields line up as 2 / 3 / 2 from 1024px, so the grid
+                  never leaves an orphan cell in the last row. Below that they
+                  stay in a single or two-column flow.
+                -->
+                <div class="space-y-1.5 lg:col-span-3">
                   <label hlmLabel>{{ 'products.variants.sku' | transloco }} *</label>
-                  <input hlmInput formControlName="sku" type="text" class="w-full" [placeholder]="'products.variants.skuPlaceholder' | transloco" />
+                  <input
+                    hlmInput
+                    formControlName="sku"
+                    type="text"
+                    class="w-full uppercase"
+                    (blur)="onSkuBlur(group)"
+                    [placeholder]="'products.variants.skuPlaceholder' | transloco"
+                  />
                   @if (group.get('sku')?.invalid && group.get('sku')?.touched) {
                     <p class="mt-1 text-xs text-destructive">{{ 'products.variants.validation.skuRequired' | transloco }}</p>
                   }
                 </div>
                 <!-- FE-15: the scanned code. Optional; uniqueness is the server's answer. -->
-                <div class="space-y-1.5">
+                <div class="space-y-1.5 lg:col-span-3">
                   <label hlmLabel>{{ 'products.variants.barcode' | transloco }}</label>
                   <input
                     hlmInput
@@ -181,7 +211,7 @@
                     <p class="text-xs text-muted-foreground">{{ 'products.variants.barcodeHint' | transloco }}</p>
                   }
                 </div>
-                <div class="space-y-1.5">
+                <div class="space-y-1.5 lg:col-span-2">
                   <label hlmLabel>{{ 'products.variants.price' | transloco }} *</label>
                   <div class="relative">
                     <span class="pointer-events-none absolute start-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">EGP</span>
@@ -194,7 +224,7 @@
                     <p class="mt-1 text-xs text-destructive">{{ 'products.variants.validation.priceMin' | transloco }}</p>
                   }
                 </div>
-                <div class="space-y-1.5">
+                <div class="space-y-1.5 lg:col-span-2">
                   <label hlmLabel>
                     {{ 'products.variants.compareAtPrice' | transloco }}
                     <span class="ms-1 text-xs font-normal text-muted-foreground">({{ 'products.variants.noDiscountHint' | transloco }})</span>
@@ -210,7 +240,7 @@
                     <p class="mt-1 text-xs text-success">{{ 'products.variants.onSale' | transloco }}: -{{ discountPercent(group) }}%</p>
                   }
                 </div>
-                <div class="space-y-1.5">
+                <div class="space-y-1.5 lg:col-span-2">
                   <label hlmLabel>{{ 'products.variants.costPrice' | transloco }}</label>
                   <div class="relative">
                     <span class="pointer-events-none absolute start-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">EGP</span>
@@ -220,11 +250,11 @@
                     <p class="mt-1 text-xs text-muted-foreground">{{ 'products.variants.validation.margin' | transloco: { value: m } }}</p>
                   }
                 </div>
-                <div class="space-y-1.5">
+                <div class="space-y-1.5 lg:col-span-3">
                   <label hlmLabel>{{ 'products.variants.stockQuantity' | transloco }} *</label>
                   <input hlmInput formControlName="stockQuantity" type="number" class="w-full" />
                 </div>
-                <div class="space-y-1.5">
+                <div class="space-y-1.5 lg:col-span-3">
                   <label hlmLabel>{{ 'products.variants.reorderThreshold' | transloco }}</label>
                   <input hlmInput formControlName="reorderThreshold" type="number" class="w-full" />
                 </div>
