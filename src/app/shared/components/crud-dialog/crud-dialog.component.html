@@ -1,9 +1,65 @@
-<div
-  class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+@if (open()) {
   <div
-    class="dialog-surface p-6 w-full max-w-2xl">
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
+    (click)="onBackdrop($event)"
+  >
+    <div
+      #panel
+      role="dialog"
+      aria-modal="true"
+      [attr.aria-labelledby]="testId() + '-title'"
+      [attr.data-testid]="testId()"
+      tabindex="-1"
+      cdkTrapFocus
+      [cdkTrapFocusAutoCapture]="true"
+      class="dialog-surface flex max-h-[90vh] w-full max-w-2xl flex-col outline-none"
+      (click)="$event.stopPropagation()"
+    >
+      <header class="flex items-center justify-between border-b bg-card p-6">
+        <h2 [id]="testId() + '-title'" class="text-lg font-medium">{{ title() }}</h2>
+        <button
+          type="button"
+          hlmBtn
+          variant="ghost"
+          size="icon"
+          class="size-8"
+          (click)="requestClose()"
+          [attr.aria-label]="'common.close' | transloco"
+          [attr.title]="'common.close' | transloco"
+        >
+          <ng-icon name="lucideX" class="size-4" aria-hidden="true" />
+        </button>
+      </header>
 
-    <ng-content />
+      <form class="min-h-0 flex-1 overflow-y-auto p-6" (ngSubmit)="submitted.emit()" [attr.aria-label]="title()">
+        <div class="space-y-5">
+          <ng-content></ng-content>
 
+          @if (error(); as message) {
+            <p role="alert" class="text-sm font-medium text-destructive">{{ message }}</p>
+          }
+        </div>
+
+        <!-- Destructive actions lead (design.md), then Cancel, then the named
+             primary action at the end. -->
+        <footer class="mt-6 flex flex-wrap items-center gap-3 border-t pt-4">
+          <ng-content select="[dialog-footer-start]"></ng-content>
+          <button type="button" hlmBtn variant="outline" class="ms-auto min-w-28" (click)="requestClose()">
+            {{ 'common.cancel' | transloco }}
+          </button>
+          <button
+            type="submit"
+            hlmBtn
+            class="min-w-32"
+            [disabled]="submitting() || submitDisabled()"
+          >
+            @if (submitting()) {
+              <ng-icon name="lucideLoader2" class="me-2 size-4 animate-spin" aria-hidden="true" />
+            }
+            {{ submitting() ? ('common.saving' | transloco) : primaryLabel() }}
+          </button>
+        </footer>
+      </form>
+    </div>
   </div>
-</div>
+}

@@ -33,6 +33,9 @@ import { DataTableComponent } from '../../../shared/components/data-table/data-t
 import { ClickOutsideDirective } from '../../../shared/directives/click-outside.directive';
 import { LifecycleTabsComponent } from '../../../shared/components/lifecycle-tabs/lifecycle-tabs.component';
 import { TrashBannerComponent } from '../../../shared/components/trash-banner/trash-banner.component';
+import { CrudDialogComponent } from '../../../shared/components/crud-dialog/crud-dialog.component';
+import { TranslationFieldComponent } from '../../../shared/components/crud-dialog/translation-field.component';
+import { ImageUploadComponent } from '../../../shared/components/image-upload/image-upload.component';
 import { Router } from '@angular/router';
 import { PagerComponent } from '../../../shared/components/pager/pager.component';
 
@@ -44,6 +47,7 @@ import { PagerComponent } from '../../../shared/components/pager/pager.component
     PagerComponent,
     CommonModule, FormsModule, ReactiveFormsModule, HasPermissionDirective, DataTableComponent,
     LifecycleTabsComponent, TrashBannerComponent,
+    CrudDialogComponent, TranslationFieldComponent, ImageUploadComponent,
     HlmCardImports, HlmButtonImports, HlmBadgeImports, HlmInputImports,
     HlmLabelImports, HlmTextareaImports, NgIcon, TranslocoPipe,
   ],
@@ -293,8 +297,11 @@ export class OriginsListComponent extends BaseListComponent<OriginResponse, Orig
   }
 
   closeCreateDialog(): void {
+    // Close FIRST, and keep the form alive: the dialog is still in the DOM for
+    // this change-detection pass, and nulling the FormGroup under its
+    // `[formGroup]` binding throws NG01052 before the close can render.
+    // The next open() builds a fresh form anyway.
     this.showCreateDialog.set(false);
-    this.createForm.set(null);
     this.createImagePreview.set(null);
     this.createImageFile.set(null);
     this.createError.set(null);
@@ -348,11 +355,11 @@ export class OriginsListComponent extends BaseListComponent<OriginResponse, Orig
     return (this.createForm()?.get('translations') as FormArray) ?? new FormArray([]);
   }
 
-  asGroup(control: AbstractControl): FormGroup {
+  override asGroup(control: AbstractControl): FormGroup {
     return control as FormGroup;
   }
 
-  langOf(group: AbstractControl): string {
+  override langOf(group: AbstractControl): string {
     return (group.get('language')?.value as string) ?? '';
   }
 

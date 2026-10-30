@@ -1,6 +1,7 @@
 import { Component, computed, inject, input } from '@angular/core';
 import { LanguageService } from '../../../core/i18n/language.service';
 import { formatDateTime } from '../../utils/locale-format';
+import { TranslocoPipe } from '@jsverse/transloco';
 
 /**
  * §4 "Deleted" (Trash tab): relative time as plain text inside a `<time>`,
@@ -10,7 +11,7 @@ import { formatDateTime } from '../../utils/locale-format';
 @Component({
   selector: 'app-deleted-badge',
   standalone: true,
-  imports: [],
+  imports: [TranslocoPipe],
   templateUrl: './deleted-badge.component.html',
 })
 export class DeletedBadgeComponent {

@@ -57,8 +57,8 @@
   </div>
 
   @if (hasSelection() && canDelete()) {
-    <div class="flex flex-wrap items-center gap-2 rounded-lg border bg-muted/50 px-3 py-2" role="region">
-      <span class="text-sm font-medium tabular-nums">{{ selectionCount() }}</span>
+    <div class="flex flex-wrap items-center gap-2 rounded-lg border bg-muted/50 px-3 py-2" role="region" [attr.aria-label]="'common.bulkActions' | transloco">
+      <span class="text-sm font-medium tabular-nums">{{ 'common.selectedCount' | transloco: { count: selectionCount() } }}</span>
       <div class="ms-auto flex items-center gap-2">
         @if (!isTrash()) {
           <button hlmBtn variant="outline" size="sm" (click)="requestBulkTrash()">{{ 'common.moveToTrash' | transloco }}</button>
@@ -95,9 +95,11 @@
           [selectRowLabel]="'pairings.trash.selectRow' | transloco"
           [navigableColumn]="''"
           [initialSort]="{ column: currentSort, direction: currentDirection }"
-          [showEdit]="!isTrash() && canUpdate()"
+          [showEdit]="false"
           [showView]="false"
-          [showDelete]="!isTrash() && canDelete()"
+          [showDelete]="false"
+          [menuActionsFor]="isTrash() ? null : rowMenuFor"
+          (menuAction)="onRowMenuAction($event)"
           [showRestore]="isTrash() && canDelete()"
           [showPermanentDelete]="isTrash() && canDelete()"
           [deleteLabel]="'pairings.trash.moveToTrash'"
@@ -149,59 +151,38 @@
   }
 </div>
 
-<!-- Create / Edit Dialog -->
-@if (showDialog()) {
-  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-    <div class="dialog-surface w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-      <div class="flex items-center justify-between p-6 border-b sticky top-0 rounded-t-[var(--radius-card)] bg-card">
-        <h2 class="text-lg font-bold">
-          {{ (editing() ? 'pairings.editTitle' : 'pairings.addTitle') | transloco }}
-        </h2>
-        <button hlmBtn variant="ghost" size="icon" class="size-8" (click)="closeDialog()">
-          <ng-icon name="lucideX" class="size-4" />
-        </button>
-      </div>
+<!-- Create / Edit Dialog (shared chrome; the fields stay this page's) -->
+<app-crud-dialog
+  [open]="showDialog()"
+  [title]="(editing() ? 'pairings.editTitle' : 'pairings.addTitle') | transloco"
+  [primaryLabel]="(editing() ? ('common.save' | transloco) : ('pairings.add' | transloco))"
+  [submitting]="submitting()"
+  [submitDisabled]="form.invalid"
+  [dirty]="form.dirty"
+  [error]="dialogError()"
+  testId="pairing-dialog"
+  (submitted)="onSubmit()"
+  (closed)="closeDialog()"
+>
+  <div [formGroup]="form" class="space-y-5">
+    <div formArrayName="translations" class="grid gap-6 sm:grid-cols-2">
+      @for (group of translationsArray.controls; track $index; let i = $index) {
+        <app-translation-field
+          [group]="asGroup(group)"
+          [language]="languageOf(group)"
+          nameLabelKey="pairings.name"
+          nameRequiredKey="pairings.nameRequired"
+          descriptionLabelKey="pairings.description"
+        />
+      }
+    </div>
 
-      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="p-6 space-y-5">
-        <div formArrayName="translations" class="grid gap-6 sm:grid-cols-2">
-          @for (group of translationsArray.controls; track $index; let i = $index) {
-            <div [formGroupName]="i" class="space-y-4">
-              <hlm-badge variant="outline">
-                {{ translationHelper.getLangLabel(group.get('language')?.value) }}
-              </hlm-badge>
-              <div class="space-y-1.5">
-                <label hlmLabel>{{ 'pairings.name' | transloco }} *</label>
-                <input hlmInput formControlName="name" type="text" [dir]="translationHelper.getLangDir(group.get('language')?.value)" class="w-full" />
-                @if (group.get('name')?.invalid && group.get('name')?.touched) {
-                  <p class="text-xs text-destructive">{{ 'pairings.nameRequired' | transloco }}</p>
-                }
-              </div>
-              <div class="space-y-1.5">
-                <label hlmLabel>{{ 'pairings.description' | transloco }}</label>
-                <textarea hlmTextarea formControlName="description" rows="3" [dir]="translationHelper.getLangDir(group.get('language')?.value)" class="w-full resize-none"></textarea>
-              </div>
-            </div>
-          }
-        </div>
-
-        <div class="space-y-1.5">
-          <label hlmLabel>{{ 'pairings.image' | transloco }}</label>
-          <app-image-upload [(image)]="selectedImage" [(preview)]="imagePreview" />
-        </div>
-
-        <div class="flex gap-3 pt-2">
-          <button type="button" hlmBtn variant="outline" class="flex-1" (click)="closeDialog()">
-            {{ 'common.cancel' | transloco }}
-          </button>
-          <button type="submit" hlmBtn class="flex-1" [disabled]="form.invalid || submitting()">
-            @if (submitting()) { <span class="animate-spin mr-2">⟳</span> }
-            {{ submitting() ? ('common.saving' | transloco) : ('common.save' | transloco) }}
-          </button>
-        </div>
-      </form>
+    <div class="space-y-1.5">
+      <label hlmLabel>{{ 'pairings.image' | transloco }}</label>
+      <app-image-upload [(image)]="selectedImage" [(preview)]="imagePreview" />
     </div>
   </div>
-}
+</app-crud-dialog>
 
 
 @if (permanentDeleteTarget()) {
@@ -209,8 +190,7 @@
     <div role="dialog" aria-modal="true" aria-labelledby="pairing-permanent-title" tabindex="-1" cdkTrapFocus [cdkTrapFocusAutoCapture]="true" class="dialog-surface w-full max-w-sm p-6 outline-none" (click)="$event.stopPropagation()">
       <h2 id="pairing-permanent-title" class="text-lg font-bold mb-2">{{ 'pairings.trash.deletePermanently' | transloco }}</h2>
       <p class="text-muted-foreground mb-6">
-        {{ 'pairings.trash.permanentConfirm' | transloco }}
-        <strong class="text-foreground">{{ permanentDeleteTarget()!.slug }}</strong>? {{ 'common.actionCannotBeUndone' | transloco }}
+        {{ permanentDeleteMessage(permanentDeleteTarget()!) }}
       </p>
       <div class="flex gap-3">
         <button hlmBtn variant="outline" class="flex-1" (click)="closePermanentDelete()">{{ 'common.cancel' | transloco }}</button>
@@ -229,7 +209,9 @@
       <h2 class="text-lg font-bold mb-2">
         {{ bulkConfirm() === 'trash' ? ('pairings.trash.bulkMoveToTrash' | transloco) : ('pairings.trash.deletePermanently' | transloco) }}
       </h2>
-      <p class="text-muted-foreground mb-6">{{ selectionCount() }}</p>
+      <p class="text-muted-foreground mb-6">
+        {{ bulkConfirm() === 'trash' ? ('pairings.trash.bulkMoveToTrash' | transloco) : bulkPermanentDeleteMessage() }}
+      </p>
       <div class="flex gap-3">
         <button hlmBtn variant="outline" class="flex-1" (click)="cancelBulkConfirm()">{{ 'common.cancel' | transloco }}</button>
         <button hlmBtn [variant]="bulkConfirm() === 'trash' ? 'default' : 'destructive'" class="flex-1" (click)="submitBulkConfirm()">

@@ -1,0 +1,67 @@
+<div [formGroup]="group()" class="space-y-4">
+  <hlm-badge variant="outline">
+    {{ isArabic() ? ('common.arabic' | transloco) : ('common.english' | transloco) }}
+  </hlm-badge>
+
+  <div class="space-y-1.5">
+    <div class="flex items-baseline justify-between gap-2">
+      <label hlmLabel [attr.for]="'name-' + language()">{{ nameLabelKey() | transloco }} *</label>
+      <span class="text-[11px] tabular-nums text-muted-foreground" aria-hidden="true">
+        {{ 'common.characterCount' | transloco: { count: nameLength(), max: nameMax() } }}
+      </span>
+    </div>
+    <input
+      hlmInput
+      formControlName="name"
+      type="text"
+      [id]="'name-' + language()"
+      [dir]="dir()"
+      [attr.maxlength]="nameMax()"
+      [attr.placeholder]="placeholderAr() || placeholderEn() ? (isArabic() ? placeholderAr() : placeholderEn()) : null"
+      class="w-full"
+      [class.border-destructive]="nameInvalid()"
+      [attr.aria-invalid]="nameInvalid()"
+      [attr.aria-describedby]="nameInvalid() ? 'name-error-' + language() : null"
+    />
+    @if (nameInvalid()) {
+      <p [id]="'name-error-' + language()" class="text-xs text-destructive">
+        {{ nameRequiredKey() | transloco }}
+      </p>
+    }
+  </div>
+
+  @for (field of extraFields(); track field.controlName) {
+    <div class="space-y-1.5">
+      <label hlmLabel [attr.for]="field.controlName + '-' + language()">{{ field.labelKey | transloco }}</label>
+      <input
+        hlmInput
+        [formControlName]="field.controlName"
+        type="text"
+        [id]="field.controlName + '-' + language()"
+        [dir]="dir()"
+        [attr.maxlength]="field.maxLength ?? null"
+        class="w-full"
+      />
+    </div>
+  }
+
+  @if (showDescription()) {
+    <div class="space-y-1.5">
+      <div class="flex items-baseline justify-between gap-2">
+        <label hlmLabel [attr.for]="'description-' + language()">{{ descriptionLabelKey() | transloco }}</label>
+        <span class="text-[11px] tabular-nums text-muted-foreground" aria-hidden="true">
+          {{ 'common.characterCount' | transloco: { count: descriptionLength(), max: descriptionMax() } }}
+        </span>
+      </div>
+      <textarea
+        hlmTextarea
+        formControlName="description"
+        [id]="'description-' + language()"
+        [rows]="rows()"
+        [dir]="dir()"
+        [attr.maxlength]="descriptionMax()"
+        class="w-full resize-none"
+      ></textarea>
+    </div>
+  }
+</div>

@@ -43,13 +43,15 @@ export default defineConfig({
   use: {
     baseURL: BASE_URL,
     channel: 'chromium',
-    // The dev backend only allows http://localhost:4200 as a CORS origin. A
-    // second worktree cannot use that port, so a local run on another port can
-    // opt out of the browser's CORS check instead of changing the server:
-    //   PW_DISABLE_WEB_SECURITY=1 E2E_BASE_URL=http://localhost:4300
+    // A second worktree cannot use the port the backend CORS allows
+    // (http://localhost:3000) when another worktree's dev server already owns
+    // it on ::1. This run binds the free IPv4 loopback and asks Chromium to
+    // resolve `localhost` to it, so the request ORIGIN stays the allowed one
+    // and CORS is never disabled:
+    //   PW_LOCALHOST_IPV4=1 E2E_BASE_URL=http://localhost:3000
     // Never set in CI — the default launch is untouched.
-    launchOptions: process.env['PW_DISABLE_WEB_SECURITY']
-      ? { args: ['--disable-web-security'] }
+    launchOptions: process.env['PW_LOCALHOST_IPV4']
+      ? { args: ['--host-resolver-rules=MAP localhost 127.0.0.1'] }
       : undefined,
     // ⚠ Traces capture `fill()` values in plaintext, i.e. real credentials.
     //   /test-results/ is gitignored. Never share trace.zip or screenshots

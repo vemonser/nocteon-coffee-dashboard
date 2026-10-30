@@ -122,7 +122,7 @@
 
   <!-- Trash banner -->
   @if (isTrash()) {
-    <app-trash-banner class="view-fade" [message]="'common.trash' | transloco" />
+    <app-trash-banner class="view-fade" [message]="'farms.trashBanner' | transloco" />
   }
 
   <!-- Error state -->
@@ -152,9 +152,11 @@
           [initialSort]="{ column: currentSort, direction: currentDirection }"
           [navigableColumn]="isTrash() ? '' : 'slug'"
           [navigableHref]="rowHref"
-          [showEdit]="!isTrash() && canUpdate()"
+          [showEdit]="false"
           [showView]="false"
-          [showDelete]="!isTrash() && canDelete()"
+          [showDelete]="false"
+          [menuActionsFor]="isTrash() ? null : rowMenuFor"
+          (menuAction)="onRowMenuAction($event)"
           [showRestore]="isTrash() && canDelete()"
           [showPermanentDelete]="isTrash() && canDelete()"
           [restoreLabel]="'common.restore' | transloco"
@@ -207,134 +209,39 @@
 </div>
 
 <!-- Add Farm Dialog -->
-@if (showCreateDialog()) {
-  <div
-    class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
-    (document:keydown.escape)="closeCreateDialog()"
-  >
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="farm-dialog-title"
-      class="dialog-surface w-full max-w-2xl max-h-[90vh] overflow-y-auto"
-    >
-      <div class="flex items-center justify-between p-6 border-b sticky top-0 rounded-t-[var(--radius-card)] bg-card">
-        <h2 id="farm-dialog-title" class="text-lg font-medium">
-          {{ 'farms.addDialogTitle' | transloco }}
-        </h2>
-        <button
-          hlmBtn
-          variant="ghost"
-          size="icon"
-          (click)="closeCreateDialog()"
-          [attr.aria-label]="'common.close' | transloco"
-        >
-          <ng-icon name="lucideX" class="size-4" aria-hidden="true" />
-        </button>
-      </div>
-
-      <form [formGroup]="createForm()!" (ngSubmit)="submitCreate()" class="p-6 space-y-5">
-        <!-- Bilingual translations -->
-        <div class="grid gap-6 sm:grid-cols-2">
-          @for (group of createTranslationsArray.controls; track $index) {
-            <div [formGroup]="asGroup(group)" class="space-y-4">
-              <hlm-badge variant="outline">
-                {{ translationHelper.getLangLabel(langOf(group)) }}
-              </hlm-badge>
-              <div class="space-y-1.5">
-                <label hlmLabel>{{ 'common.name' | transloco }} *</label>
-                <input
-                  hlmInput
-                  formControlName="name"
-                  type="text"
-                  [dir]="langDir(group)"
-                  class="w-full"
-                />
-              </div>
-              <div class="space-y-1.5">
-                <label hlmLabel>{{ 'farms.country' | transloco }}</label>
-                <input
-                  hlmInput
-                  formControlName="country"
-                  type="text"
-                  [dir]="langDir(group)"
-                  class="w-full"
-                />
-              </div>
-              <div class="space-y-1.5">
-                <label hlmLabel>{{ 'common.description' | transloco }}</label>
-                <textarea
-                  hlmTextarea
-                  formControlName="description"
-                  rows="4"
-                  [dir]="langDir(group)"
-                  class="w-full resize-none"
-                ></textarea>
-              </div>
-            </div>
-          }
-        </div>
-
-        <!-- Origin + Image side by side -->
-        <div class="grid gap-6 sm:grid-cols-2">
+<app-crud-dialog
+  [open]="showCreateDialog()"
+  [title]="'farms.add' | transloco"
+  [primaryLabel]="'farms.add' | transloco"
+  [submitting]="createSubmitting()"
+  [submitDisabled]="createForm()?.invalid ?? true"
+  [dirty]="createForm()?.dirty ?? false"
+  [error]="createError()"
+  testId="farm-dialog"
+  (submitted)="submitCreate()"
+  (closed)="closeCreateDialog()"
+>
+  <div [formGroup]="createForm()!" class="space-y-5">
+    <div class="grid gap-6 sm:grid-cols-2">
+      @for (group of createTranslationsArray.controls; track $index) {
+        <app-translation-field
+          [group]="asGroup(group)"
+          [language]="langOf(group)"
+          nameLabelKey="common.name"
+          nameRequiredKey="common.nameRequired"
+          descriptionLabelKey="common.description"
+          [rows]="4"
+          [extraFields]="[{ controlName: 'country', labelKey: 'farms.country', maxLength: 100 }]"
+        />
+      }
+    </div>
 
           <div class="space-y-1.5">
             <label hlmLabel>{{ 'farms.image' | transloco }}</label>
-            <input hlmInput type="file" accept="image/*" (change)="onCreateImageSelected($event)" />
-            @if (createImagePreview()) {
-              <div class="relative mt-2 w-20 h-20">
-                <img [src]="createImagePreview()" class="w-full h-full object-cover rounded-md" />
-                <button
-                  type="button"
-                  class="absolute -top-2 -right-2 size-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center"
-                  (click)="createImagePreview.set(null); createImageFile.set(null)"
-                >
-                  <ng-icon name="lucideX" class="size-3" />
-                </button>
-              </div>
-            }
+            <app-image-upload [(image)]="createImageFile" [(preview)]="createImagePreview" />
           </div>
-          <div class="space-y-1.5 w-full">
-            <label hlmLabel>{{ 'farms.originSlug' | transloco }} *</label>
-            <hlm-select formControlName="originSlug" class="w-full">
-              <hlm-select-trigger class="h-[var(--filter-control-height)] w-full">
-                <hlm-select-value [placeholder]="'farms.originSlug' | transloco" />
-              </hlm-select-trigger>
-              <hlm-select-content *hlmSelectPortal>
-                <hlm-select-group>
-                  @for (origin of origins(); track origin.slug) {
-                    <hlm-select-item [value]="origin.slug">{{ origin.name }}</hlm-select-item>
-                  }
-                </hlm-select-group>
-              </hlm-select-content>
-            </hlm-select>
-          </div>
-
-        </div>
-
-        <!-- Error -->
-        @if (createError()) {
-          <p role="alert" class="text-sm font-medium text-destructive">
-            {{ createError() }}
-          </p>
-        }
-
-        <!-- Buttons -->
-        <div class="flex gap-3 pt-2 justify-end">
-          <button type="button" hlmBtn variant="outline" (click)="closeCreateDialog()">
-            {{ 'common.cancel' | transloco }}
-          </button>
-          <button type="submit" hlmBtn [disabled]="createForm()?.invalid || createSubmitting()">
-            @if (createSubmitting()) {
-              <ng-icon name="lucideLoader2" class="me-2 size-4 animate-spin" />
-            }
-            {{ 'farms.add' | transloco }}
-          </button>
-        </div>
-      </form>
-    </div>
   </div>
-}
+</app-crud-dialog>
 
 <!-- Delete Confirm Dialog -->
 

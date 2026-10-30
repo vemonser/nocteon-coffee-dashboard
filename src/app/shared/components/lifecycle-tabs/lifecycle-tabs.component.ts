@@ -136,6 +136,15 @@ export class LifecycleTabsComponent {
     this.viewChange.emit(view);
   }
 
+  /**
+   * The badge number. The exact count is shown up to 99; above that the badge
+   * caps at "99+" so it stays one short token — a 15-item trash used to print
+   * "9+" because the cap was 9, which under-reported every count above nine.
+   */
+  displayCount(value: number | null): string {
+    return formatCountBadge(value);
+  }
+
   /** Move the pill under the given tab. `animate` toggles the CSS transition. */
   private positionPillTo(view: 'active' | 'trash', animate: boolean): void {
     const pill = this.pill()?.nativeElement;
@@ -161,4 +170,10 @@ export class LifecycleTabsComponent {
       requestAnimationFrame(() => (pill.style.transition = ''));
     }
   }
+}
+
+/** Pure form so the rule can be asserted without a browser. */
+export function formatCountBadge(value: number | null): string {
+  if (value === null || value === undefined) return '\u2014';
+  return value > 99 ? '99+' : String(value);
 }

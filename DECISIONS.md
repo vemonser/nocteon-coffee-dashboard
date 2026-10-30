@@ -1992,3 +1992,26 @@ per-module `*.trash.permanentConfirm` keys untouched.
 
 Not built (no trash view exists to put it in): product tags and reviews have a
 working purge endpoint but no Active/Trash switch on their pages.
+
+# Pages pass 1 (pages-fixes branch)
+
+## Needs backend
+
+- **Trash deletion date.** The deleted-list endpoints for pairings, origins,
+  farms, roast levels, processing methods, coffee varieties, tasting notes and
+  brewing methods return the row WITHOUT `deletedAt` (the field exists in
+  `SoftDeletableEntity`, but the response DTOs omit it; only
+  `DashboardCategoryResponse` carries it). The "Deleted" column now formats
+  `deletedAt` through `formatDateTime` and shows "Not recorded" with an
+  explanatory tooltip until the DTOs add:
+  `deletedAt: Instant` to each `*Response` used by `GET
+  /api/dashboard/{entity}/deleted`. No endpoint was invented; the safe fallback
+  is honest about the gap.
+- **CORS for a second worktree.** The backend allows only
+  `http://localhost:4200` and `http://localhost:3000`. A second dev server on a
+  free port cannot call the API from the browser. For evidence runs this branch
+  binds IPv4 `127.0.0.1:3000` and maps `localhost` to it in Chromium
+  (`PW_LOCALHOST_IPV4=1`), so the request ORIGIN is the allowed
+  `http://localhost:3000` and CORS stays enabled. Recommended backend change:
+  allow the dev server ports from `CORS_ALLOWED_ORIGINS` (it is already an env
+  var — the running container just does not include extra ports).

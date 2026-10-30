@@ -145,6 +145,7 @@
     "categoryHeader": "فئة",
     "changeAvatar": "تغيير الصورة",
     "changeImage": "تغيير الصورة",
+    "characterCount": "{{count}}/{{max}}",
     "changePassword": "تغيير كلمة المرور",
     "cities": "المدن",
     "close": "إغلاق",
@@ -168,6 +169,8 @@
     "deletePermanently": "حذف نهائي",
     "deleted": "محذوف",
     "deletedAt": "تاريخ الحذف",
+    "deletePermanentlyConfirm": "حذف «{{name}}» نهائيًا؟ لا يمكن التراجع عن هذا الإجراء.",
+    "bulkDeletePermanentlyConfirm": "حذف {{count}} عناصر محددة نهائيًا؟ لا يمكن التراجع عن هذا الإجراء.",
     "deleting": "جارٍ الحذف...",
     "description": "الوصف",
     "discount": "الخصم",
@@ -201,6 +204,8 @@
     "name": "الاسم",
     "nameArabic": "الاسم بالعربية",
     "nameEnglish": "الاسم بالإنجليزية",
+    "notRecorded": "غير مسجل",
+    "deletionTimeUnavailable": "لا يوفر الـ API وقت الحذف لهذا العنصر.",
     "nameRequired": "الاسم مطلوب",
     "newPassword": "كلمة المرور الجديدة",
     "nextPage": "الصفحة التالية",
@@ -812,10 +817,12 @@
     "noData": "لا توجد أصول",
     "adjustSearch": "حاول تعديل البحث",
     "isoCode": "الرمز الدولي",
+    "isoCodeExample": "مثال: ET",
     "codeRequired": "الرمز مطلوب",
     "image": "الصورة",
     "deleteTitle": "حذف المنشأ",
-    "deleteConfirm": "هل أنت متأكد أنك تريد حذف {{name}}؟"
+    "deleteConfirm": "هل أنت متأكد أنك تريد حذف {{name}}؟",
+    "trashBanner": "أصول القهوة هذه مخفية عن المتجر. استعدها أو احذفها نهائيًا."
   },
   "farms": {
     "title": "المزارع",
@@ -838,6 +845,7 @@
     "noData": "لا توجد مزارع",
     "adjustSearch": "جرّب تعديل البحث",
     "deleteConfirm": "حذف هذه المزرعة؟",
+    "trashBanner": "المزارع هذه مخفية عن المتجر. استعدها أو احذفها نهائيًا.",
     "detail": {
       "back": "رجوع",
       "backToFarms": "العودة إلى المزارع",
@@ -3026,7 +3034,10 @@
     "body": "لديك تغييرات لم يتم حفظها. إذا غادرت هذه الصفحة، فستفقد.",
     "discard": "تجاهل التغييرات",
     "stay": "البقاء في الصفحة",
-    "saveAndLeave": "حفظ ومغادرة"
+    "saveAndLeave": "حفظ ومغادرة",
+    "confirmTitle": "تجاهل التغييرات؟",
+    "confirmBody": "ستفقد تغييراتك على هذا العنصر.",
+    "keepEditing": "متابعة التعديل"
   },
   "richText": {
     "insertVideo": "إدراج فيديو",
