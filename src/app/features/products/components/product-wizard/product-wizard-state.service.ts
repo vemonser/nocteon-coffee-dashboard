@@ -4,6 +4,7 @@ import { signal } from '@angular/core';
 import { ProductDetail, ProductVariant, RelatedProductSummary, StagedMedia } from '../../models/product.models';
 import { ProductOption, ProductOptionValueSummary } from '../../../product-options/models/product-option.model';
 import { ExistingMedia } from '../../models/product.models';
+import { STORY_MAX_CHARACTERS, maxHtmlTextLength } from '../../../../shared/utils/html-text';
 /**
  * Holds the wizard's shared state across all 5 steps.
  *
@@ -391,6 +392,7 @@ export class ProductWizardStateService {
     });
 
     this.form.setControl('translations', buildTranslations(detail.translations));
+    this.applyStoryLimit();
 
     this.variantsArray.clear();
     this.pendingEditPicks = [];
@@ -469,6 +471,16 @@ export class ProductWizardStateService {
   captureInitialSnapshot(): void {
     this.initialFormValue = this.normalize(this.form.value);
     this.initialMediaSnapshot = JSON.stringify(this.existingMedia());
+  }
+
+  /** W5: the story counter's hard limit, applied to the built translations. */
+  applyStoryLimit(): void {
+    this.translationsArray.controls.forEach((control) => {
+      const story = control.get('story');
+      if (!story) return;
+      story.addValidators(maxHtmlTextLength(STORY_MAX_CHARACTERS));
+      story.updateValueAndValidity({ emitEvent: false });
+    });
   }
 
   hasFormChanged(): boolean {

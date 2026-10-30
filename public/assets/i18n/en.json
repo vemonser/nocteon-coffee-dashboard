@@ -419,7 +419,24 @@
         "COFFEE": "Coffee",
         "EQUIPMENT": "Equipment"
       },
-      "storyHint": "Rich text for this language — bold, headings, images and video.",
+      "storyHint": "Rich text for this language — bold, headings, images and links.",
+      "storyCounter": "{{count}} of {{max}} characters",
+      "storyTooLong": "The story is longer than {{max}} characters.",
+      "storyToolbar": {
+        "bold": "Bold",
+        "italic": "Italic",
+        "underline": "Underline",
+        "heading": "Heading",
+        "normal": "Normal",
+        "heading2": "Heading 2",
+        "heading3": "Heading 3",
+        "bulletList": "Bullet list",
+        "numberedList": "Numbered list",
+        "quote": "Quote",
+        "link": "Link",
+        "image": "Image",
+        "clear": "Clear formatting"
+      },
       "metaTitle": "SEO title",
       "metaTitlePlaceholder": "Defaults to the product name",
       "metaTitleHint": "The title search results and link previews show. Keep it under 60 characters.",
@@ -619,7 +636,8 @@
       "languages": {
         "en": "English",
         "ar": "العربي"
-      }
+      },
+      "chooseTypeHint": "Choose a product type to unlock Tasting notes and Pairings"
     },
     "table": {
       "variantCount_one": "{{count}} variant",

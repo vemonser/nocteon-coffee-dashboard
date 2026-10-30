@@ -1,0 +1,29 @@
+/*
+ * The story editor (W5).
+ *
+ * The quill-editor host is a block at full width, so its right edge is the same
+ * edge as the inputs above it (the 34px gap came from the host shrinking to
+ * its intrinsic width). The editor body keeps a 240px minimum so it reads as a
+ * writing surface, not a one-line field.
+ */
+:host ::ng-deep quill-editor {
+  display: block;
+  width: 100%;
+}
+
+:host ::ng-deep quill-editor .ql-container {
+  min-height: 240px;
+}
+
+:host ::ng-deep quill-editor .ql-editor {
+  min-height: 240px;
+}
+
+/* Undo/redo are real buttons appended to the Quill toolbar; keep them the same
+   size as the icon buttons rather than a text-sized control. */
+:host ::ng-deep quill-editor .ql-toolbar .ql-toolbar-action {
+  width: auto;
+  min-width: 28px;
+  padding: 0 6px;
+  font-size: 14px;
+}

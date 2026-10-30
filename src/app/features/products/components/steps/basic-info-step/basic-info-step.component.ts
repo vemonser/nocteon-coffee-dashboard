@@ -30,12 +30,11 @@ import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucidePencil, lucideCheck, lucideAlertCircle } from '@ng-icons/lucide';
 import { LanguageService } from '../../../../../core/i18n/language.service';
 import { QuillEditorComponent } from 'ngx-quill';
-import { QUILL_CONFIG_TOKEN } from 'ngx-quill/config';
 import Quill from 'quill';
 import '../../../../../shared/quill/divider.blot';
 import { finalize } from 'rxjs';
-import { RICH_TEXT_QUILL_CONFIG } from '../../../../../shared/quill/rich-text.config';
-import { RichTextVideoDialogComponent } from '../../../../../shared/ui/rich-text-video-dialog/rich-text-video-dialog.component';
+import { PRODUCT_STORY_QUILL_MODULES } from '../../../../../shared/quill/rich-text.config';
+import { htmlTextLength } from '../../../../../shared/utils/html-text';
 import { ProductService } from '../../../services/product.service';
 import { ProductTagService } from '../../../../product-tags/services/product-tag.service';
 import { ProductTag } from '../../../../product-tags/models/product-tag.model';
@@ -56,22 +55,21 @@ import { RouterLink } from '@angular/router';
     TranslocoPipe,
     NgIcon,
     QuillEditorComponent,
-    RichTextVideoDialogComponent,
     RouterLink,
   ],
   providers: [
-    { provide: QUILL_CONFIG_TOKEN, useValue: RICH_TEXT_QUILL_CONFIG },
     provideIcons({ lucidePencil, lucideCheck, lucideAlertCircle }),
   ],
   templateUrl: './basic-info-step.component.html',
+  styleUrl: './basic-info-step.component.css',
 })
 export class BasicInfoStepComponent {
   /** Store the editor's real HTML (semantic HTML would turn a video into a link). */
   readonly htmlValueGetter = (editor: Quill): string => editor.root.innerHTML;
   readonly uploadingStory = signal(false);
-  readonly storyVideoOpen = signal(false);
-  private storyVideoEditor: Quill | null = null;
-  private storyVideoRange: { index: number; length: number } | null = null;
+  /** The story toolbar (W5): bound through the input, not the root config token. */
+  readonly storyModules = PRODUCT_STORY_QUILL_MODULES;
+  private storyEditor: Quill | null = null;
 
   protected state = inject(ProductWizardStateService);
   protected translationHelper = inject(TranslationFormHelper);
@@ -152,6 +150,9 @@ export class BasicInfoStepComponent {
         button.title = label;
         button.setAttribute('aria-label', label);
       }
+      // The format buttons belong to the editor, not to `toolbarActions`, so a
+      // language switch re-names them too.
+      if (this.storyEditor) this.labelToolbar(this.storyEditor);
     });
 
     // A failed preload must not look like an empty catalog: toast on error.
@@ -218,24 +219,98 @@ export class BasicInfoStepComponent {
     return this.state.form.get('productType')?.value === 'COFFEE';
   }
 
-  onStoryEditorCreated(editor: Quill): void {
-    const toolbar = editor.getModule('toolbar') as { addHandler: (name: string, fn: () => void) => void };
-    toolbar.addHandler('image', () => this.pickStoryImage(editor));
-    this.addToolbarAction(editor, '↶', 'journal.undo', () => editor.history.undo());
-    this.addToolbarAction(editor, '↷', 'journal.redo', () => editor.history.redo());
-    this.addToolbarAction(editor, '―', 'journal.horizontalRule', () => {
-      const range = editor.getSelection(true) ?? { index: editor.getLength(), length: 0 };
-      editor.insertEmbed(range.index, 'divider', true, 'user');
-      editor.setSelection(range.index + 1, 0);
-    });
-    toolbar.addHandler('video', () => {
-      this.storyVideoEditor = editor;
-      this.storyVideoRange = editor.getSelection(true) ?? { index: editor.getLength(), length: 0 };
-      this.storyVideoOpen.set(true);
-    });
+  formatStoryCharacters(value: unknown): number {
+    return htmlTextLength(typeof value === 'string' ? value : '');
   }
 
-  private addToolbarAction(editor: Quill, label: string, titleKey: string, action: () => void): void {
+  onStoryEditorCreated(editor: Quill): void {
+    this.storyEditor = editor;
+    const toolbar = editor.getModule('toolbar') as { addHandler: (name: string, fn: () => void) => void };
+    toolbar.addHandler('image', () => this.pickStoryImage(editor));
+    // Undo/redo are not Quill toolbar formats: real buttons, prepended so the
+    // order is undo, redo, then the formats. `prepend` inserts at the start,
+    // so the right-most action is added first.
+    this.addToolbarAction(editor, '↷', 'journal.redo', () => editor.history.redo(), true);
+    this.addToolbarAction(editor, '↶', 'journal.undo', () => editor.history.undo(), true);
+    this.labelToolbar(editor);
+  }
+
+  /**
+   * Every toolbar control needs a name — Quill ships them as icon-only buttons
+   * with an English `aria-label` at best ("bold"), and the heading select has
+   * no label at all. Titles double as the hover tooltip.
+   */
+  private labelToolbar(editor: Quill): void {
+    const container = (editor.getModule('toolbar') as { container: HTMLElement }).container;
+    const buttons: [string, string][] = [
+      ['.ql-bold', 'products.form.storyToolbar.bold'],
+      ['.ql-italic', 'products.form.storyToolbar.italic'],
+      ['.ql-underline', 'products.form.storyToolbar.underline'],
+      ['.ql-list[value="bullet"]', 'products.form.storyToolbar.bulletList'],
+      ['.ql-list[value="ordered"]', 'products.form.storyToolbar.numberedList'],
+      ['.ql-blockquote', 'products.form.storyToolbar.quote'],
+      ['.ql-link', 'products.form.storyToolbar.link'],
+      ['.ql-image', 'products.form.storyToolbar.image'],
+      ['.ql-clean', 'products.form.storyToolbar.clear'],
+    ];
+    for (const [selector, key] of buttons) {
+      container.querySelectorAll<HTMLElement>(selector).forEach((element) => {
+        const label = this.transloco.translate(key);
+        element.setAttribute('aria-label', label);
+        element.setAttribute('title', label);
+        if (element.tagName === 'BUTTON') element.setAttribute('type', 'button');
+      });
+    }
+
+    const header = container.querySelector<HTMLSelectElement>('select.ql-header');
+    if (header) {
+      const label = this.transloco.translate('products.form.storyToolbar.heading');
+      header.setAttribute('aria-label', label);
+      header.setAttribute('title', label);
+      header.querySelectorAll<HTMLOptionElement>('option').forEach((option) => {
+        option.textContent = this.transloco.translate(this.headerKey(option.value));
+      });
+    }
+
+    /**
+     * Quill's snow theme hides that select and renders its own picker whose
+     * items are built from the (then empty) option text, so the heading menu
+     * opened with three blank rows. Label the picker and fill its items.
+     */
+    const picker = container.querySelector<HTMLElement>('.ql-picker.ql-header');
+    if (picker) {
+      const pickerLabel = picker.querySelector<HTMLElement>('.ql-picker-label');
+      const headingLabel = this.transloco.translate('products.form.storyToolbar.heading');
+      if (pickerLabel) {
+        pickerLabel.setAttribute('aria-label', headingLabel);
+        pickerLabel.setAttribute('title', headingLabel);
+        pickerLabel.setAttribute('role', 'button');
+      }
+      picker.querySelectorAll<HTMLElement>('.ql-picker-item').forEach((item) => {
+        const text = this.transloco.translate(this.headerKey(item.getAttribute('data-value')));
+        item.textContent = text;
+        item.setAttribute('aria-label', text);
+        item.setAttribute('title', text);
+      });
+    }
+  }
+
+  /** The i18n key for a header level: '' (normal), '2' or '3'. */
+  private headerKey(level: string | null): string {
+    return level === '2'
+      ? 'products.form.storyToolbar.heading2'
+      : level === '3'
+        ? 'products.form.storyToolbar.heading3'
+        : 'products.form.storyToolbar.normal';
+  }
+
+  private addToolbarAction(
+    editor: Quill,
+    label: string,
+    titleKey: string,
+    action: () => void,
+    prepend = false,
+  ): void {
     const container = (editor.getModule('toolbar') as { container: HTMLElement }).container;
     const button = document.createElement('button');
     button.type = 'button';
@@ -247,23 +322,9 @@ export class BasicInfoStepComponent {
       event.preventDefault();
       action();
     });
-    container.appendChild(button);
+    if (prepend) container.prepend(button);
+    else container.appendChild(button);
     this.toolbarActions.push({ button, key: titleKey });
-  }
-
-  closeStoryVideo(): void {
-    this.storyVideoOpen.set(false);
-    this.storyVideoEditor = null;
-    this.storyVideoRange = null;
-  }
-
-  onStoryVideoInserted(url: string): void {
-    const editor = this.storyVideoEditor;
-    if (!editor) return;
-    const range = this.storyVideoRange ?? editor.getSelection(true) ?? { index: editor.getLength(), length: 0 };
-    editor.insertEmbed(range.index, 'video', url, 'user');
-    editor.setSelection(range.index + 1, 0);
-    this.closeStoryVideo();
   }
 
   private pickStoryImage(editor: Quill): void {

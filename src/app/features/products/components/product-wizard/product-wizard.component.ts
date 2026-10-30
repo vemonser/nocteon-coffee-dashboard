@@ -361,6 +361,7 @@ export class ProductWizardComponent implements CanComponentDeactivate, HasUnsave
           'metaDescription',
         ]),
       );
+      this.state.applyStoryLimit();
       this.state.captureInitialSnapshot();
       this.applyStepFromUrl();
       void this.offerDraftRestore();

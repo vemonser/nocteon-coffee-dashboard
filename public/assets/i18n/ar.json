@@ -427,7 +427,24 @@
         "COFFEE": "قهوة",
         "EQUIPMENT": "معدات"
       },
-      "storyHint": "نص منسّق لهذه اللغة — عريض وعناوين وصور وفيديو.",
+      "storyHint": "نص منسّق لهذه اللغة — عريض وعناوين وصور وروابط.",
+      "storyCounter": "{{count}} من {{max}} حرفًا",
+      "storyTooLong": "النص أطول من {{max}} حرفًا.",
+      "storyToolbar": {
+        "bold": "عريض",
+        "italic": "مائل",
+        "underline": "تحته خط",
+        "heading": "عنوان",
+        "normal": "عادي",
+        "heading2": "عنوان 2",
+        "heading3": "عنوان 3",
+        "bulletList": "قائمة نقطية",
+        "numberedList": "قائمة مرقمة",
+        "quote": "اقتباس",
+        "link": "رابط",
+        "image": "صورة",
+        "clear": "إزالة التنسيق"
+      },
       "metaTitle": "عنوان SEO",
       "metaTitlePlaceholder": "يُستخدم اسم المنتج افتراضيًا",
       "metaTitleHint": "العنوان الظاهر في نتائج البحث ومعاينات الروابط. اجعله أقل من 60 حرفًا.",
@@ -627,7 +644,8 @@
       "languages": {
         "en": "الإنجليزية",
         "ar": "العربية"
-      }
+      },
+      "chooseTypeHint": "اختر نوع المنتج لفتح ملاحظات التذوق والتوائم"
     },
     "table": {
       "variantCount_zero": "بدون متغيرات",

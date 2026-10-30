@@ -90,6 +90,15 @@
           }
         </hlm-tabs-list>
 
+        <!-- A hint under the tab bar while the product type is still empty:
+             Tasting notes and Pairings are not part of the wizard until it is
+             chosen, so their absence needs an explanation. -->
+        @if (!state.form.get('productType')?.value) {
+          <p class="mt-3 px-1 text-sm text-muted-foreground" data-testid="wizard-type-hint">
+            {{ 'products.wizard.chooseTypeHint' | transloco }}
+          </p>
+        }
+
         <!-- Tab 1: Basic Info -->
         <div hlmTabsContent="basic" class="p-6">
           <app-basic-info-step />

@@ -312,14 +312,19 @@
 
                 <div class="space-y-1.5">
                   <label hlmLabel>{{ 'products.form.description' | transloco }}</label>
+                  <!--
+                    A description is prose: four rows at rest and as tall as its
+                    content after that (`field-sizing: content`). It used to
+                    collapse to a single line because the content-sizing rule
+                    had no minimum.
+                  -->
                   <textarea
                     hlmInput
                     formControlName="description"
                     rows="4"
-                    style="field-sizing: content"
                     [dir]="lang.dir"
                     [attr.lang]="lang.code"
-                    class="w-full"
+                    class="w-full min-h-24 [field-sizing:content]"
                   ></textarea>
                 </div>
 
@@ -327,16 +332,32 @@
                   <label hlmLabel>{{ 'products.form.story' | transloco }}</label>
                   <quill-editor
                     formControlName="story"
-                    class="block h-40"
+                    class="story-editor block w-full"
                     [dir]="lang.dir"
                     [attr.lang]="lang.code"
+                    [modules]="storyModules"
                     [valueGetter]="htmlValueGetter"
                     (onEditorCreated)="onStoryEditorCreated($event)"
                   />
                   @if (uploadingStory()) {
                     <p class="text-xs text-muted-foreground">{{ 'products.form.uploadingImage' | transloco }}</p>
                   }
-                  <p class="text-xs text-muted-foreground">{{ 'products.form.storyHint' | transloco }}</p>
+                  <div class="flex items-start justify-between gap-3">
+                    <p class="text-xs text-muted-foreground">{{ 'products.form.storyHint' | transloco }}</p>
+                    <p
+                      class="shrink-0 text-xs tabular-nums"
+                      [class.text-destructive]="group.get('story')?.hasError('htmlMaxLength')"
+                      [class.text-muted-foreground]="!group.get('story')?.hasError('htmlMaxLength')"
+                      [attr.aria-label]="'products.form.storyCounter' | transloco: { count: formatStoryCharacters(group.get('story')?.value), max: 2000 }"
+                    >
+                      {{ formatStoryCharacters(group.get('story')?.value) }}/2000
+                    </p>
+                  </div>
+                  @if (group.get('story')?.hasError('htmlMaxLength')) {
+                    <p class="text-xs text-destructive">
+                      {{ 'products.form.storyTooLong' | transloco: { max: 2000 } }}
+                    </p>
+                  }
                 </div>
 
                 <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -346,13 +367,18 @@
                       hlmInput
                       formControlName="metaTitle"
                       type="text"
-                      maxlength="200"
+                      maxlength="60"
                       [dir]="lang.dir"
                       [attr.lang]="lang.code"
                       class="w-full"
                       [placeholder]="'products.form.metaTitlePlaceholder' | transloco"
                     />
-                    <p class="text-xs text-muted-foreground">{{ 'products.form.metaTitleHint' | transloco }}</p>
+                    <div class="flex items-start justify-between gap-3">
+                      <p class="text-xs text-muted-foreground">{{ 'products.form.metaTitleHint' | transloco }}</p>
+                      <p class="shrink-0 text-xs text-muted-foreground tabular-nums">
+                        {{ (group.get('metaTitle')?.value?.length ?? 0) }}/60
+                      </p>
+                    </div>
                   </div>
 
                   <div class="space-y-1.5">
@@ -361,13 +387,18 @@
                       hlmInput
                       formControlName="metaDescription"
                       type="text"
-                      maxlength="500"
+                      maxlength="160"
                       [dir]="lang.dir"
                       [attr.lang]="lang.code"
                       class="w-full"
                       [placeholder]="'products.form.metaDescriptionPlaceholder' | transloco"
                     />
-                    <p class="text-xs text-muted-foreground">{{ 'products.form.metaDescriptionHint' | transloco }}</p>
+                    <div class="flex items-start justify-between gap-3">
+                      <p class="text-xs text-muted-foreground">{{ 'products.form.metaDescriptionHint' | transloco }}</p>
+                      <p class="shrink-0 text-xs text-muted-foreground tabular-nums">
+                        {{ (group.get('metaDescription')?.value?.length ?? 0) }}/160
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
