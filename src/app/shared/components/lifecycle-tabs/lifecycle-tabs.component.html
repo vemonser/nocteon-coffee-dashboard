@@ -32,7 +32,7 @@
       class="rounded-full bg-muted px-1.5 text-xs flex aspect-square items-center justify-center font-medium tabular-nums"
     >
       <span class="leading-1">
-        {{ (activeCount() ?? 0) > 9 ? '9+' : (activeCount() ?? '\u2014') }}
+        {{ displayCount(activeCount()) }}
       </span>
     </div>
     @if (activeCountLabel()) {
@@ -60,7 +60,7 @@
     <span
       class="rounded-full bg-muted px-1.5 text-xs font-medium tabular-nums"
     >
-      {{ (trashCount() ?? 0) > 9 ? '9+' : (trashCount() ?? '\u2014') }}
+      {{ displayCount(trashCount()) }}
     </span>
     @if (trashCountLabel()) {
       <span class="sr-only">{{ trashCountLabel() }}</span>

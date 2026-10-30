@@ -61,7 +61,7 @@
   <!-- Bulk actions -->
   @if (hasSelection() && canDelete()) {
     <div class="flex flex-wrap items-center gap-2 rounded-lg border bg-muted/50 px-3 py-2" role="region">
-      <span class="text-sm font-medium tabular-nums">{{ selectionCount() }}</span>
+      <span class="text-sm font-medium tabular-nums">{{ 'common.selectedCount' | transloco: { count: selectionCount() } }}</span>
       <div class="ms-auto flex items-center gap-2">
         @if (!isTrash()) {
           <button hlmBtn variant="outline" size="sm" (click)="requestBulkTrash()">{{ 'common.moveToTrash' | transloco }}</button>
@@ -107,9 +107,11 @@
           [selectRowLabel]="'tastingNotes.trash.selectRow' | transloco"
           [navigableColumn]="''"
           [initialSort]="{ column: currentSort, direction: currentDirection }"
-          [showEdit]="!isTrash() && canUpdate()"
+          [showEdit]="false"
           [showView]="false"
-          [showDelete]="!isTrash() && canDelete()"
+          [showDelete]="false"
+          [menuActionsFor]="isTrash() ? null : rowMenuFor"
+          (menuAction)="onRowMenuAction($event)"
           [showRestore]="isTrash() && canDelete()"
           [showPermanentDelete]="isTrash() && canDelete()"
           [deleteLabel]="'tastingNotes.trash.moveToTrash'"
@@ -165,65 +167,34 @@
 <!-- ══════════════════════════════════════════════════════════
      Create / Edit Dialog
      ══════════════════════════════════════════════════════════ -->
-@if (showDialog()) {
-  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-    <div class="dialog-surface w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-      <!-- Dialog Header -->
-      <div class="flex items-center justify-between p-6 border-b sticky top-0 rounded-t-[var(--radius-card)] bg-card">
-        <h2 class="text-lg font-bold">
-          {{ (editing() ? 'tastingNotes.editTitle' : 'tastingNotes.addTitle') | transloco }}
-        </h2>
-        <button hlmBtn variant="ghost" size="icon" class="size-8" (click)="closeDialog()">
-          <ng-icon name="lucideX" class="size-4" />
-        </button>
-      </div>
-
-      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="p-6 space-y-5">
-        <!-- Translations -->
-        <div formArrayName="translations" class="grid gap-6 sm:grid-cols-2">
-          @for (group of translationsArray.controls; track $index; let i = $index) {
-            <div [formGroupName]="i" class="space-y-4">
-              <!-- Language Badge -->
-              <hlm-badge variant="outline">
-                {{ translationHelper.getLangLabel(group.get('language')?.value) }}
-              </hlm-badge>
-
-              <!-- Name -->
-              <div class="space-y-1.5">
-                <label hlmLabel>{{ 'tastingNotes.name' | transloco }} *</label>
-                <input
-                  hlmInput
-                  formControlName="name"
-                  type="text"
-                  [dir]="translationHelper.getLangDir(group.get('language')?.value)"
-                  [placeholder]="group.get('language')?.value === 'ar' ? 'مثال: محمص خفيف' : 'e.g. Light Roast'"
-                  class="w-full"
-                />
-                @if (group.get('name')?.invalid && group.get('name')?.touched) {
-                  <p class="text-xs text-destructive">{{ 'tastingNotes.nameRequired' | transloco }}</p>
-                }
-              </div>
-
-            </div>
-          }
-        </div>
-
-        <!-- Buttons -->
-        <div class="flex gap-3 pt-2">
-          <button type="button" hlmBtn variant="outline" class="flex-1" (click)="closeDialog()">
-            {{ 'common.cancel' | transloco }}
-          </button>
-          <button type="submit" hlmBtn class="flex-1" [disabled]="form.invalid || submitting()">
-            @if (submitting()) {
-              <span class="animate-spin mr-2">⟳</span>
-            }
-            {{ submitting() ? ('common.saving' | transloco) : ('common.save' | transloco) }}
-          </button>
-        </div>
-      </form>
+<!-- Create / Edit Dialog (shared chrome; the fields stay this page's) -->
+<app-crud-dialog
+  [open]="showDialog()"
+  [title]="(editing() ? 'tastingNotes.editTitle' : 'tastingNotes.addTitle') | transloco"
+  [primaryLabel]="(editing() ? ('common.save' | transloco) : ('tastingNotes.add' | transloco))"
+  [submitting]="submitting()"
+  [submitDisabled]="form.invalid"
+  [dirty]="form.dirty"
+  [error]="dialogError()"
+  testId="tasting-note-dialog"
+  (submitted)="onSubmit()"
+  (closed)="closeDialog()"
+>
+  <div [formGroup]="form" class="space-y-5">
+    <div formArrayName="translations" class="grid gap-6 sm:grid-cols-2">
+      @for (group of translationsArray.controls; track $index) {
+        <app-translation-field
+          [group]="asGroup(group)"
+          [language]="languageOf(group)"
+          nameLabelKey="tastingNotes.name"
+          nameRequiredKey="tastingNotes.nameRequired"
+          descriptionLabelKey="tastingNotes.description"
+          [showDescription]="false"
+        />
+      }
     </div>
   </div>
-}
+</app-crud-dialog>
 
 <!-- ══════════════════════════════════════════════════════════
      Delete Confirm Dialog
@@ -233,8 +204,7 @@
     <div class="dialog-surface w-full max-w-sm p-6">
       <h2 class="text-lg font-bold mb-2">{{ 'tastingNotes.trash.deletePermanently' | transloco }}</h2>
       <p class="text-muted-foreground mb-6">
-        {{ 'tastingNotes.trash.permanentConfirm' | transloco }}
-        <strong class="text-foreground">{{ permanentDeleteTarget()!.slug }}</strong>?
+        {{ permanentDeleteMessage(permanentDeleteTarget()!) }}
       </p>
       <div class="flex gap-3">
         <button hlmBtn variant="outline" class="flex-1" (click)="closePermanentDelete()">

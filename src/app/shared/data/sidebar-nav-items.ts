@@ -2,7 +2,14 @@ import { NavItem } from './sidebar-nav-items.model';
 import { Language } from '../../core/i18n/language';
 import { navI18n, NavKey } from '../i18n/nav-i18n';
 
-export type NavSectionKey = 'operations' | 'access' | 'content' | 'catalog' | 'coffeeData' | 'settings';
+export type NavSectionKey =
+  | 'operations'
+  | 'access'
+  | 'content'
+  | 'catalog'
+  | 'coffeeData'
+  | 'store'
+  | 'settings';
 
 /**
  * A labelled group of links.
@@ -67,6 +74,7 @@ const sectionLabels: Record<Language, Record<NavSectionKey, string>> = {
     content: 'Content',
     catalog: 'Catalog',
     coffeeData: 'Coffee data',
+    store: 'Store',
     settings: 'Settings',
   },
   ar: {
@@ -75,6 +83,7 @@ const sectionLabels: Record<Language, Record<NavSectionKey, string>> = {
     content: 'المحتوى',
     catalog: 'الكتالوج',
     coffeeData: 'بيانات القهوة',
+    store: 'المتجر',
     settings: 'الإعدادات',
   },
 };
@@ -162,7 +171,8 @@ export function getNavItems(lang: Language) {
     s
   );
 
-  // Coffee Data parent with children (unchanged)
+  // Coffee Data: the beans themselves — what a coffee is, not what the store
+  // charges for it.
   const coffeeDataParent: NavItem = {
     label: t.coffeeData || 'Coffee data',
     icon: icons.products,
@@ -175,21 +185,37 @@ export function getNavItems(lang: Language) {
       { label: t.processing, icon: icons.processing, route: '/dashboard/processing-methods', permission: 'processing_method:read' },
       { label: t.varieties, icon: icons.varieties, route: '/dashboard/coffee-varieties', permission: 'coffee_variety:read' },
       { label: t.tastingNotes, icon: icons.tastingNotes, route: '/dashboard/tasting-notes', permission: 'tasting_note:read' },
-      { label: t.shippingZones, icon: icons.shippingZones, route: '/dashboard/shipping-zones', permission: 'shipping:read' },
-      { label: t.promoCodes, icon: icons.promoCodes, route: '/dashboard/promo-codes', permission: 'promo:read' },
       { label: t.brewing, icon: icons.brewing, route: '/dashboard/brewing-methods', permission: 'brewing_method:read' },
       { label: t.pairings, icon: icons.pairings, route: '/dashboard/pairings', permission: 'pairing:read' },
     ],
   };
 
-  // Settings parent with child
+  // Store: how the shop sells — shipping, promotions and its settings. These
+  // are commerce rules, not coffee data, so they get their own group. The
+  // group renders when at least one of its rows is permitted (the sidebar
+  // drops a section whose rows all filter out).
+  const storeParent = makeParent(
+    'store',
+    icons.shippingZones,
+    '/dashboard/shipping-zones',
+    undefined,
+    [
+      { label: t.shippingZones, icon: icons.shippingZones, route: '/dashboard/shipping-zones', permission: 'shipping:read' },
+      { label: t.promoCodes, icon: icons.promoCodes, route: '/dashboard/promo-codes', permission: 'promo:read' },
+      { label: t.storeSettings, icon: icons.storeSettings, route: '/dashboard/store-settings', permission: 'settings:read' },
+    ],
+    t,
+    s
+  );
+
+  // Settings: the audit trail. Store settings now live in the Store group;
+  // keeping a second link here would render the same row twice.
   const settingsParent = makeParent(
     'settings',
     icons.storeSettings,
-    '/dashboard/store-settings',
-    'settings:update',
+    '/dashboard/settings/audit',
+    'audit:read',
     [
-      { label: t.storeSettings, icon: icons.storeSettings, route: '/dashboard/store-settings', permission: 'settings:update' },
       // The audit trail: its own permission, so a role can read the log
       // without being able to change the store's settings (see V13).
       { label: t.auditLog, icon: icons.auditLog, route: '/dashboard/settings/audit', permission: 'audit:read' },
@@ -203,6 +229,7 @@ export function getNavItems(lang: Language) {
   const content: NavItem[] = [contentParent];
   const catalog: NavItem[] = [catalogParent];
   const coffeeData: NavItem[] = [coffeeDataParent];
+  const store: NavItem[] = [storeParent];
   const settings: NavItem[] = [settingsParent];
 
   return {
@@ -213,6 +240,7 @@ export function getNavItems(lang: Language) {
       { key: 'content', label: s.content, items: content },
       { key: 'catalog', label: s.catalog, items: catalog },
       { key: 'coffeeData', label: s.coffeeData, items: coffeeData },
+      { key: 'store', label: s.store, items: store },
       { key: 'settings', label: s.settings, items: settings },
     ] satisfies NavSection[],
   };

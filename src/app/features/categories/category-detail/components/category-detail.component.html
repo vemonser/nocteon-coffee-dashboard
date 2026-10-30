@@ -3,11 +3,19 @@
      flush against the sidebar edge without it. -->
 <div class="page-shell">
 @if (category() && !loading() && form) {
-  <!-- Header: back link, h1 + status badge, actions -->
+  <!-- Header: back (36px ghost icon, the Order-details pattern), h1 +
+       status badge, actions -->
   <div class="flex flex-wrap items-center gap-3">
-    <button hlmBtn variant="ghost" size="sm" (click)="goBack()" [attr.aria-label]="'categories.detail.back' | transloco">
-      <ng-icon name="lucideArrowLeft" class="size-4 rtl:rotate-180" />
-      {{ 'categories.detail.back' | transloco }}
+    <button
+      hlmBtn
+      variant="ghost"
+      size="icon"
+      class="size-9 shrink-0"
+      (click)="goBack()"
+      [attr.aria-label]="'categories.detail.back' | transloco"
+      [attr.title]="'categories.detail.back' | transloco"
+    >
+      <ng-icon name="lucideArrowLeft" class="size-4 rtl:rotate-180" aria-hidden="true" />
     </button>
 
     <h1 class="text-xl font-medium tracking-tight">
@@ -64,16 +72,14 @@
         <button
           hlmBtn
           variant="ghost"
-          size="icon"
-          class="sm:size-auto sm:px-3"
+          size="sm"
+          class="h-9 text-destructive-text hover:bg-destructive/10"
           (click)="showDeleteConfirm.set(true)"
           [attr.title]="'categories.detail.moveToTrash' | transloco"
           [attr.aria-label]="'categories.detail.moveToTrash' | transloco"
         >
-          <ng-icon name="lucideTrash2" class="size-4" />
-          <span class="hidden sm:inline sm:ms-2">
-            {{ 'categories.detail.moveToTrash' | transloco }}
-          </span>
+          <ng-icon name="lucideTrash2" class="me-2 size-4" />
+          {{ 'categories.detail.moveToTrash' | transloco }}
         </button>
       }
     </div>
@@ -113,15 +119,12 @@
     </div>
   }
 
-  <!-- Main: image + details + side panel. items-start: each card sizes to its
-       own content — grid stretch used to pad the shorter card out to the
-       other's height, leaving dead space under the switch row. -->
+  <!-- Main: image + details + side panel. The image is a compact 4:3 card
+       capped at 320px (it used to be a full-height square taking a third of
+       the page); the form keeps the remaining two columns. -->
   <div class="grid grid-cols-1 items-start gap-4 lg:grid-cols-3">
-    <!-- Image: about one third on wide screens. On narrow screens it must never
-         become a full-width square — 16:9 capped at 280px keeps it compact and
-         the form above the fold. -->
-    <hlm-card class="overflow-hidden pt-0 self-stretch">
-      <div class="relative aspect-video max-h-[280px] bg-muted lg:aspect-square lg:max-h-none h-full">
+    <hlm-card class="w-full overflow-hidden py-0 lg:max-w-[320px]">
+      <div class="relative aspect-[4/3] w-full bg-muted">
         <!-- ONE hidden input drives both states (change-image overlay and the
              no-image upload placeholder) — the buttons below are real buttons
              (keyboard reachable, named), not label-wrapped inputs. -->
@@ -238,7 +241,9 @@
           </div>
           <div>
             <p class="text-xs text-muted-foreground">{{ 'common.createdAt' | transloco }}</p>
-            <p class="mt-1 text-sm"><app-localized-date [value]="category()!.createdAt" variant="long" /></p>
+            <p class="mt-1 text-sm">
+              <app-localized-date [value]="category()!.createdAt" [showTime]="true" [withComma]="true" />
+            </p>
           </div>
         </div>
       </hlm-card>
@@ -299,6 +304,7 @@
       editor); the table emits no row-level click, so nothing is nested in it.
     -->
     <app-data-table
+      class="block"
       [data]="products()"
       [columns]="columns()"
       [showId]="false"
@@ -334,6 +340,7 @@
 
   @if (productsPage() && !productsLoading()) {
     <app-pager
+      class="block"
       [page]="productsPage()!.page"
       [size]="productsPage()!.size"
       [totalElements]="productsPage()!.totalElements"
@@ -374,6 +381,7 @@
         </button>
         <button
           hlmBtn
+          variant="destructive"
           class="flex-1"
           [disabled]="deleting()"
           (click)="moveToTrash()"

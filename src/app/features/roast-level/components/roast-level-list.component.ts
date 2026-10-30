@@ -34,6 +34,8 @@ import { ClickOutsideDirective } from '../../../shared/directives/click-outside.
 import { PagerComponent } from '../../../shared/components/pager/pager.component';
 import { LifecycleTabsComponent } from '../../../shared/components/lifecycle-tabs/lifecycle-tabs.component';
 import { TrashBannerComponent } from '../../../shared/components/trash-banner/trash-banner.component';
+import { CrudDialogComponent } from '../../../shared/components/crud-dialog/crud-dialog.component';
+import { TranslationFieldComponent } from '../../../shared/components/crud-dialog/translation-field.component';
 import { AuthService } from '../../../core/auth/auth.service';
 import { HasPermissionDirective } from '../../../core/auth/permission.directive';
 import { TranslationFormHelper } from '../../../shared/utils/translation.utils';
@@ -58,6 +60,8 @@ import { RoastLevelService } from '../services/roast-level.service';
     PagerComponent,
     LifecycleTabsComponent,
     TrashBannerComponent,
+    CrudDialogComponent,
+    TranslationFieldComponent,
     // Spartan
     HlmCardImports,
     HlmButtonImports,

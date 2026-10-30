@@ -99,6 +99,12 @@
     --font-sans-ar: "IBM Plex Sans Arabic", sans-serif;
     --font-heading-ar: "IBM Plex Sans Arabic", sans-serif;
 
+    /* Tailwind's preset leaves --font-mono pointing at itself, so `.font-mono`
+       resolved to the body sans. Option codes, slugs and SKUs are machine
+       identifiers and must actually render monospace. */
+    --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+      "Liberation Mono", monospace;
+
     /* NOTE: --radius lives in themes/copper.css (the §2 spec block owns it).
        The full rounded-* scale lives in ../radius.css. */
 

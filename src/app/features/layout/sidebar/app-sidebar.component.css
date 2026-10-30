@@ -19,6 +19,23 @@
   transition: grid-template-rows 200ms ease;
 }
 
+/* The scroll area starts 8px below its frame: a section label that scrolls
+   under the pinned "Dashboard" row then has room to fade instead of being
+   cut flush against it. */
+.sidebar-scroll {
+  padding-top: 8px;
+}
+
+/* The soft edge under the pinned row. It sits in the same sticky stack as
+   the home link, so content scrolling under it dissolves instead of
+   clipping at a hard horizontal line. */
+.sidebar-scroll-fade {
+  height: 10px;
+  margin-bottom: -10px;
+  background: linear-gradient(to bottom, var(--sidebar), transparent);
+  pointer-events: none;
+}
+
 /* hlm-sidebar-content is `flex flex-col overflow-y-auto`, so its children
    (the Home list, then one list per section) are flex items that default to
    flex-shrink: 1. Because .nav-collapse hides its overflow, its automatic

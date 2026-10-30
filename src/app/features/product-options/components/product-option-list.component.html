@@ -117,7 +117,7 @@
               <div class="flex flex-col items-center gap-2 rounded-md border border-dashed p-4 text-center">
                 <ng-icon name="lucideSlidersHorizontal" class="size-8 text-muted-foreground/50" aria-hidden="true" />
                 <p class="text-sm text-muted-foreground">{{ 'productOptions.emptyOption' | transloco }}</p>
-                <hlm-popover #emptyAddPop="brnPopover" sideOffset="8">
+                <hlm-popover #emptyAddPop="brnPopover" align="start" sideOffset="8" (stateChanged)="onAddPopoverState($event)">
                   <button
                     *hasPermission="'product_option:update'"
                     hlmPopoverTrigger
@@ -125,20 +125,26 @@
                     hlmBtn
                     variant="outline"
                     size="sm"
-                    (click)="openAddValue(option)"
+                    (click)="rememberTrigger($event); openAddValue(option)"
                   >
                     <ng-icon name="lucideCirclePlus" class="me-1.5 size-4" />
                     {{ 'productOptions.addValue' | transloco }}
                   </button>
-                  <hlm-popover-content *hlmPopoverPortal class="w-72 space-y-3 p-4">
+                  <hlm-popover-content *hlmPopoverPortal class="w-72 space-y-3 p-4" (keydown.escape)="emptyAddPop.close()">
                     <form [formGroup]="valueForm" (ngSubmit)="submitValue(emptyAddPop)" class="space-y-3">
                       <div class="space-y-1.5">
-                        <label hlmLabel>Value (English)</label>
-                        <input hlmInput formControlName="en" type="text" dir="ltr" class="w-full" />
+                        <label hlmLabel>{{ 'productOptions.valueEnglish' | transloco }} *</label>
+                        <input hlmInput formControlName="en" type="text" dir="ltr" class="w-full" [class.border-destructive]="valueForm.get('en')?.invalid && valueForm.get('en')?.touched" [attr.aria-invalid]="valueForm.get('en')?.invalid && valueForm.get('en')?.touched" />
+                        @if (valueForm.get('en')?.invalid && valueForm.get('en')?.touched) {
+                          <p class="text-xs text-destructive">{{ 'productOptions.valueRequired' | transloco }}</p>
+                        }
                       </div>
                       <div class="space-y-1.5">
-                        <label hlmLabel>القيمة (عربي)</label>
-                        <input hlmInput formControlName="ar" type="text" dir="rtl" class="w-full" />
+                        <label hlmLabel>{{ 'productOptions.valueArabic' | transloco }} *</label>
+                        <input hlmInput formControlName="ar" type="text" dir="rtl" class="w-full" [class.border-destructive]="valueForm.get('ar')?.invalid && valueForm.get('ar')?.touched" [attr.aria-invalid]="valueForm.get('ar')?.invalid && valueForm.get('ar')?.touched" />
+                        @if (valueForm.get('ar')?.invalid && valueForm.get('ar')?.touched) {
+                          <p class="text-xs text-destructive">{{ 'productOptions.valueRequired' | transloco }}</p>
+                        }
                       </div>
                       <div class="space-y-1.5">
                         <label hlmLabel>{{ 'productOptions.numericValue' | transloco }}</label>
@@ -160,7 +166,7 @@
               </div>
             }
             @for (value of option.values; track value.id) {
-              <hlm-popover #pop="brnPopover" sideOffset="8" (stateChanged)="onValuePopoverState($event, option, value)">
+              <hlm-popover #pop="brnPopover" align="start" sideOffset="8" (stateChanged)="onValuePopoverState($event, option, value)">
                 <button
                   hlmPopoverTrigger
                   type="button"
@@ -168,17 +174,18 @@
                   class="inline-flex items-center rounded-full bg-secondary px-3 py-1 text-sm cursor-pointer"
                   [attr.title]="valueTooltip(value)"
                   [attr.aria-label]="getValueName(value, currentLang)"
+                  (click)="rememberTrigger($event)"
                 >
                   <span [dir]="translationHelper.getLangDir(currentLang)">
                     {{ getValueName(value, currentLang) }}
                   </span>
                 </button>
-                <hlm-popover-content *hlmPopoverPortal class="w-72 space-y-3 p-4">
+                <hlm-popover-content *hlmPopoverPortal class="w-72 space-y-3 p-4" (keydown.escape)="pop.close()">
                   <form [formGroup]="valueForm" (ngSubmit)="saveValueEdit(pop)" class="space-y-3">
                     @for (lang of SUPPORTED_LANGUAGES; track lang.code) {
                       <div class="space-y-1.5">
                         <label hlmLabel>
-                          {{ lang.code === 'en' ? 'Value (English)' : 'القيمة (عربي)' }}
+                          {{ (lang.code === 'en' ? 'productOptions.valueEnglish' : 'productOptions.valueArabic') | transloco }} *
                         </label>
                         <input
                           hlmInput
@@ -234,7 +241,7 @@
 
           <!-- Add value popover -->
           @if (option.values.length > 0) {
-          <hlm-popover #addPop="brnPopover" sideOffset="8">
+          <hlm-popover #addPop="brnPopover" align="start" sideOffset="8" (stateChanged)="onAddPopoverState($event)">
             <button
               *hasPermission="'product_option:update'"
               hlmPopoverTrigger
@@ -243,32 +250,42 @@
               variant="outline"
               size="sm"
               class="self-start"
-              (click)="openAddValue(option)"
+              (click)="rememberTrigger($event); openAddValue(option)"
             >
               <ng-icon name="lucideCirclePlus" class="me-1.5 size-4" />
               {{ 'productOptions.addValue' | transloco }}
             </button>
-            <hlm-popover-content *hlmPopoverPortal class="w-72 space-y-3 p-4">
+            <hlm-popover-content *hlmPopoverPortal class="w-72 space-y-3 p-4" (keydown.escape)="addPop.close()">
               <form [formGroup]="valueForm" (ngSubmit)="submitValue(addPop)" class="space-y-3">
                 <div class="space-y-1.5">
-                  <label hlmLabel>Value (English)</label>
+                  <label hlmLabel>{{ 'productOptions.valueEnglish' | transloco }} *</label>
                   <input
                     hlmInput
                     formControlName="en"
                     type="text"
                     dir="ltr"
                     class="w-full"
+                    [class.border-destructive]="valueForm.get('en')?.invalid && valueForm.get('en')?.touched"
+                    [attr.aria-invalid]="valueForm.get('en')?.invalid && valueForm.get('en')?.touched"
                   />
+                  @if (valueForm.get('en')?.invalid && valueForm.get('en')?.touched) {
+                    <p class="text-xs text-destructive">{{ 'productOptions.valueRequired' | transloco }}</p>
+                  }
                 </div>
                 <div class="space-y-1.5">
-                  <label hlmLabel>القيمة (عربي)</label>
+                  <label hlmLabel>{{ 'productOptions.valueArabic' | transloco }} *</label>
                   <input
                     hlmInput
                     formControlName="ar"
                     type="text"
                     dir="rtl"
                     class="w-full"
+                    [class.border-destructive]="valueForm.get('ar')?.invalid && valueForm.get('ar')?.touched"
+                    [attr.aria-invalid]="valueForm.get('ar')?.invalid && valueForm.get('ar')?.touched"
                   />
+                  @if (valueForm.get('ar')?.invalid && valueForm.get('ar')?.touched) {
+                    <p class="text-xs text-destructive">{{ 'productOptions.valueRequired' | transloco }}</p>
+                  }
                 </div>
                 <div class="space-y-1.5">
                   <label hlmLabel>{{ 'productOptions.numericValue' | transloco }}</label>

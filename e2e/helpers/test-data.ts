@@ -110,6 +110,8 @@ function apiBase(): string {
 
 let cachedToken: string | null = null;
 
+const sleep = (ms: number) => new Promise((done) => setTimeout(done, ms));
+
 async function apiToken(): Promise<string> {
   if (cachedToken) return cachedToken;
   const identifier =
@@ -120,18 +122,28 @@ async function apiToken(): Promise<string> {
     process.env['PURGE_ADMIN_PASSWORD'] ??
     process.env['E2E_ADMIN_PASSWORD'] ??
     'Admin@123';
-  const response = await fetch(`${apiBase()}/api/auth/login`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ identifier, password }),
-  });
-  if (!response.ok) {
-    throw new Error(`cleanup login failed: ${response.status} ${await response.text()}`);
+
+  // Login has its own 5-per-minute bucket. An afterAll cleanup must survive
+  // that bucket being drained by the tests that just ran.
+  for (let attempt = 0; attempt <= 3; attempt += 1) {
+    const response = await fetch(`${apiBase()}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ identifier, password }),
+    });
+    if (response.status === 429 && attempt < 3) {
+      await sleep(65_000);
+      continue;
+    }
+    if (!response.ok) {
+      throw new Error(`cleanup login failed: ${response.status} ${await response.text()}`);
+    }
+    const body = (await response.json()) as { data?: { accessToken?: string } };
+    if (!body.data?.accessToken) throw new Error('cleanup login returned no access token');
+    cachedToken = body.data.accessToken;
+    return cachedToken;
   }
-  const body = (await response.json()) as { data?: { accessToken?: string } };
-  if (!body.data?.accessToken) throw new Error('cleanup login returned no access token');
-  cachedToken = body.data.accessToken;
-  return cachedToken;
+  throw new Error('cleanup login stayed rate-limited');
 }
 
 async function call(method: string, path: string): Promise<number> {

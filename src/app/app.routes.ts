@@ -145,7 +145,8 @@ export const routes: Routes = [
       {
         path: 'store-settings',
         data: { breadcrumb: 'storeSettings' },
-        canActivate: [permissionGuard('settings:update')],
+        canActivate: [permissionGuard('settings:read')],
+        canDeactivate: [unsavedChangesGuard],
         loadComponent: () =>
           import('./features/store-settings/components/store-settings-list.component').then(
             (m) => m.StoreSettingsListComponent,

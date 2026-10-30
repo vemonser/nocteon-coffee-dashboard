@@ -1,15 +1,18 @@
 <!--
-  §4 "Deleted" (Trash tab): the relative time as plain text inside a `<time>`.
-  Not a badge — the chip rendered 34px wider than the column it sat in and
-  overlapped the neighbouring date column, and the absolute date it printed was
-  already a column of its own. The absolute timestamp is still available twice:
-  machine-readable in `datetime`, and human-readable in the tooltip plus the
-  screen-reader text (a `title` alone is not announced reliably).
+  §4 "Deleted" (Trash tab): the deletion DATE AND TIME, through the shared
+  `formatDateTime` ("30 Oct 2026, 7:51 PM"). The relative time ("3 days ago")
+  is the tooltip: the column answers "when was it deleted", which needs a
+  real timestamp, not a moving duration.
 -->
 <time
-  class="text-xs text-muted-foreground tabular-nums"
+  class="whitespace-nowrap text-xs text-muted-foreground tabular-nums"
   [attr.datetime]="iso()"
-  [attr.title]="absolute()"
+  [attr.title]="absolute() ? relative() : ('common.deletionTimeUnavailable' | transloco)"
 >
-  {{ relative() }}<span class="sr-only"> ({{ absolute() }})</span>
+  @if (absolute()) {
+    {{ absolute() }}
+  } @else {
+    {{ 'common.notRecorded' | transloco }}
+  }
 </time>
+

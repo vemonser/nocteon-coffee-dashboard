@@ -109,6 +109,24 @@ export class ProductOptionListComponent extends BaseListComponent<
   deletingValue = signal<{ option: ProductOption; value: ProductOptionValue; usageCount?: number } | null>(null);
   editingValue = signal<{ option: ProductOption; value: ProductOptionValue } | null>(null);
 
+  /** The control that opened the current popover — focus returns to it. */
+  private popoverTrigger: HTMLElement | null = null;
+
+  rememberTrigger(event: Event): void {
+    this.popoverTrigger = event.currentTarget as HTMLElement;
+  }
+
+  /** An add popover closed (Escape, outside click, Cancel): give focus back. */
+  onAddPopoverState(state: 'open' | 'closed'): void {
+    if (state === 'closed') this.restoreTriggerFocus();
+  }
+
+  private restoreTriggerFocus(): void {
+    const trigger = this.popoverTrigger;
+    this.popoverTrigger = null;
+    if (trigger?.isConnected) setTimeout(() => trigger.focus());
+  }
+
   // ─── Base contract ────────────────────────────────────────────────────────────
 
   protected override getId(item: ProductOption): number {
@@ -199,7 +217,11 @@ export class ProductOptionListComponent extends BaseListComponent<
 
   submitValue(pop?: any): void {
     const option = this.addingValueFor();
-    if (!option || this.valueForm.invalid) return;
+    if (!option) return;
+    if (this.valueForm.invalid) {
+      this.valueForm.markAllAsTouched();
+      return;
+    }
 
     this.valueSubmitting.set(true);
     const vals = this.valueForm.value as Record<string, any>;
@@ -231,6 +253,7 @@ export class ProductOptionListComponent extends BaseListComponent<
       this.beginValueEdit(option, value);
     } else {
       this.editingValue.set(null);
+      this.restoreTriggerFocus();
     }
   }
 

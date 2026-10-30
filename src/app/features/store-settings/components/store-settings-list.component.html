@@ -1,125 +1,153 @@
 <div class="page-shell">
-  <!-- Header -->
-  <div class="flex items-center justify-between">
-    <div>
-      <h1 class="text-2xl font-medium tracking-tight">{{ 'StoreSettingPage.title' | transloco }}</h1>
-    </div>
-  </div>
+  <header class="min-w-0">
+    <h1 class="text-2xl font-medium tracking-tight">{{ 'StoreSettingPage.title' | transloco }}</h1>
+    <p class="mt-1 text-sm text-muted-foreground">
+      {{ 'StoreSettingPage.subtitle' | transloco }}
+    </p>
+  </header>
 
-  <!-- Loading State -->
   @if (loading()) {
-    <div class="rounded-md border">
+    <div class="space-y-4">
+      <div class="h-40 animate-pulse rounded-[var(--radius-card)] border bg-muted/40"></div>
+      <div class="h-48 animate-pulse rounded-[var(--radius-card)] border bg-muted/40"></div>
+    </div>
+  } @else if (loadError()) {
+    <app-error-state [titleKey]="'StoreSettingPage.loadError'" (retry)="load()" />
+  } @else {
+    <form [formGroup]="form" (ngSubmit)="save()" class="space-y-4" novalidate>
+      @if (!canUpdate()) {
+        <p class="rounded-md border border-border bg-muted/50 px-4 py-3 text-sm text-muted-foreground">
+          {{ 'StoreSettingPage.readOnly' | transloco }}
+        </p>
+      }
+
+      <!-- Currency -->
+      <section class="card-surface p-6">
+        <h2 class="text-lg font-medium">{{ 'StoreSettingPage.currencyTitle' | transloco }}</h2>
+        <p class="mt-1 text-sm text-muted-foreground">
+          {{ 'StoreSettingPage.currencyHelp' | transloco }}
+        </p>
+
+        <div class="mt-5 max-w-sm space-y-1.5">
+          <label hlmLabel for="currency">{{ 'StoreSettingPage.currencyLabel' | transloco }}</label>
+          <hlm-select formControlName="currency" class="w-full">
+            <hlm-select-trigger id="currency" class="h-[var(--filter-control-height)] w-full">
+              <hlm-select-value />
+            </hlm-select-trigger>
+            <hlm-select-content *hlmSelectPortal>
+              <hlm-select-group>
+                @for (code of currencies; track code) {
+                  <hlm-select-item [value]="code">{{ code }}</hlm-select-item>
+                }
+              </hlm-select-group>
+            </hlm-select-content>
+          </hlm-select>
+          <p class="text-xs text-muted-foreground">{{ 'StoreSettingPage.currencyCodeHelp' | transloco }}</p>
+        </div>
+
+        @if (currencyChanged()) {
+          <p
+            class="mt-4 flex items-start gap-2 rounded-md border border-warning/40 bg-warning-soft px-3 py-2 text-sm text-warning"
+            role="status"
+          >
+            <ng-icon name="lucideTriangleAlert" class="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+            {{ 'StoreSettingPage.currencyChangeWarning' | transloco }}
+          </p>
+        }
+      </section>
+
+      <!-- Shipping -->
+      <section class="card-surface p-6">
+        <h2 class="text-lg font-medium">{{ 'StoreSettingPage.shippingTitle' | transloco }}</h2>
+        <p class="mt-1 text-sm text-muted-foreground">
+          {{ 'StoreSettingPage.shippingHelp' | transloco }}
+        </p>
+
+        <div class="mt-5 grid max-w-2xl gap-5 sm:grid-cols-2">
+          <div class="space-y-1.5">
+            <label hlmLabel for="freeShippingThreshold">
+              {{ 'StoreSettingPage.thresholdLabel' | transloco }}
+            </label>
+            <div class="relative">
+              <span
+                class="pointer-events-none absolute inset-y-0 start-3 flex items-center text-sm text-muted-foreground"
+                aria-hidden="true"
+              >
+                {{ currency }}
+              </span>
+              <input
+                hlmInput
+                id="freeShippingThreshold"
+                formControlName="freeShippingThreshold"
+                type="number"
+                min="0"
+                step="0.01"
+                inputmode="decimal"
+                class="w-full ps-14 tabular-nums"
+                [class.border-destructive]="
+                  form.get('freeShippingThreshold')?.invalid &&
+                  form.get('freeShippingThreshold')?.touched
+                "
+                [attr.aria-describedby]="'threshold-help'"
+                [attr.aria-invalid]="
+                  form.get('freeShippingThreshold')?.invalid &&
+                  form.get('freeShippingThreshold')?.touched
+                "
+              />
+            </div>
+            <p id="threshold-help" class="text-xs text-muted-foreground">
+              {{ 'StoreSettingPage.thresholdHelp' | transloco }}
+            </p>
+            @if (
+              form.get('freeShippingThreshold')?.invalid && form.get('freeShippingThreshold')?.touched
+            ) {
+              <p class="text-xs text-destructive">{{ 'StoreSettingPage.thresholdError' | transloco }}</p>
+            }
+          </div>
+
+          <div class="flex items-start justify-between gap-4 rounded-md border p-4">
+            <div class="space-y-1">
+              <label hlmLabel for="isFreeShippingActive" class="mb-0">
+                {{ 'StoreSettingPage.freeShipping' | transloco }}
+              </label>
+              <p class="text-xs text-muted-foreground">
+                {{ 'StoreSettingPage.freeShippingHelp' | transloco }}
+              </p>
+            </div>
+            <hlm-switch
+              formControlName="isFreeShippingActive"
+              inputId="isFreeShippingActive"
+              [attr.aria-label]="'StoreSettingPage.freeShipping' | transloco"
+            />
+          </div>
+        </div>
+      </section>
+
+      @if (formError(); as message) {
+        <p role="alert" class="text-sm font-medium text-destructive">{{ message }}</p>
+      }
+
+      <!-- One Save per page: disabled until the form is dirty and valid. -->
       <div
-        class="h-12 border-b bg-muted/50 animate-pulse"
-        *ngFor="let _ of [1]"
-      ></div>
-    </div>
-  }
-
-  <!-- Error: a failed fetch is a state of its own, never an empty list. -->
-  @if (!loading() && loadError()) {
-    <app-error-state (retry)="load()" />
-  }
-
-  <!-- Single Row -->
-  @if (!loading() && !loadError()) {
-    <div class="card-surface">
-      <app-data-table
-        [emptyMessage]="'StoreSettingPage.empty' | transloco"
-        [emptyHint]="'StoreSettingPage.emptyHint' | transloco"
-        [data]="items()"
-        [columns]="columns"
-        [loading]="loading()"
-        [initialSort]="{ column: currentSort, direction: currentDirection }"
-        [editPermission]="'settings:update'"
-        [showView]="false"
-        [showDelete]="false"
-        (hasView)="false"
-        (edit)="openEditDialog($event)"
-        (sortChange)="onSortChange($event)"
-      />
-    </div>
-  }
-</div>
-
-<!-- ══════════════════════════════════════════════════════════
-     Edit Dialog
-══════════════════════════════════════════════════════════ -->
-@if (showDialog()) {
-  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="store-setting-dialog-title"
-      tabindex="-1"
-      cdkTrapFocus
-      [cdkTrapFocusAutoCapture]="true"
-      class="dialog-surface w-full max-w-lg max-h-[90vh] overflow-y-auto outline-none"
-    >
-      <!-- Dialog Header -->
-      <div class="flex items-center justify-between p-6 border-b sticky top-0 rounded-t-[var(--radius-card)] bg-card">
-        <h2 id="store-setting-dialog-title" class="text-lg font-medium">Edit Store Setting</h2>
-        <button hlmBtn variant="ghost" size="icon" (click)="closeDialog()">
-          <ng-icon name="lucideX" class="size-4" />
+        class="sticky bottom-0 z-10 -mx-6 mt-6 flex flex-wrap items-center justify-end gap-3 border-t bg-background/95 px-6 py-3 backdrop-blur"
+      >
+        @if (dirty()) {
+          <button type="button" hlmBtn variant="ghost" (click)="discard()" [disabled]="saving()">
+            {{ 'categories.detail.discard' | transloco }}
+          </button>
+        }
+        <button
+          type="submit"
+          hlmBtn
+          [disabled]="!canSave()"
+          [attr.title]="canUpdate() ? null : ('StoreSettingPage.readOnly' | transloco)"
+        >
+          @if (saving()) {
+            <ng-icon name="lucideLoader2" class="me-2 size-4 animate-spin" aria-hidden="true" />
+          }
+          {{ saving() ? ('common.saving' | transloco) : ('common.save' | transloco) }}
         </button>
       </div>
-
-      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="p-6 space-y-5">
-        <div class="space-y-1.5">
-          <label hlmLabel>Free Shipping Threshold *</label>
-          <input
-            hlmInput
-            formControlName="freeShippingThreshold"
-            type="number"
-            min="0"
-            placeholder="500"
-            class="w-full"
-          />
-          @if (form.get('freeShippingThreshold')?.invalid && form.get('freeShippingThreshold')?.touched) {
-            <p class="text-xs text-destructive">Free Shipping Threshold is required</p>
-          }
-        </div>
-
-        <div class="space-y-1.5">
-          <label hlmLabel>Currency (ISO 4217, 3 letters) *</label>
-          <input
-            hlmInput
-            formControlName="currency"
-            type="text"
-            maxlength="3"
-            placeholder="EGP"
-            class="w-full uppercase"
-          />
-          @if (form.get('currency')?.invalid && form.get('currency')?.touched) {
-            <p class="text-xs text-destructive">Currency must be 3 uppercase letters</p>
-          }
-        </div>
-
-        <div class="flex items-center justify-between rounded-md border p-3">
-          <div class="space-y-0.5">
-            <label hlmLabel for="isFreeShippingActive" class="mb-0">Free Shipping Enabled</label>
-            <p class="text-xs text-muted-foreground">Toggle free shipping on or off for the storefront</p>
-          </div>
-          <hlm-switch
-            formControlName="isFreeShippingActive"
-            inputId="isFreeShippingActive"
-            [attr.aria-label]="'Free Shipping Enabled'"
-          />
-        </div>
-
-        <!-- Buttons -->
-        <div class="flex gap-3 pt-2">
-          <button type="button" hlmBtn variant="outline" class="flex-1" (click)="closeDialog()">
-            Cancel
-          </button>
-          <button type="submit" hlmBtn class="flex-1" [disabled]="form.invalid || submitting()">
-            @if (submitting()) {
-              <ng-icon name="lucideLoader2" class="mr-2 size-4 animate-spin" />
-            }
-            {{ submitting() ? 'Saving...' : 'Save' }}
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
-}
+    </form>
+  }
+</div>

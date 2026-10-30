@@ -74,7 +74,7 @@
             </hlm-badge>
             <span class="text-xs text-muted-foreground">
               @if (note()!.createdAt) {
-                <app-localized-date [value]="note()!.createdAt" variant="long" />
+                <app-localized-date [value]="note()!.createdAt" [showTime]="true" [withComma]="true" />
               }
             </span>
           </div>

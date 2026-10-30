@@ -45,6 +45,8 @@ import { DataTableComponent } from '../../../shared/components/data-table/data-t
 import { PagerComponent } from '../../../shared/components/pager/pager.component';
 import { LifecycleTabsComponent } from '../../../shared/components/lifecycle-tabs/lifecycle-tabs.component';
 import { TrashBannerComponent } from '../../../shared/components/trash-banner/trash-banner.component';
+import { CrudDialogComponent } from '../../../shared/components/crud-dialog/crud-dialog.component';
+import { TranslationFieldComponent } from '../../../shared/components/crud-dialog/translation-field.component';
 
 
 @Component({
@@ -60,6 +62,8 @@ import { TrashBannerComponent } from '../../../shared/components/trash-banner/tr
     PagerComponent,
     LifecycleTabsComponent,
     TrashBannerComponent,
+    CrudDialogComponent,
+    TranslationFieldComponent,
     HlmCardImports,
     HlmButtonImports,
     HlmBadgeImports,

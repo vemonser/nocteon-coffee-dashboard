@@ -1,5 +1,5 @@
 import { Directive, OnInit, computed, inject, signal } from '@angular/core';
-import { FormArray, FormBuilder, FormGroup } from '@angular/forms';
+import { AbstractControl, FormArray, FormBuilder, FormGroup } from '@angular/forms';
 import { Observable, catchError, forkJoin, map, of } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PageResponse } from '../models/api-response.model';
@@ -9,6 +9,7 @@ import { NotifyService } from '../notify/notify.service';
 import { TranslocoService } from '@jsverse/transloco';
 import { toast } from '@spartan-ng/brain/sonner';
 import { PermissionService } from '../auth/permission.service';
+import type { RowMenuAction } from '../../shared/ui/actions-cell/actions-cell.component';
 
 export type ViewMode = 'list' | 'grid';
 
@@ -75,6 +76,21 @@ export abstract class BaseListComponent<TResponse, TRequest, TId = string>
 
   get translationsArray(): FormArray {
     return this.form.get('translations') as FormArray;
+  }
+
+  /** The projected bilingual field takes the group itself, not its index. */
+  asGroup(control: AbstractControl): FormGroup {
+    return control as FormGroup;
+  }
+
+  /** ISO code of a translation group ("en" / "ar"). */
+  languageOf(control: AbstractControl): string {
+    return (control.get('language')?.value as string) ?? '';
+  }
+
+  /** Short alias used by the pages that predate `languageOf`. */
+  langOf(control: AbstractControl): string {
+    return this.languageOf(control);
   }
 
   // ─── Abstract contract ────────────────────────────────────────────────────────
@@ -850,7 +866,6 @@ export abstract class BaseListComponent<TResponse, TRequest, TId = string>
       .filter((id): id is number => id !== null && id !== undefined);
     this.selection.set(checked ? new Set(ids) : new Set());
   }
-
   allSelected(): boolean {
     const ids = this.items()
       .map((item) => this.restoreIdOf?.(item))
@@ -860,6 +875,55 @@ export abstract class BaseListComponent<TResponse, TRequest, TId = string>
 
   clearSelection(): void {
     this.selection.set(new Set());
+  }
+
+  // ─── Row menu (one visible row action, the rest in a kebab) ──────────────────
+
+  /**
+   * The row's overflow actions: Edit and Move to trash (or Edit only, for a
+   * reader who may not delete).
+   *
+   * <p>Every catalog list hands this to the shared table and hides the
+   * always-visible pencil/trash icon pair, so the actions column stays narrow
+   * and the same two entries read the same on every page.
+   */
+  readonly rowMenuFor = (item: TResponse): RowMenuAction[] => {
+    const actions: RowMenuAction[] = [];
+    if (this.editMode === 'page' || this.canUpdate()) {
+      actions.push({ id: 'edit', label: 'common.edit', icon: 'lucidePencil' });
+    }
+    if (this.canDelete()) {
+      actions.push({
+        id: 'trash',
+        label: 'common.moveToTrash',
+        icon: 'lucideTrash2',
+        danger: true,
+      });
+    }
+    return actions;
+  };
+
+  /** The chosen kebab entry, routed to the same handlers as the old icons. */
+  onRowMenuAction(event: { id: string; item: TResponse }): void {
+    if (event.id === 'edit') this.onEditAction(event.item);
+    else if (event.id === 'trash') this.softDelete(event.item);
+  }
+
+  /**
+   * The sentence the permanent-delete dialog shows: it NAMES the row, so the
+   * admin confirms a specific item and not an anonymous "this item".
+   */
+  permanentDeleteMessage(item: TResponse): string {
+    return this.transloco.translate('common.deletePermanentlyConfirm', {
+      name: this.undoItemLabel(item) || this.confirmToken(item),
+    });
+  }
+
+  /** The same question for a bulk delete, naming the count. */
+  bulkPermanentDeleteMessage(): string {
+    return this.transloco.translate('common.bulkDeletePermanentlyConfirm', {
+      count: this.selectionCount(),
+    });
   }
 
   /** Bulk soft delete — one toast for the whole batch (no Undo: the confirm dialog is the safety gate). */

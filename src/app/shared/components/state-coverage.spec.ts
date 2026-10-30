@@ -68,7 +68,6 @@ const PAGES: Page[] = [
   { label: 'Promo codes', source: '/src/app/features/promo-codes/components/promo-codes-list.component.html', kind: 'table' },
   { label: 'Brewing methods', source: '/src/app/features/brewing-method/components/brewing-methods-list.component.html', kind: 'table' },
   { label: 'Pairings', source: '/src/app/features/pairing/components/pairing-list.component.html', kind: 'table' },
-  { label: 'Store settings', source: '/src/app/features/store-settings/components/store-settings-list.component.html', kind: 'table' },
 ];
 
 /**
@@ -95,9 +94,6 @@ const EXCEPTIONS: Record<string, Partial<Record<'emptyAction' | 'createAction' |
   Newsletter: {
     emptyAction:
       'The audience comes from the storefront: the state says so instead of offering a button that cannot add a subscriber.',
-  },
-  'Store settings': {
-    emptyAction: 'Settings are edited, not created from the console: there is no create action to offer.',
   },
   Carts: {
     createAction: 'A cart is created by a customer starting a checkout, never from the console.',

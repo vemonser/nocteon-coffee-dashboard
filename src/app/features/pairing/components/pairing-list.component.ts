@@ -21,6 +21,8 @@ import { HlmInputImports } from '@spartan-ng/helm/input';
 import { HlmLabelImports } from '@spartan-ng/helm/label';
 import { HlmTextareaImports } from '@spartan-ng/helm/textarea';
 import { ImageUploadComponent } from '../../../shared/components/image-upload/image-upload.component';
+import { CrudDialogComponent } from '../../../shared/components/crud-dialog/crud-dialog.component';
+import { TranslationFieldComponent } from '../../../shared/components/crud-dialog/translation-field.component';
 
 import { TranslocoPipe } from '@jsverse/transloco';
 import { NgIcon, provideIcons } from '@ng-icons/core';
@@ -49,6 +51,8 @@ import { PagerComponent } from '../../../shared/components/pager/pager.component
     LifecycleTabsComponent,
     TrashBannerComponent,
     ImageUploadComponent,
+    CrudDialogComponent,
+    TranslationFieldComponent,
     HlmCardImports,
     HlmButtonImports,
     HlmBadgeImports,
@@ -67,7 +71,7 @@ export class PairingListComponent extends BaseListComponent<PairingResponse, Pai
 
   /** The create action's own copy, for the empty state's button. */
   protected override createActionLabel(): string {
-    return this.t('pairings.add', 'Add new pairing');
+    return this.t('pairings.add', 'Add pairing');
   }
   private pairingService = inject(PairingService);
   private auth = inject(AuthService);

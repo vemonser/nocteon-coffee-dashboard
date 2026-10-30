@@ -30,11 +30,6 @@
     "select": 0,
     "button": 3
   },
-  "src/app/features/farms/components/farms-list.component.html": {
-    "input": 0,
-    "select": 0,
-    "button": 1
-  },
   "src/app/features/journal/components/journal-form.component.html": {
     "input": 3,
     "select": 0,
@@ -64,11 +59,6 @@
     "input": 0,
     "select": 0,
     "button": 4
-  },
-  "src/app/features/origins/components/origins-list.component.html": {
-    "input": 0,
-    "select": 0,
-    "button": 1
   },
   "src/app/features/origins/origin-detail/components/origin-detail.component.html": {
     "input": 1,

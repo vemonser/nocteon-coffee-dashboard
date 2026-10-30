@@ -52,7 +52,8 @@ import { ColumnDef, createColumnHelper } from '@tanstack/table-core';
 import { LanguageService } from '../../../../core/i18n/language.service';
 import { StoreSettingsService } from '../../../../core/settings/store-settings.service';
 import { NotifyService } from '../../../../core/notify/notify.service';
-import { formatCurrency, formatPercent } from '../../../../shared/utils/locale-format';
+import { formatPercent, formatPriceRange } from '../../../../shared/utils/locale-format';
+import { isProductActive } from '../../../../shared/utils/product-status';
 import { LocalizedDateComponent } from '../../../../shared/ui/localized-date/localized-date.component';
 import { PagerComponent } from '../../../../shared/components/pager/pager.component';
 import { TrashBannerComponent } from '../../../../shared/components/trash-banner/trash-banner.component';
@@ -249,9 +250,13 @@ export class CategoryDetailComponent implements OnInit, OnDestroy, CanComponentD
       },
     );
 
-    const statusCell = helper.accessor('isActive', {
+    const statusCell = helper.accessor((row) => isProductActive(row), {
+      id: 'isActive',
       header: 'Status',
       enableSorting: false,
+      // One mapper for every surface: the payload says `active`; `isActive`
+      // stays as the alias. Reading the wrong field made all four products
+      // read "Disabled" here while the products list read "Enabled".
     });
 
     // Type/Featured stay out unless they carry information. Both need a real
@@ -679,18 +684,14 @@ export class CategoryDetailComponent implements OnInit, OnDestroy, CanComponentD
     );
   }
 
-  fmtPrice(value: unknown): string {
-    return formatCurrency(value, this.language.language(), this.storeSettings.currency());
-  }
-
-  /** Single price, or the localized range `from … to …` when min ≠ max. */
+  /** Single price, or the shared localized range when min ≠ max. */
   priceLabel(row: ProductCardResponse): string {
-    return row.minPrice === row.maxPrice
-      ? this.fmtPrice(row.minPrice)
-      : this.translocoService.translate('categories.detail.priceRange', {
-          min: this.fmtPrice(row.minPrice),
-          max: this.fmtPrice(row.maxPrice),
-        });
+    return formatPriceRange(
+      row.minPrice,
+      row.maxPrice,
+      this.language.language(),
+      this.storeSettings.currency(),
+    );
   }
 
   fmtPct(value: unknown): string {

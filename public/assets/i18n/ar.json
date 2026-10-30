@@ -120,8 +120,25 @@
   },
   "StoreSettingPage": {
     "title": "إعدادات المتجر",
+    "subtitle": "كيف يحسب المتجر الشحن، وبأي عملة تظهر كل الأسعار.",
     "empty": "لا توجد إعدادات متجر بعد",
-    "emptyHint": "الإعدادات المنشأة من المتجر تظهر هنا جاهزة للتعديل."
+    "emptyHint": "الإعدادات المنشأة من المتجر تظهر هنا جاهزة للتعديل.",
+    "currencyTitle": "العملة",
+    "currencyLabel": "العملة",
+    "currencyHelp": "كل سعر في المتجر ولوحة التحكم يستخدم هذه العملة.",
+    "currencyCodeHelp": "رمز ISO 4217. الجنيه المصري هو الافتراضي للمتجر.",
+    "currencyChangeWarning": "تغيير العملة يؤثر على كل سعر في المتجر.",
+    "shippingTitle": "الشحن",
+    "shippingHelp": "عند تفعيل الشحن المجاني، تُشحن الطلبات التي تتجاوز الحد مجانًا.",
+    "thresholdLabel": "حد الشحن المجاني",
+    "thresholdHelp": "الطلبات التي تتجاوز هذا المبلغ تُشحن مجانًا.",
+    "thresholdError": "أدخل 0 أو أكثر، بحد أقصى منزلتين عشريتين.",
+    "freeShipping": "شحن مجاني",
+    "freeShippingHelp": "عند إيقافه، يُحتسب الشحن على كل طلب.",
+    "readOnly": "يمكنك عرض هذه الإعدادات دون تغييرها.",
+    "saved": "تم حفظ إعدادات المتجر",
+    "saveFailed": "تعذّر حفظ الإعدادات.",
+    "loadError": "تعذّر تحميل إعدادات المتجر"
   },
   "common": {
     "freeShippingActive": "الشحن المجاني مفعّل",
@@ -145,6 +162,7 @@
     "categoryHeader": "فئة",
     "changeAvatar": "تغيير الصورة",
     "changeImage": "تغيير الصورة",
+    "characterCount": "{{count}}/{{max}}",
     "changePassword": "تغيير كلمة المرور",
     "cities": "المدن",
     "close": "إغلاق",
@@ -168,6 +186,8 @@
     "deletePermanently": "حذف نهائي",
     "deleted": "محذوف",
     "deletedAt": "تاريخ الحذف",
+    "deletePermanentlyConfirm": "حذف «{{name}}» نهائيًا؟ لا يمكن التراجع عن هذا الإجراء.",
+    "bulkDeletePermanentlyConfirm": "حذف {{count}} عناصر محددة نهائيًا؟ لا يمكن التراجع عن هذا الإجراء.",
     "deleting": "جارٍ الحذف...",
     "description": "الوصف",
     "discount": "الخصم",
@@ -201,6 +221,8 @@
     "name": "الاسم",
     "nameArabic": "الاسم بالعربية",
     "nameEnglish": "الاسم بالإنجليزية",
+    "notRecorded": "غير مسجل",
+    "deletionTimeUnavailable": "لا يوفر الـ API وقت الحذف لهذا العنصر.",
     "nameRequired": "الاسم مطلوب",
     "newPassword": "كلمة المرور الجديدة",
     "nextPage": "الصفحة التالية",
@@ -860,10 +882,12 @@
     "noData": "لا توجد أصول",
     "adjustSearch": "حاول تعديل البحث",
     "isoCode": "الرمز الدولي",
+    "isoCodeExample": "مثال: ET",
     "codeRequired": "الرمز مطلوب",
     "image": "الصورة",
     "deleteTitle": "حذف المنشأ",
-    "deleteConfirm": "هل أنت متأكد أنك تريد حذف {{name}}؟"
+    "deleteConfirm": "هل أنت متأكد أنك تريد حذف {{name}}؟",
+    "trashBanner": "أصول القهوة هذه مخفية عن المتجر. استعدها أو احذفها نهائيًا."
   },
   "farms": {
     "title": "المزارع",
@@ -886,6 +910,7 @@
     "noData": "لا توجد مزارع",
     "adjustSearch": "جرّب تعديل البحث",
     "deleteConfirm": "حذف هذه المزرعة؟",
+    "trashBanner": "المزارع هذه مخفية عن المتجر. استعدها أو احذفها نهائيًا.",
     "detail": {
       "back": "رجوع",
       "backToFarms": "العودة إلى المزارع",
@@ -2764,6 +2789,9 @@
     "sortChip": "ترتيب {{n}}",
     "noValues": "لا توجد قيم بعد",
     "valueIn": "القيمة",
+    "valueEnglish": "القيمة (بالإنجليزية)",
+    "valueArabic": "القيمة (بالعربية)",
+    "valueRequired": "القيمة مطلوبة",
     "numericValue": "القيمة الرقمية",
     "numericValueHelp": "تُستخدم لحساب إجمالي وزن القهوة المباعة (رمز الخيار 'weight').",
     "addValue": "إضافة قيمة",
@@ -3074,7 +3102,10 @@
     "body": "لديك تغييرات لم يتم حفظها. إذا غادرت هذه الصفحة، فستفقد.",
     "discard": "تجاهل التغييرات",
     "stay": "البقاء في الصفحة",
-    "saveAndLeave": "حفظ ومغادرة"
+    "saveAndLeave": "حفظ ومغادرة",
+    "confirmTitle": "تجاهل التغييرات؟",
+    "confirmBody": "ستفقد تغييراتك على هذا العنصر.",
+    "keepEditing": "متابعة التعديل"
   },
   "richText": {
     "insertVideo": "إدراج فيديو",
