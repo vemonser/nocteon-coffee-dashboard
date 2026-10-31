@@ -2,6 +2,7 @@
 
 ## Workflow
 - One branch per task; commit per sub-task "area: <ID> <title>"; run build + lint before each commit; paste `git diff --stat` in the report.
+- Every issue a human or an outside review finds becomes a detector or an oracle with a test before it is closed. See `MISSES.md` and `npm run find`; the pre-push hook runs `npm run find -- --fast --report-only`.
 - Never mark a task Done without evidence (a viewport screenshot, a measured value in results.json, or a passing test). Report table: Task | Done/Partial/Skipped | files | evidence | notes.
 - Screenshots are VIEWPORT captures (1440x900). Full-page captures of tall pages show fake clipped text at fixed screen heights (around y=880 and y=1530): that is a capture artifact, not a bug.
 - Never invent backend endpoints or fields. Write what is missing under "Needs backend" in DECISIONS.md and build a safe fallback. Never run seeds or migrations against production data.

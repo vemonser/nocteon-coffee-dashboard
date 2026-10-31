@@ -1,0 +1,30 @@
+#!/bin/sh
+# The finder ratchet (F9).
+#
+# A push must not introduce a NEW high/medium finding. The check is the fast
+# crawl against the running dev app; when the stack is not up, the hook skips
+# instead of blocking every push on a machine without it.
+set -u
+
+if [ "${FINDER_SKIP_PREPUSH:-0}" = "1" ]; then
+  echo "finder: pre-push skipped (FINDER_SKIP_PREPUSH=1)"
+  exit 0
+fi
+
+if ! curl -sf -o /dev/null --max-time 3 http://localhost:4200/; then
+  echo "finder: dev app is not running on :4200 — skipping the ratchet"
+  exit 0
+fi
+if ! curl -sf -o /dev/null --max-time 3 http://localhost:8080/actuator/health; then
+  echo "finder: API is not running on :8080 — skipping the ratchet"
+  exit 0
+fi
+
+echo "finder: checking for NEW findings since qa/baseline.json…"
+if ! npm run find -- --fast --report-only --no-purge; then
+  echo ""
+  echo "finder: push blocked — fix the new findings in FINDINGS.md, or re-baseline with"
+  echo "        npm run find -- --update-baseline  (only when the finding is accepted)."
+  exit 1
+fi
+exit 0
