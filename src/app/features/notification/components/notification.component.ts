@@ -15,7 +15,6 @@ import { PermissionService } from '../../../core/auth/permission.service';
 import { NotificationItem } from '../models/notification.model';
 import { NotificationItemComponent } from './notification-item.component';
 import { notificationRoute } from '../notification-type.registry';
-import { LanguageService } from '../../../core/i18n/language.service';
 import { DialogShellComponent } from '../../../shared/ui/dialog-shell/dialog-shell.component';
 
 @Component({
@@ -41,7 +40,6 @@ export class NotificationComponent {
   private perm = inject(PermissionService);
   private router = inject(Router);
   private elementRef = inject(ElementRef);
-  private language = inject(LanguageService);
   private popover = viewChild(HlmPopover, { read: BrnPopover });
 
   isOpen = signal(false);
@@ -49,8 +47,16 @@ export class NotificationComponent {
   /** The row waiting for a delete confirmation — never deleted on one click. */
   pendingDelete = signal<NotificationItem | null>(null);
 
-  /** Keep the 380px panel inside the viewport on both sides of the bell. */
-  align = computed<'start' | 'end'>(() => (this.language.language() === 'ar' ? 'start' : 'end'));
+  /**
+   * The panel is anchored to its END edge.
+   *
+   * `end` is logical: in English it is the right edge (the bell sits at the
+   * top-right, so the panel grows left), and in Arabic it is the left edge
+   * (the bell sits at the top-left, so the panel grows right). Both keep the
+   * panel inside a desktop viewport; aligning `start` in Arabic pushed it off
+   * the left edge and clipped every title.
+   */
+  align = 'end' as const;
 
   canRead = () => this.perm.has('notification:read');
   canUpdate = () => this.perm.has('notification:update');

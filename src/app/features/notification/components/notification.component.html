@@ -1,6 +1,6 @@
 ﻿@if (canRead()) {
   <div class="relative" (keydown)="onKeydown($event)">
-    <hlm-popover sideOffset="12" [align]="align()" (stateChanged)="onPopoverState($event)">
+    <hlm-popover sideOffset="12" [align]="align" (stateChanged)="onPopoverState($event)">
       <button
         hlmPopoverTrigger
         type="button"
