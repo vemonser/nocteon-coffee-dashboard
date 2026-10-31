@@ -21,12 +21,12 @@ describe('chart type rules', () => {
     expect(chartKindFor(1, 400)).toBe('stat');
   });
 
-  it('two slices are bars, not a donut', () => {
-    expect(chartKindFor(2, 400)).toBe('bars');
+  it('two slices are a donut: a two-answer breakdown is still part-to-whole', () => {
+    expect(chartKindFor(2, 400)).toBe('donut');
   });
 
-  it('three to five slices are a donut', () => {
-    for (const n of [MIN_DONUT_SLICES, 4, MAX_DONUT_SLICES]) {
+  it('two to five slices are a donut', () => {
+    for (const n of [MIN_DONUT_SLICES, 3, 4, MAX_DONUT_SLICES]) {
       expect(chartKindFor(n, 400)).toBe('donut');
     }
   });

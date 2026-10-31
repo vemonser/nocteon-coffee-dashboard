@@ -24,16 +24,18 @@ export type ChartKind = 'donut' | 'bars' | 'stat';
 /**
  * The chart-type rule.
  *
- * A donut only works with a few slices: below three the ring is mostly
- * hole, above five the slices are too thin to read or to label. Below the
- * minimum SIZE it is not a chart at all.
+ * A donut only works with a few slices: above five the slices are too thin
+ * to read or to label, and below the minimum SIZE it is not a chart at all.
+ * TWO slices are a donut: a part-to-whole question with two answers ("Online
+ * vs cash on delivery") is still a part-to-whole question, and two bars made
+ * the payment-method and roast-level breakdowns read as a different kind of
+ * chart from the origin breakdown beside them.
  *
  *  - 0 or 1 slice  -> a STAT (a number, not a chart)
- *  - 2 slices      -> BARS
- *  - 3..5 slices   -> DONUT, if the chart is at least MIN_DONUT_PX wide
+ *  - 2..5 slices   -> DONUT, if the chart is at least MIN_DONUT_PX wide
  *  - 6+ slices     -> BARS
  */
-export const MIN_DONUT_SLICES = 3;
+export const MIN_DONUT_SLICES = 2;
 export const MAX_DONUT_SLICES = 5;
 export const MIN_DONUT_PX = 160;
 

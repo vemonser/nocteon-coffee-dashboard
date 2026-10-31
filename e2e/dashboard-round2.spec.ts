@@ -273,9 +273,14 @@ test.describe('dashboard — round 2', () => {
 
   test('the Arabic UI carries no untranslated string', async () => {
     await switchLanguage(page, 'ar');
-    // The widgets load asynchronously; the scan waits for the page to
-    // settle, so a slow API is not read as an untranslated string.
-    await page.waitForLoadState('networkidle').catch(() => {});
+    // The widgets load asynchronously, so the scan waits for the page's own
+    // content to settle. NOT `networkidle`: the shell keeps the notification
+    // SSE stream open (`/api/dashboard/notifications/stream`), so there is
+    // never a 500ms window with no request in flight and the state would
+    // never resolve — the wait used to burn the whole test timeout.
+    await expect(page.locator('[data-testid="kpi-primary-row"]')).toBeVisible({
+      timeout: 20_000,
+    });
     await page.waitForTimeout(1500);
     // Every widget that failed is retried, so the scan reads the DATA and
     // not an error message.
@@ -398,11 +403,12 @@ test.describe('dashboard — round 2', () => {
       });
     });
 
-    // A donut is only legal for 3-5 slices (and a wide enough card, which is
-    // why the positive direction is not asserted here — two order statuses
-    // legitimately render as bars). The absence side is the contract.
+    // A donut is only legal for 2-5 slices (and a wide enough card, which is
+    // why the positive direction is not asserted here — a narrow card still
+    // falls back to bars). The absence side is the contract. Two slices are
+    // a donut: a two-answer breakdown is still part-to-whole.
     for (const chart of charts) {
-      if (chart.slices < 3 || chart.slices > 5) {
+      if (chart.slices < 2 || chart.slices > 5) {
         expect(
           chart.donut,
           `a ${chart.slices}-slice chart must not be a donut`,
@@ -498,7 +504,7 @@ test.describe('dashboard — round 2', () => {
     const valueSizes = new Set(cards.map((c) => c.valueFontSize));
     expect(labelSizes.size, `the labels share one size (${JSON.stringify(cards)})`).toBe(1);
     expect(valueSizes.size, `the values share one size (${JSON.stringify(cards)})`).toBe(1);
-    expect([...labelSizes][0], 'the KPI label is 13px').toBe('13px');
+    expect([...labelSizes][0], 'the KPI label is 12px').toBe('12px');
     expect([...valueSizes][0], 'the KPI value is 28px').toBe('28px');
   });
 

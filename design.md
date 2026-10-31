@@ -202,12 +202,14 @@ in `chart-rules.ts` and are unit-tested.
 | Slices | Chart |
 |--------|-------|
 | 0 or 1 | a **stat** (a number) — a single-slice donut is not a chart |
-| 2 | **bars** |
-| 3–5, and the card is at least 160 px wide | **donut** |
+| 2–5, and the card is at least 160 px wide | **donut** |
 | 6+ | **bars** |
 
-Below three slices the ring is mostly hole; above five the slices are too
-thin to read or to label.
+Below two slices a chart has nothing to compare; above five the slices are
+too thin to read or to label. Two slices ARE a donut: a breakdown that has
+two answers ("Online vs cash on delivery", "Light vs medium roast") is still
+a part-to-whole question, and drawing it as two bars made those tabs read as
+a different kind of chart from the breakdown beside them.
 
 ### Bars
 
@@ -226,14 +228,30 @@ values line up, so the column can be read as a column of numbers. The
 order inside a row follows the reading direction — the colour dot is at
 the inline start, so in Arabic it is on the right and the row still reads
 "dot, name, value, percent". The rows are in the same order as the ring.
+The swatch is a **circle** and every row but the last carries a separator
+(`border-b border-border/70`), so a legend and a dashboard list read as the
+same kind of object.
+
+### Dashboard rows
+
+Every list on the dashboard home — operating system, low stock, top selling,
+recent orders — uses ONE row: a 40px circle at the inline start (a product
+image, a customer initial or the system glyph in its own colour), the name
+and its one secondary line, a 1.5px share bar under the name where the row
+measures a share, and the number in a fixed column at the inline end. Rows
+are separated by a 1px `border-border/70` line and the last row has none.
+No row draws its own card: the card is the surface, the rows are its lines.
+
+This is what keeps the six widgets from reading as six different products;
+it is also why the old fixed-width "339 sessions (59%)" column — which
+clipped at the card edge — is gone: only the NAME is allowed to be long.
 
 ### Donut
 
 - The **hole is the card colour** — the slices are stroked arcs, not filled
   wedges, so the card genuinely shows through the middle. (A filled wedge
   paints over the hole, which is why the hole used to be darker than the
-  card.)
-- The **centre** uses `--foreground` and is the **compact currency** form
+  card.)- The **centre** uses `--foreground` and is the **compact currency** form
   of the number when the long one does not fit. It never leaves the ring:
   the width is measured, not guessed.
 - The centre **says what the number is** ("Revenue", "Orders"), never the

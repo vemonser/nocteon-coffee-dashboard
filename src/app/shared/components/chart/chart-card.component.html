@@ -130,15 +130,15 @@
     on the right and the row still reads "dot, name, value, percent".
   -->
   @if (prepared().length > 0) {
-    <ul class="mt-4 flex flex-col gap-1.5" data-testid="chart-legend">
+    <ul class="mt-3 flex flex-col" data-testid="chart-legend">
       @for (row of prepared(); track row.label) {
         <li
-          class="flex items-center gap-2 text-sm"
+          class="flex items-center gap-2.5 border-b border-border/70 py-2 text-sm last:border-0"
           (mouseenter)="hovered.set(row.label)"
           (mouseleave)="hovered.set(null)"
         >
           <span
-            class="size-2.5 shrink-0 rounded-[3px]"
+            class="size-2.5 shrink-0 rounded-full"
             [style.background]="row.color"
             aria-hidden="true"
           ></span>
