@@ -271,8 +271,9 @@
                       </a>
                       @if (view.variantLabel) {
                         <p
-                          class="mt-0.5 truncate text-xs text-muted-foreground"
+                          class="mt-0.5 text-sm font-medium text-foreground"
                           data-testid="order-item-variant"
+                          dir="auto"
                           [attr.title]="view.variantLabel"
                         >
                           <bdi>{{ view.variantLabel }}</bdi>
@@ -331,6 +332,12 @@
                 <dt class="text-sm text-muted-foreground">{{ 'orders.detail.shipping' | transloco }}</dt>
                 <dd class="text-sm tabular-nums">{{ totals().shipping | money }}</dd>
               </div>
+              @if (totalWeightGrams() > 0) {
+                <div class="flex items-center justify-between gap-4" data-total-row="weight">
+                  <dt class="text-sm text-muted-foreground">{{ 'orders.detail.totalWeight' | transloco }}</dt>
+                  <dd class="text-sm tabular-nums">{{ formatWeight(totalWeightGrams()) }}</dd>
+                </div>
+              }
               @if (totals().tax > 0) {
                 <div class="flex items-center justify-between gap-4" data-total-row="tax">
                   <dt class="text-sm text-muted-foreground">{{ 'orders.detail.tax' | transloco }}</dt>

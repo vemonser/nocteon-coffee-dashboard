@@ -35,6 +35,8 @@ export interface OrderItemView {
   variant: VariantInfo | null;
   /** "250g · Whole Bean" — the resolved options, or null when unknown. */
   variantLabel: string | null;
+  /** The per-unit weight in grams, resolved from the variant's Weight option. */
+  unitWeightGrams: number | null;
   /** The catalog's compare-at price, only when it is ABOVE the paid unit price. */
   originalUnitPrice: number | null;
   /**
@@ -57,6 +59,27 @@ export interface OrderItemView {
  * When the catalog is unavailable the line still renders, without a variant
  * label and without a struck-through price.
  */
+function parseWeightGrams(value: string | null | undefined): number | null {
+  if (!value) return null;
+  const match = value.trim().match(/([\d.,]+)\s*(كجم|جم|kg|g|gm|gram|kilogram)s?/i);
+  if (!match) return null;
+  const n = Number(match[1].replace(',', '.'));
+  if (!Number.isFinite(n)) return null;
+  const unit = match[2].toLowerCase();
+  return /ك|k/i.test(unit) ? Math.round(n * 1000) : Math.round(n);
+}
+
+function findWeightAttribute(attributes: VariantAttribute[]): VariantAttribute | undefined {
+  return (
+    attributes.find((attribute) => /weight|الوزن|وزن/i.test(attribute.name)) ??
+    attributes.find((attribute) => /([\d.,]+)\s*(كجم|جم|kg|g|gm)s?/i.test(attribute.value ?? ''))
+  );
+}
+
+/**
+ * Join the order's lines to the catalog's variants.
+ * …
+ */
 export function buildOrderItemViews(
   items: readonly OrderItemResponse[],
   variants: ReadonlyMap<number, VariantInfo>,
@@ -68,6 +91,9 @@ export function buildOrderItemViews(
       ? attributes.map((attribute) => attribute.value).filter(Boolean).join(' · ')
       : null;
 
+    const weightAttribute = findWeightAttribute(attributes);
+    const unitWeightGrams = parseWeightGrams(weightAttribute?.value);
+
     const unitPrice = Number(item.unitPrice ?? 0);
     const compareAt = variant?.compareAtPrice ?? null;
     const hasRegularPrice = compareAt !== null && compareAt > unitPrice;
@@ -76,6 +102,7 @@ export function buildOrderItemViews(
       item,
       variant,
       variantLabel,
+      unitWeightGrams,
       originalUnitPrice: hasRegularPrice ? compareAt : null,
       displaySku: variant?.sku ?? item.sku,
     };

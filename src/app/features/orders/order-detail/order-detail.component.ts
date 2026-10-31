@@ -253,6 +253,26 @@ export class OrderDetailComponent {
     buildOrderItemViews(this.order()?.items ?? [], this.variants()),
   );
 
+  /** Total weight of the order in grams, when every line carries a weight. */
+  protected readonly totalWeightGrams = computed(() =>
+    this.itemViews().reduce((sum, view) => {
+      const weight = view.unitWeightGrams;
+      const qty = Number(view.item.quantity ?? 0);
+      return sum + (weight === null ? 0 : weight * qty);
+    }, 0),
+  );
+
+  /** Format grams as "500 g" or "1.25 kg" — the unit the catalog uses. */
+  protected formatWeight(grams: number): string {
+    const arabic = this.language.current() === 'ar';
+    if (grams >= 1000) {
+      const kg = grams / 1000;
+      const value = Number.isInteger(kg) ? kg : kg.toFixed(2).replace(/\.?0+$/, '');
+      return `${value} ${arabic ? 'كجم' : 'kg'}`;
+    }
+    return `${grams} ${arabic ? 'جم' : 'g'}`;
+  }
+
   protected readonly itemsCount = computed(() => orderItemsCount(this.order()));
   protected readonly linesCount = computed(() => orderLinesCount(this.order()));
 
