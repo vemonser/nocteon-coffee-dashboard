@@ -264,11 +264,13 @@ export class OrderDetailComponent {
 
   /** Format grams as "500 g" or "1.25 kg" — the unit the catalog uses. */
   protected formatWeight(grams: number): string {
+    const arabic = this.language.current() === 'ar';
     if (grams >= 1000) {
       const kg = grams / 1000;
-      return `${Number.isInteger(kg) ? kg : kg.toFixed(2).replace(/\.?0+$/, '')} kg`;
+      const value = Number.isInteger(kg) ? kg : kg.toFixed(2).replace(/\.?0+$/, '');
+      return `${value} ${arabic ? 'كجم' : 'kg'}`;
     }
-    return `${grams} g`;
+    return `${grams} ${arabic ? 'جم' : 'g'}`;
   }
 
   protected readonly itemsCount = computed(() => orderItemsCount(this.order()));
