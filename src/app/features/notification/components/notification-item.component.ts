@@ -30,6 +30,8 @@ import {
 } from '../notification-type.registry';
 import { PermissionService } from '../../../core/auth/permission.service';
 import { LanguageService } from '../../../core/i18n/language.service';
+import { StoreSettingsService } from '../../../core/settings/store-settings.service';
+import { formatCurrency } from '../../../shared/utils/locale-format';
 
 @Component({
   selector: 'app-notification-item',
@@ -88,15 +90,23 @@ import { LanguageService } from '../../../core/i18n/language.service';
           }
         </div>
 
-        <div class="min-w-0 flex-1 pe-7">
-          <p class="truncate text-sm font-medium" [class.font-semibold]="!item.read">
-            {{ title() }}
-          </p>
-          <p class="line-clamp-2 text-[13px] text-muted-foreground">
+        <div class="min-w-0 flex-1 pe-9">
+          <!-- Title and time on one line: the time is a timestamp, so it
+               belongs beside the title it dates, not under the description
+               where it was a third paragraph competing with the text. -->
+          <div class="flex items-baseline justify-between gap-2">
+            <p class="min-w-0 truncate text-sm font-medium" [class.font-semibold]="!item.read">
+              {{ title() }}
+            </p>
+            <time
+              class="shrink-0 whitespace-nowrap text-xs tabular-nums text-muted-foreground"
+              [attr.datetime]="item.createdAt"
+              [attr.title]="absoluteTime()"
+            >{{ relativeTime() }}</time>
+          </div>
+          <!-- The description sits under the title. -->
+          <p class="mt-0.5 line-clamp-2 text-[13px] text-muted-foreground">
             {{ description() }}
-          </p>
-          <p class="mt-1 text-xs text-muted-foreground" [attr.title]="absoluteTime()">
-            {{ relativeTime() }}
           </p>
         </div>
       </button>
@@ -157,31 +167,74 @@ export class NotificationItemComponent {
   private perm = inject(PermissionService);
   private transloco = inject(TranslocoService);
   private language = inject(LanguageService);
+  private store = inject(StoreSettingsService);
 
   icon = () => notificationIcon(this.item.type);
   tint = () => notificationTint(this.item.type);
 
-  title = () => {
-    // An unregistered type must still render with the payload it carries.
-    const known = notificationTypeConfig(this.item.type) !== null;
-    if (known && this.item.titleKey) {
-      return this.transloco.translate(this.item.titleKey, this.item.params ?? {});
+  /**
+   * The params the copy is rendered with.
+   *
+   * The API names the person `fullName`; the notification copy says `name`.
+   * One alias here keeps an unresolved `{{name}}` off the screen.
+   */
+  private copyParams(): Record<string, unknown> {
+    const params = { ...(this.item.params ?? {}) } as Record<string, unknown>;
+
+    // The API's param names are not the copy's names. One alias table keeps an
+    // unresolved {{placeholder}} off the screen; every entry is a value the
+    // backend already sends.
+    const aliases: Record<string, string[]> = {
+      name: ['fullName', 'senderName', 'customerName', 'reviewerName'],
+      orderId: ['orderNumber', 'orderCode'],
+      variant: ['variantLabel'],
+    };
+    for (const [target, sources] of Object.entries(aliases)) {
+      if (params[target] !== undefined) continue;
+      const source = sources.find((key) => params[key] !== undefined);
+      if (source) params[target] = params[source];
     }
+
+    // Money in a description uses the shared formatter, never the raw number.
+    if (params['total'] !== undefined && /^(order|payment)/.test(this.item.type)) {
+      params['total'] = formatCurrency(
+        params['total'],
+        this.language.language(),
+        this.store.currency(),
+      );
+    }
+
+    return params;
+  }
+
+  /**
+   * The title.
+   *
+   * The API sends `type` + `params` and NO copy, so the title comes from the
+   * type registry's i18n block (`notifications.types.<type>.title`). A payload
+   * that already carries a key or a literal title wins: a backend can override
+   * the type copy without a frontend release.
+   */
+  title = () => {
+    const params = this.copyParams();
+    if (this.item.titleKey) return this.transloco.translate(this.item.titleKey, params);
     if (this.item.title) return this.item.title;
-    return this.item.titleKey
-      ? this.transloco.translate(this.item.titleKey, this.item.params ?? {})
-      : '';
+    const config = notificationTypeConfig(this.item.type);
+    if (config) {
+      return this.transloco.translate(`notifications.types.${config.i18nKey}.title`, params);
+    }
+    return this.transloco.translate('notifications.detail');
   };
 
   description = () => {
-    const known = notificationTypeConfig(this.item.type) !== null;
-    if (known && this.item.bodyKey) {
-      return this.transloco.translate(this.item.bodyKey, this.item.params ?? {});
-    }
+    const params = this.copyParams();
+    if (this.item.bodyKey) return this.transloco.translate(this.item.bodyKey, params);
     if (this.item.message) return this.item.message;
-    return this.item.bodyKey
-      ? this.transloco.translate(this.item.bodyKey, this.item.params ?? {})
-      : '';
+    const config = notificationTypeConfig(this.item.type);
+    if (config) {
+      return this.transloco.translate(`notifications.types.${config.i18nKey}.description`, params);
+    }
+    return '';
   };
 
   relativeTime(): string {
