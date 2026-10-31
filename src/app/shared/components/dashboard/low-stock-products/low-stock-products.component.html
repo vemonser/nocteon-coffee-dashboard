@@ -1,37 +1,58 @@
 @if (products.length === 0) {
   <!--
-    An empty widget is ONE line of TEXT, and it FILLS the card it is in:
-    the card next to it is taller, and the two cards of a row share one
-    height, so a short line at the top of a tall card left the card mostly
-    empty. The empty state is centred in the card's area instead.
+    An empty widget FILLS the card it is in: the card next to it is taller,
+    and the two cards of a row share one height. A short line at the top of a
+    tall card left the card mostly empty, so the state is centred instead —
+    an icon in a soft circle, one sentence, nothing to click.
   -->
-  <div class="flex min-h-[24px] items-center justify-center gap-2 py-1 text-center">
-    <ng-icon name="lucideCheckCircle" class="size-4 shrink-0 text-success" />
+  <div class="flex h-full min-h-[150px] flex-col items-center justify-center gap-2.5 py-4 text-center">
+    <span class="flex size-10 items-center justify-center rounded-full bg-success-soft">
+      <ng-icon name="lucideCheckCircle" class="size-5 text-success" />
+    </span>
     <span class="text-sm text-muted-foreground">{{ 'dashboard.lowStock.allAboveThreshold' | transloco }}</span>
   </div>
 } @else {
-  <ul class="divide-y divide-border">
+  <ul class="flex flex-col">
     @for (p of products; track p.id) {
-      <li class="flex items-center gap-3 py-2">
+      <li class="flex items-center gap-3 border-b border-border/70 py-2.5 last:border-0">
         @if (p.imageUrl) {
-          <img [src]="p.imageUrl" [alt]="p.name" class="size-9 rounded-md object-cover border" />
+          <img
+            [src]="p.imageUrl"
+            [alt]="p.name"
+            class="size-10 shrink-0 rounded-lg border object-cover"
+          />
         } @else {
-          <div class="size-9 rounded-md border bg-muted flex items-center justify-center">
+          <span class="flex size-10 shrink-0 items-center justify-center rounded-lg border bg-muted">
             <ng-icon name="lucidePackage" class="size-4 text-muted-foreground" />
-          </div>
+          </span>
         }
-        <div class="flex-1 min-w-0">
-          <p class="truncate text-sm font-medium" [title]="p.name">{{ p.name }}</p>
+
+        <div class="min-w-0 flex-1">
+          <div class="flex items-center gap-2">
+            <p class="min-w-0 flex-1 truncate text-sm font-medium" [title]="p.name">
+              {{ p.name }}
+            </p>
+            <!-- A severity pill, not a second "Low stock" label: the card is
+                 already titled "Low stock products". The pill says HOW low. -->
+            <span
+              class="shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium"
+              [class]="severityTone(p)"
+              data-testid="low-stock-severity"
+            >
+              {{ (p.stockQuantity <= 0 ? 'dashboard.lowStock.outOfStock' : 'dashboard.lowStock.low') | transloco }}
+            </span>
+          </div>
+
           <p class="mt-0.5 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-xs text-muted-foreground">
             <span>
               {{ 'dashboard.lowStock.stock' | transloco }}:
-              <bdi class="font-medium tabular-nums text-foreground">{{ p.stockQuantity }}</bdi>
+              <bdi class="font-semibold tabular-nums text-foreground">{{ p.stockQuantity }}</bdi>
             </span>
-            @if (p.reorderThreshold != null) {
+            @if (threshold(p); as reorderAt) {
               <span aria-hidden="true">·</span>
               <span>
                 {{ 'dashboard.lowStock.reorderAt' | transloco }}:
-                <bdi class="tabular-nums">{{ p.reorderThreshold }}</bdi>
+                <bdi class="tabular-nums">{{ reorderAt }}</bdi>
               </span>
             }
             @if ((p.reservedQuantity ?? 0) > 0) {
@@ -42,11 +63,29 @@
               </span>
             }
           </p>
+
+          <!-- Stock against the reorder point: full at the threshold, empty
+               at zero. It shows how far below the line the product is, which
+               the two numbers alone make the reader work out. -->
+          @if (threshold(p)) {
+            <span
+              class="mt-2 flex h-1.5 w-full overflow-hidden rounded-full bg-muted"
+              aria-hidden="true"
+            >
+              <span
+                class="block h-full rounded-full"
+                [style.width.%]="stockShare(p)"
+                [style.background]="severityColor(p)"
+              ></span>
+            </span>
+          }
         </div>
+
         <a
           [routerLink]="['/dashboard/products', p.slug]"
-          class="flex size-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          class="flex size-8 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           [attr.aria-label]="'dashboard.lowStock.openProduct' | transloco"
+          [title]="'dashboard.lowStock.openProduct' | transloco"
         >
           <ng-icon name="lucideChevronRight" class="size-4" />
         </a>

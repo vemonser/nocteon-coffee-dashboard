@@ -2550,7 +2550,9 @@
       "reserved": "محجوز",
       "openProduct": "فتح المنتج",
       "reorderAt": "حد إعادة الطلب",
-      "allAboveThreshold": "جميع المنتجات فوق حد المخزون"
+      "allAboveThreshold": "جميع المنتجات فوق حد المخزون",
+      "low": "منخفض",
+      "outOfStock": "نفد المخزون"
     },
     "revenue": {
       "last7days": "آخر 7 أيام",
@@ -2595,6 +2597,7 @@
     "ordersByPayment": "الطلبات حسب طريقة الدفع",
     "kg": "كجم",
     "allTime": "كل الوقت",
+    "total": "الإجمالي",
     "vs": "مقابل",
     "delta": {
       "noChange": "لا تغيير",

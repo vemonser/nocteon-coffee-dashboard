@@ -14,6 +14,7 @@ import {
 import { DashboardStatsService } from '../../../../features/dashboard/services/dashboard-stats.service';
 import { LocalizedNameService } from '../../../../core/i18n/localized-name.service';
 import { PluralPipe } from '../../../pipes/plural.pipe';
+import { OTHER, sliceColors } from '../../chart/chart-rules';
 
 /**
  * The device breakdown, as a compact bar list.
@@ -71,6 +72,25 @@ export class DeviceListComponent {
     if (!total) return 0;
     const percent = (count / total) * 100;
     return Math.max(2, Math.round(percent * 10) / 10);
+  }
+
+  /**
+   * The colour of each system, in the list's own order.
+   *
+   * A system is a CATEGORY, so it takes the categorical palette — except the
+   * "Other" bucket, which keeps the neutral token: "Other" means "everything
+   * else" and must not look like one more named system.
+   */
+  private readonly colors = computed(() => {
+    const palette = sliceColors(this.devices().length, 'categorical');
+    return this.devices().map((d, i) =>
+      /^other$/i.test(d.deviceType) ? OTHER : (palette[i] ?? OTHER),
+    );
+  });
+
+  /** The colour of the row at `index`. */
+  color(index: number): string {
+    return this.colors()[index] ?? OTHER;
   }
 
   /** Percent of total sessions for display. */

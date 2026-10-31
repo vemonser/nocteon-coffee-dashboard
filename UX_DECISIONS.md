@@ -53,3 +53,27 @@ Your answer: [x] A (2026-10-29) — **accepted, shipped** in the same FE-25 D5+A
 - `npm run i18n:check`, `npm run qa:static` (181, unchanged) and the unit suite cover this statically; the pixel check at 375 / 768 / 1440 in light + dark + Arabic is the browser pass.
 
 I did not touch the navbar layout while the question was open: adding a control there is a layout-structure change (AGENTS.md). With D5 answered A, the layout change above ships in this pass and the 375px overflow check stays part of the browser pass.
+
+## D6 — The two-slice breakdowns, and what "pie" means on this page
+Context: "Orders by payment method" (and "Revenue by roast level" whenever the
+store has two roast levels) rendered as TWO BARS, because the chart rule only
+allowed a ring at 3–5 slices. The card beside it ("Revenue by origin") drew a
+ring, so the same question — "how does this split up?" — had two different
+shapes on one screen.
+- **Option A (shipped)**: 2–5 slices draw the ring (donut) with its centre
+  total; 0–1 slice stays the stat; 6+ stays bars. The ring is the chart system
+  design.md §2b already documents, so the two cards agree.
+- **Option B**: a literal FILLED pie (wedges, no hole) for these two tabs.
+  It would drop the centre total ("EGP 5.8K" / "3") and make the two breakdown
+  cards look different from the origin card.
+
+Your answer: [ ] A  [ ] B — A is implemented; say B if you want the hole
+filled in. A one-payment-method period still shows the STAT, not a ring: a
+100% ring says nothing a number does not.
+
+Also shipped in this pass (no answer needed): the toolbar's date/comparison/
+updated line moved under the range tabs with "Export report" at the other
+end; KPI icons are 40px full circles with 12px labels; the four dashboard
+lists now share one row language (40px circle at the inline start, one
+separator per row, a share bar under the name, numbers in a fixed end
+column), and the chart legends use the same round swatch and separators.

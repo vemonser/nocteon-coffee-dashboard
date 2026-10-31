@@ -1,41 +1,63 @@
 <!--
-  The list is ONE column: five device rows, each with its name, its bar and
-  its count.
+  The operating-system card: a TOTAL, one stacked share bar, then one row per
+  system.
 
-  It used to be two columns, which made the card short — and left the card
-  next to it (Low stock) with a lot of empty space, because the two cards
-  of a row share one height. One column gives the list a height that is
-  close to the card next to it, so both cards fill their own area
-  (design.md: no card is more than 1.5x the content it holds).
+  The old list put "339 sessions (59%)" in a FIXED 96px column: the string was
+  wider than the column, so the percentage was cut off at the card edge (and
+  the closing bracket was never drawn). The count and the percentage are now
+  two auto-sized columns, and the label — the only thing that may be long —
+  is the one that truncates.
+
+  The colour is never the only signal: every row keeps its counting unit and
+  its percentage, and the stacked bar repeats the shares in the same order.
 -->
-<ul class="mt-2 flex flex-col gap-1.5 pb-1">
-  @for (d of devices(); track d.deviceType) {
-    <li class="flex items-center gap-2.5">
+<div class="flex flex-col gap-3">
+  <div class="flex items-end justify-between gap-3">
+    <p class="text-xs text-muted-foreground">{{ 'dashboard.total' | transloco }}</p>
+    <p class="flex items-baseline gap-1.5">
+      <bdi class="text-2xl font-semibold leading-none tracking-tight tabular-nums">
+        {{ total() }}
+      </bdi>
+      <span class="text-xs text-muted-foreground">{{ 'dashboard.deviceUnit' | transloco }}</span>
+    </p>
+  </div>
+
+  <div
+    class="flex h-2 w-full gap-0.5 overflow-hidden rounded-full bg-muted"
+    aria-hidden="true"
+  >
+    @for (d of devices(); track d.deviceType; let i = $index) {
       <span
-        class="flex size-6 shrink-0 items-center justify-center rounded-[0.35rem] bg-muted text-muted-foreground"
-        aria-hidden="true"
-        [attr.aria-label]="label(d.deviceType)"
-      >
-        <ng-icon [name]="icon(d.deviceType)" class="size-3.5" />
-      </span>
-      <span class="w-20 shrink-0 truncate text-sm" [title]="label(d.deviceType)">{{ label(d.deviceType) }}</span>
-      <!-- The bar uses percent of TOTAL sessions. -->
-      <span class="h-2 flex-1 rounded-full bg-muted overflow-hidden">
+        class="h-full first:rounded-s-full last:rounded-e-full"
+        [style.width.%]="width(d.count)"
+        [style.background]="color(i)"
+      ></span>
+    }
+  </div>
+
+  <ul class="flex flex-col">
+    @for (d of devices(); track d.deviceType; let i = $index) {
+      <li class="flex items-center gap-2.5 py-1.5">
+        <ng-icon
+          [name]="icon(d.deviceType)"
+          class="size-4 shrink-0"
+          [style.color]="color(i)"
+          [attr.aria-label]="label(d.deviceType)"
+        />
+        <span class="min-w-0 flex-1 truncate text-sm" [title]="label(d.deviceType)">
+          {{ label(d.deviceType) }}
+        </span>
         <span
-          class="block h-full rounded-full bg-chart-1"
-          [style.width.%]="width(d.count)"
-        ></span>
-      </span>
-      <!-- The count AND its unit, in the reader's language and in the right
-           plural form. The unit follows the number in both languages. -->
-      <span
-        class="w-24 shrink-0 whitespace-nowrap text-end text-sm tabular-nums text-muted-foreground"
-        [title]="d.count + ' ' + label(d.deviceType)"
-      >
-        {{ d.count | plural: 'dashboard.countSessions' }} ({{ percent(d.count) }}%)
-      </span>
-    </li>
-  } @empty {
-    <li class="py-4 text-center text-sm text-muted-foreground">{{ 'common.noData' | transloco }}</li>
-  }
-</ul>
+          class="shrink-0 whitespace-nowrap text-end text-sm tabular-nums text-muted-foreground"
+        >
+          {{ d.count | plural: 'dashboard.countSessions' }}
+        </span>
+        <span class="w-10 shrink-0 text-end text-sm tabular-nums text-muted-foreground">
+          {{ percent(d.count) }}%
+        </span>
+      </li>
+    } @empty {
+      <li class="py-4 text-center text-sm text-muted-foreground">{{ 'common.noData' | transloco }}</li>
+    }
+  </ul>
+</div>

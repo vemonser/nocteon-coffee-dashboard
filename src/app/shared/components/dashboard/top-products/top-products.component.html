@@ -1,63 +1,64 @@
 <!--
-  The column header says what the numbers ARE: the bar and the number in
-  the last column are both UNITS SOLD. The bar used to sit under the
-  product name, so the column it was drawn in was headed "Product" — the
-  header did not say what the bar meant.
--->
-<div class="mb-2 flex items-baseline justify-between gap-2 text-xs text-muted-foreground">
-  <span>{{ 'dashboard.topProducts.product' | transloco }}</span>
-  <span class="w-[160px] shrink-0 text-end">{{ 'dashboard.topProducts.units' | transloco }}</span>
-</div>
+  The best sellers, as a ranked list.
 
-<ul class="flex flex-col gap-2">
+  Each row is one product: rank, thumbnail, name, the share bar UNDER the name
+  (it belongs to the name it measures), and the units sold at the inline end.
+  The old layout parked the bar in a 160px column at the far end, away from
+  the name it belonged to, and headed that column "Units sold" — while the
+  bar actually measured units against the top seller, not a count. The number
+  already says its unit ("3 sold"), so the separate header row is gone too.
+-->
+<ul class="flex flex-col">
   @for (product of products; track product.name; let i = $index) {
-    <li class="flex items-start gap-2.5 sm:items-center sm:gap-3">
-      <span class="mt-2 w-3 shrink-0 text-xs text-muted-foreground tabular-nums sm:mt-0 sm:w-4">{{ i + 1 }}</span>
+    <li class="flex items-center gap-3 border-b border-border/70 py-3 last:border-0">
+      <span
+        class="flex size-6 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-semibold tabular-nums text-muted-foreground"
+        aria-hidden="true"
+      >{{ i + 1 }}</span>
 
       @if (product.imageUrl) {
         <img
           [src]="product.imageUrl"
           [alt]="product.name"
-          class="size-8 shrink-0 rounded-md object-cover sm:size-9"
+          class="size-10 shrink-0 rounded-full border object-cover"
         />
       } @else {
         <span
-          class="flex size-8 shrink-0 items-center justify-center rounded-md bg-primary/10 text-xs font-medium text-primary sm:size-9"
+          class="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-medium text-primary"
+          aria-hidden="true"
         >
           {{ product.name.charAt(0) }}
         </span>
       }
 
-      <a
-        class="min-w-0 flex-1 py-0.5"
-        [routerLink]="['/dashboard/products', product.slug]"
-      >
-        <!-- On a phone the name gets two lines instead of being cut to
-             "Ethiopian Yir…"; the desktop row keeps one line. -->
-        <span
-          class="line-clamp-2 text-sm font-medium leading-tight sm:line-clamp-1 sm:truncate"
-          data-allow-latin
-          [title]="product.name"
-        >{{ product.name }}</span>
-      </a>
-
-      <!-- The bar AND the number are the same measure: units sold. The bar
-           is hidden on a phone (there is no room for it and the name), so
-           the number is never pushed out of the card. -->
-      <span class="flex w-[160px] shrink-0 items-center justify-end gap-2">
-        <span class="hidden h-2 flex-1 overflow-hidden rounded-full bg-muted sm:block">
+      <div class="min-w-0 flex-1">
+        <a
+          class="block min-w-0 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          [routerLink]="['/dashboard/products', product.slug]"
+        >
+          <span
+            class="block truncate text-sm font-medium leading-tight"
+            data-allow-latin
+            [title]="product.name"
+          >{{ product.name }}</span>
+        </a>
+        <!-- The bar is scaled to the TOP seller, so row one is always full. -->
+        <span class="mt-2 flex h-1.5 w-full overflow-hidden rounded-full bg-muted">
           <span
             class="block h-full rounded-full bg-chart-1"
             [style.width.%]="share(product.quantitySold)"
           ></span>
         </span>
-        <span class="shrink-0 whitespace-nowrap text-end text-sm tabular-nums text-muted-foreground">
-          {{ product.quantitySold | plural: 'dashboard.countSold' }}
-        </span>
+      </div>
+
+      <span
+        class="shrink-0 whitespace-nowrap text-end text-sm tabular-nums text-muted-foreground"
+      >
+        {{ product.quantitySold | plural: 'dashboard.countSold' }}
       </span>
     </li>
   } @empty {
-    <li class="py-8 text-center text-muted-foreground">
+    <li class="py-8 text-center text-sm text-muted-foreground">
       {{ 'dashboard.topProducts.noProducts' | transloco }}
     </li>
   }

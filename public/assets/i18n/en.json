@@ -2434,7 +2434,9 @@
       "reserved": "reserved",
       "openProduct": "Open the product",
       "reorderAt": "Reorder at",
-      "allAboveThreshold": "All products are above the stock threshold"
+      "allAboveThreshold": "All products are above the stock threshold",
+      "low": "Low",
+      "outOfStock": "Out of stock"
     },
     "revenue": {
       "last7days": "Last 7 days",
@@ -2479,6 +2481,7 @@
     "ordersByPayment": "Orders by payment method",
     "kg": "kg",
     "allTime": "All time",
+    "total": "Total",
     "vs": "vs",
     "delta": {
       "noChange": "No change",
