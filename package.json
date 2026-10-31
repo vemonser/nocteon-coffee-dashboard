@@ -21,7 +21,11 @@
     "qa": "playwright test --config qa/playwright.config.ts",
     "qa:static": "node scripts/qa-static.mjs",
     "qa:no-test-data": "playwright test --config qa/playwright.config.ts no-test-data.spec.ts",
-    "purge:test-data": "node scripts/purge-test-data.mjs"
+    "purge:test-data": "node scripts/purge-test-data.mjs",
+    "find": "node qa/finder/cli.ts",
+    "find:test": "vitest run --config qa/finder/vitest.config.ts",
+    "find:recall": "node qa/finder/recall.ts",
+    "find:update": "node qa/finder/cli.ts --update-baseline"
   },
   "private": true,
   "packageManager": "npm@11.16.0",
