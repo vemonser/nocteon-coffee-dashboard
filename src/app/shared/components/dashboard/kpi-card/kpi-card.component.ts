@@ -40,8 +40,8 @@ import { sparklineGeometry } from '../../../../core/dashboard/sparkline';
  * Every card is the same grid, so eight cards on one page line up:
  *
  *   padding     20px            (token: 16-20)
- *   icon        32px, corner    (decorative)
- *   label       13px / 500      muted
+ *   icon        40px circle     (decorative)
+ *   label       12px / 500      muted
  *   value       26-28px / 600   tabular-nums, currency 14px muted
  *   foot row    12px / 500      caption and delta chip share one line
  *

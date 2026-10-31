@@ -1,5 +1,5 @@
 <div
-  class="flex flex-wrap items-center gap-x-3 gap-y-2 border-b pb-2 lg:sticky lg:top-0 lg:z-20 lg:bg-background/95 lg:px-2 lg:py-1.5 lg:backdrop-blur"
+  class="flex flex-col gap-2 border-b pb-2 lg:sticky lg:top-0 lg:z-20 lg:bg-background/95 lg:px-2 lg:pb-4 lg:pt-1.5 lg:backdrop-blur"
 >
   <!-- The range: the SAME tab group the cards use (a radiogroup here,
        because the range is one option out of a set, not a view). It stays
@@ -15,98 +15,108 @@
     (activeChange)="selectDays($event)"
   />
 
-  <!-- The range in effect, and the range it is compared against. On a
-       phone the comparison is hidden: the current window is the fact the
-       reader needs, and the card chips already say what they compare to. -->
-  <div class="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
-    <span class="flex items-center gap-1.5 whitespace-nowrap">
-      <ng-icon name="lucideCalendar" class="size-3.5 shrink-0" aria-hidden="true" />
-      <span class="sr-only">{{ 'dashboard.currentRange' | transloco }}:</span>
-      <span dir="ltr" class="inline-flex items-center gap-1 tabular-nums">
-        <app-localized-date [value]="current().start" />
-        <span aria-hidden="true">–</span>
-        <app-localized-date [value]="lastDayOf(current())" />
-      </span>
-    </span>
-    <span class="hidden items-center gap-1.5 whitespace-nowrap sm:flex">
-      <ng-icon name="lucideRepeat" class="size-3.5 shrink-0" aria-hidden="true" />
-      <span>{{ 'dashboard.vs' | transloco }}</span>
-      <span class="sr-only">{{ 'dashboard.comparisonRange' | transloco }}:</span>
-      <span dir="ltr" class="inline-flex items-center gap-1 tabular-nums">
-        <app-localized-date [value]="previous().start" />
-        <span aria-hidden="true">–</span>
-        <app-localized-date [value]="lastDayOf(previous())" />
-      </span>
-    </span>
-  </div>
-
-  <!-- Updated time and refresh button. On paper the RELATIVE time is
-       replaced by the absolute one: "Updated 3 minutes ago" is wrong by the
-       time the sheet reaches a desk. -->
-  <div class="flex items-center gap-2 text-xs text-muted-foreground">
-    <span class="print-only">{{ 'dashboard.updated' | transloco }} {{ updatedAt() }}</span>
-    <span class="print-hidden">{{ 'dashboard.updated' | transloco }} {{ relativeTime() }}</span>
-    <button
-      hlmBtn
-      type="button"
-      variant="ghost"
-      size="sm"
-      class="print-hidden shrink-0"
-      [title]="'dashboard.refresh' | transloco"
-      [attr.aria-label]="'dashboard.refresh' | transloco"
-      (click)="refresh()"
-    >
-      <ng-icon name="lucideRefreshCw" class="size-3.5" aria-hidden="true" />
-    </button>
-  </div>
-
   <!--
-    The export: a menu, so the two ways a report leaves the screen sit in one
-    place. Both are REAL — the CSV is a file, the PDF opens the browser's
-    print dialog on the report print sheet (no PDF library, no "coming soon"
-    placeholder). The range the file covers is in the trigger's tooltip.
-  -->
-  <div class="print-hidden shrink-0">
-    <button
-      hlmBtn
-      type="button"
-      variant="outline"
-      size="sm"
-      class="gap-1"
-      data-testid="dashboard-export"
-      [hlmDropdownMenuTrigger]="exportMenu"
-      align="end"
-      [title]="exportTooltip()"
-      [attr.aria-label]="exportTooltip()"
-    >
-      <ng-icon name="lucideDownload" class="size-4" aria-hidden="true" />
-      <span class="hidden sm:inline">{{ 'dashboard.exportReport' | transloco }}</span>
-      <ng-icon name="lucideChevronDown" class="size-3.5" aria-hidden="true" />
-    </button>
+    The second row reads as ONE line under the range tabs: the period on
+    screen and the period it is compared against (plus when the numbers were
+    fetched) at the inline start, the export at the inline end. The export
+    used to sit on the tabs' row, which split the controls into two rows of
+    unequal length and left "Updated just now" floating mid-row.
 
-    <ng-template #exportMenu>
-      <hlm-dropdown-menu class="min-w-48 rounded-md">
+    On a phone the comparison is hidden: the current window is the fact the
+    reader needs, and the card chips already say what they compare to.
+  -->
+  <div class="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+    <div class="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+      <span class="flex items-center gap-1.5 whitespace-nowrap">
+        <ng-icon name="lucideCalendar" class="size-3.5 shrink-0" aria-hidden="true" />
+        <span class="sr-only">{{ 'dashboard.currentRange' | transloco }}:</span>
+        <span dir="ltr" class="inline-flex items-center gap-1 tabular-nums">
+          <app-localized-date [value]="current().start" />
+          <span aria-hidden="true">–</span>
+          <app-localized-date [value]="lastDayOf(current())" />
+        </span>
+      </span>
+      <span class="hidden items-center gap-1.5 whitespace-nowrap sm:flex">
+        <ng-icon name="lucideRepeat" class="size-3.5 shrink-0" aria-hidden="true" />
+        <span>{{ 'dashboard.vs' | transloco }}</span>
+        <span class="sr-only">{{ 'dashboard.comparisonRange' | transloco }}:</span>
+        <span dir="ltr" class="inline-flex items-center gap-1 tabular-nums">
+          <app-localized-date [value]="previous().start" />
+          <span aria-hidden="true">–</span>
+          <app-localized-date [value]="lastDayOf(previous())" />
+        </span>
+      </span>
+
+      <!-- Updated time and refresh button. On paper the RELATIVE time is
+           replaced by the absolute one: "Updated 3 minutes ago" is wrong by
+           the time the sheet reaches a desk. -->
+      <span class="hidden items-center gap-2 whitespace-nowrap sm:flex" aria-hidden="true">·</span>
+      <span class="flex items-center gap-2 whitespace-nowrap">
+        <span class="print-only">{{ 'dashboard.updated' | transloco }} {{ updatedAt() }}</span>
+        <span class="print-hidden">{{ 'dashboard.updated' | transloco }} {{ relativeTime() }}</span>
         <button
-          hlmDropdownMenuItem
-          class="flex items-center gap-2"
-          data-testid="dashboard-export-csv"
-          (click)="exportCsv()"
+          hlmBtn
+          type="button"
+          variant="ghost"
+          size="sm"
+          class="print-hidden size-6 shrink-0 p-0"
+          [title]="'dashboard.refresh' | transloco"
+          [attr.aria-label]="'dashboard.refresh' | transloco"
+          (click)="refresh()"
         >
-          <ng-icon name="lucideFileSpreadsheet" aria-hidden="true" />
-          <span>{{ 'dashboard.exportCsv' | transloco }}</span>
+          <ng-icon name="lucideRefreshCw" class="size-3.5" aria-hidden="true" />
         </button>
-        <button
-          hlmDropdownMenuItem
-          class="flex items-center gap-2"
-          data-testid="dashboard-export-pdf"
-          [attr.title]="'dashboard.exportPdfHint' | transloco"
-          (click)="printReport()"
-        >
-          <ng-icon name="lucidePrinter" aria-hidden="true" />
-          <span>{{ 'dashboard.exportPdf' | transloco }}</span>
-        </button>
-      </hlm-dropdown-menu>
-    </ng-template>
+      </span>
+    </div>
+
+    <!--
+      The export: a menu, so the two ways a report leaves the screen sit in one
+      place. Both are REAL — the CSV is a file, the PDF opens the browser's
+      print dialog on the report print sheet (no PDF library, no "coming soon"
+      placeholder). The range the file covers is in the trigger's tooltip.
+    -->
+    <div class="print-hidden ms-auto shrink-0">
+      <button
+        hlmBtn
+        type="button"
+        variant="outline"
+        size="sm"
+        class="h-10 gap-1 bg-card px-3"
+        data-testid="dashboard-export"
+        [hlmDropdownMenuTrigger]="exportMenu"
+        align="end"
+        [title]="exportTooltip()"
+        [attr.aria-label]="exportTooltip()"
+      >
+        <ng-icon name="lucideDownload" class="size-4" aria-hidden="true" />
+        <span class="hidden sm:inline">{{ 'dashboard.exportReport' | transloco }}</span>
+        <ng-icon name="lucideChevronDown" class="size-3.5" aria-hidden="true" />
+      </button>
+
+      <ng-template #exportMenu>
+        <hlm-dropdown-menu class="min-w-48 rounded-md">
+          <button
+            hlmDropdownMenuItem
+            class="flex items-center gap-2"
+            data-testid="dashboard-export-csv"
+            (click)="exportCsv()"
+          >
+            <ng-icon name="lucideFileSpreadsheet" aria-hidden="true" />
+            <span>{{ 'dashboard.exportCsv' | transloco }}</span>
+          </button>
+          <button
+            hlmDropdownMenuItem
+            class="flex items-center gap-2"
+            data-testid="dashboard-export-pdf"
+            [attr.title]="'dashboard.exportPdfHint' | transloco"
+            (click)="printReport()"
+          >
+            <ng-icon name="lucidePrinter" aria-hidden="true" />
+            <span>{{ 'dashboard.exportPdf' | transloco }}</span>
+          </button>
+        </hlm-dropdown-menu>
+      </ng-template>
+    </div>
   </div>
 
   <!-- Custom date range popover -->

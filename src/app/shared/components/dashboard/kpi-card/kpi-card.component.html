@@ -33,22 +33,24 @@
 }
 
 <ng-template #body>
-  <!-- Icon in the corner: decorative, and smaller in the compact variant. -->
+  <!-- Icon in the corner: decorative, a full circle, and smaller in the
+       compact variant. -->
   <span
-    class="absolute flex shrink-0 items-center justify-center rounded-[0.5rem] bg-primary/10 text-primary"
-    [ngClass]="plain() ? 'end-3 top-3 size-6' : 'end-5 top-5 size-8'"
+    class="absolute flex shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary"
+    [ngClass]="plain() ? 'end-3 top-3 size-6' : 'end-4 top-4 size-10'"
     aria-hidden="true"
   >
-    <ng-icon [name]="icon()" [class]="plain() ? 'size-3' : 'size-4'" />
+    <ng-icon [name]="icon()" [class]="plain() ? 'size-3' : 'size-5'" />
   </span>
 
   <!-- The label: one size, one weight, and ONE FIXED LINE BOX on every card.
        The scope-note icon sits in the same 16px row instead of growing the
        paragraph, which is what used to push the value 17px down on the cards
-       that had a tooltip. -->
+       that had a tooltip. The type is 12px, one step below the 13px it used
+       to be: the number is the message and the label only names it. -->
   <p
     class="flex h-4 items-center gap-1 font-medium leading-4 text-muted-foreground"
-    [ngClass]="plain() ? 'pe-8 text-[12px]' : 'pe-10 text-[13px]'"
+    [ngClass]="plain() ? 'pe-8 text-[12px]' : 'pe-12 text-[12px]'"
     data-testid="kpi-label"
   >
     <span class="line-clamp-1" [title]="label()">{{ label() }}</span>
